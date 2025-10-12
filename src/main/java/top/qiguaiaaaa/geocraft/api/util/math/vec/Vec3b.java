@@ -25,90 +25,84 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math.vec;
+package top.qiguaiaaaa.geocraft.api.util.math.vec;
 
 import javax.annotation.Nonnull;
 
-import static top.qiguaiaaaa.geocraft.util.math.Int10.toInt10;
-import static top.qiguaiaaaa.geocraft.util.math.Int21.toInt21;
+import static top.qiguaiaaaa.geocraft.api.util.math.Int10.toInt10;
 
 /**
  * @author QiguaiAAAA
  */
-public class Vec3s implements IVec3i{
-    protected short x,y,z;
-    public Vec3s(short x, short y, short z){
+public class Vec3b implements IVec3i{
+    public static final Vec3b NULL_VEC = new Vec3b((byte) 0, (byte) 0, (byte) 0);
+    protected byte x,y,z;
+    public Vec3b(byte x,byte y,byte z){
         this.x = x;
         this.y = y;
         this.z = z;
     }
-    public Vec3s(Vec3s vec){
-        this(vec.x, vec.y,vec.z);
-    }
-    public Vec3s(IVec3i vec){
-        this((short) vec.getX(), (short) vec.getY(), (short) vec.getZ());
-    }
-    public short getSX() {
-        return this.x;
+
+    public Vec3b(Vec3b vec){
+        this(vec.x, vec.y, vec.z);
     }
 
-    public short getSY() {
-        return this.y;
+    public Vec3b(IVec3i vec){
+        this((byte) vec.getX(), (byte) vec.getY(), (byte) vec.getZ());
     }
 
-    public short getSZ() {
-        return this.z;
+    public byte getBX() {
+        return x;
+    }
+
+    public byte getBY() {
+        return y;
+    }
+
+    public byte getBZ() {
+        return z;
     }
 
     @Override
     public int toInt(){
-        return toInt10(x)<<20 | toInt10(y) << 10 | toInt10(z);
-    }
-
-    @Override
-    public long toLong(){
-        return toInt21(x) <<42 | toInt21(y) <<21 | toInt21(z);
+        return toInt10(x)<<20 | toInt10(y)<<10 | toInt10(z);
     }
 
     @Override
     public int hashCode() {
-        return (this.getSY() + this.getSZ() * 31) * 31 + this.getSX();
+        return (x<<16) | (y<<8) |z;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof Vec3s){
-            Vec3s b = (Vec3s) obj;
-            return b.getSX() == getSX() && b.getSY() == getSY() && b.getSZ() == getSZ();
+        if (obj instanceof Vec3b) {
+            Vec3b b = (Vec3b) obj;
+            return b.getBX() == getBX() && b.getBY() == getBY() && b.getBZ() == getBZ();
         }
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName()+"("+ getSX()+","+ getSY()+","+ getSZ()+")";
     }
 
     //******
     //IVec3i
     //******
+
     @Override
     public int getX() {
-        return getSX();
+        return getBX();
     }
 
     @Override
     public int getY() {
-        return getSY();
+        return getBY();
     }
 
     @Override
     public int getZ() {
-        return getSZ();
+        return getBZ();
     }
 
-    @Override
     @Nonnull
+    @Override
     public IVec3i asImmutable() {
         return this;
     }

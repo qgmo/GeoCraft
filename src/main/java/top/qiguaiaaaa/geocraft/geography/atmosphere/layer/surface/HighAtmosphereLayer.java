@@ -128,8 +128,8 @@ public class HighAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public void onLoadWithoutChunk() {
-        if(!temperature.isInitialised()){
-            if(lowerLayer == null || !lowerLayer.isInitialise()){
+        if(!temperature.isLoaded()){
+            if(lowerLayer == null || !lowerLayer.isLoaded()){
                 temperature.set(240);
             }else{
                 temperature.set(Math.max((float) (lowerLayer.getTemperature().get()-

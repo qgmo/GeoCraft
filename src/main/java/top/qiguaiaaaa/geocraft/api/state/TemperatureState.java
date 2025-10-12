@@ -41,7 +41,7 @@ import static top.qiguaiaaaa.geocraft.api.util.APIUtil.LOGGER;
  * 温度状态
  * @author QiguaiAAAA
  */
-public abstract class TemperatureState implements GeographyState {
+public abstract class TemperatureState implements INumberState<Float> {
     protected float temperature; //单位开尔文
     public TemperatureState(float temp){
         this.temperature = temp;
@@ -117,5 +117,24 @@ public abstract class TemperatureState implements GeographyState {
     @Override
     public String toString() {
         return Float.toString(temperature);
+    }
+
+    //***************
+    // INumberState
+    //***************
+
+    @Override
+    public int getInt() {
+        return (int) temperature;
+    }
+
+    @Override
+    public double getDouble() {
+        return getFloat();
+    }
+
+    @Override
+    public float getFloat() {
+        return temperature;
     }
 }

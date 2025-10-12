@@ -42,7 +42,7 @@ public class DeepTemperatureState extends TemperatureState {
     }
 
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return temperature > 0 && !Float.isInfinite(temperature);
     }
 

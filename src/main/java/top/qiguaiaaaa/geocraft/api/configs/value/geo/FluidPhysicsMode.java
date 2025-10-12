@@ -27,6 +27,8 @@
 
 package top.qiguaiaaaa.geocraft.api.configs.value.geo;
 
+import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -41,6 +43,12 @@ public enum FluidPhysicsMode {
 
     private static FluidPhysicsMode CURRENT_MODE = MORE_REALITY;
 
+    private IFluidOperationChecker checker;
+
+    public void setChecker(@Nonnull IFluidOperationChecker checker) {
+        this.checker = checker;
+    }
+
     public static void setCurrentMode(@Nonnull FluidPhysicsMode currentMode) {
         CURRENT_MODE = currentMode;
     }
@@ -48,6 +56,11 @@ public enum FluidPhysicsMode {
     @Nonnull
     public static FluidPhysicsMode getCurrentMode() {
         return CURRENT_MODE;
+    }
+
+    @Nonnull
+    public IFluidOperationChecker getChecker() {
+        return checker;
     }
 
     private boolean isStringMatched(@Nullable String s){

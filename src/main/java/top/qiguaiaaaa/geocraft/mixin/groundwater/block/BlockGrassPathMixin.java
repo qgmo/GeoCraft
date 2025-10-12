@@ -32,6 +32,9 @@ import net.minecraft.block.BlockGrassPath;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -39,6 +42,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
@@ -53,10 +57,14 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  * @author QiguaiAAAA
  */
 @Mixin(BlockGrassPath.class)
-public class BlockGrassPathMixin extends Block implements IBlockSoil {
+public class BlockGrassPathMixin extends Block implements IBlockSoil,IBlockFalling {
 
     @Unique
     private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.GRASS_PATH);
+
+    @Unique
+    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS_PATH),
+            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS_PATH);
 
     @Nonnull
     @Override
@@ -83,9 +91,33 @@ public class BlockGrassPathMixin extends Block implements IBlockSoil {
     }
 
     @Override
+    public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand) {
+        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        IBlockFalling.super.updateTick(worldIn, pos, state, rand);
+    }
+
+    @Override
     @Unique
     public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
         this.dropWaterWhenBroken(worldIn, pos, state);
+    }
+
+    @Inject(method = "neighborChanged",at =@At("TAIL"))
+    public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos,CallbackInfo ci) {
+        state = worldIn.getBlockState(pos);
+        if(state.getBlock() != this) return;
+        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+    }
+
+    @Override
+    public int tickRate(@Nonnull World worldIn) {
+        return 5;
+    }
+
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
     @Nonnull
@@ -116,6 +148,11 @@ public class BlockGrassPathMixin extends Block implements IBlockSoil {
     @Override
     @Unique
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.3;
+        return FLOW_IN_P;
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        return RAIN_IN_P;
     }
 }

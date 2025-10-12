@@ -30,17 +30,23 @@ package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.block.IBlockFalling;
+import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
@@ -54,10 +60,19 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 
 @Mixin(value = BlockDirt.class)
 public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
+    @Shadow @Final public static PropertyEnum<BlockDirt.DirtType> VARIANT;
     @Unique
     private static final int DIRT_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.DIRT),
     COAST_DIRT_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.COARSE_DIRT),
     PODZOL_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.PODZOL);
+
+    @Unique
+    private static final double DIRT_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.DIRT),
+    COAST_DIRT_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.COARSE_DIRT),
+    PODZOL_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.PODZOL),
+            DIRT_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.DIRT),
+    COAST_DIRT_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.COARSE_DIRT),
+    PODZOL_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.PODZOL);
     public BlockDirtMixin(Material materialIn) {
         super(materialIn);
     }
@@ -83,6 +98,11 @@ public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
     public void onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
         if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+    }
+
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
     @Override
@@ -153,6 +173,25 @@ public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
 
     @Override
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.3;
+        switch (state.getValue(VARIANT)){
+            case COARSE_DIRT:
+                return COAST_DIRT_FLOW_IN_P;
+            case PODZOL:
+                return PODZOL_FLOW_IN_P;
+            case DIRT:
+            default:return DIRT_FLOW_IN_P;
+        }
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        switch (state.getValue(VARIANT)){
+            case COARSE_DIRT:
+                return COAST_DIRT_RAIN_IN_P;
+            case PODZOL:
+                return PODZOL_RAIN_IN_P;
+            case DIRT:
+            default:return DIRT_RAIN_IN_P;
+        }
     }
 }

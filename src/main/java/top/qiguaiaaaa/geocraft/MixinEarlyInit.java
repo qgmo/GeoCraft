@@ -59,6 +59,8 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
         FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
         switch (mode){
             case VANILLA:{
+                if(FluidPhysicsConfig.ENABLE_MIXIN_FOR_WATER_EVAPORATE.getValue())
+                    mixinList.add("mixins/fluid_physics/vanilla/mixins.geocraft_vanilla.json");
                 break;
             }
             case VANILLA_LIKE:{

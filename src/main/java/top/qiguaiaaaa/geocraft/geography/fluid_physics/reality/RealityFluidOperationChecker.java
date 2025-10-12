@@ -25,23 +25,30 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.vanilla;
+package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality;
 
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
-import net.minecraftforge.fluids.IFluidBlock;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 
-@Mixin(value = BlockLiquid.class)
-public class BlockLiquidMixin {
-    @Inject(method = "getDepth",at =@At("HEAD"),cancellable = true)
-    private void getDepth(IBlockState state, CallbackInfoReturnable<Integer> cir) {
-        if(state.getBlock() instanceof IFluidBlock) {
-            cir.cancel();
-            cir.setReturnValue(-1);
+import javax.annotation.Nonnull;
+
+/**
+ * @author QiguaiAAAA
+ */
+public class RealityFluidOperationChecker implements IFluidOperationChecker {
+    @Override
+    public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+        if(state.getBlock() == Blocks.SNOW_LAYER) return false;
+        if(!FluidUtil.isFluid(state)){
+            return !BlockLiquidUpdater.isBlocked(state);
         }
+        if(FluidUtil.getFluid(state) != fluid) return false;
+        return !FluidUtil.isFullFluid(world,pos,state);
     }
 }

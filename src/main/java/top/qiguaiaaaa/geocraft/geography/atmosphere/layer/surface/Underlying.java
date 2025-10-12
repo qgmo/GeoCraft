@@ -93,15 +93,15 @@ public class Underlying extends UnderlyingLayer {
     }
 
     @Override
-    public double drawHeat(double quanta, @Nullable BlockPos pos) {
+    public double drainHeat(double quanta, @Nullable BlockPos pos) {
         if(pos != null){
             if(pos.getY()<=altitude.get()- 过渡距离) return quanta;
             else if(pos.getY()<altitude.get()){
                 double 修饰比 = (pos.getY()-altitude.get()+ 过渡距离)/ 过渡距离;
-                return super.drawHeat(quanta*修饰比,pos)/修饰比;
+                return super.drainHeat(quanta*修饰比,pos)/修饰比;
             }
         }
-        return super.drawHeat(quanta, pos);
+        return super.drainHeat(quanta, pos);
     }
 
     public void updateAltitude(Chunk chunk){
@@ -184,8 +184,8 @@ public class Underlying extends UnderlyingLayer {
     }
 
     @Override
-    public boolean isInitialise() {
-        return this.altitudeState.isInitialised() && super.isInitialise();
+    public boolean isLoaded() {
+        return this.altitudeState.isLoaded() && super.isLoaded();
     }
 
     @Override

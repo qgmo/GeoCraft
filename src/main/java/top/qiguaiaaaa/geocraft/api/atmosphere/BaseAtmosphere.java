@@ -31,6 +31,7 @@ import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.IAtmosphereTracker;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
 
 import javax.annotation.Nonnull;
@@ -54,7 +55,7 @@ public abstract class BaseAtmosphere implements Atmosphere{
         for(Layer layer:layers){
             layer.onLoad(chunk);
         }
-        for(AtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
             property.onAtmosphereInitialise(this,chunk);
         }
     }
@@ -65,7 +66,7 @@ public abstract class BaseAtmosphere implements Atmosphere{
         for(Layer layer:layers){
             layer.onLoadWithoutChunk();
         }
-        for(AtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
             property.onAtmosphereInitialise(this,null);
         }
     }
@@ -92,7 +93,7 @@ public abstract class BaseAtmosphere implements Atmosphere{
     @Override
     public boolean isLoaded(){
         for(Layer layer:layers){
-            if(!layer.isInitialise()) return false;
+            if(!layer.isLoaded()) return false;
         }
         return true;
     }

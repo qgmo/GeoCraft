@@ -35,6 +35,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
@@ -151,7 +152,8 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
 
     public boolean canFlowIntoWhenSnowLayer(@Nonnull IBlockState state,int quanta){
         if(state.getBlock() != Blocks.SNOW_LAYER) return true;
-        return state.getValue(BlockSnow.LAYERS)<quanta-1;
+        if(((IPermeableBlock)Blocks.SNOW_LAYER).isFull(state,FluidRegistry.WATER)) return false;
+        return ((IPermeableBlock)Blocks.SNOW_LAYER).getHeight(state, FluidRegistry.WATER)<(quanta-1)*IPermeableBlockLiquid.HEIGHT_PER_QUANTA;
     }
 
     /**

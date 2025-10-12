@@ -31,6 +31,9 @@ import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockGravel;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -54,6 +57,10 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 public class BlockGravelMixin extends BlockFalling implements IBlockSoil {
     @Unique
     private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.GRAVEL);
+
+    @Unique
+    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.GRAVEL),
+            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.GRAVEL);
 
     @Inject(method = "<init>",at = @At(value = "RETURN"))
     private void injectDefaultState(CallbackInfo ci) {
@@ -93,6 +100,11 @@ public class BlockGravelMixin extends BlockFalling implements IBlockSoil {
         dropWaterWhenBroken(worldIn, pos, state);
     }
 
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+    }
+
     @Nonnull
     @Override
     public BlockSoilType getType(@Nonnull IBlockState state) {
@@ -107,6 +119,11 @@ public class BlockGravelMixin extends BlockFalling implements IBlockSoil {
 
     @Override
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.9;
+        return FLOW_IN_P;
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        return RAIN_IN_P;
     }
 }

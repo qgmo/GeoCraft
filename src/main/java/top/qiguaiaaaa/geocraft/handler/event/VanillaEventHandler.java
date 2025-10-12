@@ -45,6 +45,7 @@ public final class VanillaEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void afterStaticWaterUpdate(StaticLiquidUpdateEvent.After event){
         if(event.getLiquid() != FluidRegistry.WATER) return;
+        if(!event.isRandomTick()) return;
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
         VanillaFluidPhysicsCore.evaporateWater(worldIn,pos, worldIn.rand);
@@ -57,6 +58,7 @@ public final class VanillaEventHandler {
         if (WaterUtil.canSnowAt(world,randPos, true)) {
             atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,randPos,false);
             event.setResult(Event.Result.ALLOW);
+            event.setSnowy(true);
             event.setState(Blocks.SNOW_LAYER.getDefaultState());
         }
     }

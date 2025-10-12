@@ -36,11 +36,17 @@ import javax.annotation.Nonnull;
  * 流体属性
  * @author QiguaiAAAA
  */
-public abstract class FluidProperty extends AtmosphereProperty {
+public abstract class FluidProperty extends AtmosphereProperty implements INumberProperty<Integer>{
     protected final Fluid fluid;
     public FluidProperty(@Nonnull Fluid gasFluid, boolean windEffect, boolean flowable) {
         super(windEffect, flowable);
         this.fluid = gasFluid;
+    }
+
+    @Nonnull
+    @Override
+    public Class<Integer> getNumberType() {
+        return Integer.TYPE;
     }
 
     @Nonnull

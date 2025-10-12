@@ -55,6 +55,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoBlockSetting;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
@@ -168,14 +169,14 @@ public class CommandAtmosphere extends ExtendedCommand {
         }
         return strings;
     }
-    protected static GeographyProperty getProperty(ResourceLocation location) throws CommandException {
-        GeographyProperty property= GeographyPropertyManager.getProperties().getValue(location);
+    protected static IGeographyProperty getProperty(ResourceLocation location) throws CommandException {
+        IGeographyProperty property= GeographyPropertyManager.getProperties().getValue(location);
         if(property == null){
             throw new CommandException("geocraft.command.atmosphere.property.not_found",location);
         }
         return property;
     }
-    protected static GeographyState getState(GeographyProperty property, Layer layer) throws CommandException {
+    protected static GeographyState getState(IGeographyProperty property, Layer layer) throws CommandException {
         GeographyState state = layer.getState(property);
         if(state == null){
             throw new CommandException("geocraft.command.atmosphere.property.null2",property.getRegistryName());
@@ -269,7 +270,7 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             ResourceLocation location = new ResourceLocation(args[0]);
-            GeographyProperty property= getProperty(location);
+            IGeographyProperty property= getProperty(location);
             GeographyState state = getState(property,layer);
             if(state instanceof FluidState){
                 FluidState gas = (FluidState) state;
@@ -442,7 +443,7 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             ResourceLocation location = new ResourceLocation(args[0]);
-            GeographyProperty property= getProperty(location);
+            IGeographyProperty property= getProperty(location);
             GeographyState state = getState(property,layer);
             if(state instanceof FluidState){
                 FluidState gas = (FluidState) state;
@@ -628,8 +629,8 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             if("property".equalsIgnoreCase(args[0])){
-                IForgeRegistry<GeographyProperty> registry = GeographyPropertyManager.getProperties();
-                for(GeographyProperty property:registry){
+                IForgeRegistry<IGeographyProperty> registry = GeographyPropertyManager.getProperties();
+                for(IGeographyProperty property:registry){
                     notifyCommandListener(sender,this,"geocraft.command.atmosphere.util.property",property.getRegistryName());
                 }
                 return;
@@ -713,7 +714,7 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             ResourceLocation location = new ResourceLocation(args[0]);
-            GeographyProperty property= getProperty(location);
+            IGeographyProperty property= getProperty(location);
             if(property instanceof FluidProperty){
                 InformationLoggingTracker tracker = createFluidTracker(atmosphere,fileName, GeoCraft.getLogger(),(FluidProperty) property,new BlockPos(x,y,z),time);
                 notifyCommandListener(sender,this,"geocraft.command.atmosphere.track.gas",x,y,z,tracker.getId(),property.getRegistryName());

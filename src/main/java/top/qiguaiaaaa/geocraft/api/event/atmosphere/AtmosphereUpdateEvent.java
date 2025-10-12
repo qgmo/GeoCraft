@@ -66,6 +66,8 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
         private final double rainPossibility;
         private IBlockState newState;
 
+        private boolean isSnowy = false;
+
         /**
          * 创建一个雨雪事件
          * @param chunk 发生的区块
@@ -124,6 +126,14 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
         public World getWorld() {
             assert super.getWorld() != null;
             return super.getWorld();
+        }
+
+        public void setSnowy(boolean snowy) {
+            isSnowy = snowy;
+        }
+
+        public boolean isSnowy() {
+            return isSnowy;
         }
     }
 

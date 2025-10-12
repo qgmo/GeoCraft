@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.util;
 
 
+import net.minecraftforge.fml.common.Loader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
@@ -53,5 +54,13 @@ public final class APIUtil {
             return "?.?(?:?)";
         StackTraceElement element = stackTrace[who+2];
         return element.getClassName()+'.'+element.getMethodName()+'('+element.getFileName()+':'+element.getLineNumber()+')';
+    }
+
+    public static class Constants{
+        public static final String FLUIDLOGGED_API = "fluidlogged_api";
+    }
+
+    public static class ModChecker{
+        public static final boolean FLUIDLOGGED_API = Loader.isModLoaded(APIUtil.Constants.FLUIDLOGGED_API);
     }
 }

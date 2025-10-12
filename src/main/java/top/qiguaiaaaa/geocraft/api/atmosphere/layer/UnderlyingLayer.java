@@ -28,11 +28,9 @@
 package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
 
 import net.minecraft.world.chunk.Chunk;
-import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
-import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 
 import javax.annotation.Nonnull;
@@ -104,8 +102,8 @@ public abstract class UnderlyingLayer extends BaseLayer{
     @Override
     public void onLoadWithoutChunk() {
         for(GeographyState state:states.values())
-            if(!state.isInitialised())
-                state.initialise(this);
+            if(!state.isLoaded())
+                state.load(this);
     }
 
     /**
@@ -113,8 +111,8 @@ public abstract class UnderlyingLayer extends BaseLayer{
      * @return {@inheritDoc}
      */
     @Override
-    public boolean isInitialise() {
-        return heatCapacity > 0 && super.isInitialise();
+    public boolean isLoaded() {
+        return heatCapacity > 0 && super.isLoaded();
     }
 
     /**

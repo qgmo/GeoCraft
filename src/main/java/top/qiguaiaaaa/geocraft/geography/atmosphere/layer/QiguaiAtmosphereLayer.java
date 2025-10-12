@@ -39,6 +39,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.BaseAtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
@@ -110,7 +111,7 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
      */
     public Vec3d 计算水平风速分量(Atmosphere to, EnumFacing dir){
         Vec3d wind = Vec3d.ZERO;
-        for(AtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
             wind= wind.add(property.getWind(this,to,dir));
         }
         return wind;
@@ -150,7 +151,7 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
         //能量平流
         热量平流(neighbor.getLeft(),neighbor.getRight());
         //物质和其他属性平流
-        for(AtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
             property.onFlow(this,chunk,neighbor.getLeft(),neighbor.getMiddle(),neighbor.getRight(),winds.get(neighbor.getRight()));
         }
     }
@@ -177,8 +178,8 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
     @Override
     public void onLoadWithoutChunk() {
         for(GeographyState state:states.values())
-            if(!state.isInitialised())
-                state.initialise(this);
+            if(!state.isLoaded())
+                state.load(this);
     }
 
     @Override

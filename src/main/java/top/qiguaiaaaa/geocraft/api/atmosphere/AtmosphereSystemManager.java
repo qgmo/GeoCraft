@@ -84,24 +84,6 @@ public final class AtmosphereSystemManager {
         return system.getAtmosphere(pos);
     }
 
-    /**
-     * 获取指定区块的大气
-     * @param chunk 区块
-     * @return 如果大气不存在或未初始化，则返回null。正常情况下返回大气。
-     */
-    @Nullable
-    public static Atmosphere getAtmosphere(@Nonnull Chunk chunk){
-        IAtmosphereSystem system = getAtmosphereSystem(chunk.getWorld());
-        if(system == null) return null;
-        return system.getAtmosphere(chunk);
-    }
-    @Nullable
-    public static Atmosphere getAtmosphere(@Nonnull World world,@Nonnull ChunkPos pos){
-        IAtmosphereSystem system = getAtmosphereSystem(world);
-        if(system == null) return null;
-        return system.getAtmosphere(pos.x,pos.z);
-    }
-
     @Nullable
     static WorldServer getValidWorld(@Nonnull World world){
         if(world.isRemote || (!(world instanceof WorldServer))) return null;

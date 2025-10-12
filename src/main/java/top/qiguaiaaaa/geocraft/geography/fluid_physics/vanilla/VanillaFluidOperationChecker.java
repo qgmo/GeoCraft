@@ -25,11 +25,27 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.property;
+package top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla;
+
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+
+import javax.annotation.Nonnull;
 
 /**
- * 下垫面属性
  * @author QiguaiAAAA
  */
-public abstract class UnderlyingProperty extends GeographyProperty{
+public class VanillaFluidOperationChecker implements IFluidOperationChecker {
+    @Override
+    public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+        if(!FluidUtil.isFluid(state)){
+            return !BlockLiquidUpdater.isBlocked(state);
+        }
+        if(FluidUtil.getFluid(state) != fluid) return false;
+        return !FluidUtil.isFullFluid(world,pos,state);
+    }
 }

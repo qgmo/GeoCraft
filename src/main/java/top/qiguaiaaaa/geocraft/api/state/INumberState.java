@@ -25,45 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math;
+package top.qiguaiaaaa.geocraft.api.state;
+
+import top.qiguaiaaaa.geocraft.api.property.INumberProperty;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public final class Int21 {
-    public static final int SIGN_MASK = 0x100000;
-    public static final int CONTENT_MASK = 0xFFFFF;
-    public static final long ALL_MASK = 0x1FFFFF;
-    private final int val;
+public interface INumberState<T extends Number> extends GeographyState{
 
-    public Int21(int v){
-        val = (int) toInt21(v);
+    default byte getByte(){
+        return (byte) getInt();
     }
 
-    public Int21(short v){
-        val = (int) toInt21(v);
+    default short getShort(){
+        return (short) getInt();
     }
 
-    public Int21(byte v){
-        val = (int) toInt21(v);
+    int getInt();
+
+    default long getLong(){
+        return getInt();
     }
 
-    public static long toInt21(byte v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
+    double getDouble();
+
+    default float getFloat(){
+        return (float) getDouble();
     }
 
-    public static long toInt21(short v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
-    }
-
-    public static long toInt21(int v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
-    }
-
-    public static int toInt(long int21){
-        return (int) ((SIGN_MASK&int21)==0?int21:-(int21&CONTENT_MASK));
-    }
+    @Nonnull
+    @Override
+    INumberProperty<T> getProperty();
 }

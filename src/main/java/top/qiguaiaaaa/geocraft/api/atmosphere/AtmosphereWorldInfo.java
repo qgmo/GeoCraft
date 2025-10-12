@@ -52,6 +52,7 @@ public class AtmosphereWorldInfo {
      * 下雨概率的平滑值,用于{@link top.qiguaiaaaa.geocraft.util.WaterUtil#getRainPossibility(IAtmosphereAccessor)}
      */
     protected int rainSmoothingConstant = 4096;
+
     /**
      * 水汽交换率,用于{@link top.qiguaiaaaa.geocraft.util.WaterUtil#getWaterEvaporateAmount(IAtmosphereAccessor)}
      */

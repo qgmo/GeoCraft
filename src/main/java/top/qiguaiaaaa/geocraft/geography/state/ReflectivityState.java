@@ -32,20 +32,31 @@ import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagDouble;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+import top.qiguaiaaaa.geocraft.api.state.INumberState;
 import top.qiguaiaaaa.geocraft.geography.property.ReflectivityProperty;
 
 import javax.annotation.Nonnull;
 
-public class ReflectivityState implements GeographyState {
+public class ReflectivityState implements INumberState<Double> {
     public double reflectivity = 0.08;
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return true;
+    }
+
+    @Override
+    public int getInt() {
+        return 0;
+    }
+
+    @Override
+    public double getDouble() {
+        return 0;
     }
 
     @Nonnull
     @Override
-    public GeographyProperty getProperty() {
+    public ReflectivityProperty getProperty() {
         return ReflectivityProperty.REFLECTIVITY;
     }
 

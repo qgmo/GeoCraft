@@ -36,7 +36,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
 import java.util.Arrays;
 import java.util.Collections;

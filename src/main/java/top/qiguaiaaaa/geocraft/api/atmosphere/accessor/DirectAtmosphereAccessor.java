@@ -101,7 +101,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return 0;
         if(layer instanceof AtmosphereLayer){
-            return layer.drawHeat(amount,pos);
+            return layer.drainHeat(amount,pos);
         }
         data.getAtmosphere().putHeat(-amount,pos);
         return amount;
@@ -111,7 +111,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     public double drawHeatFromUnderlying(double amount) {
         checkAtmosphereDataLoaded();
         UnderlyingLayer underlying = data.getAtmosphere().getUnderlying();
-        return underlying.drawHeat(amount,pos);
+        return underlying.drainHeat(amount,pos);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
         checkAtmosphereDataLoaded();
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return 0;
-        return layer.drawHeat(amount,pos);
+        return layer.drainHeat(amount,pos);
     }
 
     @Override

@@ -41,7 +41,8 @@ public enum BlockSoilType {
     GRASS_PATH("grass_path"),
     SAND("sand"),
     GRAVEL("gravel"),
-    FARMLAND("farmland");
+    FARMLAND("farmland"),
+    CLAY("clay");
     public final String configName;
 
     BlockSoilType(String configName) {

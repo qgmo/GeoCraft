@@ -33,9 +33,11 @@ import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
+import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
+import top.qiguaiaaaa.geocraft.command.CommandQueryBlockState;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
@@ -46,7 +48,7 @@ import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
-    public static final String VERSION = "0.1";
+    public static final String VERSION = GeoCraftAPI.VERSION;
     @SidedProxy(clientSide = "top.qiguaiaaaa.geocraft.ClientProxy",serverSide = "top.qiguaiaaaa.geocraft.CommonProxy")
     private static CommonProxy proxy;
     private static Logger logger;
@@ -68,6 +70,7 @@ public class GeoCraft {
     @EventHandler
     public void onServerStarting(FMLServerStartingEvent event){
         event.registerServerCommand(new CommandAtmosphere());
+//        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();
         }else{

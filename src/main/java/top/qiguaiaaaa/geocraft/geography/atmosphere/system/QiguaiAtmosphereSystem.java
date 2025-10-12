@@ -36,6 +36,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
@@ -171,7 +172,7 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
             IPermeableBlock block = (IPermeableBlock) state.getBlock();
             Fluid fluidToFill = FluidRegistry.WATER;
             if(accessor.getTemperature(false)<= TemperatureProperty.ICE_POINT) fluidToFill = GeoFluids.SNOW;
-            if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,null)){
+            if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,Blocks.AIR.getDefaultState())){
                 int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
                 if(drained>=FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME){
                     atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
@@ -198,7 +199,7 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
 
         if(!isRaining || !doRain) return;
 
-        IBlockState newState = EventFactory.onAtmosphereRainAndSnow(chunk,atmosphere,randPos,rainPossibility);
+        IBlockState newState = EventFactory.onAtmosphereRainAndSnow(chunk,getAccessor(data,randPos,false),atmosphere,randPos,rainPossibility);
         if(newState != null){
             world.setBlockState(randPos,newState);
             return;

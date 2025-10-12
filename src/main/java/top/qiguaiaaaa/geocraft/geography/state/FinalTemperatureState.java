@@ -45,17 +45,17 @@ public class FinalTemperatureState extends TemperatureState {
     public void addHeat(double Q, double heatCapacity) {}
 
     @Override
-    public boolean toBeSavedIntoNBT() {
+    public boolean canSerialize() {
         return false;
     }
 
     @Override
-    public boolean toBeLoadedFromNBT() {
+    public boolean canDeserialize() {
         return false;
     }
 
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return true;
     }
 

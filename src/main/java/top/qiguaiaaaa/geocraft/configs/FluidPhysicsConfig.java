@@ -46,8 +46,8 @@ import top.qiguaiaaaa.geocraft.api.configs.item.collection.list.ConfigList;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.exception.ConfigParseError;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.util.math.Int10;
-import top.qiguaiaaaa.geocraft.util.math.Int21;
+import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
 
 import javax.annotation.Nonnull;
 
@@ -217,6 +217,17 @@ public final class FluidPhysicsConfig {
             "压强系统暂停运行的最长时间，单位为毫秒。将此值设置为0则允许压强系统一直等待下去，直到被其他线程唤醒。\n" +
                     "Max pause time for the pressure system (ms). A value of 0 means it will wait indefinitely until another thread resumes it.");
 
+    // *******************************
+    // Vanilla Config
+    // *******************************
+
+    public static final ConfigCategory CATEGORY_FLUID_PHYSICS_VANILLA = CATEGORY_FLUID_PHYSICS.getChildCategory("vanilla")
+            .setComment("设置流体物理模式为"+FluidPhysicsMode.VANILLA+"时的参数\n" +
+                    "Parameters when fluid physics mode is set to " + FluidPhysicsMode.VANILLA);
+
+    @Config.RequiresMcRestart
+    public static final ConfigBoolean ENABLE_MIXIN_FOR_WATER_EVAPORATE = new ConfigBoolean(CATEGORY_FLUID_PHYSICS_VANILLA,
+            "enableMixinForWaterEvaporation",true,"启用为实现水蒸发而进行的Mixin操作.关闭后水将无法蒸发.",true);
 
     // *******************************
     // Vanilla Like Fluid Physics Config

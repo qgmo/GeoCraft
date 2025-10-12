@@ -88,9 +88,9 @@ public final class WaterUtil {
     public static double getFreezePossibility(IAtmosphereAccessor accessor) {
         double temp = accessor.getTemperature();
         if(temp>= TemperatureProperty.ICE_POINT) return 0;
-        if(temp< TemperatureProperty.ICE_POINT-100) return 1;
+        if(temp< TemperatureProperty.ICE_POINT-20) return 1;
         double diff = TemperatureProperty.ICE_POINT-temp;
-        return (diff/100)*0.94f+0.06f;
+        return (diff/20)*0.94f+0.06f;
     }
 
     /**

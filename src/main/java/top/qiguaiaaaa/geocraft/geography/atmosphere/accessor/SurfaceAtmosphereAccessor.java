@@ -99,10 +99,10 @@ public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
         return drawAtmosphereProperty((dir,atmosphere)->{
             UnderlyingLayer underlying = atmosphere.getUnderlying();
             if(pos.getY()>underlying.getAltitude().get()){
-                return atmosphere.getUnderlying().drawHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
+                return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
             }
             double modifiedY = skyLight==0?pos.getY():skyLight/15d*Underlying.过渡距离+underlying.getAltitude().get()-Underlying.过渡距离;
-            return atmosphere.getUnderlying().drawHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
+            return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
         });
     }
 }

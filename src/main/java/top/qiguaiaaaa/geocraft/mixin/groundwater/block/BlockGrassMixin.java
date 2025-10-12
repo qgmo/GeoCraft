@@ -32,7 +32,10 @@ import net.minecraft.block.BlockGrass;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -42,7 +45,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.block.IBlockFalling;
+import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
@@ -57,6 +60,11 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling {
     @Unique
     private static final int STABLE_HUMIDITY  = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.GRASS);
+
+    @Unique
+    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS),
+            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS);
+
     @Unique
     private final ThreadLocal<Boolean> isRandomTick = ThreadLocal.withInitial(()-> Boolean.FALSE);
     public BlockGrassMixin(Material materialIn) {
@@ -120,6 +128,11 @@ public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling 
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
 
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+    }
+
     @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
     public void updateTick_CheckFalling(World world,BlockPos pos,IBlockState state,Random rand,CallbackInfo ci){
         if(isRandomTick.get()) return;
@@ -161,6 +174,11 @@ public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling 
 
     @Override
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.2;
+        return FLOW_IN_P;
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        return RAIN_IN_P;
     }
 }

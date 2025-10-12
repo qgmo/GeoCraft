@@ -32,20 +32,38 @@ import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagLong;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.INumberProperty;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+import top.qiguaiaaaa.geocraft.api.state.INumberState;
+import top.qiguaiaaaa.geocraft.geography.property.HeatCapacity;
 
 import javax.annotation.Nonnull;
 
-public class HeatCapacityState implements GeographyState {
+public class HeatCapacityState implements INumberState<Long> {
     public long heatCapacity = (long) 1e8;
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return true;
+    }
+
+    @Override
+    public int getInt() {
+        return (int) heatCapacity;
+    }
+
+    @Override
+    public long getLong() {
+        return heatCapacity;
+    }
+
+    @Override
+    public double getDouble() {
+        return heatCapacity;
     }
 
     @Nonnull
     @Override
-    public GeographyProperty getProperty() {
+    public INumberProperty<Long> getProperty() {
         return GeoCraftProperties.HEAT_CAPACITY;
     }
 

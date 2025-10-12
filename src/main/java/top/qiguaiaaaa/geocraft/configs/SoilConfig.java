@@ -88,8 +88,8 @@ public final class SoilConfig {
             "Biomes for which soil-related world generation features should be disabled.",ConfigurableBiome::new);
 
     public static final ConfigBoolean ENABLE_PRE_PROTECTION_OF_WATER_FALLING = new ConfigBoolean(CATEGORY_SOIL_GENERATION,
-            "enablePreProtectionFromWaterFalling",true,
-            "开启水下落的预保护机制，通过在区块生成的时候检测竖直方向上可能被水流入的地方，并自动生成方块阻止水流动，以一定程度上避免诸如海洋生物群系在一生成就漏海的情况。\n" +
+            "enablePreProtectionFromWaterFalling",false,
+            "开启水下落的预保护机制，通过在区块生成的时候检测竖直方向上可能被水流入的地方，并自动生成方块阻止水流动，以一定程度上避免诸如海洋生物群系在一生成就漏海的情况。但导致阻止水下落的方块可能在奇怪的地方出现，强迫症不建议开启。\n" +
                     "Enable the pre-protection mechanism for water flow by detecting areas vertically susceptible to water inflow during chunk generation and automatically generating blocks to prevent water movement. " +
                     "This helps mitigate issues such as water leakage in ocean biomes immediately after generation.");
 
@@ -110,7 +110,7 @@ public final class SoilConfig {
 
     @Config.RequiresMcRestart
     public static final ConfigMap<BlockSoilType,Integer> STABLE_HUMIDITY = new ConfigMap<>(CATEGORY_SOIL_WATER,
-            "stableHumidityValues","各种土壤的稳定态湿度值",BlockSoilType::getInstanceByString,Integer::parseInt,
+            "stableHumidityValues","各种土壤的最大持水量",BlockSoilType::getInstanceByString,Integer::parseInt,
             new ConfigEntry<>(BlockSoilType.DIRT,2),
             new ConfigEntry<>(BlockSoilType.COARSE_DIRT,1),
             new ConfigEntry<>(BlockSoilType.PODZOL,1),
@@ -118,9 +118,44 @@ public final class SoilConfig {
             new ConfigEntry<>(BlockSoilType.GRASS_PATH,3),
             new ConfigEntry<>(BlockSoilType.SAND,1),
             new ConfigEntry<>(BlockSoilType.GRAVEL,0),
-            new ConfigEntry<>(BlockSoilType.FARMLAND,1))
+            new ConfigEntry<>(BlockSoilType.FARMLAND,1),
+            new ConfigEntry<>(BlockSoilType.CLAY,4))
             .setKeyFixed(true)
             .setKeyClass(BlockSoilType.class)
             .setValueClass(Integer.class)
-            .setValueComment("土壤的最大稳定湿度值。超过该湿度值时，土壤中的水分将有流动的趋势。这还会使得土壤受重力影响而下落。");
+            .setValueComment("土壤的最大持水量。含水量超过该值时，土壤中的水分将有流动的趋势。这还会使得部分种类的土壤受重力影响而下落。");
+
+    @Config.RequiresMcRestart
+    public static final ConfigMap<BlockSoilType,Double> FLOW_IN_POSSIBILITY = new ConfigMap<>(CATEGORY_SOIL_WATER,
+            "possibilityForCurrentsToInfiltrate","地表径流在一次下渗尝试中下渗到指定土壤类型的概率",BlockSoilType::getInstanceByString,Double::parseDouble,
+            new ConfigEntry<>(BlockSoilType.DIRT,0.3),
+            new ConfigEntry<>(BlockSoilType.COARSE_DIRT,0.4),
+            new ConfigEntry<>(BlockSoilType.PODZOL,0.4),
+            new ConfigEntry<>(BlockSoilType.GRASS,0.5),
+            new ConfigEntry<>(BlockSoilType.GRASS_PATH,0.4),
+            new ConfigEntry<>(BlockSoilType.SAND,0.7),
+            new ConfigEntry<>(BlockSoilType.GRAVEL,0.9),
+            new ConfigEntry<>(BlockSoilType.FARMLAND,0.5),
+            new ConfigEntry<>(BlockSoilType.CLAY,0.1))
+            .setKeyFixed(true)
+            .setKeyClass(BlockSoilType.class)
+            .setValueClass(Double.class)
+            .setValueComment("一个概率,取值范围[0,1]。");
+
+    @Config.RequiresMcRestart
+    public static final ConfigMap<BlockSoilType,Double> RAIN_IN_POSSIBILITY = new ConfigMap<>(CATEGORY_SOIL_WATER,
+            "possibilityForRainToInfiltrate","大气降雨在一次下渗尝试中下渗到指定土壤类型的概率",BlockSoilType::getInstanceByString,Double::parseDouble,
+            new ConfigEntry<>(BlockSoilType.DIRT,1d),
+            new ConfigEntry<>(BlockSoilType.COARSE_DIRT,1d),
+            new ConfigEntry<>(BlockSoilType.PODZOL,1d),
+            new ConfigEntry<>(BlockSoilType.GRASS,1d),
+            new ConfigEntry<>(BlockSoilType.GRASS_PATH,1d),
+            new ConfigEntry<>(BlockSoilType.SAND,1d),
+            new ConfigEntry<>(BlockSoilType.GRAVEL,1d),
+            new ConfigEntry<>(BlockSoilType.FARMLAND,1d),
+            new ConfigEntry<>(BlockSoilType.CLAY,0.5))
+            .setKeyFixed(true)
+            .setKeyClass(BlockSoilType.class)
+            .setValueClass(Double.class)
+            .setValueComment("一个概率,取值范围[0,1]。");
 }

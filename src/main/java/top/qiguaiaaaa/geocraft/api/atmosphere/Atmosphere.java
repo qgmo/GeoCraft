@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.atmosphere;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
@@ -128,7 +129,7 @@ public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
      * 向大气提供或从大气吸收热量,不会操作也不应该操作到下垫面
      * 若要操作下垫面,应先使用 {@link Atmosphere#getUnderlying()} 获取到下垫面再操作
      * 一般情况下请使用{@link IAtmosphereAccessor}
-     * @param Q 提供或吸收的热量。正为提供，负为吸收。
+     * @param Q 提供或吸收的热量。正为提供，负为吸收。单位为FE.
      * @param pos 提供者或吸收着的位置
      */
     void putHeat(double Q, BlockPos pos);
@@ -169,6 +170,7 @@ public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
      * 获取大气世界信息<br/>
      * 请不要在{@link #isLoaded()}为false的情况下使用该方法
      * @return 大气世界信息
+     * @throws NullPointerException 在错误的时候调用此方法可能出现
      */
     @Nonnull
     AtmosphereWorldInfo getAtmosphereWorldInfo();
@@ -226,4 +228,14 @@ public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
      * @return 表示云量的值
      */
     double getCloudExponent();
+
+    /**
+     * 处理水平方向上相邻大气的某个Layer流入该大气的时候的情况
+     * @param atmosphere 相邻大气
+     * @param layer 流入的层级
+     * @param facing 流入的来向
+     * @param windSpeed 流入的速度
+     */
+    default void onLayerFlowIn(@Nonnull Atmosphere atmosphere, @Nonnull Layer layer, @Nonnull EnumFacing facing,double windSpeed){
+    }
 }

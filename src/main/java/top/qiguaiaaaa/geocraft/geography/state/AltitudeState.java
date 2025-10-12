@@ -32,13 +32,15 @@ import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagDouble;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.INumberProperty;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+import top.qiguaiaaaa.geocraft.api.state.INumberState;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 import top.qiguaiaaaa.geocraft.geography.property.AltitudeProperty;
 
 import javax.annotation.Nonnull;
 
-public class AltitudeState implements GeographyState {
+public class AltitudeState implements INumberState<Double> {
     public final Altitude altitude;
 
     public AltitudeState(Altitude altitude){
@@ -46,13 +48,23 @@ public class AltitudeState implements GeographyState {
     }
 
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return this.altitude.get()> AltitudeProperty.UNAVAILABLE+1;
+    }
+
+    @Override
+    public int getInt() {
+        return (int) altitude.get();
+    }
+
+    @Override
+    public double getDouble() {
+        return altitude.get();
     }
 
     @Nonnull
     @Override
-    public GeographyProperty getProperty() {
+    public INumberProperty<Double> getProperty() {
         return GeoCraftProperties.ALTITUDE;
     }
 

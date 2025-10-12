@@ -35,12 +35,18 @@ import javax.annotation.Nonnull;
  * 温度属性
  * @author QiguaiAAAA
  */
-public abstract class TemperatureProperty extends GeographyProperty {
+public abstract class TemperatureProperty extends GeographyProperty implements INumberProperty<Float>{
     public static final int BOILED_POINT = 373;
     public static final int ICE_POINT = 273;
     public static final int STANDARD_TEMP = 298;
     public static final int MIN = 3;
     public static final int UNAVAILABLE = -100;
+
+    @Nonnull
+    @Override
+    public Class<Float> getNumberType() {
+        return Float.TYPE;
+    }
 
     @Nonnull
     @Override

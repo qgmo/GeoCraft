@@ -49,6 +49,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
@@ -59,12 +60,15 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
+import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableFluid;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnFluidEvent;
+import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
@@ -109,7 +113,7 @@ public final class MoreRealityEventHandler {
 
             FluidStack stack = FluidOperationUtil.tryDrainFluid(worldIn,pos, Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),false);
             if(stack == null) return;
-            if((allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB.getValue() || playerIn.capabilities.isCreativeMode) && stack.amount>0){
+            if(playerIn.capabilities.isCreativeMode || (allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB.getValue() && stack.amount>0 && stack.amount<Fluid.BUCKET_VOLUME)){
                 FluidOperationUtil.tryDrainFluid(worldIn,pos,Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),true);
                 playerIn.playSound(SoundEvents.ITEM_BUCKET_FILL, 1.0F, 1.0F);
                 return;
@@ -334,28 +338,41 @@ public final class MoreRealityEventHandler {
         if(event.getLiquid() != FluidRegistry.WATER) return;
         IBlockState state = event.getState();
         World worldIn = event.getWorld();
-        if(!event.isRandomTick()){
-            if(ServerStatusMonitor.isServerCloselyLagging()) return;
-            if(worldIn.rand.nextInt(200) >0) return; //因为压强计算频繁更新，需要降低概率
-        }
         BlockPos pos = event.getPos();
-        int oldMeta = state.getValue(LEVEL);
-        state = MoreRealityFluidPhysicsCore.evaporateWater(worldIn,pos,state,worldIn.rand);
-        if(state == null){
-            event.setResult(Event.Result.ALLOW);
-            event.setNewState(Blocks.AIR.getDefaultState());
-            return;
-        } else if(state.getValue(LEVEL) != oldMeta){
-            event.setResult(Event.Result.ALLOW);
-            event.setNewState(state);
-            return;
-        }
-        IBlockState newState = MoreRealityFluidPhysicsCore.freezeWater(worldIn,pos,state,worldIn.rand);
+
+        int light = worldIn.getLightFor(EnumSkyBlock.SKY,pos);
+        if(light <= 0) return;
+        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(worldIn,pos,true);
+        if(accessor == null) return;
+        accessor.setSkyLight(light);
+
+        //先尝试结冰
+        IBlockState newState = MoreRealityFluidPhysicsCore.freezeWater(worldIn,pos,state,worldIn.rand,accessor);
         if(newState != state){
             event.setResult(Event.Result.ALLOW);
             event.setNewState(newState);
+            return;
+        }
+
+        if(accessor.getTemperature() < TemperatureProperty.BOILED_POINT+20 && !event.isRandomTick()){
+            if(ServerStatusMonitor.isServerCloselyLagging()) return;
+            if(worldIn.rand.nextInt(200) >0) return; //因为压强计算频繁更新，需要降低概率
+        }
+
+        Atmosphere atmosphere = accessor.getAtmosphereHere();
+        if(atmosphere == null) return;
+
+        int oldMeta = state.getValue(LEVEL);
+        state = MoreRealityFluidPhysicsCore.evaporateWater(worldIn,pos,state,worldIn.rand,accessor,atmosphere);
+        if(state == null){
+            event.setResult(Event.Result.ALLOW);
+            event.setNewState(Blocks.AIR.getDefaultState());
+        } else if(state.getValue(LEVEL) != oldMeta){
+            event.setResult(Event.Result.ALLOW);
+            event.setNewState(state);
         }
     }
+
     @SubscribeEvent
     public void onAtmosphereRainAndSnow(AtmosphereUpdateEvent.RainAndSnow event){
         Atmosphere atmosphere = event.getAtmosphere();
@@ -364,6 +381,7 @@ public final class MoreRealityEventHandler {
         if (WaterUtil.canSnowAt(world,randPos, true)) {
             atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,randPos,false);
             event.setResult(Event.Result.ALLOW);
+            event.setSnowy(true);
             event.setState(Blocks.SNOW_LAYER.getDefaultState());
         }else if(MoreRealityFluidPhysicsCore.canRainAt(world,randPos)){
             atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,randPos,false);

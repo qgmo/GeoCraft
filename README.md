@@ -14,6 +14,8 @@
 
 另外，模组拥有高度可配置的配置文件，并提供了功能丰富的API，供其他第三方模组实现更多更好的功能。
 
+<a target="_blank" href="https://www.mcmod.cn/class/22470.html" rel="mcmod"><img src="https://raw.githubusercontent.com/KessokuTeaTime/Badges-Extra/refs/heads/main/assets/cozy/available/mcmodcn_64h.png" alt="go to download GeoCraft on mcmod.cn. 在 MC百科 上下载 天圆地方。" width="170" height="55"/></a>
+
 ## 流体物理
 
 模组对原版流体系统进行了大改。并提供了两种流体物理实现方式。对于默认实现方式（MORE_REALITY）：

@@ -45,7 +45,7 @@ import javax.annotation.Nullable;
  * 流体状态
  * @author QiguaiAAAA
  */
-public abstract class FluidState implements GeographyState, IFluidHandler {
+public abstract class FluidState implements INumberState<Integer>, IFluidHandler {
     protected final Fluid fluid;
     protected int amount;
     public FluidState(@Nonnull Fluid fluid, int amount){
@@ -69,12 +69,12 @@ public abstract class FluidState implements GeographyState, IFluidHandler {
     }
 
     @Override
-    public void initialise(@Nonnull Layer layer) {
+    public void load(@Nonnull Layer layer) {
         this.amount = 0;
     }
 
     @Override
-    public boolean isInitialised() {
+    public boolean isLoaded() {
         return amount>=0;
     }
 
@@ -156,5 +156,20 @@ public abstract class FluidState implements GeographyState, IFluidHandler {
         public boolean canDrainFluidType(@Nonnull FluidStack fluidStack) {
             return fluidStack.getFluid() == fluid;
         }
+    }
+
+    //***************
+    // INumberState
+    //***************
+
+
+    @Override
+    public int getInt() {
+        return amount;
+    }
+
+    @Override
+    public double getDouble() {
+        return amount;
     }
 }

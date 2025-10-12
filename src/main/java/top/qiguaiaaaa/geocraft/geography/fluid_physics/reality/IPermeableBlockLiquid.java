@@ -61,7 +61,7 @@ public interface IPermeableBlockLiquid extends IPermeableBlock {
 
     @Nonnull
     @Override
-    default Set<Fluid> getFluid(@Nonnull IBlockState state){
+    default Set<Fluid> getAcceptedFluids(@Nonnull IBlockState state){
         if(getFluid() == FluidRegistry.WATER) return GeoFluids.FluidSets.SNOW_LAYER_SET;
         else return GeoFluids.FluidSets.LAVA_SET;
     }
@@ -153,12 +153,6 @@ public interface IPermeableBlockLiquid extends IPermeableBlock {
         if(fluid != getFluid()) return null;
         if(quanta <= 0) return Blocks.AIR.getDefaultState();
         return state.withProperty(LEVEL,Math.max(8-quanta,0));
-    }
-
-    @Override
-    default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source){
-        if(state.getValue(LEVEL) == 0) return false;
-        return fluid == getFluid() || (fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER);
     }
 
     @Override

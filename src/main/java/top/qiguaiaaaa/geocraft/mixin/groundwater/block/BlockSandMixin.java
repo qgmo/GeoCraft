@@ -32,6 +32,9 @@ import net.minecraft.block.BlockSand;
 import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
@@ -57,6 +60,9 @@ public class BlockSandMixin extends BlockFalling implements IBlockSoil {
 
     @Unique
     private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.SAND);
+    @Unique
+    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.SAND),
+            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.SAND);
 
     @Inject(method = "<init>",at = @At(value = "RETURN"))
     private void injectDefaultState(CallbackInfo ci) {
@@ -91,6 +97,11 @@ public class BlockSandMixin extends BlockFalling implements IBlockSoil {
         dropWaterWhenBroken(worldIn, pos, state);
     }
 
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+    }
+
     @Nonnull
     @Override
     public BlockSoilType getType(@Nonnull IBlockState state) {
@@ -104,7 +115,12 @@ public class BlockSandMixin extends BlockFalling implements IBlockSoil {
 
     @Override
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.7;
+        return FLOW_IN_P;
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        return RAIN_IN_P;
     }
 
     @Override

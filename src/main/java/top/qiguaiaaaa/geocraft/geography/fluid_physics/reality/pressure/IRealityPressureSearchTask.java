@@ -28,8 +28,8 @@
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure;
 
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTask;
-import top.qiguaiaaaa.geocraft.util.math.Int10;
-import top.qiguaiaaaa.geocraft.util.math.Int21;
+import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
 
 /**
  * @author QiguaiAAAA

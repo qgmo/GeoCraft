@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.block;
+package top.qiguaiaaaa.geocraft.api.block;
 
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.state.IBlockState;
@@ -34,16 +34,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import top.qiguaiaaaa.geocraft.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
 import javax.annotation.Nonnull;
 
 import java.util.Random;
 
-import static top.qiguaiaaaa.geocraft.util.math.MathUtil.centerPos;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.VecUtil.centerPos;
 
 /**
- * 参考自{@link BlockFalling}的实现
+ * 参考自{@link BlockFalling}的实现<br/>
+ * @see top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockMixin
  * @author QiguaiAAAA
  */
 public interface IBlockFalling {
@@ -58,8 +59,14 @@ public interface IBlockFalling {
         }
     }
 
-    default void checkAndFall(@Nonnull World world,@Nonnull BlockPos pos) {
-        if (!canFall(world, pos.down())) return;
+    /**
+     * 是否成功下落
+     * @param world 世界
+     * @param pos 位置
+     * @return 若成功,则返回true
+     */
+    default boolean checkAndFall(@Nonnull World world,@Nonnull BlockPos pos) {
+        if (!canFall(world, pos.down())) return false;
         final int checkRange = 32;
 
         if (!isFallInstantly() && world.isAreaLoaded(pos.add(-checkRange, -checkRange, -checkRange), pos.add(checkRange, checkRange, checkRange))) {
@@ -69,7 +76,7 @@ public interface IBlockFalling {
                 this.onStartFalling(fallingBlock);
                 world.spawnEntity(fallingBlock);
             }
-            return;
+            return true;
         }
         // 下面是在区块生成的时候调用的代码
         IBlockState state = world.getBlockState(pos);
@@ -83,6 +90,7 @@ public interface IBlockFalling {
         if (curPos.getY() > 0) {
             world.setBlockState(curPos.upM(), state); //当前位置不能下落到，所以要往上取一格
         }
+        return true;
     }
 
     /**
@@ -95,10 +103,26 @@ public interface IBlockFalling {
         return (world.isAirBlock(pos) || canFallThrough(world.getBlockState(pos))) && pos.getY() >= -1;
     }
 
+    /**
+     * 当下落刚刚开始,尚未生成{@link EntityFallingBlock}实体的时候调用
+     * @param fallingEntity 将要生成的实体
+     */
     default void onStartFalling(@Nonnull EntityFallingBlock fallingEntity) {}
 
+    /**
+     * 当掉落停止且放置方块之后调用
+     * @param world 世界
+     * @param pos 位置
+     * @param fallingState 下落的方块状态
+     * @param hitState 击中的方块状态
+     */
     default void onEndFalling(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState fallingState,@Nonnull IBlockState hitState) {}
 
+    /**
+     * 当下落到地面时损坏的时候调用
+     * @param world 世界
+     * @param pos 下落后的位置
+     */
     default void onBroken(@Nonnull World world,@Nonnull BlockPos pos) {}
 
     default int tickRate(@Nonnull World world) {
@@ -109,6 +133,9 @@ public interface IBlockFalling {
         return BlockFalling.canFallThrough(state);
     }
 
+    /**
+     * @see BlockFalling#getDustColor(IBlockState)
+     */
     @SideOnly(Side.CLIENT)
     default int getDustColor(IBlockState state){
         return -16777216;

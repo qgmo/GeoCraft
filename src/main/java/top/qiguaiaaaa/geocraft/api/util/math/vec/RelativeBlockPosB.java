@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math.vec;
+package top.qiguaiaaaa.geocraft.api.util.math.vec;
 
 import net.minecraft.util.math.Vec3i;
 
@@ -34,33 +34,38 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class RelativeBlockPosS extends Vec3s{
-    public RelativeBlockPosS(short rx, short ry, short rz) {
+public class RelativeBlockPosB extends Vec3b{
+    public RelativeBlockPosB(byte rx, byte ry, byte rz) {
         super(rx, ry, rz);
     }
-    public RelativeBlockPosS(int x,int y,int z,int tx,int ty,int tz){
-        this((short) (tx-x), (short) (ty-y), (short) (tz-z));
+
+    public RelativeBlockPosB(int x,int y,int z,int tx,int ty,int tz){
+        this((byte) (tx-x), (byte) (ty-y), (byte) (tz-z));
     }
-    public RelativeBlockPosS(@Nonnull Vec3i origin, @Nonnull Vec3i target){
+
+    public RelativeBlockPosB(Vec3i origin, Vec3i target){
         this(origin.getX(),origin.getY(),origin.getZ(),target.getX(),target.getY(),target.getZ());
     }
 
-    public RelativeBlockPosS(@Nonnull IVec3i origin, @Nonnull IVec3i target){
+    public RelativeBlockPosB(IVec3i origin, IVec3i target){
         this(origin.getX(),origin.getY(),origin.getZ(),target.getX(),target.getY(),target.getZ());
     }
 
-    public RelativeBlockPosS(IVec3i pos){
-        super(pos);
+    public RelativeBlockPosB(IVec3i vec) {
+        super(vec);
     }
 
-    public static class Mutable extends RelativeBlockPosS{
-        public static final ThreadLocal<Mutable> MUTABLE = ThreadLocal.withInitial(Mutable::new);
+    public RelativeBlockPosB(Vec3i vec){
+        this((byte) vec.getX(),(byte) vec.getY(),(byte) vec.getZ());
+    }
+
+    public static class Mutable extends RelativeBlockPosB{
         public Mutable(){
-            super((short) 0, (short) 0, (short) 0);
+            super((byte) 0, (byte) 0, (byte) 0);
         }
 
-        public Mutable(short ax, short ay, short az) {
-            super(ax, ay, az);
+        public Mutable(byte rx, byte ry, byte rz) {
+            super(rx, ry, rz);
         }
 
         public Mutable(int x, int y, int z, int tx, int ty, int tz) {
@@ -69,44 +74,55 @@ public class RelativeBlockPosS extends Vec3s{
         public Mutable(Vec3i origin,Vec3i target) {
             super(origin,target);
         }
-        public Mutable(IVec3i origin,IVec3i target) {
+        public Mutable(IVec3i origin, IVec3i target){
             super(origin,target);
         }
+        public Mutable(IVec3i vec){
+            super(vec);
+        }
 
-        public Mutable setPos(short x,short y,short z){
+        public Mutable(Vec3i vec){
+            super(vec);
+        }
+
+        public Mutable setPos(byte x,byte y,byte z){
             this.x = x;
             this.y = y;
             this.z = z;
             return this;
         }
 
-        public Mutable setPos(int cx, int cy, int cz, int ax, int ay, int az){
-            return this.setPos((short) (ax-cx),(short) (ay-cy),(short) (az-cz));
+        public Mutable setPos(int cx,int cy,int cz,int ax,int ay,int az){
+            return this.setPos((byte) (ax-cx),(byte) (ay-cy),(byte)(az-cz));
         }
 
-        public Mutable setPos(@Nonnull IVec3i vec3i){
-            return this.setPos((short) vec3i.getX(),(short) vec3i.getY(),(short) vec3i.getZ());
+        public Mutable setPos(IVec3i vec3i){
+            return this.setPos((byte) vec3i.getX(),(byte) vec3i.getY(),(byte) vec3i.getZ());
         }
 
-        public Mutable setPos(@Nonnull IVec3i center, @Nonnull IVec3i to){
+        public Mutable setPos(Vec3i vec3i){
+            return this.setPos((byte) vec3i.getX(),(byte) vec3i.getY(),(byte) vec3i.getZ());
+        }
+
+        public Mutable setPos(IVec3i center,IVec3i to){
             return this.setPos(center.getX(),center.getY(),center.getZ(),to.getX(),to.getY(),to.getZ());
         }
 
-        public Mutable setPos(@Nonnull Vec3i center, @Nonnull Vec3i to){
+        public Mutable setPos(Vec3i center,Vec3i to){
             return this.setPos(center.getX(),center.getY(),center.getZ(),to.getX(),to.getY(),to.getZ());
         }
 
         @Nonnull
         @Override
-        public RelativeBlockPosS asImmutable(){
-            return new RelativeBlockPosS(this);
+        public RelativeBlockPosB asImmutable(){
+            return new RelativeBlockPosB(this);
         }
     }
 
     /**
      * 指定中心点的相对可变坐标
      */
-    public static class CenteredMutable extends Mutable implements ICenteredMutableRelativeBlockPos{
+    public static class CenteredMutable extends RelativeBlockPosB.Mutable implements ICenteredMutableRelativeBlockPos {
         protected int cx,cy,cz; //中心点坐标
 
         /**
@@ -122,7 +138,7 @@ public class RelativeBlockPosS extends Vec3s{
          * @param ry 相对中心点的Y坐标
          * @param rz 相对中心点的Z坐标
          */
-        public CenteredMutable(short rx, short ry, short rz) {
+        public CenteredMutable(byte rx, byte ry, byte rz) {
             super(rx, ry, rz);
         }
 
@@ -147,12 +163,20 @@ public class RelativeBlockPosS extends Vec3s{
          */
         public CenteredMutable(Vec3i origin,Vec3i target){
             super(origin,target);
-            setCenterPos(origin.getX(),origin.getY(),origin.getZ());
+            setCenterPos(origin);
         }
 
-        public CenteredMutable(IVec3i origin,IVec3i target){
+        public CenteredMutable(IVec3i origin, IVec3i target){
             super(origin,target);
-            setCenterPos(origin.getX(),origin.getY(),origin.getZ());
+            setCenterPos(origin);
+        }
+
+        public CenteredMutable(IVec3i vec){
+            super(vec);
+        }
+
+        public CenteredMutable(Vec3i vec){
+            super(vec);
         }
 
         /**
@@ -175,8 +199,9 @@ public class RelativeBlockPosS extends Vec3s{
          * @param y 绝对坐标Y
          * @param z 绝对坐标Z
          */
+        @Override
         public CenteredMutable setAbsolutePos(int x,int y,int z){
-            this.setPos((short) (x-cx),(short) (y-cy),(short) (z-cz));
+            this.setPos((byte) (x-cx), (byte) (y-cy), (byte) (z-cz));
             return this;
         }
     }

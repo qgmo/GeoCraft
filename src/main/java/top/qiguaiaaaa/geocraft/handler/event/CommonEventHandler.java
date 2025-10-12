@@ -31,13 +31,14 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
 
 @Mod.EventBusSubscriber
 public final class CommonEventHandler {
 
     @SubscribeEvent
-    public static void onRegisterAtmosphereProperty(RegistryEvent.Register<GeographyProperty> event){
+    public static void onRegisterAtmosphereProperty(RegistryEvent.Register<IGeographyProperty> event){
         RegistryHandler.registerGeographyProperties(event);
     }
 

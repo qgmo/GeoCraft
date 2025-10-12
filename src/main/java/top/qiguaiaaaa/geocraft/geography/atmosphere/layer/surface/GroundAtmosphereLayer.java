@@ -36,6 +36,7 @@ import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
@@ -78,7 +79,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
             }
         }
 
-        for(AtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
             wind = wind.add(property.getWind(this,to,dir));
         }
         return wind;
@@ -118,7 +119,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
         if(!isUpperLayerValid) return;
         double 实际垂直风速 = winds.get(EnumFacing.UP).add(((SurfaceAtmosphere)atmosphere).getDownWind(up)).y;
         热量对流(Math.abs(实际垂直风速));
-        for(AtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
+        for(IAtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
             property.onConvect(this, up,实际垂直风速);
         }
     }
@@ -135,7 +136,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public void onLoad(@Nonnull Chunk chunk) {
-        if(!temperature.isInitialised()){
+        if(!temperature.isLoaded()){
             temperature.set(DefaultTemperatureState.calculateBaseTemperature(chunk,atmosphere.getUnderlying()));
             initUnderlyingTemp();
         }
@@ -145,7 +146,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
     @Override
     public void onLoadWithoutChunk() {
         super.onLoadWithoutChunk();
-        if(!temperature.isInitialised()){
+        if(!temperature.isLoaded()){
             return;
         }
         initUnderlyingTemp();
@@ -153,10 +154,10 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
     protected void initUnderlyingTemp(){
         if(lowerLayer != null){ // 设置下垫面温度
             TemperatureState lowTemp = lowerLayer.getTemperature();
-            if(!lowTemp.isInitialised()) lowerLayer.getTemperature().set(temperature);
+            if(!lowTemp.isLoaded()) lowerLayer.getTemperature().set(temperature);
 
             TemperatureState deepTemperature = lowerLayer.getTemperature(GeoCraftProperties.DEEP_TEMPERATURE);
-            if(deepTemperature != null && !deepTemperature.isInitialised())
+            if(deepTemperature != null && !deepTemperature.isLoaded())
                 deepTemperature.set(lowTemp.get()+10);
         }
     }

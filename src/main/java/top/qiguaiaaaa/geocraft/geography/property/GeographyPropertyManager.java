@@ -36,6 +36,8 @@ import net.minecraftforge.registries.IForgeRegistry;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.util.registry.ServerOnlyRegistryBuilder;
 
 import java.util.*;
@@ -44,39 +46,39 @@ import java.util.*;
 public final class GeographyPropertyManager {
     private static boolean isLoaded = false;
     private static final ResourceLocation NAME = new ResourceLocation(GeoCraft.MODID,"geography_property");
-    private static IForgeRegistry<GeographyProperty> properties;
-    private static final Set<AtmosphereProperty> atmosphereProperties = new HashSet<>();
-    private static final Set<AtmosphereProperty> windEffectedProperties = new HashSet<>();
-    private static final Set<AtmosphereProperty> flowableProperties = new HashSet<>();
+    private static IForgeRegistry<IGeographyProperty> properties;
+    private static final Set<IAtmosphereProperty> atmosphereProperties = new HashSet<>();
+    private static final Set<IAtmosphereProperty> windEffectedProperties = new HashSet<>();
+    private static final Set<IAtmosphereProperty> flowableProperties = new HashSet<>();
 
     @SubscribeEvent
     public static void onNewRegistryEvent(RegistryEvent.NewRegistry registry){
         if(isLoaded) return;
-        properties = new ServerOnlyRegistryBuilder<GeographyProperty>()
-                .setType(GeographyProperty.class)
+        properties = new ServerOnlyRegistryBuilder<IGeographyProperty>()
+                .setType(IGeographyProperty.class)
                 .create();
-        RegistryEvent<GeographyProperty> event = new RegistryEvent.Register<>(NAME,properties);
+        RegistryEvent<IGeographyProperty> event = new RegistryEvent.Register<>(NAME,properties);
         MinecraftForge.EVENT_BUS.post(event);
         sortProperties();
         isLoaded = true;
     }
 
-    public static IForgeRegistry<GeographyProperty> getProperties() {
+    public static IForgeRegistry<IGeographyProperty> getProperties() {
         return properties;
     }
-    public static Set<AtmosphereProperty> getAtmosphereProperties(){return atmosphereProperties;}
+    public static Set<IAtmosphereProperty> getAtmosphereProperties(){return atmosphereProperties;}
 
-    public static Set<AtmosphereProperty> getWindEffectedProperties() {
+    public static Set<IAtmosphereProperty> getWindEffectedProperties() {
         return windEffectedProperties;
     }
-    public static Set<AtmosphereProperty> getFlowableProperties() {
+    public static Set<IAtmosphereProperty> getFlowableProperties() {
         return flowableProperties;
     }
 
     private static void sortProperties(){
-        for(GeographyProperty property:properties){
-            if(property instanceof AtmosphereProperty){
-                AtmosphereProperty atmosphereProperty = (AtmosphereProperty) property;
+        for(IGeographyProperty property:properties){
+            if(property instanceof IAtmosphereProperty){
+                IAtmosphereProperty atmosphereProperty = (IAtmosphereProperty) property;
                 atmosphereProperties.add(atmosphereProperty);
                 if(atmosphereProperty.haveWindEffect())
                     windEffectedProperties.add(atmosphereProperty);

@@ -190,7 +190,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         if(skyLight>0 && skyLight<15) factor = skyLight/15d;
         for(Pair<int[],Layer> pair:layerToDraw){
             mutableBlockPos.setPos(pos.getX()+pair.getKey()[0],pos.getY(),pos.getZ()+pair.getKey()[1]);
-            res += pair.getValue().drawHeat(average*factor,mutableBlockPos)/factor;
+            res += pair.getValue().drainHeat(average*factor,mutableBlockPos)/factor;
         }
         return res;
     }
@@ -203,7 +203,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         final double average = amount/datas.size();
         return drawAtmosphereProperty((dir,atmosphere)->{
             mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]);
-            return atmosphere.getUnderlying().drawHeat(average,mutableBlockPos);
+            return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos);
         });
     }
 
@@ -224,7 +224,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         double average = amount/layerToDraw.size(),res = 0;
         for(Pair<int[],Layer> pair:layerToDraw){
             mutableBlockPos.setPos(pos.getX()+pair.getKey()[0],pos.getY(),pos.getZ()+pair.getKey()[1]);
-            res += pair.getValue().drawHeat(average,mutableBlockPos);
+            res += pair.getValue().drainHeat(average,mutableBlockPos);
         }
         return res;
     }

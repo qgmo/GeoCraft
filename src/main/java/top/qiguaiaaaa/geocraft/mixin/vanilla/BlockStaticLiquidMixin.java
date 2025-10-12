@@ -40,12 +40,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
-import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
 
+/**
+ * @author QiguaiAAAA
+ */
 @Mixin(value = BlockStaticLiquid.class)
 public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable {
     @Unique
@@ -57,6 +59,11 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
         super(materialIn);
     }
 
+    @Inject(method = "<init>",at = @At("RETURN"))
+    private void onInit(Material materialIn, CallbackInfo ci) {
+        this.setTickRandomly(true);
+    }
+
     @Override
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
         curRandomTick = true;
@@ -66,7 +73,6 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
 
     @Inject(method = "updateTick",at = @At("RETURN"))
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(thisFluid)) return;
         IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(thisFluid,worldIn,pos,state,curRandomTick);
         if(newState != null){
             worldIn.setBlockState(pos,newState);
@@ -77,4 +83,5 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
     public void setCorrespondingFluid(Fluid fluid) {
         this.thisFluid = fluid;
     }
+
 }

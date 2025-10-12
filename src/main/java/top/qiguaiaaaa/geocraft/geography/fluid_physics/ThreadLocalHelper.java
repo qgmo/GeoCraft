@@ -30,8 +30,8 @@ package top.qiguaiaaaa.geocraft.geography.fluid_physics;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
-import top.qiguaiaaaa.geocraft.util.math.vec.RelativeBlockPosI;
-import top.qiguaiaaaa.geocraft.util.math.vec.RelativeBlockPosS;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS;
 
 /**
  * @author QiguaiAAAA

@@ -58,7 +58,7 @@ public class ConstantUnderlying extends UnderlyingLayer {
     public void sendHeat(@Nonnull HeatPack pack, @Nullable Vec3i direction) {}
 
     @Override
-    public double drawHeat(double quanta, @Nullable BlockPos pos) {
+    public double drainHeat(double quanta, @Nullable BlockPos pos) {
         return quanta;
     }
 
@@ -99,7 +99,7 @@ public class ConstantUnderlying extends UnderlyingLayer {
     }
 
     @Override
-    public boolean isInitialise() {
+    public boolean isLoaded() {
         return true;
     }
 

@@ -75,5 +75,6 @@ public final class NetworkFakeStateManager {
         registerRule(Blocks.GRASS,removeHumidity,REMOVE_META_RULE);
         registerRule(Blocks.GRASS_PATH,removeHumidity,REMOVE_META_RULE);
         registerRule(Blocks.GRAVEL,removeHumidity,REMOVE_META_RULE);
+        registerRule(Blocks.CLAY,removeHumidity,REMOVE_META_RULE);
     }
 }

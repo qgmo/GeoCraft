@@ -39,6 +39,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -148,6 +149,12 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
         if(trySmelt(worldIn, pos, state, rand)) return;
         state = worldIn.getBlockState(pos);
         tryFallDown(worldIn, pos, state);
+    }
+
+    @Inject(method = "isReplaceable",at =@At("HEAD"),cancellable = true)
+    public void isReplaceable(@Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos,CallbackInfoReturnable<Boolean> cir){
+        cir.cancel();
+        cir.setReturnValue(false);
     }
 
     @Unique
@@ -283,7 +290,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
 
     @Nonnull
     @Override
-    public Set<Fluid> getFluid(@Nonnull IBlockState state) {
+    public Set<Fluid> getAcceptedFluids(@Nonnull IBlockState state) {
         return GeoFluids.FluidSets.SNOW_LAYER_SET;
     }
 
@@ -394,7 +401,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
 
     @Override
     public void setQuanta(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newQuanta) {
-        if(!getFluid(state).contains(fluid)) return;
+        if(!getAcceptedFluids(state).contains(fluid)) return;
         int curQuanta = getQuanta(state,fluid);
         addQuanta(world, pos, state, fluid, newQuanta-curQuanta);
     }
@@ -437,10 +444,5 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
             else return state.withProperty(LAYERS,quanta+curLayer);
         }
         return null;
-    }
-
-    @Override
-    public boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source) {
-        return !isFull(state, fluid);
     }
 }

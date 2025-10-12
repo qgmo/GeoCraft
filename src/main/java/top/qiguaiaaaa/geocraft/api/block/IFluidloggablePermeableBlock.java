@@ -25,41 +25,41 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math.vec;
+package top.qiguaiaaaa.geocraft.api.block;
 
-import top.qiguaiaaaa.geocraft.util.math.Int10;
-import top.qiguaiaaaa.geocraft.util.math.Int21;
+import git.jbredwards.fluidlogged_api.api.block.IFluidloggable;
+import git.jbredwards.fluidlogged_api.api.util.FluidState;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
-
-import static top.qiguaiaaaa.geocraft.util.math.Int10.toInt10;
-import static top.qiguaiaaaa.geocraft.util.math.Int21.toInt21;
+import javax.annotation.Nullable;
 
 /**
- * 这里i是整数的意思,不是整形的意思
+ * 还没写好
  * @author QiguaiAAAA
  */
-public interface IVec3i {
-    int X_INT_OFFSET = 20, Y_INT_OFFSET = 10, Z_INT_OFFSET = 0,
-    X_LONG_OFFSET = 42, Y_LONG_OFFSET = 21, Z_LONG_OFFSET=0;
-    int X_INT_MASK = Int10.ALL_MASK<< X_INT_OFFSET,
-    Y_INT_MASK = Int10.ALL_MASK<< Y_INT_OFFSET,
-    Z_INT_MASK = Int10.ALL_MASK<< Z_INT_OFFSET;
-    long X_LONG_MASK = Int21.ALL_MASK<<X_LONG_OFFSET,
-    Y_LONG_MASK = Int21.ALL_MASK << Y_LONG_OFFSET,
-    Z_LONG_MASK = Int21.ALL_MASK<<Z_LONG_OFFSET;
-    int getX();
-    int getY();
-    int getZ();
-
-    @Nonnull
-    IVec3i asImmutable();
-
-    default int toInt() {
-        return toInt10(getX())<< X_INT_OFFSET | toInt10(getY())<< Y_INT_OFFSET | toInt10(getZ());
+public interface IFluidloggablePermeableBlock extends IFluidloggable,IPermeableBlock {
+    @Override
+    default int getQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid){
+        return getQuanta(state,fluid, FluidState.EMPTY);
     }
 
-    default long toLong(){
-        return toInt21(getX()) <<X_LONG_OFFSET | toInt21(getY()) <<Y_LONG_OFFSET | toInt21(getZ());
+    @Override
+    default int getMaxQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid) {
+        return getQuanta(state,fluid,FluidState.EMPTY);
+    }
+
+    @Override
+    default int getEmptyHeight(@Nonnull IBlockState state, @Nullable Fluid fluid){
+        return 0;
+    }
+
+    @Override
+    default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source) {
+        return canFluidFlow(world,pos,state,side);
     }
 }

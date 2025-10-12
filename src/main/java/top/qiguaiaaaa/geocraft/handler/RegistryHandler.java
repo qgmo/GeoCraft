@@ -34,13 +34,14 @@ import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
 import top.qiguaiaaaa.geocraft.handler.event.*;
 
 public final class RegistryHandler {
-    public static void registerGeographyProperties(RegistryEvent.Register<GeographyProperty> event){
-        IForgeRegistry<GeographyProperty> registry =event.getRegistry();
+    public static void registerGeographyProperties(RegistryEvent.Register<IGeographyProperty> event){
+        IForgeRegistry<IGeographyProperty> registry =event.getRegistry();
         registry.register(DefaultTemperature.TEMPERATURE);
         registry.register(DeepTemperature.DEEP_TEMPERATURE);
         registry.register(AtmosphereWater.WATER);

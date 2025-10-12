@@ -27,6 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.api.atmosphere.weather;
 
+/**
+ * 天气,还没写好
+ */
 public class Weather {
     public static final Weather SUNNY = new Weather("Sunny", "",false);
     public static final Weather FOG = new Weather("Fog","",false);

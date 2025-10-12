@@ -51,16 +51,8 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
 
 public final class MoreRealityFluidPhysicsCore {
     @Nullable
-    public static IBlockState evaporateWater(World world, BlockPos pos, IBlockState state, Random rand){
+    public static IBlockState evaporateWater(World world, BlockPos pos, IBlockState state, Random rand,IAtmosphereAccessor accessor,Atmosphere atmosphere){
         if(!world.isAirBlock(pos.up())) return state;
-        int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-        if(light <= 0) return state;
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        if(accessor == null) return state;
-        Atmosphere atmosphere = accessor.getAtmosphereHere();
-        if(atmosphere == null) return state;
-        if(!accessor.getAtmosphereWorldInfo().canWaterEvaporate(pos)) return state;
-        accessor.setSkyLight(light);
 
         int meta = state.getValue(LEVEL);
         if(meta >=8) return null;
@@ -75,16 +67,9 @@ public final class MoreRealityFluidPhysicsCore {
         state = state.withProperty(LEVEL,meta+1);
         return state;
     }
-    public static IBlockState freezeWater(World world, BlockPos pos, IBlockState state, Random rand){
-        int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-        if(light == 0) return state;
+    public static IBlockState freezeWater(World world, BlockPos pos, IBlockState state, Random rand,IAtmosphereAccessor accessor){
         int meta = state.getValue(LEVEL);
         if(meta >=8) return state;
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        if(accessor == null) return state;
-        Atmosphere atmosphere = accessor.getAtmosphereHere();
-        if(atmosphere == null) return state;
-        accessor.setSkyLight(light);
         if(!accessor.getSystem().getAtmosphereWorldInfo().canWaterFreeze()) return state;
 
         double possibility  = WaterUtil.getFreezePossibility(accessor);

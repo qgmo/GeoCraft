@@ -40,8 +40,8 @@ import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchBaseTask;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSearchTaskSmallRangeRelativeResult;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
-import top.qiguaiaaaa.geocraft.util.math.Int10;
-import top.qiguaiaaaa.geocraft.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,9 +49,9 @@ import java.util.Collection;
 
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.*;
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.X_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.Y_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.RelativeBlockPosS.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS.Mutable.MUTABLE;
 
 /**
  * 该类仅单线程使用，不得多线程并发使用

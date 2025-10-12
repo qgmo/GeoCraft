@@ -33,16 +33,16 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.util.math.Int21;
-import top.qiguaiaaaa.geocraft.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_QUEUE;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.X_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.Y_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.RelativeBlockPosI.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosI.Mutable.MUTABLE;
 
 /**
  * 以{@link Long}存储坐标的BFS搜寻任务，适合搜寻范围不超过{@link #MAX_RELATIVE_POS_OFFSET}的任务

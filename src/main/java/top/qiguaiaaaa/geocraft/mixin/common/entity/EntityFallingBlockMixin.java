@@ -42,8 +42,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-import top.qiguaiaaaa.geocraft.block.IBlockFalling;
-import top.qiguaiaaaa.geocraft.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
 /**
  * @author QiguaiAAAA

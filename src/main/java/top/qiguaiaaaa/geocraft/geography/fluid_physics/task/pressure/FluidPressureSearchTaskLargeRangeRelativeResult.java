@@ -34,16 +34,16 @@ import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
-import top.qiguaiaaaa.geocraft.util.math.Int21;
-import top.qiguaiaaaa.geocraft.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_RES;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.X_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.util.math.vec.IVec3i.Y_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_LONG_OFFSET;
 
 /**
  * @author QiguaiAAAA

@@ -32,11 +32,7 @@ import top.qiguaiaaaa.geocraft.api.state.GeographyState;
 
 import javax.annotation.Nonnull;
 
-/**
- * 地理属性
- * @author QiguaiAAAA
- */
-public abstract class GeographyProperty extends IForgeRegistryEntry.Impl<GeographyProperty> {
+public abstract class GeographyProperty extends IForgeRegistryEntry.Impl<IGeographyProperty> implements IGeographyProperty {
     /**
      * 获取对应状态的Instance
      * @return 一个符合该属性的状态

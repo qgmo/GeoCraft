@@ -30,11 +30,8 @@ package top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.util.math.vec.IVec3i;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 /**

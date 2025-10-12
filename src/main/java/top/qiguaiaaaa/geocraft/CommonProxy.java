@@ -27,16 +27,17 @@
 
 package top.qiguaiaaaa.geocraft;
 
-import com.google.common.graph.Network;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.configs.ConfigInit;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.handler.FluidHandler;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
 import top.qiguaiaaaa.geocraft.handler.event.MoreRealityEventHandler;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.handler.event.SoilEventHandler;
 import top.qiguaiaaaa.geocraft.handler.event.VanillaLikeEventHandler;
 import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
@@ -44,6 +45,7 @@ import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.MixinUtil;
 
 import java.io.File;
+
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_MODE;
 
 public class CommonProxy {
@@ -63,14 +65,17 @@ public class CommonProxy {
         ConfigurationLoader.init(event.getSuggestedConfigurationFile());
         ConfigurationLoader.load();
     }
+
     public void init(FMLInitializationEvent event) {
         RegistryHandler.registerEventHandler();
     }
 
-
     public void postInit(FMLPostInitializationEvent event) {
         MixinUtil.linkLiquidWithFluid();
         FluidHandler.initRegisteredFluids();
+        FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
+        FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());
+        FluidPhysicsMode.MORE_REALITY.setChecker(new RealityFluidOperationChecker());
         if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.MORE_REALITY){
             MoreRealityEventHandler.onPostInit(event);
         }else if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.VANILLA_LIKE){

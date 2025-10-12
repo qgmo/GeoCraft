@@ -139,7 +139,7 @@ public class DefaultAtmosphereDataProvider implements IAtmosphereDataProvider {
             saveAtmosphereData(data);
 //            atmosphereLoader.flush();
         }
-        APIUtil.LOGGER.info("All Atmosphere Data in DIM{} has saved!",world.provider.getDimension());
+        APIUtil.LOGGER.debug("All Atmosphere Data in DIM{} has saved!",world.provider.getDimension());
     }
 
     /**

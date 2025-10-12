@@ -37,11 +37,13 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableFluid;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.VanillaLikeFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
@@ -53,10 +55,12 @@ public final class VanillaLikeEventHandler{
     @SubscribeEvent(priority = EventPriority.HIGH)
     public void afterStaticWaterUpdate(StaticLiquidUpdateEvent.After event){
         if(event.getLiquid() != FluidRegistry.WATER) return;
+        if(!event.isRandomTick()) return;
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
         VanillaFluidPhysicsCore.evaporateWater(worldIn,pos, worldIn.rand);
     }
+
     @SubscribeEvent
     public void onAtmosphereRainAndSnow(AtmosphereUpdateEvent.RainAndSnow event){
         Atmosphere atmosphere = event.getAtmosphere();
@@ -65,6 +69,7 @@ public final class VanillaLikeEventHandler{
         if (WaterUtil.canSnowAt(world,randPos, true)) {
             atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,randPos,false);
             event.setResult(Event.Result.ALLOW);
+            event.setSnowy(true);
             event.setState(Blocks.SNOW_LAYER.getDefaultState());
         }
         if(!BaseUtil.getRandomResult(world.rand,event.getRainPossibility())) return;

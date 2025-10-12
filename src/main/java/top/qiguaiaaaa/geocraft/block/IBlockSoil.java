@@ -32,9 +32,19 @@ import net.minecraft.block.BlockCauldron;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.init.PotionTypes;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
@@ -50,11 +60,11 @@ import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;
@@ -177,10 +187,6 @@ public interface IBlockSoil extends IPermeableBlock {
         if(upState.getBlock() instanceof IPermeableBlock){
             IPermeableBlock block = (IPermeableBlock) upState.getBlock();
             if(!block.canDrain(worldIn,upPos,upState,FluidRegistry.WATER,EnumFacing.DOWN,state)) return 0;
-//            if(block instanceof IBlockSoil){
-//                IBlockSoil dirt = (IBlockSoil) block;
-//                if(dirt.getQuanta(upState,FluidRegistry.WATER)<=dirt.getMaxStableHumidity(upState)) return 0;
-//            }
             int drained = block.drainQuanta(worldIn,upPos,upState,FluidRegistry.WATER,1,false);
             if(drained < 1) return 0;
             return block.drainQuanta(worldIn,upPos,upState,FluidRegistry.WATER,1,true);
@@ -252,6 +258,30 @@ public interface IBlockSoil extends IPermeableBlock {
         world.setBlockState(pos, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-humidity),Constants.BlockFlags.DEFAULT);
     }
 
+    default boolean onPlayerUseBottle(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
+        if(worldIn.isRemote) return false;
+        ItemStack stack = playerIn.getHeldItem(hand);
+        if(stack.isEmpty()) return false;
+        int moisture = getQuanta(state,FluidRegistry.WATER);
+        Item item = stack.getItem();
+        if(moisture >2) return false;
+        if (item == Items.POTIONITEM && PotionUtils.getPotionFromItem(stack) == PotionTypes.WATER) {
+            if (!playerIn.capabilities.isCreativeMode) {
+                ItemStack bottleStack = new ItemStack(Items.GLASS_BOTTLE);
+                playerIn.setHeldItem(hand, bottleStack);
+
+                if (playerIn instanceof EntityPlayerMP) {
+                    ((EntityPlayerMP)playerIn).sendContainerToPlayer(playerIn.inventoryContainer);
+                }
+            }
+
+            worldIn.playSound(null, pos, SoundEvents.ITEM_BOTTLE_EMPTY, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            this.addQuanta(worldIn,pos,state,FluidRegistry.WATER,2);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 检查土壤水是否能够流进指定方块
      * @param state 目标方块状态
@@ -262,7 +292,7 @@ public interface IBlockSoil extends IPermeableBlock {
         Block block = state.getBlock();
         if(block instanceof  IPermeableBlock){
             IPermeableBlock permeableBlock = (IPermeableBlock) block;
-            return permeableBlock.getFluid(state).contains(FluidRegistry.WATER)
+            return permeableBlock.getAcceptedFluids(state).contains(FluidRegistry.WATER)
                     && !permeableBlock.isFull(state,FluidRegistry.WATER);
         }
         return false;
@@ -275,9 +305,11 @@ public interface IBlockSoil extends IPermeableBlock {
 
     double getFlowInPossibility(@Nonnull IBlockState state);
 
+    double getRainInPossibility(@Nonnull IBlockState state);
+
     @Nonnull
     @Override
-    default Set<Fluid> getFluid(@Nonnull IBlockState state){
+    default Set<Fluid> getAcceptedFluids(@Nonnull IBlockState state){
         return GeoFluids.FluidSets.WATER_SET;
     }
 
@@ -312,7 +344,7 @@ public interface IBlockSoil extends IPermeableBlock {
     @Override
     default void setQuanta(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state,@Nonnull Fluid fluid, int newQuanta){
         if(fluid != FluidRegistry.WATER) return;
-        world.setBlockState(pos,state.withProperty(HUMIDITY,newQuanta),0);
+        world.setBlockState(pos,state.withProperty(HUMIDITY,newQuanta), Constants.BlockFlags.SEND_TO_CLIENTS);
     }
 
     @Nullable
@@ -334,7 +366,10 @@ public interface IBlockSoil extends IPermeableBlock {
     default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source){
         if(fluid != FluidRegistry.WATER) return false;
         if(isFull(state,fluid)) return false;
-        return BaseUtil.getRandomResult(world.rand,getFlowInPossibility(state));
+        if(source != null && source.getBlock() == Blocks.AIR){
+            return BaseUtil.getRandomResult(world.rand,getRainInPossibility(state));
+        }
+        return BaseUtil.getRandomResult(world.rand, getFlowInPossibility(state));
     }
 
     @Override

@@ -36,9 +36,9 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.INBTSerializable;
 import org.apache.commons.lang3.tuple.Triple;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
-import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
 import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
@@ -70,7 +70,7 @@ public interface Layer extends INBTSerializable<NBTTagCompound> {
      * 该层级是否已经初始化
      * @return 若已经完成初始化，则为true
      */
-    boolean isInitialise();
+    boolean isLoaded();
 
     /**
      * 层级更新
@@ -116,7 +116,7 @@ public interface Layer extends INBTSerializable<NBTTagCompound> {
      * 从该层吸收能量
      * @param quanta 吸收的量
      */
-    double drawHeat(double quanta,@Nullable BlockPos pos);
+    double drainHeat(double quanta, @Nullable BlockPos pos);
 
     /**
      * 获得该层开始的Y坐标
@@ -206,14 +206,14 @@ public interface Layer extends INBTSerializable<NBTTagCompound> {
      * @return 状态
      */
     @Nullable
-    GeographyState getState(@Nonnull GeographyProperty property);
+    GeographyState getState(@Nonnull IGeographyProperty property);
     /**
      * 添加或覆盖状态
      * @param property 属性
      * @return 如果存在旧状态,则返回.否则返回Null
      */
     @Nullable
-    GeographyState addState(@Nonnull GeographyProperty property);
+    GeographyState addState(@Nonnull IGeographyProperty property);
 
     /**
      * 返回该层序列化的复合标签的标签名称
@@ -221,10 +221,14 @@ public interface Layer extends INBTSerializable<NBTTagCompound> {
      */
     String getTagName();
 
+    /**
+     * 当前大气层级是否需要序列化
+     * @return 若需要,则返回true
+     */
     boolean isSerializable();
 
     /**
-     * 返回该层序列化后的复合标签
+     * 返回该层序列化后的复合标签,当{@link #isSerializable()}返回true时会在保存时调用
      * @return 一个复合标签,表示该层的状态
      */
     @Override

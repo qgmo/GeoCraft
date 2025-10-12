@@ -25,46 +25,22 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math;
+package top.qiguaiaaaa.geocraft.api.property;
+
+import net.minecraftforge.registries.IForgeRegistryEntry;
+import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+
+import javax.annotation.Nonnull;
 
 /**
+ * 地理属性
  * @author QiguaiAAAA
  */
-public final class Int10 {
-    public static final int SIGN_MASK = 0x200;
-    public static final int CONTENT_MASK = 0x1FF;
-    public static final int ALL_MASK = 0x3FF;
-
-    private final short val;
-
-    public Int10(int v){
-        val = (short) toInt10(v);
-    }
-
-    public Int10(short v){
-        val = (short) toInt10(v);
-    }
-
-    public Int10(byte v){
-        val = (short) toInt10(v);
-    }
-
-    public static int toInt10(byte v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
-    }
-
-    public static int toInt10(short v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
-    }
-
-    public static int toInt10(int v){
-        if(v>=0) return v;
-        return SIGN_MASK | ((-v) & CONTENT_MASK);
-    }
-
-    public static int toInt(int int10){
-        return (SIGN_MASK&int10)==0?int10:-(int10&CONTENT_MASK);
-    }
+public interface IGeographyProperty extends IForgeRegistryEntry<IGeographyProperty> {
+    /**
+     * 获取对应状态的Instance
+     * @return 一个符合该属性的状态
+     */
+    @Nonnull
+    GeographyState getStateInstance();
 }

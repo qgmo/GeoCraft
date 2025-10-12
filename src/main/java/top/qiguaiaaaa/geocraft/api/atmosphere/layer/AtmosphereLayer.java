@@ -73,6 +73,7 @@ public interface AtmosphereLayer extends Layer {
      * 获取整体水汽压
      * @return 大气水汽压,单位帕 Pa
      */
+    @Deprecated
     double getWaterPressure();
 
     /**

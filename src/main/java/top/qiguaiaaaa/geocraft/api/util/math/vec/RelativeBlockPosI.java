@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.math.vec;
+package top.qiguaiaaaa.geocraft.api.util.math.vec;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;

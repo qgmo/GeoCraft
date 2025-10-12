@@ -33,7 +33,10 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -49,6 +52,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
+import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
@@ -64,9 +68,16 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  * @author QiguaiAAAA
  */
 @Mixin(BlockFarmland.class)
-public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
+public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IBlockFalling {
     @Unique
     private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.FARMLAND);
+
+    @Unique
+    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.FARMLAND),
+            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.FARMLAND);
+
+    @Unique
+    private static boolean isRandomTick = false;
     @Shadow @Final protected static AxisAlignedBB field_194405_c;
 
     @Shadow @Final public static PropertyInteger MOISTURE;
@@ -78,13 +89,49 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
     @Override
     @Unique
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
+        isRandomTick = true;
         this.onRandomTick(worldIn, pos, state, random);
         super.randomTick(worldIn, pos, state, random);
+        isRandomTick = false;
+    }
+
+    @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,order = 999)
+    public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
+        if(isRandomTick) return;
+        ci.cancel();
+        if(getQuanta(state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
+        if (!worldIn.isRemote) {
+            this.checkAndFall(worldIn, pos);
+        }
+    }
+
+    @Override
+    @Unique
+    public int getDustColor(IBlockState state) {
+        return 0xFF866043;
     }
 
     @Override
     public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
         dropWaterWhenBroken(worldIn, pos, state);
+    }
+
+    @Inject(method = "neighborChanged",at =@At("TAIL"))
+    public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos,CallbackInfo ci) {
+        state = worldIn.getBlockState(pos);
+        if(state.getBlock() != this) return;
+        if(getQuanta(state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
+        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+    }
+
+    @Override
+    public int tickRate(@Nonnull World worldIn) {
+        return 5;
+    }
+
+    @Override
+    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
     @Inject(method = "turnToDirt",at = @At("HEAD"),cancellable = true)
@@ -120,7 +167,12 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
 
     @Override
     public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return 0.5;
+        return FLOW_IN_P;
+    }
+
+    @Override
+    public double getRainInPossibility(@Nonnull IBlockState state) {
+        return RAIN_IN_P;
     }
 
     //***********
@@ -129,7 +181,7 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
 
     @Nonnull
     @Override
-    public Set<Fluid> getFluid(@Nonnull IBlockState state) {
+    public Set<Fluid> getAcceptedFluids(@Nonnull IBlockState state) {
         return GeoFluids.FluidSets.WATER_SET;
     }
 

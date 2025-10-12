@@ -9,7 +9,8 @@
     "block.BlockGrassPathMixin",
     "block.BlockSandMixin",
     "block.BlockGravelMixin",
-    "block.BlockFarmlandMixin"
+    "block.BlockFarmlandMixin",
+    "block.BlockClayMixin"
   ],
   "client": [
     "block.BlockModelShapesMixin"

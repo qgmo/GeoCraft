@@ -45,6 +45,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
+import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereGenerateEvent;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereSystemEvent;
@@ -60,6 +61,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 
+import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
+
 public final class EventFactory {
     public static final EventBus EVENT_BUS = new EventBus();
 
@@ -71,10 +74,13 @@ public final class EventFactory {
         FillGlassBottleEvent event = new FillGlassBottleOnFluidEvent(player,itemStack,world,rayTraceResult);
         return processOnGlassBottleUseEvent(itemStack,player,event);
     }
-    public static IBlockState onAtmosphereRainAndSnow(@Nonnull Chunk chunk, @Nonnull Atmosphere atmosphere, @Nonnull BlockPos randPos, double rainPossibility){
+    public static IBlockState onAtmosphereRainAndSnow(@Nonnull Chunk chunk, @Nonnull IAtmosphereAccessor accessor, @Nonnull Atmosphere atmosphere, @Nonnull BlockPos randPos, double rainPossibility){
         AtmosphereUpdateEvent.RainAndSnow event = new AtmosphereUpdateEvent.RainAndSnow(chunk,atmosphere,randPos,rainPossibility);
         EVENT_BUS.post(event);
         if(event.getResult() == Result.ALLOW){
+            if(event.isSnowy()){
+                accessor.putHeatToAtmosphere(WATER_MELT_LATENT_HEAT_PER_QUANTA);
+            }
             return event.getState();
         }
         return null;

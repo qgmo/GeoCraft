@@ -35,6 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.*;
 import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.util.exception.UnsupportedFluidException;
 
 import javax.annotation.Nonnull;
@@ -102,20 +103,14 @@ public final class FluidUtil {
 
     public static boolean isFluidPlaceable(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull Fluid fluid){
         IBlockState state = world.getBlockState(pos);
-        if(!FluidUtil.isFluid(state)){
-            boolean isNonSolid = !state.getMaterial().isSolid();
-            boolean isReplaceable = state.getBlock().isReplaceable(world, pos);
-            return  world.isAirBlock(pos) || isNonSolid || isReplaceable ;
-        }
-        if(FluidUtil.getFluid(state) != fluid) return false;
-        return !FluidUtil.isFullFluid(world,pos,state);
+        return FluidPhysicsMode.getCurrentMode().getChecker().canPlaceAt(world,pos,state,fluid);
     }
 
     public static boolean isFluidPlaceablePermeable(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull Fluid fluid,boolean allowAir){
         IBlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if(block instanceof IPermeableBlock){
-            Set<Fluid> acceptFluids = ((IPermeableBlock)block).getFluid(state);
+            Set<Fluid> acceptFluids = ((IPermeableBlock)block).getAcceptedFluids(state);
             return acceptFluids.isEmpty() || acceptFluids.contains(fluid);
         }
         return allowAir && isFluidPlaceable(world, pos, fluid);
@@ -154,7 +149,7 @@ public final class FluidUtil {
         Block block = state.getBlock();
 
         if(block instanceof IPermeableBlock){
-            return ((IPermeableBlock)block).getFluid(state);
+            return ((IPermeableBlock)block).getAcceptedFluids(state);
         }
 
         if(allowAir){

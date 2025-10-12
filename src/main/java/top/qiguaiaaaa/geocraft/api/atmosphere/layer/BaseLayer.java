@@ -33,9 +33,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
-import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
 import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
 
@@ -48,7 +48,7 @@ import java.util.Map;
  * 一个基本的抽象层,实现了基本的层级结构、热量管理和{@link GeographyState}管理
  */
 public abstract class BaseLayer implements Layer{
-    protected final Map<GeographyProperty, GeographyState> states = new HashMap<>();
+    protected final Map<IGeographyProperty, GeographyState> states = new HashMap<>();
     protected final Atmosphere atmosphere;
     protected Layer lowerLayer,upperLayer;
 
@@ -57,9 +57,9 @@ public abstract class BaseLayer implements Layer{
     }
 
     @Override
-    public boolean isInitialise() {
+    public boolean isLoaded() {
         for(GeographyState state:states.values()){
-            if(!state.isInitialised()) return false;
+            if(!state.isLoaded()) return false;
         }
         return true;
     }
@@ -94,7 +94,7 @@ public abstract class BaseLayer implements Layer{
     }
 
     @Override
-    public double drawHeat(double quanta,@Nullable BlockPos pos) {
+    public double drainHeat(double quanta, @Nullable BlockPos pos) {
         TemperatureState temperature = getTemperature();
         double capacity = getHeatCapacity();
         if(temperature.get()-quanta/capacity< TemperatureProperty.MIN){
@@ -145,17 +145,17 @@ public abstract class BaseLayer implements Layer{
 
     @Nullable
     @Override
-    public GeographyState getState(@Nonnull GeographyProperty property) {
+    public GeographyState getState(@Nonnull IGeographyProperty property) {
         return states.get(property);
     }
 
     @Nullable
     @Override
-    public GeographyState addState(@Nonnull GeographyProperty property) {
+    public GeographyState addState(@Nonnull IGeographyProperty property) {
         GeographyState oldState = getState(property);
         GeographyState newState = property.getStateInstance();
         states.put(property,newState);
-        newState.initialise(this);
+        newState.load(this);
         return oldState;
     }
 
@@ -163,7 +163,7 @@ public abstract class BaseLayer implements Layer{
     public NBTTagCompound serializeNBT() {
         NBTTagCompound compound = new NBTTagCompound();
         for(GeographyState state:states.values()){
-            if(!state.toBeSavedIntoNBT()) continue;
+            if(!state.canSerialize()) continue;
             compound.setTag(state.getNBTTagKey(),state.serializeNBT());
         }
         return compound;
@@ -172,7 +172,7 @@ public abstract class BaseLayer implements Layer{
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
         for(GeographyState state:states.values()){
-            if(!state.toBeLoadedFromNBT()) continue;
+            if(!state.canDeserialize()) continue;
             state.deserializeNBT(nbt.getTag(state.getNBTTagKey()));
         }
     }

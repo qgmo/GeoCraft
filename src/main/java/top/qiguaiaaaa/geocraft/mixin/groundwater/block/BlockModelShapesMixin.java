@@ -94,5 +94,8 @@ public class BlockModelShapesMixin {
         this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS_PATH,(new StateMap.Builder())
                 .ignore(BlockProperties.HUMIDITY)
                 .build());
+        this.blockStateMapper.registerBlockStateMapper(Blocks.CLAY,(new StateMap.Builder()
+                .ignore(BlockProperties.HUMIDITY)
+                .build()));
     }
 }
