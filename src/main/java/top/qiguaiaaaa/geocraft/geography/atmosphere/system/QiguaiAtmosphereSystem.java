@@ -36,7 +36,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
@@ -45,7 +44,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.BaseAtmosphereSystem;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
@@ -167,16 +166,16 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
         double rainPossibility = isRaining? WaterUtil.getRainPossibility(accessor):0;
         boolean doRain = BaseUtil.getRandomResult(world.rand,rainPossibility);
 
-        if(doRain && state.getBlock() instanceof IPermeableBlock){
+        if(doRain && state.getBlock() instanceof ILayeredFluidHost){
             int filled = 0;
-            IPermeableBlock block = (IPermeableBlock) state.getBlock();
+            ILayeredFluidHost block = (ILayeredFluidHost) state.getBlock();
             Fluid fluidToFill = FluidRegistry.WATER;
             if(accessor.getTemperature(false)<= TemperatureProperty.ICE_POINT) fluidToFill = GeoFluids.SNOW;
             if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,Blocks.AIR.getDefaultState())){
                 int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
                 if(drained>=FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME){
                     atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
-                    filled = block.addQuanta(world,pos,state,fluidToFill,1,true);
+                    filled = block.addLayer(world,pos,state,fluidToFill,1,true);
                 }
             }
             if(filled>0){

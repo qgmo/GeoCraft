@@ -27,7 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality;
 
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDynamicLiquid;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockSnow;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -37,7 +40,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
@@ -74,7 +77,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param slopeModeFlowDirections Q>1 坡度流动模式下的选择集合
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void checkNeighborsToFindFlowChoices(World worldIn, BlockPos pos,IBlockState state , int liquidQuanta, List<FlowChoice> averageModeFlowDirections,@Nullable Set<EnumFacing> slopeModeFlowDirections){
+    public void checkNeighborsToFindFlowChoices(World worldIn, BlockPos pos, IBlockState state , int liquidQuanta, List<FlowChoice> averageModeFlowDirections, @Nullable Set<EnumFacing> slopeModeFlowDirections){
         for(EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
             IBlockState facingState = worldIn.getBlockState(mutablePos.setPos(pos.getX()+facing.getXOffset(),pos.getY(),pos.getZ()+facing.getZOffset()));
             if(slopeModeFlowDirections==null?
@@ -83,34 +86,34 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
                 continue;
 
             Block block = facingState.getBlock();
-            IPermeableBlock permeableBlock = (block instanceof IPermeableBlock)?(IPermeableBlock) block:null;
+            ILayeredFluidHost permeableBlock = (block instanceof ILayeredFluidHost)?(ILayeredFluidHost) block:null;
 
-            int facingHeight,facingQuanta;
+            int facingHeight,facingQuanta,facingHeightPerLayer = ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
             if(permeableBlock != null){
-                facingHeight = permeableBlock.getHeight(facingState,fluid);
-                facingQuanta = permeableBlock.getQuanta(facingState,fluid);
+                facingHeight = permeableBlock.getHeight(worldIn,mutablePos,facingState,fluid);
+                facingQuanta = permeableBlock.getLayers(worldIn,mutablePos,facingState,fluid);
             }else {
                 int facingMeta = getDepth(facingState);
                 if(facingMeta <0 || facingMeta>7) facingMeta = 8;
                 facingQuanta = 8-facingMeta;
-                facingHeight = facingQuanta*IPermeableBlockLiquid.HEIGHT_PER_QUANTA;
+                facingHeight = facingQuanta* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
             }
 
-            if(facingHeight<(liquidQuanta-1)*IPermeableBlockLiquid.HEIGHT_PER_QUANTA){
+            if(facingHeight+facingHeightPerLayer<=(liquidQuanta-1)* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA){
                 averageModeFlowDirections.add(permeableBlock == null?
-                        new FlowChoice(facingQuanta,facing,IPermeableBlockLiquid.HEIGHT_PER_QUANTA):
-                        new FlowChoice(facing,permeableBlock,facingState,fluid));
+                        new FlowChoice(facing,facingQuanta):
+                        new FlowChoice(worldIn,mutablePos,facingState,permeableBlock,facing,fluid));
             }
 
             if(!canFlowInto2RegardlessPermeable(facingState)) continue;
-            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta*IPermeableBlockLiquid.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
+            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
         }
     }
 
     public boolean canFlowIntoRegardedPermeable(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull IBlockState fromState,@Nonnull EnumFacing from){
         if(canFlowInto(state)) return true;
-        if(state.getBlock() instanceof IPermeableBlock){
-            IPermeableBlock block = (IPermeableBlock) state.getBlock();
+        if(state.getBlock() instanceof ILayeredFluidHost){
+            ILayeredFluidHost block = (ILayeredFluidHost) state.getBlock();
             return block.canFill(world, pos, state, fluid,from,fromState);
         }
         return false;
@@ -150,10 +153,10 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
         return material == Material.LAVA && !worldIn.provider.doesWaterVaporize() ? 2 : 4;
     }
 
-    public boolean canFlowIntoWhenSnowLayer(@Nonnull IBlockState state,int quanta){
+    public boolean canFlowIntoWhenSnowLayer(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,int quanta){
         if(state.getBlock() != Blocks.SNOW_LAYER) return true;
-        if(((IPermeableBlock)Blocks.SNOW_LAYER).isFull(state,FluidRegistry.WATER)) return false;
-        return ((IPermeableBlock)Blocks.SNOW_LAYER).getHeight(state, FluidRegistry.WATER)<(quanta-1)*IPermeableBlockLiquid.HEIGHT_PER_QUANTA;
+        if(((ILayeredFluidHost)Blocks.SNOW_LAYER).isFull(world,pos,state,FluidRegistry.WATER)) return false;
+        return ((ILayeredFluidHost)Blocks.SNOW_LAYER).getHeight(world,pos,state, FluidRegistry.WATER)<(quanta-1)* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
     }
 
     /**
@@ -167,9 +170,9 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      */
     public boolean canMoveDownTo(@Nonnull World world,@Nonnull BlockPos downPos,@Nonnull IBlockState downState,int curQuanta,IBlockState fromState){
         if(canMoveDownTo(downState)) return true;
-        if(downState.getBlock() instanceof IPermeableBlock){
-            if(!((IPermeableBlock)downState.getBlock()).canFill(world,downPos,downState, fluid,EnumFacing.UP,fromState)) return false;
-            return ((IPermeableBlock)downState.getBlock()).addQuanta(world,downPos,downState,fluid,curQuanta,false)>0;
+        if(downState.getBlock() instanceof ILayeredFluidHost){
+            if(!((ILayeredFluidHost)downState.getBlock()).canFill(world,downPos,downState, fluid,EnumFacing.UP,fromState)) return false;
+            return ((ILayeredFluidHost)downState.getBlock()).addLayer(world,downPos,downState,fluid,curQuanta,false)>0;
         }
         return false;
     }
@@ -301,7 +304,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
             int quantaDiffer = getQuantaDiffer(state,thisQuanta);
             boolean isFluid = FluidUtil.isFluid(state);
             boolean isAir = state.getMaterial() == Material.AIR;
-            if (BlockLiquidUpdater.isBlocked(state) || !canFlowIntoWhenSnowLayer(state,thisQuanta) || (isFluid && quantaDiffer <1)) {
+            if (BlockLiquidUpdater.isBlocked(state) || !canFlowIntoWhenSnowLayer(worldIn,facingPos,state,thisQuanta) || (isFluid && quantaDiffer <1)) {
                 continue;
             }
             if(isAir){

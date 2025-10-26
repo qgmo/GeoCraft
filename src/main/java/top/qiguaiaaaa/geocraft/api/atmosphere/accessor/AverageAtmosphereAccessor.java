@@ -163,7 +163,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
      * @return {@inheritDoc}
      */
     @Override
-    public double drawHeatFromAtmosphere(double amount) {
+    public double drainHeatFromAtmosphere(double amount) {
         if(amount <0) return 0;
         if(skyLight == 0) return amount;
         checkAtmosphereDataLoaded();
@@ -196,7 +196,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     }
 
     @Override
-    public double drawHeatFromUnderlying(double amount) {
+    public double drainHeatFromUnderlying(double amount) {
         if(amount <0) return 0;
         checkAtmosphereDataLoaded();
         clearInvalidData();
@@ -208,7 +208,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     }
 
     @Override
-    public double drawHeatFromCurrentLayer(double amount) {
+    public double drainHeatFromCurrentLayer(double amount) {
         if(amount <0) return 0;
         checkAtmosphereDataLoaded();
         clearInvalidData();

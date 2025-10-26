@@ -42,7 +42,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.IWorldGenerator;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
@@ -56,7 +56,7 @@ import static top.qiguaiaaaa.geocraft.configs.SoilConfig.*;
 
 public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
 
-    private boolean enableProtection;
+    private boolean enableProtection,shouldContinue;
 
     private boolean needProtection = false;
 
@@ -100,6 +100,10 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
                         needProtection = false;
                         continue;
                     }
+                    if(shouldContinue){
+                        shouldContinue = false;
+                        continue;
+                    }
                     if(state == null){ //不透水
                         waterFlag = false;
                         continue;
@@ -122,15 +126,19 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
         Block block = state.getBlock();
         if(block instanceof IBlockSoil){
             IBlockSoil soil = (IBlockSoil) block;
-            if(waterFlag) return soil.getQuantaState(state,FluidRegistry.WATER,4);
+            if(waterFlag) return soil.getLayerState(state,FluidRegistry.WATER,4);
             if(!biome.canRain()) return null;
-            return soil.getQuantaState(state,FluidRegistry.WATER,
+            return soil.getLayerState(state,FluidRegistry.WATER,
                     (int)MathHelper.clamp(4*biome.getRainfall()+1,0,soil.getMaxStableHumidity(state)));
         }
-        if(block instanceof IPermeableBlock){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
-            IPermeableBlock permeable = (IPermeableBlock) block;
-            int maxQuanta = permeable.getMaxQuanta(state,FluidRegistry.WATER);
-            if(waterFlag) return permeable.getQuantaState(state,FluidRegistry.WATER,maxQuanta);
+        if(block instanceof ILayeredFluidHost){ //之前已经处理过本身为流体的可能性，这里一定不会是流体
+            ILayeredFluidHost permeable = (ILayeredFluidHost) block;
+            int maxQuanta = permeable.getMaxLayers(world,pos,state,FluidRegistry.WATER);
+            if(waterFlag){
+                permeable.addLayer(world,pos,state,FluidRegistry.WATER,maxQuanta, Constants.BlockFlags.DEFAULT_AND_RERENDER,Constants.BlockFlags.NO_OBSERVERS | Constants.BlockFlags.NO_RERENDER);
+                shouldContinue = true;
+                return null;
+            }
             return null;
         }
         return null;

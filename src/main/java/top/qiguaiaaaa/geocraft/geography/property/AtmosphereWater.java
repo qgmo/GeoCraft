@@ -38,6 +38,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
@@ -46,11 +47,21 @@ import top.qiguaiaaaa.geocraft.util.math.MathUtil;
 
 import javax.annotation.Nonnull;
 
-public class AtmosphereWater extends FluidProperty {
+public class AtmosphereWater extends FluidProperty implements IAtmosphereProperty {
     public static final AtmosphereWater WATER = new AtmosphereWater();
     protected AtmosphereWater() {
-        super(FluidRegistry.WATER,false,true);
+        super(FluidRegistry.WATER);
         setRegistryName(new ResourceLocation(GeoCraft.MODID,"water"));
+    }
+
+    @Override
+    public boolean haveWindEffect() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlowable() {
+        return true;
     }
 
     @Override
@@ -65,14 +76,14 @@ public class AtmosphereWater extends FluidProperty {
         FluidState toWater = layer.getWater();
         if(toWater == null) return;
 
-        double speed = MathUtil.获得带水平正负方向的速度(windSpeed,direction)+(water.getAmount()-toWater.getAmount())/2000d;
+        double speed = MathUtil.获得带水平正负方向的速度(windSpeed,direction)+(water.getFluidAmount()-toWater.getFluidAmount())/2000d;
         if(speed>1e-5){
-            int transferAmount = getWaterTransferAmount(water.getAmount()/4.0,speed);
+            int transferAmount = getWaterTransferAmount(water.getFluidAmount()/4.0,speed);
             if(water.addAmount(-transferAmount)){
                 to.addWater(transferAmount,centerPos);
             }
         }else if(speed<-1e-5){
-            int transferAmount = getWaterTransferAmount(toWater.getAmount()
+            int transferAmount = getWaterTransferAmount(toWater.getFluidAmount()
                     *Math.min((fromTop-layer.getBeginY())/from.getDepth(),1)/4.0,
                     -speed);
             if(toWater.addAmount(-transferAmount)){
@@ -88,7 +99,7 @@ public class AtmosphereWater extends FluidProperty {
         FluidState from = lower.getWater(),to = upper.getWater();
         if(from == null || to == null) return;
         double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
-        int waterTransferAmount = getWaterTransferAmountVertically(from.getAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis*2);
+        int waterTransferAmount = getWaterTransferAmountVertically(from.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis*2);
         if(from.addAmount(-waterTransferAmount)){
             to.addAmount(waterTransferAmount);
         }

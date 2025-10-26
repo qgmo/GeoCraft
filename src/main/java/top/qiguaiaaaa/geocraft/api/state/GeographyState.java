@@ -69,6 +69,7 @@ public interface GeographyState extends INBTSerializable<NBTBase> {
      */
     @Nonnull
     IGeographyProperty getProperty();
+    @Deprecated
     @Nonnull
     String getNBTTagKey();
 }

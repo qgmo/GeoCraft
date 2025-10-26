@@ -54,7 +54,7 @@ import java.util.Map;
  * 下垫面层级{@link UnderlyingLayer}，必须要有<br/>
  * 如未说明，所有的能量单位均为Forge Energe（FE)，模组内默认1 FE = 1 J （现实单位）
  */
-public interface Layer extends INBTSerializable<NBTTagCompound> {
+public interface Layer extends INBTSerializable<NBTTagCompound>{
     /**
      * 初始化时调用
      * @param chunk 层级所在区块
@@ -225,6 +225,7 @@ public interface Layer extends INBTSerializable<NBTTagCompound> {
      * 当前大气层级是否需要序列化
      * @return 若需要,则返回true
      */
+    @Deprecated
     boolean isSerializable();
 
     /**

@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.atmosphere.accessor;
 
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.EnumSkyBlock;
@@ -59,6 +60,9 @@ public interface IAtmosphereAccessor {
     default AtmosphereWorldInfo getAtmosphereWorldInfo(){return getSystem().getAtmosphereWorldInfo();}
     @Nonnull
     IAtmosphereSystem getSystem();
+
+    @Nonnull
+    BlockPos getPos();
 
     /**
      * 获取该Accessor目前位置的大气
@@ -111,9 +115,9 @@ public interface IAtmosphereAccessor {
      * @param amount 吸取量
      * @return 实际吸取量
      */
-    double drawHeatFromAtmosphere(double amount);
-    double drawHeatFromUnderlying(double amount);
-    double drawHeatFromCurrentLayer(double amount);
+    double drainHeatFromAtmosphere(double amount);
+    double drainHeatFromUnderlying(double amount);
+    double drainHeatFromCurrentLayer(double amount);
 
     /**
      * 从该层往指定方向发送{@link HeatPack}，注意不应当让该层吸收对应的包

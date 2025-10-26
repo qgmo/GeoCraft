@@ -104,7 +104,7 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
     }
 
     @Override
-    public double getCloudExponent() {
+    public double getCloudExponent(@Nonnull BlockPos pos) {
         if(worldInfo.getWorld().getWorldInfo().isThundering()) return biome.getRainfall()*thunderingCloud;
         if(worldInfo.getWorld().getWorldInfo().isRaining()) return biome.getRainfall()*rainCloud;
         return biome.getRainfall();

@@ -25,32 +25,48 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.property;
+package top.qiguaiaaaa.geocraft.api.util.math;
 
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+import net.minecraft.util.EnumFacing;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/**
- * 地理属性
- * @author QiguaiAAAA
- */
-public interface IGeographyProperty extends IForgeRegistryEntry<IGeographyProperty> {
-    /**
-     * 获取对应状态的Instance
-     * @return 一个符合该属性的状态
-     */
-    @Nonnull
-    GeographyState getStateInstance();
+@Deprecated
+public final class OldFlowChoice {
+    public final EnumFacing direction;
+    public final int heightPerQuanta;
+    public final ILayeredFluidHost block;
+    private int quantaOfThisFluid;
 
     /**
-     * 当大气初始化的时候
-     * @param atmosphere 大气
-     * @param chunk 若在区块加载后初始化,则提供区块实例
+     * 创建一个基本的流动选择,适用十纯单流体的情况
+     * @param rawQuanta 该选择最初的流体量
+     * @param direction 该选择的方向
      */
-    default void onAtmosphereInitialise(@Nonnull Atmosphere atmosphere, @Nullable Chunk chunk){}
+    @Deprecated
+    public OldFlowChoice(int rawQuanta, EnumFacing direction){
+        this(rawQuanta,direction,1);
+    }
+
+    /**
+     * 创建一个自定义每量高度的流动选择,一般用于空气
+     * @param rawQuanta 该选择最初的流体量
+     * @param direction 该选择的方向
+     * @param heightPerQuanta 该选择的每量高度
+     */
+    public OldFlowChoice(int rawQuanta, @Nullable EnumFacing direction, int heightPerQuanta){
+        this.quantaOfThisFluid = rawQuanta;
+        this.direction = direction;
+        this.heightPerQuanta = heightPerQuanta;
+        this.block = null;
+    }
+
+    public int getQuantaOfThisFluid() {
+        return quantaOfThisFluid;
+    }
+
+    public void addQuanta(int i){
+        quantaOfThisFluid +=i;
+    }
 }

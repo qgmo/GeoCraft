@@ -41,4 +41,8 @@ public final class BlockProperties {
     public static final PropertyInteger HUMIDITY = PropertyInteger.create("humidity",0,4);
 
     public static final PropertyBool MIXTURE = PropertyBool.create("mixture");
+
+    public static int toFarmlandMoistureFromHumidity(int humidity){
+        return humidity == 0?0:humidity*2-1;
+    }
 }

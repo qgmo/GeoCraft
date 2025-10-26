@@ -39,6 +39,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.PlaceChoice;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
 
@@ -397,12 +398,10 @@ public final class FluidSearchUtil {
         if (!world.isBlockLoaded(origin)) return res;
 
         if(!ignoreBeginPos){
-            Set<Fluid> acceptFluids;
             if (FluidUtil.isFluidPlaceablePermeable(world,origin,fluid,allowAir))
-                res.add(new PlaceChoice(FluidUtil.getFluidQuantaPermeable(world,origin,world.getBlockState(origin),fluid,allowAir),origin));
+                res.add(new PlaceChoice(LayeredFluidHostUtil.getFluidLayers(world,origin,world.getBlockState(origin),fluid,allowAir),origin));
             else if(
-                    ((acceptFluids = FluidUtil.getFluidPermeable(world.getBlockState(origin),allowAir)) != null)
-                            && (acceptFluids.contains(fluid) || acceptFluids.isEmpty())) return res;
+                    LayeredFluidHostUtil.isFluidAccepted(world,origin,world.getBlockState(origin),fluid,allowAir)) return res;
             if (res.size() >= maxOptions) return res;
         }
 
@@ -419,14 +418,11 @@ public final class FluidSearchUtil {
 
                 if (!world.isBlockLoaded(p)) continue;
 
-                Set<Fluid> acceptFluids;
-
                 if (FluidUtil.isFluidPlaceablePermeable(world,p,fluid,allowAir)) {
-                    res.add(new PlaceChoice(FluidUtil.getFluidQuantaPermeable(world,origin,world.getBlockState(p),fluid,allowAir),p));
+                    res.add(new PlaceChoice(LayeredFluidHostUtil.getFluidLayers(world,origin,world.getBlockState(p),fluid,allowAir),p));
                     if (res.size() >= maxOptions) break;
                     queue.add(p);
-                }else if(((acceptFluids = FluidUtil.getFluidPermeable(world.getBlockState(p),allowAir))!= null)
-                && (acceptFluids.isEmpty() || acceptFluids.contains(fluid))) {
+                }else if((LayeredFluidHostUtil.isFluidAccepted(world,p,world.getBlockState(p),fluid,allowAir))) {
                     queue.add(p);
                 }
             }

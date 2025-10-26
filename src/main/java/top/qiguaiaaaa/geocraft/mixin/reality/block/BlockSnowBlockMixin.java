@@ -72,7 +72,7 @@ public class BlockSnowBlockMixin extends Block {
         double temp = accessor.getTemperature();
         if(temp > TemperatureProperty.ICE_POINT){
             this.turnIntoWater(worldIn,pos,accessor.getAtmosphereHere());
-            accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*8);
+            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*8);
         }
     }
 

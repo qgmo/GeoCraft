@@ -30,7 +30,6 @@ package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.update;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockSnow;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -40,24 +39,22 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.IFluidBlock;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
-import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
-import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.IPermeableBlockLiquid;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.ILayeredFluidHostLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure.RealityPressureTaskBuilder;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.update.FluidUpdateBaseTask;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;
@@ -70,7 +67,6 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
     protected static final ThreadLocal<List<FlowChoice>> AVERAGE_MODE_FLOW_CHOICES = ThreadLocal.withInitial(ArrayList::new);
-    protected static final ThreadLocal<Set<FlowChoice>> FULL_FLOW_CHOICES = ThreadLocal.withInitial(HashSet::new);
     protected final RealityBlockLiquidUpdater updater;
     protected final BlockDynamicLiquid block;
     protected IBlockState state;
@@ -116,9 +112,9 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                 }
                 world.setBlockState(downPos, ForgeEventFactory.fireFluidPlaceBlockEvent(world, downPos, pos, Blocks.STONE.getDefaultState()));
                 FluidOperationUtil.triggerFluidMixEffects(world,downPos);
-            }else if(stateBelow.getBlock() instanceof IPermeableBlock){
-                IPermeableBlock permeable = (IPermeableBlock) stateBelow.getBlock();
-                int quantaToFill = permeable.addQuanta(world,downPos,stateBelow,fluid,liquidQuanta,true);
+            }else if(stateBelow.getBlock() instanceof ILayeredFluidHost){
+                ILayeredFluidHost permeable = (ILayeredFluidHost) stateBelow.getBlock();
+                int quantaToFill = permeable.addLayer(world,downPos,stateBelow,fluid,liquidQuanta,true);
                 liquidQuanta -= quantaToFill;
                 liquidMeta = 8 -liquidQuanta;
                 if(liquidQuanta <=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态
@@ -169,24 +165,16 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         //可流动方向检查
         final List<FlowChoice> averageModeFlowDirections = AVERAGE_MODE_FLOW_CHOICES.get();//平均流动模式可用方向
         averageModeFlowDirections.clear();
-        final Set<FlowChoice> fullFlowChoices = FULL_FLOW_CHOICES.get();
-        fullFlowChoices.clear();;
         Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?
                 EnumSet.noneOf(EnumFacing.class):null;//非Q=1坡度模式可用方向
         updater.checkNeighborsToFindFlowChoices(world,pos,state,liquidQuanta,averageModeFlowDirections,slopeModeFlowDirections);
 
         if(!averageModeFlowDirections.isEmpty()){ //平均流动模式
-            averageModeFlowDirections.sort(Comparator.comparingInt(FlowChoice::getHeight));
-            int newLiquidQuanta = liquidQuanta;
-            while(averageModeFlowDirections.get(0).getHeight()<(newLiquidQuanta-1)*IPermeableBlockLiquid.HEIGHT_PER_QUANTA){ //向四周分配流量
-                if(averageModeFlowDirections.get(0).isFull()){
-                    fullFlowChoices.add(averageModeFlowDirections.remove(0));
-                    if(averageModeFlowDirections.isEmpty()) break;
-                    continue;
-                }
-                averageModeFlowDirections.get(0).addQuanta(1);
-                newLiquidQuanta--;
-                averageModeFlowDirections.sort(Comparator.comparingInt(FlowChoice::getHeight));
+            int newLiquidQuanta = LayeredFluidHostUtil.averageFlow(liquidQuanta,ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA, QBUtil.QUANTA_VOLUME,0,averageModeFlowDirections);
+
+            if(newLiquidQuanta == liquidQuanta){
+                this.placeStaticBlock(world,pos,state,FlowingMode.AVERAGE_MODE);
+                return;
             }
 
             liquidMeta = 8 - newLiquidQuanta;
@@ -201,18 +189,14 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                 world.notifyNeighborsOfStateChange(pos,block, false);
             }
 
-            averageModeFlowDirections.addAll(fullFlowChoices);
-            fullFlowChoices.clear();
-
-            for(FlowChoice choice:averageModeFlowDirections){ //向四周流动
-                if(choice.getQuantaOfThisFluid() == 0) continue;
-                if(choice.direction == null) continue;
+            for(@Nonnull FlowChoice choice:averageModeFlowDirections){ //向四周流动
+                if(choice.getAddedLayers() == 0) continue;
                 BlockPos facingPos = pos.offset(choice.direction);
-                if(choice.block != null){ //是透水方块
-                    choice.block.setQuanta(world,facingPos,world.getBlockState(facingPos),fluid,choice.getQuantaOfThisFluid());
-                    continue;
+                if(choice.isAir()){
+                    directlyFlowInto(world,facingPos,world.getBlockState(facingPos),8-choice.getNewLayers());
+                }else{
+                    choice.apply(world,facingPos,world.getBlockState(facingPos),fluid);
                 }
-                directlyFlowInto(world,facingPos,world.getBlockState(facingPos),8-choice.getQuantaOfThisFluid());
             }
 
             averageModeFlowDirections.clear();

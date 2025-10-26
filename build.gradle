@@ -19,12 +19,11 @@ buildscript {
 }
         
 apply plugin: 'net.minecraftforge.gradle'
-// Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.1.1'
+version = '0.2.0'
 group = 'top.qiguaiaaaa.geocraft' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'geocraft'
 
@@ -37,7 +36,11 @@ def loadGroovyConfig(){
 
 processResources {
     from(sourceSets.main.resources.srcDirs) {
+        include '**/*.json', '**/*.lang', '**/*.cfg', '**/*.info', '**/*.mcmeta', '**/*.txt'
         filter(ReplaceTokens, tokens: loadGroovyConfig())
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude '**/*.json', '**/*.lang', '**/*.cfg', '**/*.info', '**/*.mcmeta', '**/*.txt'
     }
 }
 
@@ -60,9 +63,6 @@ minecraft {
     //mappings channel: 'snapshot', version: '20171003-1.12'
     mappings channel: 'snapshot', version: '20180814-1.12'
 
-//    replace("@version@", project.version)
-//    replace("@mcVersion@", "1.12.2")
-
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
     
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
@@ -73,10 +73,8 @@ minecraft {
         client {
             workingDirectory project.file('run')
 
-            // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-            // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
             property 'Dfml.coreMods.load', 'top.qiguaiaaaa.geocraft.MixinEarlyInit'
             property 'Dmixin.debug.export', 'true'
@@ -87,10 +85,8 @@ minecraft {
 
         server {
 
-            // Recommended logging data for a userdev environment
             property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
 
-            // Recommended logging level for the console
             property 'forge.logging.console.level', 'debug'
             property 'Dfml.coreMods.load', 'top.qiguaiaaaa.geocraft.MixinEarlyInit'
             property 'Dmixin.debug.export', 'true'
@@ -159,7 +155,6 @@ repositories {
     maven { url = 'https://maven.cleanroommc.com'}
 }
 
-// Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([

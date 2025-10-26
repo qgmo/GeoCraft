@@ -27,7 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.mixin.reality.block;
 
-import com.google.common.collect.Sets;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
@@ -51,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.IPermeableBlockLiquid;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.ILayeredFluidHostLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure.RealityPressureTaskBuilder;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
@@ -62,12 +61,10 @@ import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 import top.qiguaiaaaa.geocraft.util.mixinapi.IVanillaFlowChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.Random;
-import java.util.Set;
 
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowChecker, FluidSettable, IPermeableBlockLiquid {
+public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowChecker, FluidSettable, ILayeredFluidHostLiquid {
     @Unique
     private static final boolean debug = false;
     @Unique

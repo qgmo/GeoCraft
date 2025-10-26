@@ -58,7 +58,7 @@ import java.util.Map;
 
 import static top.qiguaiaaaa.geocraft.util.ChunkUtil.getSameLiquidDepth;
 
-public class Underlying extends UnderlyingLayer {
+public class SurfaceUnderlying extends UnderlyingLayer {
     public static final int 过渡距离 = 3;
     public static final float 地底温度受地表影响系数 = 0.001f;
     public double 平均返照率;
@@ -70,7 +70,7 @@ public class Underlying extends UnderlyingLayer {
     protected double 周围区块最高平均海拔 = -100000,周围区块最低平均海拔 = -100000;
     boolean afterFirstTick = false;
 
-    public Underlying(Atmosphere atmosphere) {
+    public SurfaceUnderlying(Atmosphere atmosphere) {
         super(atmosphere);
         altitude.set(AltitudeProperty.UNAVAILABLE);
         states.put(GeoCraftProperties.TEMPERATURE, temperature);
@@ -123,7 +123,7 @@ public class Underlying extends UnderlyingLayer {
      * @return 自身
      */
     @Override
-    public Underlying load(@Nonnull Chunk chunk) {
+    public SurfaceUnderlying load(@Nonnull Chunk chunk) {
         long heatCapacity = 0;
         double averageReflectivity = 0;
         for (int x = 0; x < 16; x++) {

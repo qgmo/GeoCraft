@@ -27,13 +27,17 @@
 
 package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
 
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.registries.IForgeRegistry;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
+import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
@@ -66,13 +70,13 @@ public abstract class BaseLayer implements Layer{
 
     @Override
     public void putHeat(double quanta, @Nullable BlockPos pos) {
-        TemperatureState temperature = getTemperature();
+        final TemperatureState temperature = getTemperature();
         double capacity = getHeatCapacity();
         if(temperature.get()+quanta/capacity< TemperatureProperty.MIN){
             temperature.set(TemperatureProperty.MIN);
             return;
         }
-        getTemperature().addHeat(quanta,getHeatCapacity());
+        temperature.addHeat(quanta,capacity);
     }
 
     @Override
@@ -95,14 +99,14 @@ public abstract class BaseLayer implements Layer{
 
     @Override
     public double drainHeat(double quanta, @Nullable BlockPos pos) {
-        TemperatureState temperature = getTemperature();
+        final TemperatureState temperature = getTemperature();
         double capacity = getHeatCapacity();
         if(temperature.get()-quanta/capacity< TemperatureProperty.MIN){
             quanta = Math.max(temperature.get()- TemperatureProperty.MIN-0.1,0)/capacity;
             temperature.set(TemperatureProperty.MIN+0.1f);
             return quanta;
         }
-        getTemperature().addHeat(-quanta,getHeatCapacity());
+        temperature.addHeat(-quanta,capacity);
         return quanta;
     }
 
@@ -164,7 +168,8 @@ public abstract class BaseLayer implements Layer{
         NBTTagCompound compound = new NBTTagCompound();
         for(GeographyState state:states.values()){
             if(!state.canSerialize()) continue;
-            compound.setTag(state.getNBTTagKey(),state.serializeNBT());
+            ResourceLocation location = state.getProperty().getRegistryName();
+            compound.setTag(location == null?state.getNBTTagKey():location.toString(),state.serializeNBT());
         }
         return compound;
     }
@@ -173,7 +178,17 @@ public abstract class BaseLayer implements Layer{
     public void deserializeNBT(NBTTagCompound nbt) {
         for(GeographyState state:states.values()){
             if(!state.canDeserialize()) continue;
-            state.deserializeNBT(nbt.getTag(state.getNBTTagKey()));
+            ResourceLocation location = state.getProperty().getRegistryName();
+            NBTBase tag = nbt.getTag(location == null?state.getNBTTagKey():location.toString());
+            state.deserializeNBT(tag);
+        }
+        for(String key:nbt.getKeySet()){
+            IGeographyProperty property = GeographyProperty.MANAGER.getProperties().getValue(new ResourceLocation(key));
+            if(property == null) continue;
+            if(states.containsKey(property)) continue;
+            GeographyState state = property.getStateInstance();
+            state.deserializeNBT(nbt.getTag(key));
+            states.put(property,state);
         }
     }
 }

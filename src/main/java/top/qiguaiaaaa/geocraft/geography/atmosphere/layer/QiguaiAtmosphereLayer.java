@@ -38,7 +38,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.BaseAtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
-import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
@@ -55,7 +55,7 @@ import java.util.Map;
 
 public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
     protected final Map<EnumFacing, Vec3d> winds = new EnumMap<>(EnumFacing.class);
-    protected double heatCapacity = Double.MAX_VALUE/2;
+    protected double heatCapacity = Float.MAX_VALUE/2;
     protected final FluidState water = GeoCraftProperties.WATER.getStateInstance();
     protected final FluidState steam = GeoCraftProperties.STEAM.getStateInstance();
     protected boolean isUpperLayerValid,isLowerLayerValid;
@@ -111,7 +111,7 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
      */
     public Vec3d 计算水平风速分量(Atmosphere to, EnumFacing dir){
         Vec3d wind = Vec3d.ZERO;
-        for(IAtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
+        for(IAtmosphereProperty property: GeographyProperty.MANAGER.getWindEffectedProperties()){
             wind= wind.add(property.getWind(this,to,dir));
         }
         return wind;
@@ -151,7 +151,7 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
         //能量平流
         热量平流(neighbor.getLeft(),neighbor.getRight());
         //物质和其他属性平流
-        for(IAtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
+        for(IAtmosphereProperty property: GeographyProperty.MANAGER.getFlowableProperties()){
             property.onFlow(this,chunk,neighbor.getLeft(),neighbor.getMiddle(),neighbor.getRight(),winds.get(neighbor.getRight()));
         }
     }
@@ -216,7 +216,7 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
         FluidState steam = getSteam();
         if(steam == null) return 0;
         // PV=nRT -> P = nRT/V -> P = mRT/MSh
-        return steam.getAmount()*
+        return steam.getFluidAmount()*
                 AtmosphereUtil.Constants.气体常数*
                 getTemperature().get()
                 / (

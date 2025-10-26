@@ -25,41 +25,32 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.block;
+package top.qiguaiaaaa.geocraft.api.property;
 
-import git.jbredwards.fluidlogged_api.api.block.IFluidloggable;
-import git.jbredwards.fluidlogged_api.api.util.FluidState;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.api.state.FluidState;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
- * 还没写好
  * @author QiguaiAAAA
  */
-public interface IFluidloggablePermeableBlock extends IFluidloggable,IPermeableBlock {
+public interface IFluidProperty extends INumberProperty<Integer>{
+
+    @Nonnull
     @Override
-    default int getQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid){
-        return getQuanta(state,fluid, FluidState.EMPTY);
+    default Class<Integer> getNumberType() {
+        return Integer.TYPE;
     }
 
+    @Nonnull
     @Override
-    default int getMaxQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid) {
-        return getQuanta(state,fluid,FluidState.EMPTY);
-    }
+    FluidState getStateInstance();
 
-    @Override
-    default int getEmptyHeight(@Nonnull IBlockState state, @Nullable Fluid fluid){
-        return 0;
-    }
-
-    @Override
-    default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source) {
-        return canFluidFlow(world,pos,state,side);
-    }
+    /**
+     * 获取气体对应的Forge流体
+     * @return Forge流体
+     */
+    @Nonnull
+    Fluid getFluid();
 }

@@ -27,8 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.geography.atmosphere;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
@@ -48,7 +46,7 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
     public abstract void updateTick(@Nullable Chunk chunk);
 
     protected void updateListeners(){
-        for(IAtmosphereTracker listener:listeners) listener.notify(this);
+        for(IAtmosphereTracker listener: trackers) listener.notify(this);
     }
 
     public void setLocation(int x,int z){
@@ -65,10 +63,18 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
     }
 
     @Override
-    public void onUnload() {}
+    public int getChunkX() {
+        return x;
+    }
+
+    @Override
+    public int getChunkZ() {
+        return z;
+    }
 
     @Override
     public boolean addSteam(int addAmount, @Nonnull BlockPos pos){
+        if(addAmount == 0) return true;
         return getAtmosphereLayer(pos).addSteam(pos,addAmount);
     }
 
@@ -85,7 +91,7 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
             if(!(layer instanceof AtmosphereLayer)) continue;
             FluidState state = layer.getWater();
             if(state == null) continue;
-            int realAmountLayer = Math.min(amount,state.getAmount());
+            int realAmountLayer = Math.min(amount,state.getFluidAmount());
             amount -= realAmountLayer;
             realAmount += realAmountLayer;
             if(!test) state.addAmount(-realAmountLayer);
@@ -142,26 +148,5 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
         AtmosphereLayer layer = getAtmosphereLayer(pos);
         if(layer == null) return 0;
         return layer.getWaterPressure(pos);
-    }
-
-
-    @Override
-    public NBTTagCompound serializeNBT() {
-        NBTTagCompound compound = new NBTTagCompound();
-        for(Layer layer:layers){
-            if(!layer.isSerializable()) continue;
-            compound.setTag(layer.getTagName(),layer.serializeNBT());
-        }
-        return compound;
-    }
-
-    @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
-        for(Layer layer:layers){
-            if(!layer.isSerializable()) continue;
-            NBTBase base = nbt.getTag(layer.getTagName());
-            if(!(base instanceof NBTTagCompound)) throw new IllegalArgumentException("NBT of Atmosphere Layer "+layer.getTagName()+" isn't a valid compound tag!");
-            layer.deserializeNBT((NBTTagCompound) base);
-        }
     }
 }

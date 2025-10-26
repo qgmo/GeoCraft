@@ -34,7 +34,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.*;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.util.exception.UnsupportedFluidException;
 
@@ -52,9 +52,6 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 public final class FluidUtil {
     public static final int ONE_IN_EIGHT_OF_BUCKET_VOLUME = Fluid.BUCKET_VOLUME/8;
-
-    private static final ThreadLocal<Set<Fluid>> PERMEABLE_FLUID_SET = ThreadLocal.withInitial(HashSet::new);
-    private static final ThreadLocal<Set<Fluid>> UNMODIFIABLE_FLUID_SET = ThreadLocal.withInitial(()->Collections.unmodifiableSet(PERMEABLE_FLUID_SET.get()));
 
     /**
      * 对应方块是否是一个液体
@@ -109,9 +106,8 @@ public final class FluidUtil {
     public static boolean isFluidPlaceablePermeable(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull Fluid fluid,boolean allowAir){
         IBlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
-        if(block instanceof IPermeableBlock){
-            Set<Fluid> acceptFluids = ((IPermeableBlock)block).getAcceptedFluids(state);
-            return acceptFluids.isEmpty() || acceptFluids.contains(fluid);
+        if(block instanceof ILayeredFluidHost){
+            return  ((ILayeredFluidHost)block).isAcceptedFluid(world,pos,state,fluid);
         }
         return allowAir && isFluidPlaceable(world, pos, fluid);
     }
@@ -141,25 +137,6 @@ public final class FluidUtil {
     public static Fluid getFluid(@Nonnull Material material){
         if(material == Material.WATER) return FluidRegistry.WATER;
         else if(material == Material.LAVA) return FluidRegistry.LAVA;
-        return null;
-    }
-
-    @Nullable
-    public static Set<Fluid> getFluidPermeable(@Nonnull IBlockState state, boolean allowAir) {
-        Block block = state.getBlock();
-
-        if(block instanceof IPermeableBlock){
-            return ((IPermeableBlock)block).getAcceptedFluids(state);
-        }
-
-        if(allowAir){
-            Fluid fluid = getFluid(state);
-            if(fluid == null) return null;
-            Set<Fluid> fluids = PERMEABLE_FLUID_SET.get();
-            fluids.clear();
-            fluids.add(fluid);
-            return UNMODIFIABLE_FLUID_SET.get();
-        }
         return null;
     }
 
@@ -206,13 +183,6 @@ public final class FluidUtil {
         int stateValue = state.getValue(BlockLiquid.LEVEL);
         if(stateValue>=8) return 1;
         else return 8-stateValue;
-    }
-
-    public static int getFluidQuantaPermeable(@Nonnull World worldIn,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull Fluid fluid,boolean allowAir){
-        if(state.getBlock() instanceof IPermeableBlock){
-            return ((IPermeableBlock)state.getBlock()).getQuanta(state,fluid);
-        }
-        return allowAir?getFluidQuanta(worldIn, pos, state):0;
     }
 
     /**

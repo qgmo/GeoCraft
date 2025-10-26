@@ -89,7 +89,7 @@ public class CloseAtmosphere extends QiguaiAtmosphere {
     }
 
     @Override
-    public double getCloudExponent() {
+    public double getCloudExponent(@Nonnull BlockPos pos) {
         return 0;
     }
 

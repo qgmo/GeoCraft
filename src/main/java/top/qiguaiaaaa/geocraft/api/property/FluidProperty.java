@@ -36,22 +36,11 @@ import javax.annotation.Nonnull;
  * 流体属性
  * @author QiguaiAAAA
  */
-public abstract class FluidProperty extends AtmosphereProperty implements INumberProperty<Integer>{
+public abstract class FluidProperty extends GeographyProperty implements IFluidProperty{
     protected final Fluid fluid;
-    public FluidProperty(@Nonnull Fluid gasFluid, boolean windEffect, boolean flowable) {
-        super(windEffect, flowable);
+    public FluidProperty(@Nonnull Fluid gasFluid) {
         this.fluid = gasFluid;
     }
-
-    @Nonnull
-    @Override
-    public Class<Integer> getNumberType() {
-        return Integer.TYPE;
-    }
-
-    @Nonnull
-    @Override
-    public abstract FluidState getStateInstance();
 
     /**
      * 获取气体对应的Forge流体

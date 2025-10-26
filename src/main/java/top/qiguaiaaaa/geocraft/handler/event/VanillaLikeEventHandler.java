@@ -27,9 +27,14 @@
 
 package top.qiguaiaaaa.geocraft.handler.event;
 
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityFallingBlock;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -37,19 +42,18 @@ import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableFluid;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidOperationChecker;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.VanillaLikeFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.VanillaFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.VanillaLikeFluidPhysicsCore;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.fluidsNotToSimulateInVanillaLike;
+import static top.qiguaiaaaa.geocraft.handler.event.VanillaEventHandler.onBlockReplaced;
 
 public final class VanillaLikeEventHandler{
     @SubscribeEvent(priority = EventPriority.HIGH)
@@ -58,7 +62,11 @@ public final class VanillaLikeEventHandler{
         if(!event.isRandomTick()) return;
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
-        VanillaFluidPhysicsCore.evaporateWater(worldIn,pos, worldIn.rand);
+        IBlockState newState = VanillaFluidPhysicsCore.evaporateWater(worldIn,pos,event.getState(), worldIn.rand);
+        if(newState != event.getState()){
+            event.setNewState(newState);
+            event.setResult(Event.Result.ALLOW);
+        }
     }
 
     @SubscribeEvent
@@ -77,6 +85,25 @@ public final class VanillaLikeEventHandler{
             atmosphere.drainWater(Fluid.BUCKET_VOLUME,randPos,false);
             //因为不是更新指定的位置,所以不设置结果
             world.setBlockState(randPos.down(),Blocks.FLOWING_WATER.getDefaultState());
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerPlacedBlock(BlockEvent.PlaceEvent event){
+        if(!onBlockReplaced(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), MoreRealityEventHandler.PlaceSource.PLAYER,event.getEntity())){
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityPlacedBlock(BlockEvent.EntityPlaceEvent event){
+        if(event instanceof BlockEvent.PlaceEvent) return;
+        MoreRealityEventHandler.PlaceSource source = MoreRealityEventHandler.PlaceSource.OTHERS;
+        Entity entity = event.getEntity();
+        if(entity instanceof EntityFallingBlock) source = MoreRealityEventHandler.PlaceSource.FALLING_BLOCK;
+        else if(entity instanceof EntityEnderman) source = MoreRealityEventHandler.PlaceSource.ENDER_MAN;
+        if(!onBlockReplaced(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity)){
+            event.setCanceled(true);
         }
     }
 

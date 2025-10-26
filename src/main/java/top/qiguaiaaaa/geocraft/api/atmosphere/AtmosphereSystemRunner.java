@@ -35,13 +35,14 @@ import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereGenerateEvent;
 
 import static top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager.*;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(modid = GeoCraftAPI.MODID)
 public class AtmosphereSystemRunner {
     static {
         EventFactory.EVENT_BUS.register(AtmosphereSystemRunner.class);

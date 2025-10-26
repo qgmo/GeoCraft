@@ -41,6 +41,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Final;
@@ -55,22 +56,21 @@ import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
-import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
-import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.*;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
-import java.util.Set;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 
 @Mixin(value = BlockSnow.class)
-public class BlockSnowMixin extends Block implements IPermeableBlock{
+public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost {
     @Shadow @Final public static PropertyInteger LAYERS;
 
     public BlockSnowMixin(Material materialIn) {
@@ -104,7 +104,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
             }else{
                 this.turnIntoMixture(world,pos,layer);
             }
-            accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*layer/2.0);
+            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*layer/2.0);
             return !isMixture;
         }else{
             if(isMixture){
@@ -180,7 +180,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
                 }
                 world.scheduleUpdate(downPos,this,tickRate(world));
             }else{
-                double totalWater = isMixture?getQuanta(state,null)/2d:getQuanta(downState,null)/2d;
+                double totalWater = isMixture? getLayers(world,pos,state,null)/2d: getLayers(world,pos,downState,null)/2d;
                 if(newLayers<=8){
                     world.setBlockToAir(pos);
                     world.setBlockState(downPos,downState
@@ -200,33 +200,33 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
 
                 accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*totalWater);
             }
-        }else if(downState.getBlock() instanceof IPermeableBlock){
-            IPermeableBlock permeableBlock = (IPermeableBlock) downState.getBlock();
-            int curLayers = getQuanta(state,null);
+        }else if(downState.getBlock() instanceof ILayeredFluidHost){
+            ILayeredFluidHost permeableBlock = (ILayeredFluidHost) downState.getBlock();
+            int curLayers = getLayers(world,pos,state,null);
             boolean hasHalfQuanta = (curLayers&1) !=0 && state.getValue(MIXTURE);
 
             IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
             int light = world.getLightFor(EnumSkyBlock.SKY,pos);
             if(accessor != null) accessor.setSkyLight(light);
 
-            int curQuantaWater = getQuanta(state,FluidRegistry.WATER);
+            int curQuantaWater = getLayers(world,pos,state,FluidRegistry.WATER);
             if(hasHalfQuanta) curQuantaWater++;
             boolean changed = false;
             if(curQuantaWater>0){
-                int filledQuanta = permeableBlock.addQuanta(world,downPos,downState, FluidRegistry.WATER,curQuantaWater,true);
+                int filledQuanta = permeableBlock.addLayer(world,downPos,downState, FluidRegistry.WATER,curQuantaWater,true);
                 curQuantaWater = curQuantaWater-filledQuanta;
                 changed = filledQuanta>0;
                 if(hasHalfQuanta && accessor != null)
-                    accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*0.5);
+                    accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*0.5);
             }
             if(changed) downState = world.getBlockState(downPos);
-            int curQuantaSnow = getQuanta(state,GeoFluids.SNOW);
+            int curQuantaSnow = getLayers(world,pos,state,GeoFluids.SNOW);
             if(!changed && hasHalfQuanta){
                 curQuantaSnow++;
                 curQuantaWater--;
             }
             if(curQuantaSnow>0){
-                int filled =permeableBlock.addQuanta(world,downPos,downState,GeoFluids.SNOW,curQuantaSnow,true);
+                int filled =permeableBlock.addLayer(world,downPos,downState,GeoFluids.SNOW,curQuantaSnow,true);
                 curQuantaSnow -= filled;
                 changed |= filled>0;
                 if(hasHalfQuanta && accessor != null)
@@ -242,7 +242,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
                 if(curQuantaWater>curQuantaSnow){
                     turnIntoWater(world,pos,accessor == null?null:accessor.getAtmosphereHere(),total);
                     if(accessor != null)
-                        accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curQuantaSnow);
+                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curQuantaSnow);
                 }else if(curQuantaSnow == curQuantaWater){
                     world.setBlockState(pos,state.withProperty(LAYERS,total)
                             .withProperty(MIXTURE,true));
@@ -288,14 +288,13 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
     // Permeable Block
     //**********
 
-    @Nonnull
     @Override
-    public Set<Fluid> getAcceptedFluids(@Nonnull IBlockState state) {
-        return GeoFluids.FluidSets.SNOW_LAYER_SET;
+    public boolean isAcceptedFluid(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+        return fluid == FluidRegistry.WATER || fluid == GeoFluids.SNOW;
     }
 
     @Override
-    public int getQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid) {
+    public int getLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid == FluidRegistry.WATER){
             return state.getValue(MIXTURE)?state.getValue(LAYERS)/2:0;
         }else if(fluid == GeoFluids.SNOW){
@@ -307,7 +306,7 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
     }
 
     @Override
-    public int getMaxQuanta(@Nonnull IBlockState state, @Nullable Fluid fluid) {
+    public int getMaxLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid == null) return 8;
         if(fluid != FluidRegistry.WATER && fluid != GeoFluids.SNOW) return 0;
         boolean mixture = state.getValue(MIXTURE);
@@ -316,24 +315,29 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
     }
 
     @Override
-    public int getEmptyHeight(@Nonnull IBlockState state, @Nullable Fluid fluid) {
+    public int getEmptyHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid == FluidRegistry.WATER){
             return 0;
         }else if(fluid == GeoFluids.SNOW){
-            return state.getValue(MIXTURE)?state.getValue(LAYERS)*getHeightPerQuanta(state)/2:0;
+            return state.getValue(MIXTURE)?state.getValue(LAYERS)* getHeightPerLayer(world,pos,state)/2:0;
         }
         return 0;
     }
 
     @Override
-    public int getHeightPerQuanta(@Nonnull IBlockState state) {
-        return EIGHTH_OF_HEIGHT;
+    public int getHeightPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state) {
+        return LayeredFluidHostUtil.EIGHTH_OF_HEIGHT;
     }
 
     @Override
-    public void addQuanta(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int quanta) {
+    public long getAmountInQBPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+        return QBUtil.QUANTA_VOLUME;
+    }
+
+    @Override
+    public void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,int disabledBlockFlags,int enabledBlockFlags) {
         if(fluid != FluidRegistry.WATER && fluid != GeoFluids.SNOW) return;
-        if(quanta == 0) return;
+        if(layer == 0) return;
         boolean mixture = state.getValue(MIXTURE);
 
         IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
@@ -343,33 +347,35 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
             accessor.setSkyLight(light);
         }
 
+        final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+
         if(mixture){
             int curSnowQuanta = state.getValue(LAYERS)/2;
             int curWaterQuanta = curSnowQuanta;
-            quanta = MathHelper.clamp(quanta,-curWaterQuanta,4-curWaterQuanta);
+            layer = MathHelper.clamp(layer,-curWaterQuanta,4-curWaterQuanta);
             if(fluid == FluidRegistry.WATER){
-                curWaterQuanta += quanta;
-                if(quanta <0){
+                curWaterQuanta += layer;
+                if(layer <0){
                     world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,curSnowQuanta+curWaterQuanta));
+                            .withProperty(LAYERS,curSnowQuanta+curWaterQuanta),flag);
                     if(accessor != null)
                         accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterQuanta);
                 }else{
                     world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+curWaterQuanta)));
+                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+curWaterQuanta)),flag);
                     if(accessor != null)
-                        accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowQuanta);
+                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowQuanta);
                 }
             }else{
-                curSnowQuanta += quanta;
-                if(quanta<0){
+                curSnowQuanta += layer;
+                if(layer <0){
                     world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+curWaterQuanta)));
+                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+curWaterQuanta)),flag);
                     if(accessor != null)
-                        accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowQuanta);
+                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowQuanta);
                 }else{
                     world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,curSnowQuanta+curWaterQuanta));
+                            .withProperty(LAYERS,curSnowQuanta+curWaterQuanta),flag);
                     if(accessor != null)
                         accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterQuanta);
                 }
@@ -377,22 +383,22 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
         }else{
             int curSnowQuanta = state.getValue(LAYERS);
             if(fluid == GeoFluids.SNOW){
-                quanta = MathHelper.clamp(quanta,-curSnowQuanta,8-curSnowQuanta);
-                world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+quanta));
+                layer = MathHelper.clamp(layer,-curSnowQuanta,8-curSnowQuanta);
+                world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+ layer),flag);
             }else {
-                quanta = MathHelper.clamp(quanta,0,8-curSnowQuanta);
-                if(quanta<curSnowQuanta){
-                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+quanta));
+                layer = MathHelper.clamp(layer,0,8-curSnowQuanta);
+                if(layer <curSnowQuanta){
+                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+ layer),flag);
                     if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quanta);
-                }else if(quanta == curSnowQuanta){
-                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+quanta)
-                            .withProperty(MIXTURE,true));
+                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer);
+                }else if(layer == curSnowQuanta){
+                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowQuanta+ layer)
+                            .withProperty(MIXTURE,true),flag);
                 }else{
                     world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+quanta)));
+                            .withProperty(BlockLiquid.LEVEL,8-(curSnowQuanta+ layer)),flag);
                     if(accessor != null){
-                        accessor.drawHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quanta);
+                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer);
                     }
                 }
             }
@@ -400,48 +406,48 @@ public class BlockSnowMixin extends Block implements IPermeableBlock{
     }
 
     @Override
-    public void setQuanta(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newQuanta) {
-        if(!getAcceptedFluids(state).contains(fluid)) return;
-        int curQuanta = getQuanta(state,fluid);
-        addQuanta(world, pos, state, fluid, newQuanta-curQuanta);
+    public void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags) {
+        if(!isAcceptedFluid(world, pos, state, fluid)) return;
+        int curQuanta = getLayers(world,pos,state,fluid);
+        addLayer(world, pos, state, fluid, newLayer -curQuanta,disabledBlockFlags,enabledBlockFlags);
     }
 
     @Nullable
     @Override
-    public IBlockState getQuantaState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int quanta) {
+    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer) {
         if(fluid != FluidRegistry.WATER && fluid != GeoFluids.SNOW) return null;
         boolean mixture = state.getValue(MIXTURE);
-        quanta = mixture? MathHelper.clamp(quanta,0,4):MathHelper.clamp(quanta,0,8);
+        layer = mixture? MathHelper.clamp(layer,0,4):MathHelper.clamp(layer,0,8);
         int curLayer = state.getValue(LAYERS);
         if(fluid == GeoFluids.SNOW){
             if(mixture){
-                if(quanta<<1==curLayer) return state;
-                if(quanta == 0 && curLayer>1) return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-curLayer/2);
-                if(quanta<<1<curLayer) return Blocks.FLOWING_WATER.getDefaultState()
-                        .withProperty(BlockLiquid.LEVEL,8-(curLayer/2+quanta));
-                if(quanta<<1>curLayer) return state.withProperty(MIXTURE,false).withProperty(LAYERS,curLayer/2+quanta);
+                if(layer <<1==curLayer) return state;
+                if(layer == 0 && curLayer>1) return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-curLayer/2);
+                if(layer <<1<curLayer) return Blocks.FLOWING_WATER.getDefaultState()
+                        .withProperty(BlockLiquid.LEVEL,8-(curLayer/2+ layer));
+                if(layer <<1>curLayer) return state.withProperty(MIXTURE,false).withProperty(LAYERS,curLayer/2+ layer);
                 return null;
             }
-            if(quanta == 0) return Blocks.AIR.getDefaultState();
-            return state.withProperty(LAYERS,quanta);
+            if(layer == 0) return Blocks.AIR.getDefaultState();
+            return state.withProperty(LAYERS, layer);
         }else if(fluid == FluidRegistry.WATER){
             if(mixture){
-                if(quanta<<1==curLayer) return state;
-                if(quanta == 0) return state.withProperty(MIXTURE,false)
+                if(layer <<1==curLayer) return state;
+                if(layer == 0) return state.withProperty(MIXTURE,false)
                         .withProperty(LAYERS,curLayer/2);
-                if(quanta<<1>curLayer) return Blocks.FLOWING_WATER.getDefaultState()
-                        .withProperty(BlockLiquid.LEVEL,8-(curLayer/2+quanta));
-                if(quanta<<1<curLayer) return state.withProperty(MIXTURE,false).withProperty(LAYERS,curLayer/2+quanta);
+                if(layer <<1>curLayer) return Blocks.FLOWING_WATER.getDefaultState()
+                        .withProperty(BlockLiquid.LEVEL,8-(curLayer/2+ layer));
+                if(layer <<1<curLayer) return state.withProperty(MIXTURE,false).withProperty(LAYERS,curLayer/2+ layer);
                 return null;
             }
-            if(quanta == 0) return state;
-            quanta = MathHelper.clamp(quanta,0,8-curLayer);
-            if(quanta == curLayer) return
+            if(layer == 0) return state;
+            layer = MathHelper.clamp(layer,0,8-curLayer);
+            if(layer == curLayer) return
                     state.withProperty(MIXTURE,true)
-                            .withProperty(LAYERS,quanta<<1);
-            else if(quanta > curLayer) return Blocks.FLOWING_WATER.getDefaultState()
-                    .withProperty(BlockLiquid.LEVEL,8-(curLayer+quanta));
-            else return state.withProperty(LAYERS,quanta+curLayer);
+                            .withProperty(LAYERS, layer <<1);
+            else if(layer > curLayer) return Blocks.FLOWING_WATER.getDefaultState()
+                    .withProperty(BlockLiquid.LEVEL,8-(curLayer+ layer));
+            else return state.withProperty(LAYERS, layer +curLayer);
         }
         return null;
     }

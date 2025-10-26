@@ -25,31 +25,62 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
+package top.qiguaiaaaa.geocraft.api.state;
 
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
-import top.qiguaiaaaa.geocraft.api.property.IFluidProperty;
-import top.qiguaiaaaa.geocraft.api.state.FluidState;
-import top.qiguaiaaaa.geocraft.api.state.GeographyState;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 一个基本的大气抽象层级，实现了{@link FluidState}的存取
+ * @author QiguaiAAAA
  */
-public abstract class BaseAtmosphereLayer extends BaseLayer implements AtmosphereLayer{
+public abstract class FluidStackState extends FluidState{
+    protected FluidStack stack;
+    public FluidStackState(@Nonnull FluidStack stack) {
+        super(stack.getFluid(), stack.amount);
+        this.stack = stack;
+    }
 
-    public BaseAtmosphereLayer(@Nonnull Atmosphere atmosphere) {
-        super(atmosphere);
+    @Override
+    public void setAmount(int fluidAmount) {
+        super.setAmount(fluidAmount);
+        this.stack.amount = amount;
+    }
+
+    @Override
+    public int getFluidAmount() {
+        return stack.amount;
     }
 
     @Nullable
     @Override
-    public FluidState getFluid(@Nonnull IFluidProperty property) {
-        final GeographyState state = states.get(property);
-        if(state instanceof FluidState) return (FluidState) state;
-        return null;
+    public FluidStack getFluid() {
+        return stack;
+    }
+
+    @Nonnull
+    @Override
+    public NBTBase serializeNBT() {
+        return stack.writeToNBT(new NBTTagCompound());
+    }
+
+    @Override
+    public void deserializeNBT(@Nonnull NBTBase nbt) {
+        if(nbt instanceof NBTTagCompound){
+            FluidStack newStack = FluidStack.loadFluidStackFromNBT((NBTTagCompound) nbt);
+            if(newStack != null) stack = newStack;
+        }
+    }
+
+    @Override
+    public boolean addAmount(int amount) {
+        if(super.addAmount(amount)){
+            stack.amount = this.amount;
+            return true;
+        }
+        return false;
     }
 }

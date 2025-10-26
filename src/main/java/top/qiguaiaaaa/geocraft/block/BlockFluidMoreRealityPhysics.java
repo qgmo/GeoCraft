@@ -37,7 +37,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.BlockFluidFinite;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.api.util.math.OldFlowChoice;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 
@@ -89,21 +89,21 @@ public class BlockFluidMoreRealityPhysics extends BlockFluidFinite {
             return;
         }
         //可流动方向检查
-        final ArrayList<FlowChoice> averageModeFlowDirections = new ArrayList<>();//平均流动模式可用方向
+        final ArrayList<OldFlowChoice> averageModeFlowDirections = new ArrayList<>();//平均流动模式可用方向
         Set<EnumFacing> slopeModeFlowDirections = EnumSet.noneOf(EnumFacing.class);//非Q=1坡度模式可用方向
         for(EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
             IBlockState facingState = world.getBlockState(pos.offset(facing));
             if(!this.canDisplaceEvenIsFluid(world,pos.offset(facing))) continue;
             int facingQuanta = FluidUtil.getFluidQuanta(world,pos.offset(facing),facingState);
             if(facingQuanta<quanta-1){
-                averageModeFlowDirections.add(new FlowChoice(facingQuanta,facing));
+                averageModeFlowDirections.add(new OldFlowChoice(facingQuanta,facing));
             }
             if(facingQuanta<quanta) slopeModeFlowDirections.add(facing);
         }
 
         if(!averageModeFlowDirections.isEmpty()){ //平均流动模式
-            averageModeFlowDirections.sort(Comparator.comparingInt(FlowChoice::getQuantaOfThisFluid));
-            averageModeFlowDirections.add(new FlowChoice(quantaPerBlock,null));
+            averageModeFlowDirections.sort(Comparator.comparingInt(OldFlowChoice::getQuantaOfThisFluid));
+            averageModeFlowDirections.add(new OldFlowChoice(quantaPerBlock,null));
             int newQuanta = quanta;
             while(averageModeFlowDirections.get(0).getQuantaOfThisFluid()<newQuanta-1){ //向四周分配流量
                 newQuanta--;
@@ -121,7 +121,7 @@ public class BlockFluidMoreRealityPhysics extends BlockFluidFinite {
                 world.scheduleUpdate(pos, this, tickRate(world));
                 world.notifyNeighborsOfStateChange(pos,this, false);
             }
-            for(FlowChoice choice:averageModeFlowDirections){ //向四周流动
+            for(OldFlowChoice choice:averageModeFlowDirections){ //向四周流动
                 if(choice.getQuantaOfThisFluid() == 0) continue;
                 if(choice.direction == null) continue;
                 BlockPos facingPos = pos.offset(choice.direction);

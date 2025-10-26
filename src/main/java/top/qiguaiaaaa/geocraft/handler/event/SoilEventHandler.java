@@ -29,43 +29,32 @@ package top.qiguaiaaaa.geocraft.handler.event;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.init.PotionTypes;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtils;
-import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBiome;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
-import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
-import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
-import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import java.util.Map;
 
+import static net.minecraft.block.BlockFarmland.MOISTURE;
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
-import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.bottleFindFluidMaxDistance;
+import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.toFarmlandMoistureFromHumidity;
 
 /**
  * @author QiguaiAAAA
@@ -82,12 +71,10 @@ public final class SoilEventHandler {
 
         if(!(block instanceof IBlockSoil)) return;
 
-        IPermeableBlock farmland = (IPermeableBlock)Blocks.FARMLAND;
-
         if (facing != EnumFacing.DOWN && world.isAirBlock(pos.up())) {
             if (block == Blocks.GRASS || block == Blocks.GRASS_PATH) {
                 int humidity = curState.getValue(HUMIDITY);
-                setBlock_Hoe(player, world, pos, farmland.getQuantaState(Blocks.FARMLAND.getDefaultState(), FluidRegistry.WATER,humidity));
+                setBlock_Hoe(player, world, pos, Blocks.FARMLAND.getDefaultState().withProperty(MOISTURE,toFarmlandMoistureFromHumidity(humidity)));
                 event.setResult(Event.Result.ALLOW);
                 return;
             }
@@ -97,7 +84,7 @@ public final class SoilEventHandler {
                 switch (curState.getValue(BlockDirt.VARIANT)) {
                     case PODZOL:return;
                     case DIRT:
-                        setBlock_Hoe(player, world, pos, farmland.getQuantaState(Blocks.FARMLAND.getDefaultState(),FluidRegistry.WATER,humidity));
+                        setBlock_Hoe(player, world, pos, Blocks.FARMLAND.getDefaultState().withProperty(MOISTURE,toFarmlandMoistureFromHumidity(humidity)));
                         break;
                     case COARSE_DIRT:
                         setBlock_Hoe(player, world, pos, Blocks.DIRT.getDefaultState()

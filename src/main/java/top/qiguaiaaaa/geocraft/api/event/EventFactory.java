@@ -41,6 +41,9 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.CapabilityDispatcher;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
@@ -135,5 +138,16 @@ public final class EventFactory {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public static CapabilityDispatcher gatherCapabilities(@Nonnull Atmosphere atmosphere) {
+        return gatherCapabilities(new AttachCapabilitiesEvent<>(Atmosphere.class, atmosphere), null);
+    }
+
+    @Nullable
+    private static CapabilityDispatcher gatherCapabilities(AttachCapabilitiesEvent<?> event, @Nullable ICapabilityProvider parent) {
+        EVENT_BUS.post(event);
+        return event.getCapabilities().size() > 0 || parent != null ? new CapabilityDispatcher(event.getCapabilities(), parent) : null;
     }
 }

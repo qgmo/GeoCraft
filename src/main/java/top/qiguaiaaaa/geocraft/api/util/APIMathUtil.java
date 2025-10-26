@@ -25,31 +25,21 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
-
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
-import top.qiguaiaaaa.geocraft.api.property.IFluidProperty;
-import top.qiguaiaaaa.geocraft.api.state.FluidState;
-import top.qiguaiaaaa.geocraft.api.state.GeographyState;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+package top.qiguaiaaaa.geocraft.api.util;
 
 /**
- * 一个基本的大气抽象层级，实现了{@link FluidState}的存取
+ * @author QiguaiAAAA
  */
-public abstract class BaseAtmosphereLayer extends BaseLayer implements AtmosphereLayer{
-
-    public BaseAtmosphereLayer(@Nonnull Atmosphere atmosphere) {
-        super(atmosphere);
+public final class APIMathUtil {
+    public static long clamp(long num, long min, long max) {
+        if (num < min) {
+            return min;
+        } else {
+            return Math.min(num, max);
+        }
     }
 
-    @Nullable
-    @Override
-    public FluidState getFluid(@Nonnull IFluidProperty property) {
-        final GeographyState state = states.get(property);
-        if(state instanceof FluidState) return (FluidState) state;
-        return null;
+    public static int getModifiedFlag(int flag,int disabled,int enabled){
+        return (flag | enabled) & ~disabled;
     }
 }

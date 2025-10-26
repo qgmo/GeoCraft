@@ -37,6 +37,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
@@ -45,11 +46,21 @@ import top.qiguaiaaaa.geocraft.util.math.MathUtil;
 
 import javax.annotation.Nonnull;
 
-public class AtmosphereSteam extends FluidProperty {
+public class AtmosphereSteam extends FluidProperty implements IAtmosphereProperty {
     public static final AtmosphereSteam STEAM = new AtmosphereSteam();
     protected AtmosphereSteam() {
-        super(FluidRegistry.WATER, false, true);
+        super(FluidRegistry.WATER);
         setRegistryName(GeoCraft.MODID,"steam");
+    }
+
+    @Override
+    public boolean haveWindEffect() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlowable() {
+        return true;
     }
 
     @Override
@@ -63,7 +74,7 @@ public class AtmosphereSteam extends FluidProperty {
         double fromWP = from.getWaterPressure(),toWP = to.getWaterPressure(centerPos);
         speed = speed+计算水气压差动力(fromWP,toWP);
         if(speed >1e-5){
-            int waterTransferAmount = getSteamTransferAmount(steam.getAmount()/4.0,speed);
+            int waterTransferAmount = getSteamTransferAmount(steam.getFluidAmount()/4.0,speed);
             if(steam.addAmount(-waterTransferAmount)){
                 to.addSteam(waterTransferAmount,centerPos);
             }
@@ -72,7 +83,7 @@ public class AtmosphereSteam extends FluidProperty {
             if(!(layer instanceof AtmosphereLayer)) return;
             FluidState toSteam = ((AtmosphereLayer)layer).getSteam();
             if(toSteam == null) return;
-            int transferAmount = getSteamTransferAmount(toSteam.getAmount()
+            int transferAmount = getSteamTransferAmount(toSteam.getFluidAmount()
                             *Math.min((fromTop-layer.getBeginY())/ from.getDepth(),1)/4.0,
                     -speed);
             if(toSteam.addAmount(-transferAmount)){
@@ -90,13 +101,13 @@ public class AtmosphereSteam extends FluidProperty {
         speed = speed+计算水气压差动力(fromWP,toWP);
         if(speed >1e-6){
             double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
-            int waterTransferAmount = getSteamTransferAmountVertically(from.getAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis);
+            int waterTransferAmount = getSteamTransferAmountVertically(from.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis);
             if(from.addAmount(-waterTransferAmount)){
                 to.addAmount(waterTransferAmount);
             }
         }else if(speed <-1e-6){
             double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
-            int waterTransferAmount = getSteamTransferAmountVertically(to.getAmount()/ AtmosphereUtil.Constants.大气单元底面积,-speed, dis);
+            int waterTransferAmount = getSteamTransferAmountVertically(to.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,-speed, dis);
             if(to.addAmount(-waterTransferAmount)){
                 from.addAmount(waterTransferAmount);
             }

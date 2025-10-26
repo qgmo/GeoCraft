@@ -34,7 +34,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 
 /**
@@ -46,8 +46,8 @@ public final class RealitySnowUpdater {
         if(BlockLiquidUpdater.isBlocked(downState)) return true;
         if(downState.getBlock() == Blocks.SNOW_LAYER){
             return downState.getValue(BlockSnow.LAYERS) == 8;
-        }else if(downState.getBlock() instanceof IPermeableBlock){
-            IPermeableBlock block = (IPermeableBlock) downState.getBlock();
+        }else if(downState.getBlock() instanceof ILayeredFluidHost){
+            ILayeredFluidHost block = (ILayeredFluidHost) downState.getBlock();
             return !block.canFill(world,downPos,downState, GeoFluids.SNOW, EnumFacing.UP,fromState);
         }
         return false;

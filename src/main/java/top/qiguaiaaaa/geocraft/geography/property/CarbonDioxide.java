@@ -31,16 +31,17 @@ import net.minecraft.util.ResourceLocation;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
+import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.geography.state.CarbonDioxideState;
 
 import javax.annotation.Nonnull;
 
-public class CarbonDioxide extends FluidProperty {
+public class CarbonDioxide extends FluidProperty implements IAtmosphereProperty {
     public static final CarbonDioxide CARBON_DIOXIDE = new CarbonDioxide();
 
     protected CarbonDioxide(){
-        super(GeoFluids.CARBON_DIOXIDE,false,true);
+        super(GeoFluids.CARBON_DIOXIDE);
         setRegistryName(new ResourceLocation(GeoCraft.MODID,"carbon_dioxide"));
     }
 
@@ -48,5 +49,15 @@ public class CarbonDioxide extends FluidProperty {
     @Override
     public FluidState getStateInstance() {
         return new CarbonDioxideState(0);
+    }
+
+    @Override
+    public boolean haveWindEffect() {
+        return false;
+    }
+
+    @Override
+    public boolean isFlowable() {
+        return true;
     }
 }

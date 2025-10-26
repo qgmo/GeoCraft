@@ -31,8 +31,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fluids.BlockFluidFinite;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
 
 public final class FluidMixinUtil {
@@ -49,7 +51,13 @@ public final class FluidMixinUtil {
 
     public static int getAmountForBlockFluidBase(IBlockState state){
         int quantaPerBlock = getQuantaPerBlock(state.getBlock());
-        int quanta = quantaPerBlock-state.getValue(BlockFluidBase.LEVEL);
+        int quanta = state.getBlock() instanceof BlockFluidFinite?state.getValue(BlockFluidBase.LEVEL)+1 : quantaPerBlock-state.getValue(BlockFluidBase.LEVEL);
         return quanta* Fluid.BUCKET_VOLUME/quantaPerBlock;
+    }
+
+    public static long getQBForBlockFluidBase(IBlockState state){
+        int quantaPerBlock = getQuantaPerBlock(state.getBlock());
+        int quanta = state.getBlock() instanceof BlockFluidFinite?state.getValue(BlockFluidBase.LEVEL)+1 : quantaPerBlock-state.getValue(BlockFluidBase.LEVEL);
+        return quanta* QBUtil.BUCKET_VOLUME /quantaPerBlock;
     }
 }

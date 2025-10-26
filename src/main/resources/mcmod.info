@@ -9,7 +9,7 @@
   "updateUrl": "",
   "authorList": ["QiguaiAAAA"],
   "credits": "",
-  "logoFile": "assets/geocraft/icon.png",
+  "logoFile": "icon.png",
   "screenshots": [],
   "dependencies": ["mixinbooter"]
 }

@@ -32,9 +32,8 @@ import net.minecraft.nbt.NBTPrimitive;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.FluidTankProperties;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fluids.FluidTankInfo;
+import net.minecraftforge.fluids.IFluidTank;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 
@@ -45,7 +44,7 @@ import javax.annotation.Nullable;
  * 流体状态
  * @author QiguaiAAAA
  */
-public abstract class FluidState implements INumberState<Integer>, IFluidHandler {
+public abstract class FluidState implements INumberState<Integer>, IFluidTank {
     protected final Fluid fluid;
     protected int amount;
     public FluidState(@Nonnull Fluid fluid, int amount){
@@ -53,9 +52,9 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
         this.amount = amount;
     }
 
-    public void setAmount(int gasAmount) {
-        if(gasAmount<0) gasAmount = 0;
-        this.amount = gasAmount;
+    public void setAmount(int fluidAmount) {
+        if(fluidAmount<0) fluidAmount = 0;
+        this.amount = fluidAmount;
     }
 
     public boolean addAmount(int amount){
@@ -64,8 +63,14 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
         return true;
     }
 
-    public int getAmount() {
+    @Override
+    public int getFluidAmount() {
         return amount;
+    }
+
+    @Override
+    public int getCapacity() {
+        return Integer.MAX_VALUE;
     }
 
     @Override
@@ -87,9 +92,16 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
      * @return Forge流体
      */
     @Nonnull
-    public Fluid getFluid() {
+    public Fluid getFluidType() {
         return fluid;
     }
+
+    @Nullable
+    @Override
+    public FluidStack getFluid() {
+        return new FluidStack(fluid,amount);
+    }
+
     @Nonnull
     @Override
     public NBTBase serializeNBT() {
@@ -102,10 +114,10 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
             this.amount = ((NBTPrimitive) nbt).getInt();
         }
     }
-    @Nonnull
+
     @Override
-    public IFluidTankProperties[] getTankProperties() {
-        return new GasStateFluidTankProperties[]{new GasStateFluidTankProperties()};
+    public FluidTankInfo getInfo() {
+        return new FluidTankInfo(this);
     }
 
     @Override
@@ -114,13 +126,6 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
         if(this.amount + resource.amount <0) return 0;
         if(doFill) addAmount(resource.amount);
         return resource.amount;
-    }
-
-    @Nullable
-    @Override
-    public FluidStack drain(@Nonnull FluidStack resource, boolean doDrain) {
-        if(resource.getFluid() != fluid) return null;
-        return drain(resource.amount,doDrain);
     }
 
     @Nullable
@@ -134,28 +139,6 @@ public abstract class FluidState implements INumberState<Integer>, IFluidHandler
     @Override
     public String toString() {
         return amount+"";
-    }
-
-    public class GasStateFluidTankProperties extends FluidTankProperties {
-
-        public GasStateFluidTankProperties() {
-            super(null, 99999999,true,true);
-        }
-        @Nonnull
-        @Override
-        public FluidStack getContents() {
-            return new FluidStack(fluid,getAmount());
-        }
-
-        @Override
-        public boolean canFillFluidType(@Nonnull FluidStack fluidStack) {
-            return fluidStack.getFluid() == fluid;
-        }
-
-        @Override
-        public boolean canDrainFluidType(@Nonnull FluidStack fluidStack) {
-            return fluidStack.getFluid() == fluid;
-        }
     }
 
     //***************

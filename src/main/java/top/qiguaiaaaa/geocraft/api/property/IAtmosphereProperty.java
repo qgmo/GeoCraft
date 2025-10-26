@@ -74,11 +74,4 @@ public interface IAtmosphereProperty extends IGeographyProperty{
      * @param speed 风速,正为低层往高层,负为高层往低层
      */
     default void onConvect(@Nonnull AtmosphereLayer lower,@Nonnull AtmosphereLayer upper,double speed){}
-
-    /**
-     * 当大气初始化的时候
-     * @param atmosphere 大气
-     * @param chunk 若在区块加载后初始化,则提供区块实例
-     */
-    default void onAtmosphereInitialise(@Nonnull Atmosphere atmosphere,@Nullable Chunk chunk){}
 }

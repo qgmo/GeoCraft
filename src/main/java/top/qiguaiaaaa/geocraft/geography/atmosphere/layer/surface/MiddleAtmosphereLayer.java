@@ -36,6 +36,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
@@ -142,7 +143,7 @@ public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
         if(!isUpperLayerValid) return;
         double 实际垂直风速 = winds.get(EnumFacing.UP).add(((SurfaceAtmosphere)atmosphere).getDownWind(up)).y;
         热量对流(Math.abs(实际垂直风速));
-        for(IAtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
+        for(IAtmosphereProperty property: GeographyProperty.MANAGER.getFlowableProperties()){
             property.onConvect(this,up,实际垂直风速);
         }
     }

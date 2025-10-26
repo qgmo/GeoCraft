@@ -25,10 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.util;
+package top.qiguaiaaaa.geocraft.api.property;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.IForgeRegistry;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * @author QiguaiAAAA
  */
-public final class PermeableUtil{
+public interface IGeographyPropertyManager {
+    @Nonnull
+    IForgeRegistry<IGeographyProperty> getProperties();
+
+    @Nullable
+    default IGeographyProperty getProperty(@Nonnull ResourceLocation location){
+        return getProperties().getValue(location);
+    }
+
+    @Nonnull
+    Set<IAtmosphereProperty> getAtmosphereProperties();
+
+    @Nonnull
+    Set<IAtmosphereProperty> getWindEffectedProperties();
+
+    @Nonnull
+    Set<IAtmosphereProperty> getFlowableProperties();
 }

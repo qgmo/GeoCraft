@@ -34,16 +34,19 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
-import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
-import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
-import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.*;
 import top.qiguaiaaaa.geocraft.util.registry.ServerOnlyRegistryBuilder;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
-@Mod.EventBusSubscriber
-public final class GeographyPropertyManager {
+@Mod.EventBusSubscriber(modid = GeoCraft.MODID)
+public final class GeographyPropertyManager implements IGeographyPropertyManager {
+
+    static {
+        GeographyProperty.MANAGER = new GeographyPropertyManager();
+    }
+
     private static boolean isLoaded = false;
     private static final ResourceLocation NAME = new ResourceLocation(GeoCraft.MODID,"geography_property");
     private static IForgeRegistry<IGeographyProperty> properties;
@@ -63,15 +66,21 @@ public final class GeographyPropertyManager {
         isLoaded = true;
     }
 
-    public static IForgeRegistry<IGeographyProperty> getProperties() {
+    @Nonnull
+    public IForgeRegistry<IGeographyProperty> getProperties() {
         return properties;
     }
-    public static Set<IAtmosphereProperty> getAtmosphereProperties(){return atmosphereProperties;}
 
-    public static Set<IAtmosphereProperty> getWindEffectedProperties() {
+    @Nonnull
+    public Set<IAtmosphereProperty> getAtmosphereProperties(){return atmosphereProperties;}
+
+    @Nonnull
+    public Set<IAtmosphereProperty> getWindEffectedProperties() {
         return windEffectedProperties;
     }
-    public static Set<IAtmosphereProperty> getFlowableProperties() {
+
+    @Nonnull
+    public Set<IAtmosphereProperty> getFlowableProperties() {
         return flowableProperties;
     }
 

@@ -47,7 +47,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 
 import java.util.Random;
@@ -126,7 +126,7 @@ public abstract class BlockLiquidMixin extends Block{
         }
         IBlockState downState = worldIn.getBlockState(down);
         if(!downState.isTopSolid()) return;
-        final int rndNext =  downState.getBlock() instanceof IPermeableBlock?10:100;
+        final int rndNext =  downState.getBlock() instanceof ILayeredFluidHost ?10:100;
         if (rand.nextInt(rndNext) == 0) {
             Material material = worldIn.getBlockState(pos.down(2)).getMaterial();
 

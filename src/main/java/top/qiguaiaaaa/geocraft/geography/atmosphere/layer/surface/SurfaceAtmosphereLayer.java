@@ -39,6 +39,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
+import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
@@ -79,8 +80,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
      * @return 短波辐射参数，透过率和吸收率，介于0~1之间
      */
     public double[] 计算短波辐射参数(Degree 与水平面夹角) {
-        double 液态水每平方质量 = water.getAmount()/ AtmosphereUtil.Constants.大气单元底面积;
-        double 气态水每平方质量 = steam.getAmount() / AtmosphereUtil.Constants.大气单元底面积;
+        double 液态水每平方质量 = water.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积;
+        double 气态水每平方质量 = steam.getFluidAmount() / AtmosphereUtil.Constants.大气单元底面积;
         double 空气密度 = getDensity();
 
         double sin = Math.sin(与水平面夹角.getRadian());
@@ -109,8 +110,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
      * 对本层大气的长波辐射参数进行更新
      */
     public void 更新长波辐射参数(){
-        double 水汽路径 = steam.getAmount() / AtmosphereUtil.Constants.大气单元底面积;
-        double 液态水路径 = water.getAmount() / AtmosphereUtil.Constants.大气单元底面积;
+        double 水汽路径 = steam.getFluidAmount() / AtmosphereUtil.Constants.大气单元底面积;
+        double 液态水路径 = water.getFluidAmount() / AtmosphereUtil.Constants.大气单元底面积;
 
         double 温室气体效应 = AtmosphereUtil.Constants.大气单元底面积*
                 Altitude.to物理高度(getDepth())*
@@ -150,8 +151,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
                 Altitude.to物理高度(getDepth()) *
                 平均密度*
                 AtmosphereUtil.Constants.干空气比热容;
-        heatCapacity += water.getAmount()* 4200;
-        heatCapacity += steam.getAmount()* 1860;
+        heatCapacity += water.getFluidAmount()* 4200;
+        heatCapacity += steam.getFluidAmount()* 1860;
         if(Double.isNaN(heatCapacity) || Double.isInfinite(heatCapacity)){
             heatCapacity = 1e8; //防止出现问题
         }
@@ -249,32 +250,60 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         temperature.addHeat(-heatTransferQuantity, heatCapacity);
     }
 
+    protected void 水汽蒸发(){
+        double 期望蒸发量 = water.getFluidAmount();
+        if(期望蒸发量 > 64){
+            double left = 期望蒸发量 - 64;
+            final int maxLeft = 128;
+            final double smoothingConstant = 4;
+            left /= smoothingConstant;
+            期望蒸发量 = 64d + maxLeft*left/(left+maxLeft);
+        }
+        int 实际蒸发量;
+        if( Double.isNaN(期望蒸发量) || Double.isInfinite(期望蒸发量)
+                || (实际蒸发量 = Math.min((int)期望蒸发量,water.getFluidAmount()))<=0)
+            return;
+        if(!water.addAmount(-实际蒸发量)) return;
+        steam.addAmount(实际蒸发量);
+        double 能量吸收量 = ((double) 实际蒸发量)* AtmosphereUtil.Constants.水汽化热;
+        能量吸收量 = Math.min(能量吸收量,heatCapacity*10);
+        temperature.addHeat(-能量吸收量,heatCapacity);
+    }
+
     protected void 水汽凝结(){
         double 饱和水汽压 = WaterUtil.计算饱和水汽压(中心温度)
                 ,实际水汽压 = getWaterPressure();
         if(实际水汽压<=饱和水汽压) return;
         double 期望凝结量;
         if(饱和水汽压<=0){
-            期望凝结量 = steam.getAmount();
+            期望凝结量 = steam.getFluidAmount();
         }else{
             //计算实际需要凝结的水质量。饱和水汽压时，水汽质量 P = mRT/MSh -> m=PMSh/RT
             double 饱和水汽质量 = 饱和水汽压* AtmosphereUtil.Constants.水摩尔质量* AtmosphereUtil.Constants.大气单元底面积*Altitude.to物理高度(getDepth())
                     / Math.max(AtmosphereUtil.Constants.气体常数*中心温度,1);
-            期望凝结量 = steam.getAmount()-饱和水汽质量;
+            期望凝结量 = steam.getFluidAmount()-饱和水汽质量;
+            if(期望凝结量 > 32){
+                double left = 期望凝结量 - 32;
+                final int maxLeft = 64;
+                final double smoothingConstant = 8;
+                left /= smoothingConstant;
+                期望凝结量 = 32d + maxLeft*left/(left+maxLeft);
+            }
         }
         int 实际凝结量;
         if( Double.isNaN(期望凝结量) || Double.isInfinite(期望凝结量)
-                || (实际凝结量 = Math.min((int)期望凝结量,steam.getAmount()))<=0)
+                || (实际凝结量 = Math.min((int)期望凝结量,steam.getFluidAmount()))<=0)
             return;
-        steam.addAmount(-实际凝结量);
+        if(!steam.addAmount(-实际凝结量)) return;
         water.addAmount(实际凝结量);
         double 能量释放量 = ((double) 实际凝结量)* AtmosphereUtil.Constants.水汽化热;
+        能量释放量 = Math.min(能量释放量,heatCapacity*10);
         temperature.addHeat(能量释放量,heatCapacity);
         if(((SurfaceAtmosphere)atmosphere).isDebug())
             GeoCraft.getLogger().info("{} has water pressure {} Pa > {} Pa ,should transfer {} mB = " +
                             " {} - {} * {} * {} * {} / ({} * {})"+
                             " steam to water",getTagName(),实际水汽压,饱和水汽压,实际凝结量
-                    ,steam.getAmount()+实际凝结量,饱和水汽压, AtmosphereUtil.Constants.水摩尔质量, AtmosphereUtil.Constants.大气单元底面积,Altitude.to物理高度(getDepth()),
+                    ,steam.getFluidAmount()+实际凝结量,饱和水汽压, AtmosphereUtil.Constants.水摩尔质量, AtmosphereUtil.Constants.大气单元底面积,Altitude.to物理高度(getDepth()),
                     AtmosphereUtil.Constants.气体常数,中心温度);
     }
 
@@ -324,7 +353,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         winds.put(EnumFacing.UP, 计算上风速());
         winds.put(EnumFacing.DOWN,计算下风速());
         对流();
-        水汽凝结();
+        if(中心温度<TemperatureProperty.BOILED_POINT) 水汽凝结();
+        else 水汽蒸发();
     }
 
     @Override
@@ -433,7 +463,7 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         FluidState steam = getSteam();
         if(steam == null) return 0;
         // PV=nRT -> P = nRT/V -> P = mRT/MSh
-        return steam.getAmount()*
+        return steam.getFluidAmount()*
                 AtmosphereUtil.Constants.气体常数*
                 中心温度
                 / (

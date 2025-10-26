@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
+import top.qiguaiaaaa.geocraft.api.property.IFluidProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 
 import javax.annotation.Nonnull;
@@ -108,7 +109,7 @@ public interface AtmosphereLayer extends Layer {
      * @return 对应的大气状态
      */
     @Nullable
-    FluidState getGas(@Nonnull FluidProperty property);
+    FluidState getFluid(@Nonnull IFluidProperty property);
 
     /**
      * 获取该大气层的气态水水量状态

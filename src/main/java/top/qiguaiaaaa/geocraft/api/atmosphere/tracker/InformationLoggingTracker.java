@@ -80,4 +80,9 @@ public abstract class InformationLoggingTracker implements IAtmosphereTracker {
         }
         return false;
     }
+
+    @Override
+    public void onAtmosphereUnload(@Nonnull Atmosphere atmosphere) {
+        logger.close();
+    }
 }

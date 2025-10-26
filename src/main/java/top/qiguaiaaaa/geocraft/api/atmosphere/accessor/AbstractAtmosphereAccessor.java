@@ -59,6 +59,12 @@ public abstract class AbstractAtmosphereAccessor implements IAtmosphereAccessor{
         return system;
     }
 
+    @Nonnull
+    @Override
+    public BlockPos getPos() {
+        return pos;
+    }
+
     /**
      * {@inheritDoc}
      * @return {@inheritDoc}

@@ -27,27 +27,37 @@
 
 package top.qiguaiaaaa.geocraft.api.atmosphere;
 
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityDispatcher;
+import top.qiguaiaaaa.geocraft.api.GeoCraftAPI;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.IAtmosphereTracker;
-import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
-import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
-import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
+import top.qiguaiaaaa.geocraft.api.event.EventFactory;
+import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
+import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public abstract class BaseAtmosphere implements Atmosphere{
+    public static final String CAPABILITIES_TAG = "Capabilities";
     protected AtmosphereWorldInfo worldInfo = null;
     protected long tickTimes = 0;
     /**
      * 从下往上的层状列表
      */
     protected final List<Layer> layers = new ArrayList<>();
-    protected final Set<IAtmosphereTracker> listeners = new HashSet<>();
+    protected final Set<IAtmosphereTracker> trackers = new HashSet<>();
+
+    protected final CapabilityDispatcher capabilities = EventFactory.gatherCapabilities(this);
 
     @Override
     public void onLoad(@Nonnull Chunk chunk, @Nonnull AtmosphereWorldInfo info) {
@@ -55,7 +65,7 @@ public abstract class BaseAtmosphere implements Atmosphere{
         for(Layer layer:layers){
             layer.onLoad(chunk);
         }
-        for(IAtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
+        for(IGeographyProperty property: GeographyProperty.MANAGER.getProperties()){
             property.onAtmosphereInitialise(this,chunk);
         }
     }
@@ -66,18 +76,18 @@ public abstract class BaseAtmosphere implements Atmosphere{
         for(Layer layer:layers){
             layer.onLoadWithoutChunk();
         }
-        for(IAtmosphereProperty property: GeographyPropertyManager.getAtmosphereProperties()){
+        for(IGeographyProperty property: GeographyProperty.MANAGER.getProperties()){
             property.onAtmosphereInitialise(this,null);
         }
     }
 
     @Override
     public void addTracker(@Nonnull IAtmosphereTracker tracker){
-        listeners.add(tracker);
+        trackers.add(tracker);
     }
     @Override
     public void removeTracker(@Nonnull IAtmosphereTracker tracker){
-        listeners.remove(tracker);
+        trackers.remove(tracker);
     }
 
     public void setAtmosphereWorldInfo(@Nonnull AtmosphereWorldInfo worldInfo) {
@@ -99,6 +109,11 @@ public abstract class BaseAtmosphere implements Atmosphere{
     }
 
     @Override
+    public void onUnload() {
+        trackers.forEach(tracker -> tracker.onAtmosphereUnload(this));
+    }
+
+    @Override
     public long tickTime() {
         return tickTimes;
     }
@@ -113,5 +128,46 @@ public abstract class BaseAtmosphere implements Atmosphere{
     @Override
     public Layer getBottomLayer() {
         return layers.get(0);
+    }
+
+    @Override
+    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+        return capabilities != null && capabilities.hasCapability(capability, facing);
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+        return capabilities == null? null : capabilities.getCapability(capability,facing);
+    }
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound compound = new NBTTagCompound();
+        for(Layer layer:layers){
+            if(!layer.isSerializable()) continue;
+            compound.setTag(layer.getTagName(),layer.serializeNBT());
+        }
+        if(capabilities != null){
+            compound.setTag(CAPABILITIES_TAG,capabilities.serializeNBT());
+        }
+        return compound;
+    }
+
+    @Override
+    public void deserializeNBT(NBTTagCompound nbt) {
+        for(Layer layer:layers){
+            if(!layer.isSerializable()) continue;
+            NBTBase base = nbt.getTag(layer.getTagName());
+            if(!(base instanceof NBTTagCompound)){
+                GeoCraftAPI.LOGGER.error("Loading Atmosphere at ({},{}) error: NBT of Atmosphere Layer {} isn't a valid compound tag!",getChunkX(),getChunkZ(), layer.getTagName());
+                continue;
+            }
+            layer.deserializeNBT((NBTTagCompound) base);
+        }
+        if(capabilities != null && nbt.hasKey(CAPABILITIES_TAG)){
+            NBTTagCompound compound = nbt.getCompoundTag(CAPABILITIES_TAG);
+            capabilities.deserializeNBT(compound);
+        }
     }
 }

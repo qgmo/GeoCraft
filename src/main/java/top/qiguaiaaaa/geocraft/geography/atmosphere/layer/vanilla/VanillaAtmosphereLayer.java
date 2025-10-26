@@ -39,6 +39,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.BaseAtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
 import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
+import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;
@@ -119,7 +120,7 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
 
     public Vec3d 计算水平风速分量(Atmosphere to, EnumFacing dir) {
         Vec3d wind = new Vec3d(dir.getDirectionVec()).scale(random.nextDouble()*4-2);
-        for(IAtmosphereProperty property: GeographyPropertyManager.getWindEffectedProperties()){
+        for(IAtmosphereProperty property: GeographyProperty.MANAGER.getWindEffectedProperties()){
             wind= wind.add(property.getWind(this,to,dir));
         }
         return wind;
@@ -148,7 +149,7 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
             wind = wind.add(newWindSpeed);
         }
         for(Triple<Atmosphere,Chunk,EnumFacing> neighbor:neighbors.values()){
-            for(IAtmosphereProperty property: GeographyPropertyManager.getFlowableProperties()){
+            for(IAtmosphereProperty property: GeographyProperty.MANAGER.getFlowableProperties()){
                 property.onFlow(this,chunk,neighbor.getLeft(),neighbor.getMiddle(),neighbor.getRight(),wind);
             }
         }

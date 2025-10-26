@@ -33,6 +33,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.NoiseGeneratorPerlin;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.INBTSerializable;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
@@ -50,7 +51,7 @@ import java.util.Random;
  * 一个大气<br/>
  * 其实更应该叫做地理单元，因为实际上一个Atmosphere实例还包括下垫面（也就是地下），但是却不一定真的有大气层
  */
-public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
+public interface Atmosphere extends INBTSerializable<NBTTagCompound>, ICapabilityProvider {
     NoiseGeneratorPerlin TEMPERATURE_NOISE = new NoiseGeneratorPerlin(new Random(1234L), 1);
 
     /**
@@ -82,6 +83,10 @@ public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
      * @return 大气刻
      */
     long tickTime();
+
+    int getChunkX();
+
+    int getChunkZ();
 
     /**
      * 向大气提供气态水
@@ -227,7 +232,7 @@ public interface Atmosphere extends INBTSerializable<NBTTagCompound> {
      * 返回云量指数,应当介于0~100之间，越大云越多
      * @return 表示云量的值
      */
-    double getCloudExponent();
+    double getCloudExponent(@Nonnull BlockPos pos);
 
     /**
      * 处理水平方向上相邻大气的某个Layer流入该大气的时候的情况

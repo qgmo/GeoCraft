@@ -64,7 +64,7 @@ import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.getSunEnergyPerChu
 
 public class SurfaceAtmosphere extends QiguaiAtmosphere {
     //下垫面
-    protected Underlying underlying = new Underlying(this);
+    protected SurfaceUnderlying underlying = new SurfaceUnderlying(this);
     //** 大气层 **//
     protected GroundAtmosphereLayer groundAtmosphereLayer = new GroundAtmosphereLayer(this);
     protected MiddleAtmosphereLayer middleAtmosphereLayer = new MiddleAtmosphereLayer(this);
@@ -156,7 +156,7 @@ public class SurfaceAtmosphere extends QiguaiAtmosphere {
 
     @Nonnull
     @Override
-    public Underlying getUnderlying() {
+    public SurfaceUnderlying getUnderlying() {
         return underlying;
     }
 
@@ -167,13 +167,13 @@ public class SurfaceAtmosphere extends QiguaiAtmosphere {
     }
 
     @Override
-    public double getCloudExponent(){
+    public double getCloudExponent(@Nonnull BlockPos pos){
         double 水汽量 = 0;
         for(Layer layer:layers){
             if(!(layer instanceof AtmosphereLayer)) continue;
             FluidState state = layer.getWater();
             if(state == null) continue;
-            水汽量 += state.getAmount();
+            水汽量 += state.getFluidAmount();
         }
 
         // 使用平滑公式: 强度 = max强度 * (1 - exp(-超量/比例因子))

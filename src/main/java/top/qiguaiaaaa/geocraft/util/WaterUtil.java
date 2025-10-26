@@ -60,9 +60,9 @@ public final class WaterUtil {
     public static double getWaterEvaporateAmount(IAtmosphereAccessor accessor){
         final double 交换系数 = accessor.getAtmosphereWorldInfo().getVaporExchangeRate();
         double 水汽压 = accessor.getWaterPressure();
-        double 饱和水汽压 = 计算饱和水汽压(accessor.getTemperature(false));
+        double 饱和水汽压 = 计算饱和水汽压(accessor.getTemperature(true));
         double 水汽压差 = Math.max(饱和水汽压 - 水汽压, 0);
-        return 交换系数 * 水汽压差;
+        return 交换系数 * 水汽压差 * 3409.2d;
     }
 
     /**
@@ -76,7 +76,7 @@ public final class WaterUtil {
         if(temp <= TemperatureProperty.UNAVAILABLE) return 0;
         if(temp>= TemperatureProperty.BOILED_POINT) return 0;
         if(temp<= TemperatureProperty.ICE_POINT-100) return 1;
-        double strong = accessor.getAtmosphereHere().getCloudExponent();
+        double strong = accessor.getAtmosphereHere().getCloudExponent(accessor.getPos());
         return strong/(strong+accessor.getAtmosphereWorldInfo().getRainSmoothingConstant());
     }
 

@@ -29,74 +29,126 @@ package top.qiguaiaaaa.geocraft.api.util.math;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.block.IPermeableBlock;
+import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
+import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public final class FlowChoice {
+/**
+ * @author QiguaiAAAA
+ */
+public class FlowChoice {
     public final EnumFacing direction;
-    public final int heightPerQuanta;
-    public final IPermeableBlock block;
-    private int quantaOfThisFluid;
-    private int quantaOfAll;
-    private int baseHeight = 0;
-    private int maxQuanta = 8;
+    public final int heightPerLayer, emptyHeight,currentLayers,maxLayers;
+    public final long QBPerLayer;
+    public final ILayeredFluidHost host;
+
+    protected long addedAmountInQB;
+    protected int addedLayers;
 
     /**
-     * 创建一个基本的流动选择,适用十纯单流体的情况
-     * @param rawQuanta 该选择最初的流体量
-     * @param direction 该选择的方向
+     * 创建一个基于载流方块的流动选择
+     * @param world 世界
+     * @param pos 目标位置
+     * @param state 目标方块状态
+     * @param host 目标载流方块
+     * @param direction 方向
+     * @param fluid 流体
      */
-    @Deprecated
-    public FlowChoice(int rawQuanta,EnumFacing direction){
-        this(rawQuanta,direction,1);
+    public FlowChoice(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state ,@Nonnull ILayeredFluidHost host, @Nonnull EnumFacing direction, @Nonnull Fluid fluid) {
+        this.direction = direction;
+        this.heightPerLayer = host.getHeightPerLayer(world, pos, state);
+        this.emptyHeight = host.getEmptyHeight(world,pos,state,fluid);
+        this.currentLayers = host.getLayers(world, pos, state, fluid);
+        this.maxLayers = host.getMaxLayers(world, pos, state, fluid);
+        this.QBPerLayer = host.getAmountInQBPerLayer(world, pos, state, fluid);
+        this.host = host;
     }
 
     /**
-     * 创建一个考虑不同方块类型的流动选择
-     * @param direction 该选择的方向
-     * @param block 该选择的透水方块
+     * 创建一个常见(quantaPerBlock = 8)的流体流入空气或相同流体时的流动选择
+     * @param direction 方向
+     * @param currentLayers 当前层数
      */
-    public FlowChoice(@Nullable EnumFacing direction, @Nonnull IPermeableBlock block, @Nonnull IBlockState state, Fluid fluid){
-        this.quantaOfThisFluid = block.getQuanta(state,fluid);
-        this.quantaOfAll = block.getQuanta(state,null);
-        this.maxQuanta = block.getMaxQuanta(state,fluid);
+    public FlowChoice(@Nonnull EnumFacing direction,int currentLayers){
         this.direction = direction;
-        this.heightPerQuanta = block.getHeightPerQuanta(state);
-        this.baseHeight = block.getEmptyHeight(state,fluid);
-        this.block = block;
+        this.heightPerLayer = LayeredFluidHostUtil.EIGHTH_OF_HEIGHT;
+        this.emptyHeight = 0;
+        this.currentLayers = currentLayers;
+        this.maxLayers = 8;
+        this.QBPerLayer = QBUtil.QUANTA_VOLUME;
+        this.host = null;
     }
 
     /**
-     * 创建一个自定义每量高度的流动选择,一般用于空气
-     * @param rawQuanta 该选择最初的流体量
-     * @param direction 该选择的方向
-     * @param heightPerQuanta 该选择的每量高度
+     * 创建一个流体流入空气或相同流体时的流动选择
+     * @param direction 方向
+     * @param currentLayers 当前层数
+     * @param maxLayers 最大层数
+     * @param QBPerLayer 每层流体量,单位QMU
      */
-    public FlowChoice(int rawQuanta, @Nullable EnumFacing direction, int heightPerQuanta){
-        this.quantaOfThisFluid = rawQuanta;
-        this.quantaOfAll = rawQuanta;
+    public FlowChoice(@Nonnull EnumFacing direction,int currentLayers,int maxLayers,long QBPerLayer){
         this.direction = direction;
-        this.heightPerQuanta = heightPerQuanta;
-        this.block = null;
+        this.heightPerLayer = LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT/maxLayers;
+        this.emptyHeight = 0;
+        this.currentLayers = currentLayers;
+        this.maxLayers = maxLayers;
+        this.QBPerLayer = QBPerLayer;
+        this.host = null;
+    }
+
+    /**
+     * 创建一个流体流入空气时的流动选择
+     * @param direction 方向
+     * @param maxLayers 最大层数
+     * @param QBPerLayer 每层流体量，单位QMU
+     */
+    public FlowChoice(@Nonnull EnumFacing direction,int maxLayers,long QBPerLayer){
+        this(direction,0,maxLayers, QBPerLayer);
+    }
+
+    /**
+     * 创建一个常见的向空气的流动选择
+     * @param direction 方向
+     */
+    public FlowChoice(@Nonnull EnumFacing direction){
+        this(direction,0);
+    }
+
+    public void apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
+        host.addLayer(world,pos,state, fluid,addedLayers);
+    }
+
+    public void addAmountInQB(long amount){
+        addedAmountInQB += amount;
+        addedLayers = (int) (addedAmountInQB / QBPerLayer);
     }
 
     public boolean isFull(){
-        return quantaOfThisFluid >= maxQuanta;
+        return currentLayers + addedLayers >= maxLayers;
     }
 
-    public int getQuantaOfThisFluid() {
-        return quantaOfThisFluid;
+    public boolean isAir(){
+        return host == null;
+    }
+
+    public int getAddedLayers() {
+        return addedLayers;
+    }
+
+    public int getNewLayers(){
+        return addedLayers+currentLayers;
     }
 
     public int getHeight(){
-        return baseHeight + quantaOfThisFluid *heightPerQuanta;
+        return emptyHeight+heightPerLayer*(currentLayers+addedLayers);
     }
 
-    public void addQuanta(int i){
-        quantaOfThisFluid +=i;
-        quantaOfAll += i;
+    public int getNextLayerHeight(){
+        return emptyHeight+heightPerLayer*(currentLayers+addedLayers+1);
     }
 }

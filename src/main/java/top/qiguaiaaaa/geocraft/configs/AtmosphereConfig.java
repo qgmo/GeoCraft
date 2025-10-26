@@ -60,7 +60,7 @@ public final class AtmosphereConfig {
         }
     };
 
-    @Config.RangeInt(min = 1,max = Integer.MAX_VALUE)
+    @Config.RangeInt(min = 1)
     public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100,
             "大气加载的最大距离，单位为区块。\n" +
                     "The max loaded distance for Atmosphere, measured in chunks.");
@@ -73,7 +73,7 @@ public final class AtmosphereConfig {
                     new ConfigEntry<>(0, SurfaceAtmosphereSystemInfo.create()
                             .waterEvaporate(true)
                             .waterFreeze(true)
-                            .setRainSmoothingConstant(4096)
+                            .setRainSmoothingConstant(256)
                             .setVaporExchangeRate(1e-6)),
                     new ConfigEntry<>(-1, CloseAtmosphereSystemInfo.create()
                             .setFinalTemperature(CloseAtmosphereSystem.HELL_TEMP)

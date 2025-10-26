@@ -25,31 +25,31 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
+package top.qiguaiaaaa.geocraft.api.util;
 
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
-import top.qiguaiaaaa.geocraft.api.property.IFluidProperty;
-import top.qiguaiaaaa.geocraft.api.state.FluidState;
-import top.qiguaiaaaa.geocraft.api.state.GeographyState;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import net.minecraftforge.fluids.Fluid;
 
 /**
- * 一个基本的大气抽象层级，实现了{@link FluidState}的存取
+ * @author QiguaiAAAA
  */
-public abstract class BaseAtmosphereLayer extends BaseLayer implements AtmosphereLayer{
+public final class QBUtil {
+    public static final long BUCKET_VOLUME = 72072000L;
+    public static final long MB_VOLUME = BUCKET_VOLUME/Fluid.BUCKET_VOLUME;
+    public static final long QUANTA_VOLUME = BUCKET_VOLUME/8L;
 
-    public BaseAtmosphereLayer(@Nonnull Atmosphere atmosphere) {
-        super(atmosphere);
+    public static int toMB(long DMU){
+        return (int) (DMU/MB_VOLUME);
     }
 
-    @Nullable
-    @Override
-    public FluidState getFluid(@Nonnull IFluidProperty property) {
-        final GeographyState state = states.get(property);
-        if(state instanceof FluidState) return (FluidState) state;
-        return null;
+    public static int toQuanta(long DMU){
+        return (int) (DMU/QUANTA_VOLUME);
+    }
+
+    public static long toQBFromMB(int mB){
+        return mB*MB_VOLUME;
+    }
+
+    public static long toQBFromQuanta(int quanta){
+        return quanta*QUANTA_VOLUME;
     }
 }

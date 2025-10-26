@@ -70,7 +70,7 @@ public class QiguaiAtmosphereSystemInfo extends AtmosphereSystemInfo {
     }
 
     public int getRainSmoothingConstant(){
-        return JsonUtil.readInt(getWorldInfoJson(),WORLD_INFO_RAIN_SMOOTHING_CONSTANT,4096,1,Integer.MAX_VALUE);
+        return JsonUtil.readInt(getWorldInfoJson(),WORLD_INFO_RAIN_SMOOTHING_CONSTANT,256,1,Integer.MAX_VALUE);
     }
 
     public double getVaporExchangeRate(){

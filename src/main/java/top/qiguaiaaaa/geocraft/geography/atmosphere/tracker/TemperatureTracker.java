@@ -34,6 +34,8 @@ import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.InformationLoggingTracker;
 import top.qiguaiaaaa.geocraft.api.util.io.FileLogger;
 
+import javax.annotation.Nonnull;
+
 /**
  * 大气温度追踪器
  */
@@ -45,7 +47,7 @@ public class TemperatureTracker extends InformationLoggingTracker {
         logger.println("Time,Lower T,Ground T");
     }
     @Override
-    public void notify(Atmosphere atmosphere) {
+    public void notify(@Nonnull Atmosphere atmosphere) {
         double temp = atmosphere.getAtmosphereTemperature(pos);
         String msg = String.format("%d,%f,%f",atmosphere.getAtmosphereWorldInfo().getWorld().getTotalWorldTime(), TemperatureProperty.toCelsiusFromKelvin(temp),
                 atmosphere.getUnderlying().getTemperature().getCelsius());
