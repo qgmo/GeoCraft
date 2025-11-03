@@ -34,7 +34,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
-import net.minecraftforge.registries.IForgeRegistry;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
@@ -62,7 +61,7 @@ public abstract class BaseLayer implements Layer{
 
     @Override
     public boolean isLoaded() {
-        for(GeographyState state:states.values()){
+        for(@Nonnull GeographyState state:states.values()){
             if(!state.isLoaded()) return false;
         }
         return true;
@@ -102,7 +101,7 @@ public abstract class BaseLayer implements Layer{
         final TemperatureState temperature = getTemperature();
         double capacity = getHeatCapacity();
         if(temperature.get()-quanta/capacity< TemperatureProperty.MIN){
-            quanta = Math.max(temperature.get()- TemperatureProperty.MIN-0.1,0)/capacity;
+            quanta = Math.max(temperature.get()- TemperatureProperty.MIN-0.1,0)*capacity;
             temperature.set(TemperatureProperty.MIN+0.1f);
             return quanta;
         }
@@ -134,6 +133,7 @@ public abstract class BaseLayer implements Layer{
         this.upperLayer = layer;
     }
 
+    @Nonnull
     @Override
     public Atmosphere getAtmosphere() {
         return atmosphere;
@@ -141,7 +141,7 @@ public abstract class BaseLayer implements Layer{
 
     @Nullable
     @Override
-    public TemperatureState getTemperature(TemperatureProperty property) {
+    public TemperatureState getTemperature(final TemperatureProperty property) {
         final GeographyState state = states.get(property);
         if(state instanceof TemperatureState) return (TemperatureState) state;
         return null;
@@ -149,13 +149,13 @@ public abstract class BaseLayer implements Layer{
 
     @Nullable
     @Override
-    public GeographyState getState(@Nonnull IGeographyProperty property) {
+    public GeographyState getState(@Nonnull final IGeographyProperty property) {
         return states.get(property);
     }
 
     @Nullable
     @Override
-    public GeographyState addState(@Nonnull IGeographyProperty property) {
+    public GeographyState addState(@Nonnull final IGeographyProperty property) {
         GeographyState oldState = getState(property);
         GeographyState newState = property.getStateInstance();
         states.put(property,newState);
@@ -175,7 +175,7 @@ public abstract class BaseLayer implements Layer{
     }
 
     @Override
-    public void deserializeNBT(NBTTagCompound nbt) {
+    public void deserializeNBT(@Nonnull NBTTagCompound nbt) {
         for(GeographyState state:states.values()){
             if(!state.canDeserialize()) continue;
             ResourceLocation location = state.getProperty().getRegistryName();
@@ -190,5 +190,30 @@ public abstract class BaseLayer implements Layer{
             state.deserializeNBT(nbt.getTag(key));
             states.put(property,state);
         }
+    }
+
+    @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        final TemperatureState temperature = getTemperature();
+        double capacity = getHeatCapacity();
+        if(temperature.get()+maxReceive/capacity< TemperatureProperty.MIN){
+            if(!simulate) temperature.set(TemperatureProperty.MIN);
+            return (int) ((TemperatureProperty.MIN-temperature.get())*capacity);
+        }
+        if(!simulate) temperature.addHeat(maxReceive,capacity);
+        return maxReceive;
+    }
+
+    @Override
+    public int extractEnergy(int maxExtract, boolean simulate) {
+        final TemperatureState temperature = getTemperature();
+        double capacity = getHeatCapacity();
+        if(temperature.get()-maxExtract/capacity< TemperatureProperty.MIN){
+            maxExtract = (int) (Math.max(temperature.get()- TemperatureProperty.MIN-0.1,0)*capacity);
+            if(!simulate) temperature.set(TemperatureProperty.MIN+0.1f);
+            return maxExtract;
+        }
+        if(!simulate) temperature.addHeat(-maxExtract,capacity);
+        return maxExtract;
     }
 }

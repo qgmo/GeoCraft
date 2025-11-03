@@ -28,7 +28,6 @@
 package top.qiguaiaaaa.geocraft.api.atmosphere.layer;
 
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 import top.qiguaiaaaa.geocraft.api.property.IFluidProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
 import top.qiguaiaaaa.geocraft.api.state.GeographyState;

@@ -55,6 +55,17 @@ public final class NetworkFakeStateManager {
         STATE_OVERWRITE_MAP_2.put(Block.REGISTRY.getIDForObject(block),rule2);
     }
 
+    /**
+     * @since 0.2.0
+     * @param block 移除规则对应的方块
+     * @return 是否有被移除
+     */
+    public static boolean clearRule(@Nonnull Block block){
+        boolean res = STATE_OVERWRITE_MAP.remove(block) != null;
+        res |= STATE_OVERWRITE_MAP_2.remove(Block.REGISTRY.getIDForObject(block)) != null;
+        return res;
+    }
+
     public static IBlockState overwriteState(@Nonnull IBlockState state){
         return STATE_OVERWRITE_MAP.getOrDefault(state.getBlock(),DEFAULT_OVERWRITE_RULE).apply(state);
     }

@@ -40,6 +40,8 @@ import javax.annotation.Nullable;
 
 /**
  * 大气数据。由{@link IAtmosphereDataLoader}从磁盘中加载，{@link IAtmosphereDataProvider}提供和管理，{@link IAtmosphereSystem}处理，并将{@link #data}交给大气的{@link Atmosphere#serializeNBT()}和{@link Atmosphere#deserializeNBT(NBTBase)}处理
+ * @since 0.1
+ * @author QiguaiAAAA
  */
 public class AtmosphereData {
     public static final String TAG_POS_X = "posX",TAG_POS_Z = "posZ",TAG_DATA = "Level";
@@ -84,6 +86,7 @@ public class AtmosphereData {
     /**
      * 标记该大气数据是否被卸载<br/>
      * 若一个大气数据实例已经被标记为被卸载，则不应该再次使用该大气数据实例
+     * @since 0.1
      */
     public void markUnloaded() {
         this.unloaded = true;
@@ -99,6 +102,7 @@ public class AtmosphereData {
 
     /**
      * 设置该大气数据对应的区块实例
+     * @since 0.1
      * @param chunk 区块实例
      */
     public void setChunk(@Nullable Chunk chunk) {
@@ -138,6 +142,12 @@ public class AtmosphereData {
     public long getLastSaveTime() {
         return lastSaveTime;
     }
+
+    /**
+     * 获取链接到的大气实例
+     * @since 0.1
+     * @return 大气实例
+     */
     @Nullable
     public Atmosphere getAtmosphere() {
         return atmosphere;

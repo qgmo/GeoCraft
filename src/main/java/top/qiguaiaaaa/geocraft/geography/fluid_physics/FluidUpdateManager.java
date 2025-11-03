@@ -31,14 +31,10 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.update.IFluidUpdateTask;
-import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -62,9 +58,11 @@ public final class FluidUpdateManager {
     public static void addTask(@Nonnull World world,@Nonnull IFluidUpdateTask task){
         WorldServer validWorld = getValidWorld(world);
         if(validWorld == null) return;
-        Pair<PriorityQueue<IFluidUpdateTask>,PriorityQueue<IFluidUpdateTask>> queuePair = getOrCreateQueues(validWorld);
-        Set<BlockPos> locks = getOrCreateSet(validWorld);
-        if(locks.contains(task.getPos())) return;
+        final Pair<PriorityQueue<IFluidUpdateTask>,PriorityQueue<IFluidUpdateTask>> queuePair = getOrCreateQueues(validWorld);
+        final Set<BlockPos> locks = getOrCreateSet(validWorld);
+        if(locks.contains(task.getPos())){
+            return;
+        }
         if(task.getFluid().getDensity()>=0){
             queuePair.getLeft().add(task);
         }else{

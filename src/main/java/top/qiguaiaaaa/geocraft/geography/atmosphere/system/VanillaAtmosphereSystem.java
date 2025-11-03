@@ -27,32 +27,22 @@
 
 package top.qiguaiaaaa.geocraft.geography.atmosphere.system;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
-import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
-import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.VanillaAtmosphere;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.info.VanillaAtmosphereSystemInfo;
-import top.qiguaiaaaa.geocraft.util.BaseUtil;
-import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
-
 public class VanillaAtmosphereSystem extends QiguaiAtmosphereSystem{
     protected final int maxWaterDrainedMultiplier;
     protected final double thunderingCloudExponent,rainingCloudExponent;
-    public VanillaAtmosphereSystem(WorldServer server, AtmosphereWorldInfo info, VanillaAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
+    public VanillaAtmosphereSystem(WorldServer server, AtmosphereInfo info, VanillaAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
         super(server, info,systemInfo, provider);
         thunderingCloudExponent = systemInfo.getThunderingCloudExponent();
         rainingCloudExponent = systemInfo.getRainingCloudExponent();
@@ -78,7 +68,7 @@ public class VanillaAtmosphereSystem extends QiguaiAtmosphereSystem{
             atmosphere.deserializeNBT(data.getSaveCompound());
         }
         if(chunk == null){
-            atmosphere.onLoadWithoutChunk(worldInfo); //data isn't empty
+            atmosphere.onLoad(null,worldInfo); //data isn't empty
         }else{
             atmosphere.onLoad(chunk,worldInfo); //data may be empty
         }

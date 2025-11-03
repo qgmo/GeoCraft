@@ -31,6 +31,9 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
@@ -38,6 +41,9 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
+import top.qiguaiaaaa.geocraft.api.event.EventFactory;
+import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereAccessEvent;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -66,10 +72,11 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         loadDatas();
     }
 
-    /**
-     * {@inheritDoc}
-     * @return {@inheritDoc}
-     */
+    @Override
+    public boolean canAccessAtmosphere() {
+        return skyLight>0;
+    }
+
     @Override
     public boolean refresh() {
         datas.clear();
@@ -107,11 +114,86 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     @Override
     public Vec3d getWind() {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Vec3d wind = data.getAtmosphere().getWind(pos);
         if(skyLight>=0 && skyLight<15){
             wind.scale(skyLight/15d);
         }
         return wind;
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, int amount, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        if(amount <= 0) return 0;
+        assert data.getAtmosphere() != null;
+        int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,amount,null,state,doFill);
+        if(filled >=0) return filled;
+        if(fluid == FluidRegistry.WATER){
+            return fillWaterToAtmosphere(amount,state,temp,doFill);
+        }
+        return 0;
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, @Nonnull FluidStack stack, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        if(stack.amount <= 0) return 0;
+        assert data.getAtmosphere() != null;
+        int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,stack.amount,stack,state,doFill);
+        if(filled >=0) return filled;
+        if(fluid == FluidRegistry.WATER){
+            return fillWaterToAtmosphere(stack.amount,state,temp,doFill);
+        }
+        return 0;
+    }
+
+    @Override
+    public int drainFluidFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+        if(maxDrainedAmount <= 0) return 0;
+        assert data.getAtmosphere() != null;
+        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
+        if(event != null && event.hasResult()){
+            if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
+            return Math.max(event.getDrainedAmount(), 0);
+        }
+        if(fluid == FluidRegistry.WATER){
+            return drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain);
+        }
+        return 0;
+    }
+
+    @Nullable
+    @Override
+    public FluidStack drainFluidStackFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+        if(maxDrainedAmount <= 0) return null;
+        assert data.getAtmosphere() != null;
+        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
+        if(event != null && event.hasResult()){
+            if(event.getDrainedStack() != null) return event.getDrainedStack();
+            if(event.getDrainedAmount()<=0) return null;
+            return new FluidStack(fluid,event.getDrainedAmount());
+        }
+        if(fluid == FluidRegistry.WATER){
+            return new FluidStack(FluidRegistry.WATER,drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain));
+        }
+        return null;
+    }
+
+    protected int fillWaterToAtmosphere(int amount,@Nonnull StateOfMatter state,double temp,final boolean doFill){
+        assert data.getAtmosphere() != null;
+        switch (state){
+            case GAS: return data.getAtmosphere().addSteam(amount,pos,doFill);
+            case LIQUID:return data.getAtmosphere().addWater(amount,pos,doFill);
+        }
+        return 0;
+    }
+
+    protected int drainWaterFromAtmosphere(int amount,@Nonnull StateOfMatter state,final boolean doDrain){
+        assert data.getAtmosphere() != null;
+        switch (state){
+            case GAS: return -data.getAtmosphere().addSteam(-amount,pos,doDrain);
+            case LIQUID:return data.getAtmosphere().drainWater(amount,pos,doDrain);
+        }
+        return 0;
     }
 
     @Override
@@ -138,7 +220,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         clearInvalidData();
         final double average = amount/datas.size();
         forAtmospheresDo((dir, atmosphere) -> {
-            atmosphere.getUnderlying().putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
+            atmosphere.getUnderlying(pos).putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
             return null;
         });
     }
@@ -178,7 +260,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
             }else{
                 if(pos.getY()>atmosphere.getTopLayer().getTopY()) return null;
                 if(pos.getY()<0) return null;
-                layer = atmosphere.getBottomAtmosphereLayer();
+                layer = atmosphere.getBottomAtmosphereLayer(pos);
                 if(layer == null) return null;
                 layerToDraw.add(Pair.of(dir,layer));
             }
@@ -203,7 +285,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
         final double average = amount/datas.size();
         return drawAtmosphereProperty((dir,atmosphere)->{
             mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]);
-            return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos);
+            return atmosphere.getUnderlying(pos).drainHeat(average,mutableBlockPos);
         });
     }
 
@@ -237,9 +319,10 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable EnumFacing direction) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
-        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer();
+        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,direction);
     }
@@ -247,9 +330,10 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable Vec3d directionVec) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
-        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer();
+        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,directionVec);
     }
@@ -257,9 +341,10 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable Vec3i directionVec) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
-        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer();
+        if(!(layer instanceof AtmosphereLayer)) layer = data.getAtmosphere().getBottomAtmosphereLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,directionVec);
     }

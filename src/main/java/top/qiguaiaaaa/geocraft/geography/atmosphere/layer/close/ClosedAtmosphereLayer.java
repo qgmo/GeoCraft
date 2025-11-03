@@ -116,11 +116,13 @@ public class ClosedAtmosphereLayer extends QiguaiAtmosphereLayer {
         return 256;
     }
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "ca";

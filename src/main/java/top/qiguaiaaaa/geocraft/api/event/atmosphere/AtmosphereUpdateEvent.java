@@ -32,12 +32,14 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
+import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
  * 当大气更新的时候会调用
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public class AtmosphereUpdateEvent extends AtmosphereEvent {
@@ -58,25 +60,29 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
 
     /**
      * 当大气可能在指定地方下雨或雪的时候调用<br/>
+     * @since 0.1
      * @author QiguaiAAAA
      */
     @HasResult
     public static class RainAndSnow extends AtmosphereUpdateEvent{
         private final BlockPos randPos;
         private final double rainPossibility;
+        private final IAtmosphereAccessor accessor;
         private IBlockState newState;
 
         private boolean isSnowy = false;
 
         /**
          * 创建一个雨雪事件
+         * @since 0.1
          * @param chunk 发生的区块
          * @param atmosphere 发生的大气
          * @param randPos 预计会下的地方
          * @param possibility 用于参考的下雨、下雪概率，介于0和1之间
          */
-        public RainAndSnow(@Nonnull Chunk chunk,@Nonnull Atmosphere atmosphere,@Nonnull BlockPos randPos, double possibility) {
+        public RainAndSnow(@Nonnull Chunk chunk,@Nonnull Atmosphere atmosphere,@Nonnull IAtmosphereAccessor accessor,@Nonnull BlockPos randPos, double possibility) {
             super(chunk, atmosphere);
+            this.accessor = accessor;
             this.randPos = randPos;
             this.rainPossibility = possibility;
         }
@@ -128,6 +134,11 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
             return super.getWorld();
         }
 
+        @Nonnull
+        public IAtmosphereAccessor getAccessor() {
+            return accessor;
+        }
+
         public void setSnowy(boolean snowy) {
             isSnowy = snowy;
         }
@@ -139,6 +150,7 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
 
     /**
      * 当大气更新完成之后发布
+     * @since 0.1
      * @author QiguaiAAAA
      */
     public static class Post extends AtmosphereUpdateEvent{
@@ -146,6 +158,7 @@ public class AtmosphereUpdateEvent extends AtmosphereEvent {
 
         /**
          * 创建一个大气更新之后发布的事件
+         * @since 0.1
          * @param chunk 大气所在区块,若未加载则为null
          * @param atmosphere 大气
          * @param x 大气所在的区块X坐标

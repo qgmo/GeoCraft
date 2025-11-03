@@ -112,8 +112,8 @@ public class SurfaceUnderlying extends UnderlyingLayer {
         周围区块最高平均海拔 = altitude.get();
         周围区块最低平均海拔 = altitude.get();
         for(Triple<Atmosphere,Chunk,EnumFacing> neighbor:neighbors.values()){
-            周围区块最高平均海拔 = Math.max(周围区块最高平均海拔,neighbor.getLeft().getUnderlying().getAltitude().get());
-            周围区块最低平均海拔 = Math.min(周围区块最低平均海拔,neighbor.getLeft().getUnderlying().getAltitude().get());
+            周围区块最高平均海拔 = Math.max(周围区块最高平均海拔,neighbor.getLeft().getUnderlying(new BlockPos(0,getBeginY(),0)).getAltitude().get());
+            周围区块最低平均海拔 = Math.min(周围区块最低平均海拔,neighbor.getLeft().getUnderlying(new BlockPos(0,getBeginY(),0)).getAltitude().get());
         }
     }
 
@@ -171,9 +171,11 @@ public class SurfaceUnderlying extends UnderlyingLayer {
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
-        updateAltitude(chunk);
-        周围区块最低平均海拔 = 周围区块最高平均海拔 = altitude.get();
+    public void onLoad(@Nullable Chunk chunk) {
+        if(chunk != null){
+            updateAltitude(chunk);
+            周围区块最低平均海拔 = 周围区块最高平均海拔 = altitude.get();
+        }
         super.onLoad(chunk);
     }
 
@@ -203,10 +205,11 @@ public class SurfaceUnderlying extends UnderlyingLayer {
             updateNeighborAltitudeInfo(neighbors);
         }
 
-        double 地面长波辐射 =
-                Math.min(AtmosphereUtil.Constants.每秒损失能量常数 * Math.pow(temperature.get(), 4)* GeoAtmosphereSetting.getSimulationGap(),
-                        heatCapacity*temperature.get()/2);
-        temperature.addHeat(-地面长波辐射,heatCapacity);
+        float newTemp = (float) AtmosphereUtil.calcRadiatedTemp(temperature.get(),heatCapacity, AtmosphereUtil.Constants.大气单元底面积,GeoAtmosphereSetting.getSimulationGap(),1d);
+
+        double 地面长波辐射 = heatCapacity*(temperature.get()-newTemp);
+
+        temperature.set(newTemp);
         if(upperLayer == null) return;
         upperLayer.sendHeat(new HeatPack(HeatPack.HeatType.LONG_WAVE,地面长波辐射), EnumFacing.UP);
 
@@ -254,13 +257,14 @@ public class SurfaceUnderlying extends UnderlyingLayer {
         return altitude.get()-getBeginY();
     }
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;
     }
 
     @Override
-    public float getTemperature(BlockPos pos) {
+    public float getTemperature(@Nonnull BlockPos pos) {
         if(pos.getY()<-0.1) return getTemperature(new BlockPos(pos.getX(),0,pos.getZ()));
         if(pos.getY()<=altitude.get()- 过渡距离){
             double 深度 = Altitude.to物理高度((altitude.get()- 过渡距离)-pos.getY());
@@ -273,14 +277,10 @@ public class SurfaceUnderlying extends UnderlyingLayer {
         return (float) Math.max(temperature.get()-高差* AtmosphereUtil.Constants.对流层温度直减率, TemperatureProperty.MIN);
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "g";
-    }
-
-    @Override
-    public boolean isSerializable() {
-        return true;
     }
 
     protected double 获取上面平均风速(){

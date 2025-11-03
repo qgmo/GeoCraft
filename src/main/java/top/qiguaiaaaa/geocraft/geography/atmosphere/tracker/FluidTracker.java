@@ -49,7 +49,7 @@ public class FluidTracker extends InformationLoggingTracker {
     }
 
     @Override
-    public void notify(@Nonnull Atmosphere atmosphere) {
+    public void postAtmosphereTick(@Nonnull Atmosphere atmosphere) {
         Layer layer = atmosphere.getLayer(pos);
         if(layer == null){
             GeoCraft.getLogger().warn("Couldn't track {} at {} , because there doesn't exist an atmosphere layer.",propertyToTrack.getRegistryName(),pos);
@@ -65,7 +65,7 @@ public class FluidTracker extends InformationLoggingTracker {
             return;
         }
         FluidState state = (FluidState) s;
-        String msg = String.format("%d,%d",atmosphere.getAtmosphereWorldInfo().getWorld().getTotalWorldTime(),state.getFluidAmount());
+        String msg = String.format("%d,%d",atmosphere.getAtmosphereInfo().getWorld().getTotalWorldTime(),state.getFluidAmount());
         logger.println(msg);
         GeoCraft.getLogger().info("track {} ({} mB)",propertyToTrack.getRegistryName(),msg);
         nowTime++;

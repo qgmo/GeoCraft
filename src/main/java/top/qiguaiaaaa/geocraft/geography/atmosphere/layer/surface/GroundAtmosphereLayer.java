@@ -47,6 +47,7 @@ import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
 import top.qiguaiaaaa.geocraft.geography.state.DefaultTemperatureState;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere.TEMPERATURE_NOISE;
 
@@ -59,14 +60,14 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public void 更新高度缓存() {
-        起始高度 = atmosphere.getUnderlying().getTopY();
+        起始高度 = atmosphere.getUnderlying(BlockPos.ORIGIN).getTopY();
         相对起始高度 = 0;
     }
 
     @Override
     public Vec3d 计算水平风速分量(Atmosphere to, EnumFacing dir){
         Vec3d wind = Vec3d.ZERO;
-        Altitude 对方平均海拔 = to.getUnderlying().getAltitude();
+        Altitude 对方平均海拔 = to.getUnderlying(BlockPos.ORIGIN).getAltitude();
         if(getTopY()>对方平均海拔.get()){
             double 对方大气同高度气压 = to.getPressure(new BlockPos(0,getCenterY(),0));
             double 水平风 = Math.sqrt(Math.abs(本层气压-对方大气同高度气压)/平均密度)/2*(本层气压>对方大气同高度气压?1:-1);
@@ -127,18 +128,18 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     protected double[] 对外长波辐射() {
-        final double 变化上限 = temperature.get()/2*heatCapacity;
-        double 总量 = 长波发射率 * AtmosphereUtil.Constants.斯特藩_玻尔兹曼常数 *
-                Math.pow(temperature.get(), 4) *
-                AtmosphereUtil.Constants.大气单元底面积* GeoAtmosphereSetting.getSimulationGap();
-        总量 = MathHelper.clamp(总量,-变化上限,变化上限);
+        double 总量 = AtmosphereUtil.calcRadiation(temperature.get(),
+                heatCapacity,
+                AtmosphereUtil.Constants.大气单元底面积,
+                GeoAtmosphereSetting.getSimulationGap(),
+                长波发射率);
         return new double[]{总量*0.55,总量*0.45};
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
-        if(!temperature.isLoaded()){
-            temperature.set(DefaultTemperatureState.calculateBaseTemperature(chunk,atmosphere.getUnderlying()));
+    public void onLoad(@Nullable Chunk chunk) {
+        if(chunk != null && !temperature.isLoaded()){
+            temperature.set(DefaultTemperatureState.calculateBaseTemperature(chunk,atmosphere.getUnderlying(BlockPos.ORIGIN)));
             initUnderlyingTemp();
         }
         super.onLoad(chunk);
@@ -165,7 +166,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public float getTemperature(@Nonnull BlockPos pos, boolean notAir) {
-        double 地面海拔 = atmosphere.getUnderlying().getAltitude().get();
+        double 地面海拔 = atmosphere.getUnderlying(BlockPos.ORIGIN).getAltitude().get();
         double 相对海拔 = pos.getY()-地面海拔;
         if(相对海拔<=0){
             if(isLowerLayerValid) return low.getTemperature(pos,notAir);
@@ -197,6 +198,7 @@ public class GroundAtmosphereLayer extends SurfaceAtmosphereLayer {
         return 厚度;
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "la";

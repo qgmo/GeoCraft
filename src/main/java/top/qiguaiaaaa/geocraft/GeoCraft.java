@@ -66,6 +66,7 @@ public class GeoCraft {
     @EventHandler
     public void postInit(FMLPostInitializationEvent event){
         proxy.postInit(event);
+        AtmosphereSystemRunner.onPostInit(event);
     }
     @EventHandler
     public void onServerStarting(FMLServerStartingEvent event){

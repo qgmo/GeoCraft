@@ -34,6 +34,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.energy.IEnergyStorage;
 import org.apache.commons.lang3.tuple.Triple;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
@@ -53,18 +54,15 @@ import java.util.Map;
  * 若干个大气层级{@link AtmosphereLayer}，可能没有大气<br/>
  * 下垫面层级{@link UnderlyingLayer}，必须要有<br/>
  * 如未说明，所有的能量单位均为Forge Energe（FE)，模组内默认1 FE = 1 J （现实单位）
+ * @since 0.1
+ * @author QiguaiAAAA
  */
-public interface Layer extends INBTSerializable<NBTTagCompound>{
+public interface Layer extends INBTSerializable<NBTTagCompound>, IEnergyStorage {
     /**
      * 初始化时调用
      * @param chunk 层级所在区块
      */
-    void onLoad(@Nonnull Chunk chunk);
-
-    /**
-     * 区块不在加载状态时加载层级
-     */
-    void onLoadWithoutChunk();
+    void onLoad(@Nullable Chunk chunk);
 
     /**
      * 该层级是否已经初始化
@@ -164,12 +162,14 @@ public interface Layer extends INBTSerializable<NBTTagCompound>{
      * 获取该层所在位置的大气
      * @return 大气
      */
+    @Nonnull
     Atmosphere getAtmosphere();
 
     /**
      * 获取该层级的温度状态
      * @return 温度状态
      */
+    @Nonnull
     TemperatureState getTemperature();
 
     /**
@@ -177,7 +177,7 @@ public interface Layer extends INBTSerializable<NBTTagCompound>{
      * @param pos 某处
      * @return 温度
      */
-    float getTemperature(BlockPos pos);
+    float getTemperature(@Nonnull BlockPos pos);
 
     /**
      * 获取该层级指定的温度状态
@@ -185,7 +185,7 @@ public interface Layer extends INBTSerializable<NBTTagCompound>{
      * @return 温度状态
      */
     @Nullable
-    TemperatureState getTemperature(TemperatureProperty property);
+    TemperatureState getTemperature(final TemperatureProperty property);
 
     /**
      * 获取该层级的液态水水量状态
@@ -206,30 +206,24 @@ public interface Layer extends INBTSerializable<NBTTagCompound>{
      * @return 状态
      */
     @Nullable
-    GeographyState getState(@Nonnull IGeographyProperty property);
+    GeographyState getState(@Nonnull final IGeographyProperty property);
     /**
      * 添加或覆盖状态
      * @param property 属性
      * @return 如果存在旧状态,则返回.否则返回Null
      */
     @Nullable
-    GeographyState addState(@Nonnull IGeographyProperty property);
+    GeographyState addState(@Nonnull final IGeographyProperty property);
 
     /**
      * 返回该层序列化的复合标签的标签名称
      * @return 一个标签名称
      */
+    @Nonnull
     String getTagName();
 
     /**
-     * 当前大气层级是否需要序列化
-     * @return 若需要,则返回true
-     */
-    @Deprecated
-    boolean isSerializable();
-
-    /**
-     * 返回该层序列化后的复合标签,当{@link #isSerializable()}返回true时会在保存时调用
+     * 返回该层序列化后的复合标签
      * @return 一个复合标签,表示该层的状态
      */
     @Override
@@ -240,5 +234,41 @@ public interface Layer extends INBTSerializable<NBTTagCompound>{
      * @param nbt 上级向本层提供的复合标签
      */
     @Override
-    void deserializeNBT(NBTTagCompound nbt);
+    void deserializeNBT(@Nonnull NBTTagCompound nbt);
+
+    // ********************
+    //    IEnergyStorage
+    // ********************
+
+    @Override
+    default int receiveEnergy(int maxReceive, boolean simulate){
+        if(!simulate) putHeat(maxReceive,null);
+        return maxReceive;
+    }
+
+    @Override
+    default int extractEnergy(int maxExtract, boolean simulate){
+        if(!simulate) return (int) drainHeat(maxExtract,null);
+        return maxExtract;
+    }
+
+    @Override
+    default int getEnergyStored(){
+        return (int) Math.min(getTemperature().get()*getHeatCapacity(),Integer.MAX_VALUE);
+    }
+
+    @Override
+    default int getMaxEnergyStored(){
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    default boolean canExtract(){
+        return true;
+    }
+
+    @Override
+    default boolean canReceive(){
+        return true;
+    }
 }

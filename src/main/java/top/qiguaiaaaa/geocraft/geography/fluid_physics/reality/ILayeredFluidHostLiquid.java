@@ -32,13 +32,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -104,23 +102,22 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
             int quantaWater = getLayers(world,pos,state,FluidRegistry.WATER);
             layer = MathHelper.clamp(layer,0,8- getLayers(world,pos,state,FluidRegistry.WATER));
             if(layer == 0) return;
-            IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-            int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-            if(accessor != null) accessor.setSkyLight(light);
-            int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
-            if(quantaWater == layer){
-                world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
-                        .withProperty(BlockProperties.MIXTURE,true)
-                        .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
-            }else if(quantaWater< layer){
-                world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
-                        .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
-                if(accessor != null)
-                    accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quantaWater);
-            }else {
-                setLayer(world,pos,state,FluidRegistry.WATER,quantaWater+ layer,disabledBlockFlags,enabledBlockFlags);
-                if(accessor != null)
-                    accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer);
+            try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)) {
+                int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+                if(quantaWater == layer){
+                    world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
+                            .withProperty(BlockProperties.MIXTURE,true)
+                            .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
+                }else if(quantaWater< layer){
+                    world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
+                            .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
+                    if(accessor != null)
+                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quantaWater);
+                }else {
+                    setLayer(world,pos,state,FluidRegistry.WATER,quantaWater+ layer,disabledBlockFlags,enabledBlockFlags);
+                    if(accessor != null)
+                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer);
+                }
             }
         }
         if(fluid != getFluid()) return;

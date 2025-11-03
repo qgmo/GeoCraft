@@ -44,18 +44,18 @@ public interface AtmosphereLayer extends Layer {
     /**
      * 向该层大气添加气态形式的水
      * @param pos 添加位置
-     * @param amount 水量，
-     * @return 是否成功
+     * @param amount 水量，单位mB,可为负数
+     * @return 成功添加的量
      */
-    boolean addSteam(@Nullable BlockPos pos,int amount);
+    int addSteam(@Nullable BlockPos pos,int amount,final boolean doAdd);
 
     /**
      * 向该层大气添加液态形式的水
      * @param pos 添加位置
-     * @param amount 水量，单位mB
-     * @return 是否成功
+     * @param amount 水量，单位mB,可为负数
+     * @return 成功添加的量
      */
-    boolean addWater(@Nullable BlockPos pos,int amount);
+    int addWater(@Nullable BlockPos pos,int amount,final boolean doAdd);
 
     /**
      * 获得某地的气压

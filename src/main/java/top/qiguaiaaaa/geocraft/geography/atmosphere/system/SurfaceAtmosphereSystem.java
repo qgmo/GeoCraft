@@ -27,37 +27,29 @@
 
 package top.qiguaiaaaa.geocraft.geography.atmosphere.system;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
-import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.SurfaceAtmosphere;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.accessor.SurfaceAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.info.SurfaceAtmosphereSystemInfo;
-import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
-import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Iterator;
-
-import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
 
 /**
  * 主世界大气系统
  */
 public class SurfaceAtmosphereSystem extends QiguaiAtmosphereSystem {
-    public SurfaceAtmosphereSystem(WorldServer world, AtmosphereWorldInfo worldInfo, SurfaceAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider dataProvider){
+    public SurfaceAtmosphereSystem(WorldServer world, AtmosphereInfo worldInfo, SurfaceAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider dataProvider){
         super(world,worldInfo,systemInfo, dataProvider);
     }
 
@@ -77,7 +69,7 @@ public class SurfaceAtmosphereSystem extends QiguaiAtmosphereSystem {
             atmosphere.deserializeNBT(data.getSaveCompound());
         }else isFirstGenerated = true;
         if(chunk == null){
-            atmosphere.onLoadWithoutChunk(worldInfo); //data isn't empty
+            atmosphere.onLoad(null,worldInfo); //data isn't empty
         }else{
             atmosphere.onLoad(chunk,worldInfo); //data may be empty
             if(isFirstGenerated) populateAtmosphere(atmosphere,chunk);
@@ -85,11 +77,11 @@ public class SurfaceAtmosphereSystem extends QiguaiAtmosphereSystem {
         return atmosphere;
     }
 
-    protected void populateAtmosphere(SurfaceAtmosphere atmosphere,Chunk chunk){
-        AtmosphereLayer layer = atmosphere.getBottomAtmosphereLayer();
+    protected void populateAtmosphere(@Nonnull SurfaceAtmosphere atmosphere,@Nonnull Chunk chunk){
+        AtmosphereLayer layer = atmosphere.getBottomAtmosphereLayer(BlockPos.ORIGIN);
         if(layer == null) return;
         Biome mainBiome = ChunkUtil.getMainBiome(chunk);
-        layer.addSteam(null,(int) (mainBiome.getRainfall()*400));
-        layer.addWater(null,(int) (mainBiome.getRainfall()*1000));
+        layer.addSteam(null,(int) (mainBiome.getRainfall()*400),true);
+        layer.addWater(null,(int) (mainBiome.getRainfall()*1000),true);
     }
 }

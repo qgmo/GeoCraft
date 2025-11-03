@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.util.annotation;
 
 /**
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public enum ThreadType {

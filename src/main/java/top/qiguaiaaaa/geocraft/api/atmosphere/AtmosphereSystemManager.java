@@ -43,6 +43,8 @@ import javax.annotation.Nullable;
 
 /**
  * 大气系统管理器，管理所有世界的大气系统
+ * @since 0.1
+ * @author QiguaiAAAA
  */
 public final class AtmosphereSystemManager {
     /**

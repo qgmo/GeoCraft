@@ -27,12 +27,18 @@
 
 package top.qiguaiaaaa.geocraft.handler.event;
 
+import net.minecraft.world.World;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
+import top.qiguaiaaaa.geocraft.world.storage.GeoCraftWorldSavedData;
+
+import javax.annotation.Nonnull;
 
 @Mod.EventBusSubscriber
 public final class CommonEventHandler {
@@ -40,6 +46,25 @@ public final class CommonEventHandler {
     @SubscribeEvent
     public static void onRegisterAtmosphereProperty(RegistryEvent.Register<IGeographyProperty> event){
         RegistryHandler.registerGeographyProperties(event);
+    }
+
+    @SubscribeEvent
+    public static void onWorldLoad(WorldEvent.Load event){
+        World world = event.getWorld();
+        if(world.isRemote) return;
+        GeoCraftWorldSavedData data = getSavedData(world);
+        BlockUpdater.scheduleUpdates(world,data.getEntrySet());
+        data.setEntrySet(BlockUpdater.getEntries(world));
+        data.setWorld(world);
+    }
+
+    static GeoCraftWorldSavedData getSavedData(@Nonnull World world){
+        GeoCraftWorldSavedData data = (GeoCraftWorldSavedData) world.getPerWorldStorage().getOrLoadData(GeoCraftWorldSavedData.class,GeoCraftWorldSavedData.DATA_NAME);
+        if(data == null) {
+            data = new GeoCraftWorldSavedData();
+            world.getPerWorldStorage().setData(GeoCraftWorldSavedData.DATA_NAME, data);
+        }
+        return data;
     }
 
 }

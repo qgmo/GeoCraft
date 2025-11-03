@@ -67,7 +67,7 @@ public class AtmosphereWater extends FluidProperty implements IAtmospherePropert
     @Override
     public void onFlow(@Nonnull AtmosphereLayer from, Chunk fromChunk, Atmosphere to, Chunk toChunk, @Nonnull EnumFacing direction, @Nonnull Vec3d windSpeed) {
         double fromTop = from.getBeginY()+from.getDepth();
-        if (to.getUnderlying().getAltitude().get() > fromTop) return;
+        if (to.getUnderlying(BlockPos.ORIGIN).getAltitude().get() > fromTop) return;
         BlockPos centerPos = new BlockPos(0,from.getBeginY()+from.getDepth()/2,0);
         Layer layer = to.getLayer(centerPos);
         if(!(layer instanceof AtmosphereLayer)) return;
@@ -79,15 +79,15 @@ public class AtmosphereWater extends FluidProperty implements IAtmospherePropert
         double speed = MathUtil.获得带水平正负方向的速度(windSpeed,direction)+(water.getFluidAmount()-toWater.getFluidAmount())/2000d;
         if(speed>1e-5){
             int transferAmount = getWaterTransferAmount(water.getFluidAmount()/4.0,speed);
-            if(water.addAmount(-transferAmount)){
-                to.addWater(transferAmount,centerPos);
+            if(water.fill(-transferAmount,true)!=0){
+                to.addWater(transferAmount,centerPos,true);
             }
         }else if(speed<-1e-5){
             int transferAmount = getWaterTransferAmount(toWater.getFluidAmount()
                     *Math.min((fromTop-layer.getBeginY())/from.getDepth(),1)/4.0,
                     -speed);
-            if(toWater.addAmount(-transferAmount)){
-                water.addAmount(transferAmount);
+            if(toWater.fill(-transferAmount,true)!=0){
+                water.fill(transferAmount,true);
             }
         }
 
@@ -100,8 +100,8 @@ public class AtmosphereWater extends FluidProperty implements IAtmospherePropert
         if(from == null || to == null) return;
         double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
         int waterTransferAmount = getWaterTransferAmountVertically(from.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis*2);
-        if(from.addAmount(-waterTransferAmount)){
-            to.addAmount(waterTransferAmount);
+        if(from.fill(-waterTransferAmount,true)!=0){
+            to.fill(waterTransferAmount,true);
         }
     }
 

@@ -27,22 +27,40 @@
 
 package top.qiguaiaaaa.geocraft.api.util;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
+import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.math.Degree;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
+ * 大气的相关工具
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public final class AtmosphereUtil {
     public static double getSunEnergyPerChunk(@Nonnull WorldInfo worldInfo){
         return Math.sin(getSunHeight(worldInfo).getRadian())* Constants.每秒区块获得能量* GeoAtmosphereSetting.getSimulationGap();
     }
+
+    public static double calcRadiatedTemp(final double T0,final double heatCapacity,final double area,final double time,final double emissivity){
+        return Math.pow(1d/Math.pow(T0,3)+3d*area*emissivity*Constants.斯特藩_玻尔兹曼常数*time/heatCapacity,-1d/3d);
+    }
+
+    public static double calcRadiation(final double T0,final double heatCapacity,final double area,final double time,final double emissivity){
+        return heatCapacity*(T0-calcRadiatedTemp(T0, heatCapacity, area, time, emissivity));
+    }
+
     /**
      * 获取太阳高度角
+     * @since 0.1
      * @return 太阳高度角
      */
     @Nonnull
@@ -51,10 +69,30 @@ public final class AtmosphereUtil {
         if(dayTime<6000 || dayTime>18000) return new Degree(0);
         return new Degree((Math.PI*((6000-Math.abs(12000-dayTime))/6000.0d))/2.0,true);
     }
+
+    /**
+     * 获取经过天光处理的的 Accessor
+     * @since 0.2.0
+     * @param world 世界
+     * @param pos 位置
+     * @param notAir 是否不为空气
+     * @return 一个 {@link IAtmosphereAccessor}实例
+     */
+    @Nullable
+    public static IAtmosphereAccessor getLightedAtmosphereAccessor(@Nonnull World world, @Nonnull BlockPos pos, boolean notAir){
+        @Nullable IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,notAir);
+        if(accessor != null){
+            int light = world.getLightFor(EnumSkyBlock.SKY,pos);
+            accessor.setSkyLight(light);
+        }
+        return accessor;
+    }
+
     /**
      * 根据太阳高度角和方位角计算太阳方向向量
      * 注意：这个向量是从太阳指向地面的方向
      *
+     * @since 0.1
      * @param 高度角 太阳光线与水平面的夹角
      * @param 方位角 太阳相对于正北的方向角（0°为正北，90°为正东，180°为正南，270°为正西）
      * @return 单位方向向量

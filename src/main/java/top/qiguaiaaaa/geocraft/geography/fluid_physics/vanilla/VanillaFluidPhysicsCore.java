@@ -32,46 +32,43 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
+import javax.annotation.Nullable;
 import java.util.Random;
 
 public class VanillaFluidPhysicsCore {
     public static IBlockState evaporateWater(World world, BlockPos pos, IBlockState state, Random rand){
-        int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-        if(light<= 0) return state;
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        if(accessor == null) return state;
-        Atmosphere atmosphere = accessor.getAtmosphereHere();
-        if(atmosphere == null) return state;
-        if(!accessor.getAtmosphereWorldInfo().canWaterEvaporate(pos)) return state;
-        accessor.setSkyLight(light);
+        try (@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)) {
+            if(accessor == null) return state;
+            if(!accessor.canAccessAtmosphere()) return state;
+            if(!accessor.getAtmosphereInfo().canWaterEvaporate(pos)) return state;
 
-        int meta = state.getValue(BlockLiquid.LEVEL);
-        if(accessor.getTemperature()> TemperatureProperty.BOILED_POINT){
-            FluidRegistry.WATER.vaporize(null,world,pos,null);
-            if(meta == 0) atmosphere.addSteam(Fluid.BUCKET_VOLUME,pos);
-            return Blocks.AIR.getDefaultState();
+            int meta = state.getValue(BlockLiquid.LEVEL);
+            if(accessor.getTemperature()> TemperatureProperty.BOILED_POINT){
+                FluidRegistry.WATER.vaporize(null,world,pos,null);
+                if(meta == 0) accessor.fillFluidToAtmosphere(FluidRegistry.WATER,Fluid.BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);
+                return Blocks.AIR.getDefaultState();
+            }
+
+            int amount = (int) MathHelper.clamp(WaterUtil.getWaterEvaporateAmount(accessor),0,Fluid.BUCKET_VOLUME);
+            if(amount == 0) return state;
+
+            if((amount = accessor.fillFluidToAtmosphere(FluidRegistry.WATER,amount, StateOfMatter.GAS,accessor.getTemperature(true),true)) <= 0) return state;
+            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA*(double)amount/FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME);
+            if(meta == 0 && amount >= Fluid.BUCKET_VOLUME){
+                return Blocks.AIR.getDefaultState();
+            }
         }
 
-        int amount = (int) MathHelper.clamp(WaterUtil.getWaterEvaporateAmount(accessor),0,Fluid.BUCKET_VOLUME);
-        if(amount == 0) return state;
-
-        if(!atmosphere.addSteam(amount,pos)) return state;
-        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA*(double)amount/FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME);
-        if(meta == 0 && amount >= Fluid.BUCKET_VOLUME){
-            return Blocks.AIR.getDefaultState();
-        }
         return state;
     }
 

@@ -35,11 +35,13 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
+import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+
+import javax.annotation.Nullable;
 
 public class VanillaLikeFluidPhysicsCore {
     /**
@@ -53,25 +55,27 @@ public class VanillaLikeFluidPhysicsCore {
             return false;
         }
         if(!world.isAreaLoaded(pos,1)) return false;
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,false);
-        if(accessor == null) return false;
-        Atmosphere atmosphere = accessor.getAtmosphereHere();
-        if(atmosphere == null) return false;
-        if(atmosphere.drainWater(Fluid.BUCKET_VOLUME,pos,true)< Fluid.BUCKET_VOLUME) return false;
-        double temp = accessor.getTemperature();
-        if (!(temp < TemperatureProperty.ICE_POINT) && !(temp > TemperatureProperty.BOILED_POINT)) {
-            IBlockState state = world.getBlockState(pos);
-            if(FluidUtil.getFluid(state) != FluidRegistry.WATER) return false;
-            if(state.getValue(BlockLiquid.LEVEL) != 1) return false;
-            int adjacentSourceBlocks = 0;
-            for(EnumFacing facing: ChunkUtil.HORIZONTALS){
-                BlockPos facingPos = pos.offset(facing);
-                IBlockState facingState = world.getBlockState(facingPos);
-                if(FluidUtil.getFluid(facingState) != FluidRegistry.WATER) continue;
-                adjacentSourceBlocks += FluidUtil.isFullFluid(world,facingPos,facingState)?1:0;
+        try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,false);) {
+            if(accessor == null) return false;
+            Atmosphere atmosphere = accessor.getAtmosphereHere();
+            if(atmosphere == null) return false;
+            if(atmosphere.drainWater(Fluid.BUCKET_VOLUME,pos,false)< Fluid.BUCKET_VOLUME) return false;
+            double temp = accessor.getTemperature();
+            if (!(temp < TemperatureProperty.ICE_POINT) && !(temp > TemperatureProperty.BOILED_POINT)) {
+                IBlockState state = world.getBlockState(pos);
+                if(FluidUtil.getFluid(state) != FluidRegistry.WATER) return false;
+                if(state.getValue(BlockLiquid.LEVEL) != 1) return false;
+                int adjacentSourceBlocks = 0;
+                for(EnumFacing facing: ChunkUtil.HORIZONTALS){
+                    BlockPos facingPos = pos.offset(facing);
+                    IBlockState facingState = world.getBlockState(facingPos);
+                    if(FluidUtil.getFluid(facingState) != FluidRegistry.WATER) continue;
+                    adjacentSourceBlocks += FluidUtil.isFullFluid(world,facingPos,facingState)?1:0;
+                }
+                return adjacentSourceBlocks>=2;
             }
-            return adjacentSourceBlocks>=2;
+            return false;
         }
-        return false;
+
     }
 }

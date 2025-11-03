@@ -45,7 +45,6 @@ import top.qiguaiaaaa.geocraft.api.state.GeographyState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.QiguaiAtmosphere;
-import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 
 import javax.annotation.Nonnull;
@@ -171,11 +170,10 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
     protected abstract double[] 对外长波辐射();
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
+    public void onLoad(@Nullable Chunk chunk) {
         onLoadWithoutChunk();
     }
 
-    @Override
     public void onLoadWithoutChunk() {
         for(GeographyState state:states.values())
             if(!state.isLoaded())
@@ -191,13 +189,13 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
     }
 
     @Override
-    public boolean addSteam(BlockPos pos, int amount) {
-        return steam.addAmount(amount);
+    public int addSteam(@Nullable BlockPos pos, int amount,boolean doAdd) {
+        return steam.fill(amount,doAdd);
     }
 
     @Override
-    public boolean addWater(BlockPos pos, int amount) {
-        return water.addAmount(amount);
+    public int addWater(@Nullable BlockPos pos, int amount,boolean doAdd) {
+        return water.fill(amount,doAdd);
     }
 
     @Override
@@ -254,11 +252,6 @@ public abstract class QiguaiAtmosphereLayer extends BaseAtmosphereLayer{
     @Override
     public double getHeatCapacity() {
         return heatCapacity;
-    }
-
-    @Override
-    public boolean isSerializable() {
-        return true;
     }
 
     @Override

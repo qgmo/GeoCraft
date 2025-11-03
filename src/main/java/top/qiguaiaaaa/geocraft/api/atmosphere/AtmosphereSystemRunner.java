@@ -28,9 +28,11 @@
 package top.qiguaiaaaa.geocraft.api.atmosphere;
 
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -42,11 +44,20 @@ import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereGenerateEvent;
 
 import static top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager.*;
 
-@Mod.EventBusSubscriber(modid = GeoCraftAPI.MODID)
-public class AtmosphereSystemRunner {
+/**
+ * @since 0.1
+ * @author QiguaiAAAA
+ */
+public final class AtmosphereSystemRunner {
     static {
-        EventFactory.EVENT_BUS.register(AtmosphereSystemRunner.class);
+        if(Loader.isModLoaded(GeoCraftAPI.MODID)){
+            MinecraftForge.EVENT_BUS.register(AtmosphereSystemRunner.class);
+            EventFactory.EVENT_BUS.register(AtmosphereSystemRunner.class);
+        }
     }
+
+    private AtmosphereSystemRunner(){}
+
     @SubscribeEvent
     public static void onWorldTick(TickEvent.WorldTickEvent event){
         if(event.phase == TickEvent.Phase.START) return;
@@ -86,6 +97,9 @@ public class AtmosphereSystemRunner {
             system.onServerStopped(event);
         }
         atmosphereSystems.clear();
+    }
+
+    public static void onPostInit(FMLPostInitializationEvent event){
     }
 
     @SubscribeEvent

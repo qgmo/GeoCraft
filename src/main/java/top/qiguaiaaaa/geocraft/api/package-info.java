@@ -25,6 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
+/**
+ * @since 0.1
+ * @author QiguaiAAAA
+ */
 @API(apiVersion = GeoCraftAPI.VERSION,owner = GeoCraftAPI.MODID,provides = GeoCraftAPI.PROVIDERS)
 package top.qiguaiaaaa.geocraft.api;
 

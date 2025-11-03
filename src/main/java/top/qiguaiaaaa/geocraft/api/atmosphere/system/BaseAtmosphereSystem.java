@@ -32,7 +32,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 
@@ -41,11 +41,11 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 public abstract class BaseAtmosphereSystem implements IAtmosphereSystem{
-    protected final AtmosphereWorldInfo worldInfo;
+    protected final AtmosphereInfo worldInfo;
     protected final IAtmosphereDataProvider dataProvider;
     protected boolean stopped = false;
 
-    public BaseAtmosphereSystem(AtmosphereWorldInfo info, IAtmosphereDataProvider provider) {
+    public BaseAtmosphereSystem(AtmosphereInfo info, IAtmosphereDataProvider provider) {
         this.worldInfo = info;
         this.dataProvider = provider;
     }
@@ -137,7 +137,7 @@ public abstract class BaseAtmosphereSystem implements IAtmosphereSystem{
 
     @Nonnull
     @Override
-    public AtmosphereWorldInfo getAtmosphereWorldInfo() {
+    public AtmosphereInfo getAtmosphereInfo() {
         return worldInfo;
     }
 

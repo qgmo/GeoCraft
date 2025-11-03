@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 
 /**
  * 流体状态
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public abstract class FluidState implements INumberState<Integer>, IFluidTank {
@@ -57,10 +58,14 @@ public abstract class FluidState implements INumberState<Integer>, IFluidTank {
         this.amount = fluidAmount;
     }
 
-    public boolean addAmount(int amount){
-        if(this.amount + amount <0) return false;
+    /**
+     * @see #fill(FluidStack, boolean) 
+     * @since 0.2.0
+     */
+    public int fill(int amount,final boolean doFill){
+        if(this.amount + amount <0) return 0;
         this.amount += amount;
-        return true;
+        return amount;
     }
 
     @Override
@@ -124,7 +129,7 @@ public abstract class FluidState implements INumberState<Integer>, IFluidTank {
     public int fill(@Nonnull FluidStack resource, boolean doFill) {
         if(resource.getFluid() != fluid) return 0;
         if(this.amount + resource.amount <0) return 0;
-        if(doFill) addAmount(resource.amount);
+        if(doFill) fill(resource.amount,true);
         return resource.amount;
     }
 
@@ -132,7 +137,7 @@ public abstract class FluidState implements INumberState<Integer>, IFluidTank {
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
         int drainedInFact = (this.amount- maxDrain <0)?this.amount: maxDrain;
-        if(doDrain) addAmount(-drainedInFact);
+        if(doDrain) fill(-drainedInFact,true);
         return new FluidStack(fluid,drainedInFact);
     }
     @Nonnull

@@ -31,12 +31,18 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
+import top.qiguaiaaaa.geocraft.api.event.EventFactory;
+import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereAccessEvent;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,20 +57,28 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     }
 
     @Override
+    public boolean canAccessAtmosphere() {
+        return skyLight>0;
+    }
+
+    @Override
     public double getTemperature() {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         return data.getAtmosphere().getTemperature(pos,notAir);
     }
 
     @Override
     public double getPressure() {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         return data.getAtmosphere().getPressure(pos);
     }
 
     @Override
     public double getWaterPressure() {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         return data.getAtmosphere().getWaterPressure(pos);
     }
 
@@ -72,24 +86,100 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public Vec3d getWind() {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         return data.getAtmosphere().getWind(pos);
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, int amount, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        assert data.getAtmosphere() != null;
+        int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,amount,null,state,doFill);
+        if(filled >=0) return filled;
+        if(fluid == FluidRegistry.WATER){
+            return fillWaterToAtmosphere(amount,state,temp,doFill);
+        }
+        return 0;
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, @Nonnull FluidStack stack, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        assert data.getAtmosphere() != null;
+        int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,stack.amount,stack,state,doFill);
+        if(filled >=0) return filled;
+        if(fluid == FluidRegistry.WATER){
+            return fillWaterToAtmosphere(stack.amount,state,temp,doFill);
+        }
+        return 0;
+    }
+
+    @Override
+    public int drainFluidFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+        if(maxDrainedAmount <= 0) return 0;
+        assert data.getAtmosphere() != null;
+        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
+        if(event != null && event.hasResult()){
+            if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
+            return Math.max(event.getDrainedAmount(), 0);
+        }
+        if(fluid == FluidRegistry.WATER){
+            return drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain);
+        }
+        return 0;
+    }
+
+    @Nullable
+    @Override
+    public FluidStack drainFluidStackFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+        if(maxDrainedAmount <= 0) return null;
+        assert data.getAtmosphere() != null;
+        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
+        if(event != null && event.hasResult()){
+            if(event.getDrainedStack() != null) return event.getDrainedStack();
+            if(event.getDrainedAmount()<=0) return null;
+            return new FluidStack(fluid,event.getDrainedAmount());
+        }
+        if(fluid == FluidRegistry.WATER){
+            return new FluidStack(FluidRegistry.WATER,drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain));
+        }
+        return null;
+    }
+
+    protected int fillWaterToAtmosphere(int amount,@Nonnull StateOfMatter state,double temp,boolean doFill){
+        assert data.getAtmosphere() != null;
+        switch (state){
+            case GAS: return data.getAtmosphere().addSteam(amount,pos,doFill);
+            case LIQUID:return data.getAtmosphere().addWater(amount,pos,doFill);
+        }
+        return 0;
+    }
+
+    protected int drainWaterFromAtmosphere(int amount,@Nonnull StateOfMatter state,final boolean doDrain){
+        assert data.getAtmosphere() != null;
+        switch (state){
+            case GAS: return -data.getAtmosphere().addSteam(-amount,pos,doDrain);
+            case LIQUID:return data.getAtmosphere().drainWater(amount,pos,doDrain);
+        }
+        return 0;
     }
 
     @Override
     public void putHeatToAtmosphere(double amount) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         data.getAtmosphere().putHeat(amount,pos);
     }
 
     @Override
     public void putHeatToUnderlying(double amount) {
         checkAtmosphereDataLoaded();
-        data.getAtmosphere().getUnderlying().putHeat(amount,pos);
+        assert data.getAtmosphere() != null;
+        data.getAtmosphere().getUnderlying(pos).putHeat(amount,pos);
     }
 
     @Override
     public void putHeatToCurrentLayer(double amount) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
         layer.putHeat(amount,pos);
@@ -98,6 +188,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public double drainHeatFromAtmosphere(double amount) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return 0;
         if(layer instanceof AtmosphereLayer){
@@ -110,13 +201,15 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public double drainHeatFromUnderlying(double amount) {
         checkAtmosphereDataLoaded();
-        UnderlyingLayer underlying = data.getAtmosphere().getUnderlying();
+        assert data.getAtmosphere() != null;
+        UnderlyingLayer underlying = data.getAtmosphere().getUnderlying(pos);
         return underlying.drainHeat(amount,pos);
     }
 
     @Override
     public double drainHeatFromCurrentLayer(double amount) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return 0;
         return layer.drainHeat(amount,pos);
@@ -125,6 +218,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable EnumFacing direction) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,direction);
@@ -133,6 +227,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable Vec3d directionVec) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,directionVec);
@@ -141,6 +236,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     @Override
     public void sendHeat(@Nonnull HeatPack pack,@Nullable Vec3i directionVec) {
         checkAtmosphereDataLoaded();
+        assert data.getAtmosphere() != null;
         Layer layer = data.getAtmosphere().getLayer(pos);
         if(layer == null) return;
         layer.sendHeat(pack,directionVec);

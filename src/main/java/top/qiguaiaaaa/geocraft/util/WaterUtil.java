@@ -58,7 +58,7 @@ public final class WaterUtil {
      * @return 水蒸发量,单位kg
      */
     public static double getWaterEvaporateAmount(IAtmosphereAccessor accessor){
-        final double 交换系数 = accessor.getAtmosphereWorldInfo().getVaporExchangeRate();
+        final double 交换系数 = accessor.getAtmosphereInfo().getVaporExchangeRate();
         double 水汽压 = accessor.getWaterPressure();
         double 饱和水汽压 = 计算饱和水汽压(accessor.getTemperature(true));
         double 水汽压差 = Math.max(饱和水汽压 - 水汽压, 0);
@@ -77,7 +77,7 @@ public final class WaterUtil {
         if(temp>= TemperatureProperty.BOILED_POINT) return 0;
         if(temp<= TemperatureProperty.ICE_POINT-100) return 1;
         double strong = accessor.getAtmosphereHere().getCloudExponent(accessor.getPos());
-        return strong/(strong+accessor.getAtmosphereWorldInfo().getRainSmoothingConstant());
+        return strong/(strong+accessor.getAtmosphereInfo().getRainSmoothingConstant());
     }
 
     /**
@@ -116,7 +116,7 @@ public final class WaterUtil {
     public static boolean canSnowAt(World world,BlockPos pos, boolean checkLight) {
         Atmosphere atmosphere = AtmosphereSystemManager.getAtmosphere(world, pos);
         if(atmosphere == null) return world.canSnowAtBody(pos,checkLight);
-        if(atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true)< FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME) return false;
+        if(atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false)< FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME) return false;
         if (atmosphere.getAtmosphereTemperature(pos) >= TemperatureProperty.ICE_POINT) {
             return false;
         } else if (!checkLight) {

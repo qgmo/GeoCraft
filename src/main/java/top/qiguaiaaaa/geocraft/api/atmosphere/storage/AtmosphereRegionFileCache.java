@@ -42,11 +42,15 @@ import static top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFil
 /**
  * 管理目前游戏已加载到内存中的大气数据文件
  * 请使用该类加载大气数据文件
+ * @since 0.1
+ * @author QiguaiAAAA
  */
-public class AtmosphereRegionFileCache {
+public final class AtmosphereRegionFileCache {
     public static final String WORKING_DIR = "atmosphere",FILE_SUFFIX = ".atmdat";
     public static final int ATMOSPHERE_SAVE_LOC_BYTE = (1<< STORAGE_ATMOSPHERES_COUNT_LOG)-1;
     private static final Map<File, AtmosphereRegionFile> ATMOSPHERE_REGIONS_BY_FILE = Maps.newHashMap();
+
+    private AtmosphereRegionFileCache(){}
 
     /**
      * 创建或加载指定区块的大气数据文件<br/>

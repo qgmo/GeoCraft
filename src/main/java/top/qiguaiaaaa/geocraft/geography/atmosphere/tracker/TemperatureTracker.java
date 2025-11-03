@@ -47,10 +47,10 @@ public class TemperatureTracker extends InformationLoggingTracker {
         logger.println("Time,Lower T,Ground T");
     }
     @Override
-    public void notify(@Nonnull Atmosphere atmosphere) {
+    public void postAtmosphereTick(@Nonnull Atmosphere atmosphere) {
         double temp = atmosphere.getAtmosphereTemperature(pos);
-        String msg = String.format("%d,%f,%f",atmosphere.getAtmosphereWorldInfo().getWorld().getTotalWorldTime(), TemperatureProperty.toCelsiusFromKelvin(temp),
-                atmosphere.getUnderlying().getTemperature().getCelsius());
+        String msg = String.format("%d,%f,%f",atmosphere.getAtmosphereInfo().getWorld().getTotalWorldTime(), TemperatureProperty.toCelsiusFromKelvin(temp),
+                atmosphere.getUnderlying(pos).getTemperature().getCelsius());
         logger.println(msg);
         GeoCraft.getLogger().info("track atmosphere temp ({})",msg);
         nowTime++;

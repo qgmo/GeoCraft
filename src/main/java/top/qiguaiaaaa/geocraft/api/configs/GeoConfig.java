@@ -54,4 +54,13 @@ public @interface GeoConfig {
         long min() default Long.MIN_VALUE;
         long max() default Long.MAX_VALUE;
     }
+
+    /**
+     * @since 0.2.0
+     */
+    @Target(ElementType.FIELD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Since{
+        String value();
+    }
 }

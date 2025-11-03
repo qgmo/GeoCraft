@@ -31,10 +31,9 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.DefaultAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
-import top.qiguaiaaaa.geocraft.api.atmosphere.storage.IAtmosphereDataLoader;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.StorageAtmosphereDataLoader;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemType;
@@ -58,7 +57,7 @@ public final class AtmosphereEventHandler {
         int dimension = provider.getDimension();
         AtmosphereSystemType type = event.getType();
         if(type == AtmosphereSystemType.NO_ATMOSPHERE_SYSTEM || type == AtmosphereSystemType.THIRD_PARTY_ATMOSPHERE_SYSTEM) return;
-        AtmosphereWorldInfo info = new AtmosphereWorldInfo(server);
+        AtmosphereInfo info = new AtmosphereInfo(server);
         IAtmosphereSystem system = null;
 
 

@@ -46,7 +46,7 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
     public abstract void updateTick(@Nullable Chunk chunk);
 
     protected void updateListeners(){
-        for(IAtmosphereTracker listener: trackers) listener.notify(this);
+        for(IAtmosphereTracker listener: trackers) listener.postAtmosphereTick(this);
     }
 
     public void setLocation(int x,int z){
@@ -73,18 +73,19 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
     }
 
     @Override
-    public boolean addSteam(int addAmount, @Nonnull BlockPos pos){
-        if(addAmount == 0) return true;
-        return getAtmosphereLayer(pos).addSteam(pos,addAmount);
+    public int addSteam(int amount, @Nonnull BlockPos pos,final boolean doAdd){
+        if(amount == 0) return 0;
+        return getAtmosphereLayer(pos).addSteam(pos,amount,doAdd);
     }
 
     @Override
-    public boolean addWater(int amount, @Nonnull BlockPos pos) {
-        return getAtmosphereLayer(pos).addWater(pos,amount);
+    public int addWater(int amount, @Nonnull BlockPos pos,final boolean doAdd) {
+        if(amount == 0) return 0;
+        return getAtmosphereLayer(pos).addWater(pos,amount,doAdd);
     }
 
     @Override
-    public int drainWater(int amount, @Nonnull BlockPos pos, boolean test) {
+    public int drainWater(int amount, @Nonnull BlockPos pos, boolean doDrain) {
         if(amount<0) return 0;
         int realAmount = 0;
         for(Layer layer = getAtmosphereLayer(pos); layer != null; layer=layer.getUpperLayer()){
@@ -94,7 +95,7 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
             int realAmountLayer = Math.min(amount,state.getFluidAmount());
             amount -= realAmountLayer;
             realAmount += realAmountLayer;
-            if(!test) state.addAmount(-realAmountLayer);
+            if(doDrain) state.fill(-realAmountLayer, true);
             if(amount <=0) break;
         }
         return realAmount;
@@ -118,7 +119,7 @@ public abstract class QiguaiAtmosphere extends BaseAtmosphere {
     public AtmosphereLayer getAtmosphereLayer(BlockPos pos){
         Layer res = getLayer(pos);
         while (!(res instanceof AtmosphereLayer)){
-            if(res == null) return getBottomAtmosphereLayer();
+            if(res == null) return getBottomAtmosphereLayer(pos);
             res = res.getUpperLayer();
         }
         return (AtmosphereLayer) res;

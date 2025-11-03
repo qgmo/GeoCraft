@@ -33,7 +33,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 
@@ -139,6 +139,7 @@ public interface IAtmosphereSystem {
      */
     @Nullable
     Atmosphere getAtmosphere(int x,int z);
+
     @Nonnull
-    AtmosphereWorldInfo getAtmosphereWorldInfo();
+    AtmosphereInfo getAtmosphereInfo();
 }

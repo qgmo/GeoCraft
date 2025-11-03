@@ -51,7 +51,7 @@ public class HighAtmosphereLayer extends SurfaceAtmosphereLayer {
     public HighAtmosphereLayer(SurfaceAtmosphere atmosphere) {
         super(atmosphere);
         相对起始高度 = 80;
-        起始高度 = atmosphere.getUnderlying().getTopY()+相对起始高度;
+        起始高度 = atmosphere.getUnderlying(BlockPos.ORIGIN).getTopY()+相对起始高度;
         第二温度过渡开始相对高度 = 相对起始高度-第二温度过渡区间长度/2.0;
     }
 
@@ -63,7 +63,7 @@ public class HighAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public float getTemperature(@Nonnull BlockPos pos, boolean notAir) {
-        double 地面海拔 = atmosphere.getUnderlying().getAltitude().get();
+        double 地面海拔 = atmosphere.getUnderlying(BlockPos.ORIGIN).getAltitude().get();
         double 相对海拔 = pos.getY()-地面海拔;
         if(相对海拔< 相对起始高度-0.1){
             if(isLowerLayerValid) return low.getTemperature(pos,notAir);
@@ -96,6 +96,7 @@ public class HighAtmosphereLayer extends SurfaceAtmosphereLayer {
         return Altitude.get游戏海拔(顶端物理高度);
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "ha";
@@ -118,11 +119,11 @@ public class HighAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     protected double[] 对外长波辐射() {
-        final double 变化上限 = temperature.get()/2*heatCapacity;
-        double 总量 = 长波发射率 * AtmosphereUtil.Constants.斯特藩_玻尔兹曼常数 *
-                Math.pow(temperature.get(), 4) *
-                AtmosphereUtil.Constants.大气单元底面积* GeoAtmosphereSetting.getSimulationGap() /2000 * Altitude.to物理高度(getDepth());
-        总量 = MathHelper.clamp(总量,-变化上限,变化上限);
+        double 总量 = AtmosphereUtil.calcRadiation(temperature.get(),
+                heatCapacity,
+                AtmosphereUtil.Constants.大气单元底面积,
+                GeoAtmosphereSetting.getSimulationGap(),
+                长波发射率*Altitude.to物理高度(getDepth())/2000d);
         return new double[]{总量*0.7,总量*0.3};
     }
 

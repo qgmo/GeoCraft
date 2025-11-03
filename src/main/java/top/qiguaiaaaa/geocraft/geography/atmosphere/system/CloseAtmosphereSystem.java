@@ -31,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
@@ -47,7 +47,7 @@ public class CloseAtmosphereSystem extends QiguaiAtmosphereSystem {
     protected final float temp;
     protected final double maxWindSpeed,pressure;
 
-    public CloseAtmosphereSystem(@Nonnull WorldServer world,@Nonnull AtmosphereWorldInfo worldInfo,@Nonnull CloseAtmosphereSystemInfo systemInfo,@Nonnull IAtmosphereDataProvider dataProvider){
+    public CloseAtmosphereSystem(@Nonnull WorldServer world, @Nonnull AtmosphereInfo worldInfo, @Nonnull CloseAtmosphereSystemInfo systemInfo, @Nonnull IAtmosphereDataProvider dataProvider){
         super(world,worldInfo,systemInfo,dataProvider);
         temp = systemInfo.getFinalTemperature();
         maxWindSpeed = systemInfo.getMaxWindSpeed();
@@ -70,11 +70,7 @@ public class CloseAtmosphereSystem extends QiguaiAtmosphereSystem {
         if(!data.isEmpty()){
             atmosphere.deserializeNBT(data.getSaveCompound());
         }
-        if(chunk == null){
-            atmosphere.onLoadWithoutChunk(worldInfo);
-        }else{
-            atmosphere.onLoad(chunk,worldInfo);
-        }
+        atmosphere.onLoad(chunk,worldInfo);
         return atmosphere;
     }
 }

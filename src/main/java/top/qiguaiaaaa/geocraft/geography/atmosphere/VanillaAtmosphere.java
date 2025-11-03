@@ -31,6 +31,7 @@ import net.minecraft.init.Biomes;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
@@ -38,7 +39,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
@@ -93,13 +94,13 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
 
     @Nullable
     @Override
-    public AtmosphereLayer getBottomAtmosphereLayer() {
+    public AtmosphereLayer getBottomAtmosphereLayer(@Nonnull BlockPos pos) {
         return atmosphereLayer;
     }
 
     @Nonnull
     @Override
-    public UnderlyingLayer getUnderlying() {
+    public UnderlyingLayer getUnderlying(@Nonnull BlockPos pos) {
         return underlying;
     }
 
@@ -116,7 +117,7 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
         if(debug) GeoCraft.getLogger().info("{} {} Atmosphere updated {}",x,z,tickTimes);
         ExtendedChunkPos chunkPos = new ExtendedChunkPos(x,z);
         final Map<EnumFacing, Triple<Atmosphere,Chunk,EnumFacing>> neighbors = new EnumMap<>(EnumFacing.class);
-        final WorldServer world = worldInfo.getWorld();
+        final World world = worldInfo.getWorld();
         final IAtmosphereSystem system = worldInfo.getSystem();
         for(EnumFacing facing: ChunkUtil.HORIZONTALS){
             ExtendedChunkPos facingPos = chunkPos.offset(facing);
@@ -142,17 +143,17 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
     }
 
     @Override
-    public boolean addSteam(int addAmount, @Nonnull BlockPos pos) {
-        return true;
+    public int addSteam(int amount, @Nonnull BlockPos pos,final boolean doAdd) {
+        return amount;
     }
 
     @Override
-    public boolean addWater(int amount, @Nonnull BlockPos pos) {
-        return true;
+    public int addWater(int amount, @Nonnull BlockPos pos,final boolean doAdd) {
+        return amount;
     }
 
     @Override
-    public int drainWater(int amount, @Nonnull BlockPos pos, boolean test) {
+    public int drainWater(int amount, @Nonnull BlockPos pos,final boolean doDrain) {
         if(amount<0) return 0;
         Biome curBiome = biome;
         if(worldInfo.getWorld().isBlockLoaded(pos)){
@@ -169,9 +170,9 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
     public Weather getWeather(@Nonnull BlockPos pos) {
         Biome curBiome = biome;
         if(worldInfo.getWorld().isBlockLoaded(pos)){
-            biome = worldInfo.getWorld().getBiome(pos);
+            curBiome = worldInfo.getWorld().getBiome(pos);
         }
-        if(!biome.canRain()){
+        if(!curBiome.canRain()){
             return Weather.SUNNY;
         }
         if(worldInfo.getWorld().getWorldInfo().isThundering()){
@@ -211,8 +212,8 @@ public class VanillaAtmosphere extends QiguaiAtmosphere {
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk, @Nonnull AtmosphereWorldInfo info) {
-        biome = ChunkUtil.getMainBiome(chunk);
+    public void onLoad(@Nullable Chunk chunk, @Nonnull AtmosphereInfo info) {
+        if(chunk != null) biome = ChunkUtil.getMainBiome(chunk);
         super.onLoad(chunk, info);
     }
 }

@@ -36,9 +36,12 @@ import top.qiguaiaaaa.geocraft.api.configs.value.map.ConfigurableLinkedHashMap;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.ConfigEntry;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
-public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> {
+public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> implements Map<K,V> {
 
     protected final Function<String,K> parserK;
     protected final Function<String,V> parserV;
@@ -203,7 +206,7 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> {
     }
 
     protected String getPolishedComment(){
-        StringBuilder builder = new StringBuilder(comment);
+        StringBuilder builder = new StringBuilder(comment==null?"":comment);
         if(keyClass != null && valClass != null)
             builder.append('\n')
                     .append("类型 Type: Map<")
@@ -216,5 +219,74 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>> {
         if(valueComment != null)
             builder.append("\n值说明 Value Info:\n").append(valueComment);
         return builder.toString();
+    }
+
+    //*****************
+    // Map
+    //*****************
+
+    @Override
+    public int size() {
+        return value.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return value.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return value.containsKey(key);
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return this.value.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+        return this.value.get(key);
+    }
+
+    @Override
+    public V put(K key, V value) {
+        if(isFinal) throw new UnsupportedOperationException();
+        if(keyFixed && !this.value.containsKey(key)) throw new UnsupportedOperationException();
+        return this.value.put(key,value);
+    }
+
+    @Override
+    public V remove(Object key) {
+        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+        return this.value.remove(key);
+    }
+
+    @Override
+    public void putAll(@Nonnull Map<? extends K, ? extends V> m) {
+        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+        this.value.putAll(m);
+    }
+
+    @Override
+    public void clear() {
+        if(isFinal || keyFixed) throw new UnsupportedOperationException();
+        this.value.clear();
+    }
+
+    @Override
+    public Set<K> keySet() {
+        return this.value.keySet();
+    }
+
+    @Override
+    public Collection<V> values() {
+        return this.value.values();
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        return this.value.entrySet();
     }
 }

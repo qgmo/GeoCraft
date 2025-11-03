@@ -38,7 +38,6 @@ import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.BaseAtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.raypack.HeatPack;
-import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.state.FluidState;
@@ -48,7 +47,6 @@ import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.QiguaiAtmosphere;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.VanillaAtmosphere;
-import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
 import top.qiguaiaaaa.geocraft.geography.state.DefaultTemperatureState;
 
 import javax.annotation.Nonnull;
@@ -67,13 +65,13 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
     }
 
     @Override
-    public boolean addSteam(@Nullable BlockPos pos, int amount) {
-        return true;
+    public int addSteam(@Nullable BlockPos pos, int amount,final boolean doAdd) {
+        return amount;
     }
 
     @Override
-    public boolean addWater(@Nullable BlockPos pos, int amount) {
-        return true;
+    public int addWater(@Nullable BlockPos pos, int amount,final boolean doAdd) {
+        return amount;
     }
 
     @Override
@@ -99,8 +97,8 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
 
     @Override
     public float getTemperature(@Nonnull BlockPos pos, boolean notAir) {
-        if(atmosphere.getAtmosphereWorldInfo().getWorld().isBlockLoaded(pos)){
-            Biome curBiome = atmosphere.getAtmosphereWorldInfo().getWorld().getBiome(pos);
+        if(atmosphere.getAtmosphereInfo().getWorld().isBlockLoaded(pos)){
+            Biome curBiome = atmosphere.getAtmosphereInfo().getWorld().getBiome(pos);
             return DefaultTemperatureState.toRealTemperature(curBiome.getTemperature(pos));
         }
         return DefaultTemperatureState.toRealTemperature(((VanillaAtmosphere)atmosphere).getBiome().getTemperature(pos));
@@ -127,16 +125,12 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
-        onLoadWithoutChunk();
-        temperature.set(DefaultTemperatureState.calculateBaseTemperature(chunk,atmosphere.getUnderlying()));
-    }
-
-    @Override
-    public void onLoadWithoutChunk() {
+    public void onLoad(@Nullable Chunk chunk) {
         for(GeographyState state:states.values())
             if(!state.isLoaded())
                 state.load(this);
+        if(chunk == null) return;
+        temperature.set(DefaultTemperatureState.calculateBaseTemperature(chunk,atmosphere.getUnderlying(new BlockPos(0,getBeginY(),0))));
     }
 
     @Override
@@ -168,6 +162,7 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
         return 4096;
     }
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;
@@ -184,14 +179,10 @@ public class VanillaAtmosphereLayer extends BaseAtmosphereLayer {
         return 1e10;
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "va";
-    }
-
-    @Override
-    public boolean isSerializable() {
-        return true;
     }
 
     @Override

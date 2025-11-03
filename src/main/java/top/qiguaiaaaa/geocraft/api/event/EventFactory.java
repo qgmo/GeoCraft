@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.api.event;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
@@ -45,11 +46,13 @@ import net.minecraftforge.common.capabilities.CapabilityDispatcher;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
 import net.minecraftforge.fml.common.eventhandler.EventBus;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
+import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereAccessEvent;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereGenerateEvent;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereSystemEvent;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
@@ -58,6 +61,7 @@ import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnAreaEffectCloudEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.FillGlassBottleEvent.FillGlassBottleOnFluidEvent;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 
 import javax.annotation.Nonnull;
@@ -66,6 +70,11 @@ import java.util.List;
 
 import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
 
+/**
+ * 天圆地方的事件管理器
+ * @since 0.1
+ * @author QiguaiAAAA
+ */
 public final class EventFactory {
     public static final EventBus EVENT_BUS = new EventBus();
 
@@ -78,7 +87,7 @@ public final class EventFactory {
         return processOnGlassBottleUseEvent(itemStack,player,event);
     }
     public static IBlockState onAtmosphereRainAndSnow(@Nonnull Chunk chunk, @Nonnull IAtmosphereAccessor accessor, @Nonnull Atmosphere atmosphere, @Nonnull BlockPos randPos, double rainPossibility){
-        AtmosphereUpdateEvent.RainAndSnow event = new AtmosphereUpdateEvent.RainAndSnow(chunk,atmosphere,randPos,rainPossibility);
+        AtmosphereUpdateEvent.RainAndSnow event = new AtmosphereUpdateEvent.RainAndSnow(chunk,atmosphere,accessor,randPos,rainPossibility);
         EVENT_BUS.post(event);
         if(event.getResult() == Result.ALLOW){
             if(event.isSnowy()){
@@ -127,17 +136,42 @@ public final class EventFactory {
         if(event.getResult() == Result.ALLOW){
             itemStack.shrink(1);
 
+            final ItemStack filled = event.getFilledGlassBottle();
+
             if (itemStack.isEmpty()) {
-                return new ActionResult<>(EnumActionResult.SUCCESS,event.getFilledGlassBottle());
+                return new ActionResult<>(EnumActionResult.SUCCESS,filled == null?new ItemStack(Items.AIR,1):filled);
             } else {
-                if (!player.inventory.addItemStackToInventory(event.getFilledGlassBottle())) {
-                    player.dropItem(event.getFilledGlassBottle(), false);
+                if (filled != null && !player.inventory.addItemStackToInventory(filled)) {
+                    player.dropItem(filled, false);
                 }
 
                 return new ActionResult<>(EnumActionResult.SUCCESS,itemStack);
             }
         }
         return null;
+    }
+
+    /**
+     * @since 0.2.0
+     * @return 填充的量。若为 -1 则表示事件没有结果
+     */
+    public static int onFillFluidToAtmosphere(@Nonnull Atmosphere atmosphere,@Nonnull IAtmosphereAccessor accessor,@Nonnull final Fluid fluid,final double temp ,int amount, @Nullable final FluidStack stack, @Nonnull final StateOfMatter state,final boolean doFill){
+        AtmosphereAccessEvent.FluidFill event = new AtmosphereAccessEvent.FluidFill(atmosphere, accessor, fluid, stack, amount,temp, state, doFill);
+        if(EVENT_BUS.post(event)) return -1;
+        if(event.hasResult()){
+            return event.getFilledAmount();
+        }else return -1;
+    }
+
+    /**
+     * @since 0.2.0
+     * @return 吸取的事件.
+     */
+    @Nullable
+    public static AtmosphereAccessEvent.FluidDrain onDrainedFluidToAtmosphere(@Nonnull Atmosphere atmosphere, @Nonnull IAtmosphereAccessor accessor, @Nonnull final Fluid fluid, int amount,final boolean requireStack, @Nonnull final StateOfMatter state, final boolean doDrain){
+        AtmosphereAccessEvent.FluidDrain event = new AtmosphereAccessEvent.FluidDrain(atmosphere,accessor,fluid,amount,requireStack,state,doDrain);
+        if(EVENT_BUS.post(event)) return null;
+        return event;
     }
 
     @Nullable

@@ -35,6 +35,7 @@ import java.util.HashSet;
 
 /**
  * 查询天圆地方关于流体的配置
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public final class GeoFluidSetting {
@@ -43,6 +44,7 @@ public final class GeoFluidSetting {
 
     /**
      * 设置指定流体是否需要被物理化
+     * @since 0.1
      * @param fluidName 流体名
      * @param physical 是否需要物理化
      */
@@ -58,6 +60,7 @@ public final class GeoFluidSetting {
 
     /**
      * 指定流体是否需要物理化
+     * @since 0.1
      * @param fluid 流体
      * @return 若需要,则返回true
      */
@@ -66,10 +69,20 @@ public final class GeoFluidSetting {
         return !FLUIDS_NOT_TO_BE_PHYSICAL.contains(fluid.getName());
     }
 
+    /**
+     * @see #isFluidToBePhysical(Fluid)
+     * @since 0.1
+     */
     public static boolean isFluidToBePhysical(BlockLiquid fluid){
         return isFluidToBePhysical(FluidUtil.getFluid(fluid));
     }
 
+    /**
+     * 指定流体是否需要使用原版的桶行为
+     * @since 0.1
+     * @param fluid 流体
+     * @return 若需要，则返回true
+     */
     public static boolean isFluidToUseVanillaBucketMode(Fluid fluid){
         if(fluid == null) return true;
         return FLUIDS_BUCKET_TO_BE_VANILLA.contains(fluid.getName());

@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.util;
 
 /**
+ * @since 0.2.0
  * @author QiguaiAAAA
  */
 public final class APIMathUtil {

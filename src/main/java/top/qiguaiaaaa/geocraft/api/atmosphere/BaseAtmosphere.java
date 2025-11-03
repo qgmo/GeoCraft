@@ -48,8 +48,8 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class BaseAtmosphere implements Atmosphere{
-    public static final String CAPABILITIES_TAG = "Capabilities";
-    protected AtmosphereWorldInfo worldInfo = null;
+    public static final String CAPABILITIES_TAG = "Capabilities",VERSION_TAG = "Version",LAYERS_TAG = "Layers";
+    protected AtmosphereInfo worldInfo = null;
     protected long tickTimes = 0;
     /**
      * 从下往上的层状列表
@@ -60,24 +60,13 @@ public abstract class BaseAtmosphere implements Atmosphere{
     protected final CapabilityDispatcher capabilities = EventFactory.gatherCapabilities(this);
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk, @Nonnull AtmosphereWorldInfo info) {
+    public void onLoad(@Nullable Chunk chunk, @Nonnull AtmosphereInfo info) {
         this.setAtmosphereWorldInfo(info);
         for(Layer layer:layers){
             layer.onLoad(chunk);
         }
         for(IGeographyProperty property: GeographyProperty.MANAGER.getProperties()){
             property.onAtmosphereInitialise(this,chunk);
-        }
-    }
-
-    @Override
-    public void onLoadWithoutChunk(@Nonnull AtmosphereWorldInfo info) {
-        this.setAtmosphereWorldInfo(info);
-        for(Layer layer:layers){
-            layer.onLoadWithoutChunk();
-        }
-        for(IGeographyProperty property: GeographyProperty.MANAGER.getProperties()){
-            property.onAtmosphereInitialise(this,null);
         }
     }
 
@@ -90,13 +79,13 @@ public abstract class BaseAtmosphere implements Atmosphere{
         trackers.remove(tracker);
     }
 
-    public void setAtmosphereWorldInfo(@Nonnull AtmosphereWorldInfo worldInfo) {
+    public void setAtmosphereWorldInfo(@Nonnull AtmosphereInfo worldInfo) {
         this.worldInfo = worldInfo;
     }
 
     @Nonnull
     @Override
-    public AtmosphereWorldInfo getAtmosphereWorldInfo() {
+    public AtmosphereInfo getAtmosphereInfo() {
         return worldInfo;
     }
 
@@ -144,27 +133,42 @@ public abstract class BaseAtmosphere implements Atmosphere{
     @Override
     public NBTTagCompound serializeNBT() {
         NBTTagCompound compound = new NBTTagCompound();
+        NBTTagCompound layerCompound = new NBTTagCompound();
         for(Layer layer:layers){
-            if(!layer.isSerializable()) continue;
-            compound.setTag(layer.getTagName(),layer.serializeNBT());
+            layerCompound.setTag(layer.getTagName(),layer.serializeNBT());
         }
+
+        compound.setTag(LAYERS_TAG,layerCompound);
+
         if(capabilities != null){
             compound.setTag(CAPABILITIES_TAG,capabilities.serializeNBT());
         }
+        compound.setInteger(VERSION_TAG,1);
         return compound;
     }
 
     @Override
     public void deserializeNBT(NBTTagCompound nbt) {
-        for(Layer layer:layers){
-            if(!layer.isSerializable()) continue;
-            NBTBase base = nbt.getTag(layer.getTagName());
-            if(!(base instanceof NBTTagCompound)){
-                GeoCraftAPI.LOGGER.error("Loading Atmosphere at ({},{}) error: NBT of Atmosphere Layer {} isn't a valid compound tag!",getChunkX(),getChunkZ(), layer.getTagName());
+        final NBTTagCompound layerCompound;
+        switch (nbt.getInteger(VERSION_TAG)){
+            case 0:
+                layerCompound = nbt;
+                break;
+            case 1:
+            default:
+                layerCompound = nbt.getCompoundTag(LAYERS_TAG);
+                break;
+        }
+
+        for(Layer layer:layers) {
+            NBTBase base = layerCompound.getTag(layer.getTagName());
+            if (!(base instanceof NBTTagCompound)) {
+                GeoCraftAPI.LOGGER.error("Loading Atmosphere at ({},{}) error: NBT of Atmosphere Layer {} isn't a valid compound tag!", getChunkX(), getChunkZ(), layer.getTagName());
                 continue;
             }
             layer.deserializeNBT((NBTTagCompound) base);
         }
+
         if(capabilities != null && nbt.hasKey(CAPABILITIES_TAG)){
             NBTTagCompound compound = nbt.getCompoundTag(CAPABILITIES_TAG);
             capabilities.deserializeNBT(compound);

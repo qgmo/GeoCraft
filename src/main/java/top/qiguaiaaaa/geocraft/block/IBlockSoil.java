@@ -57,6 +57,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.util.*;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
@@ -181,23 +182,23 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
         if(world.isAirBlock(up)) return 0;
         int humidity = getLayers(world,pos,state,FluidRegistry.WATER);
         if(humidity ==0) return 0;
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        if(accessor == null) return 0;
-        Atmosphere atmosphere = accessor.getAtmosphereHere();
-        if(atmosphere == null) return 0;
+        try(@Nullable IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true)) {
+            if (accessor == null) return 0;
+            int light = ChunkUtil.getNeighborsLightFor(world,EnumSkyBlock.SKY,pos);
+            accessor.setSkyLight(light);
 
-        int light = ChunkUtil.getNeighborsLightFor(world,EnumSkyBlock.SKY,pos);
-        accessor.setSkyLight(light);
+            if(!accessor.getAtmosphereInfo().canWaterEvaporate()) return 0;
+            if(!accessor.canAccessAtmosphere()) return 0;
 
-        if(!accessor.getAtmosphereWorldInfo().canWaterEvaporate()) return 0;
+            double basePossibility = WaterUtil.getWaterEvaporatePossibility(accessor);
+            basePossibility /= (8-humidity)*2;
+            if(!BaseUtil.getRandomResult(random,basePossibility)) return 0;
 
-        double basePossibility = WaterUtil.getWaterEvaporatePossibility(accessor);
-        basePossibility /= (8-humidity)*2;
-        if(!BaseUtil.getRandomResult(random,basePossibility)) return 0;
+            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA);
+            accessor.fillFluidToAtmosphere(FluidRegistry.WATER,FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);
+            return -1;
+        }
 
-        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA);
-        atmosphere.addSteam(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos);
-        return -1;
     }
 
     default void onRandomTick(World worldIn, BlockPos pos, IBlockState state, Random random){

@@ -38,7 +38,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereWorldInfo;
+import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.AverageAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.gen.IAtmosphereDataProvider;
@@ -62,7 +62,7 @@ import static top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil.Constants.WATER_ME
 
 public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
     protected final WorldServer world;
-    public QiguaiAtmosphereSystem(WorldServer server, AtmosphereWorldInfo info, QiguaiAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
+    public QiguaiAtmosphereSystem(WorldServer server, AtmosphereInfo info, QiguaiAtmosphereSystemInfo systemInfo, IAtmosphereDataProvider provider) {
         super(info, provider);
         this.world = server;
         worldInfo.setSystem(this);
@@ -172,9 +172,9 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
             Fluid fluidToFill = FluidRegistry.WATER;
             if(accessor.getTemperature(false)<= TemperatureProperty.ICE_POINT) fluidToFill = GeoFluids.SNOW;
             if(block.canFill(world,pos,state, fluidToFill, EnumFacing.UP,Blocks.AIR.getDefaultState())){
-                int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
+                int drained = atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
                 if(drained>=FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME){
-                    atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false);
+                    atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true);
                     filled = block.addLayer(world,pos,state,fluidToFill,1,true);
                 }
             }

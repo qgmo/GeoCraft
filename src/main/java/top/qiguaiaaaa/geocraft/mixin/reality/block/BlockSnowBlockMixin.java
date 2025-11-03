@@ -37,19 +37,24 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 
 import javax.annotation.Nullable;
 import java.util.Random;
+
+import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_INFO;
+import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.CREATE_INFO_FUNC;
 
 @Mixin(value = BlockSnowBlock.class)
 public class BlockSnowBlockMixin extends Block {
@@ -59,27 +64,30 @@ public class BlockSnowBlockMixin extends Block {
     @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         ci.cancel();
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(worldIn,pos,true);
-        if (worldIn.getLightFor(EnumSkyBlock.BLOCK, pos) > 11) {
-            this.turnIntoWater(worldIn,pos,accessor == null?null:accessor.getAtmosphereHere()); //用的是发光Block产生的热量,所以不扣地表温度
-            return;
+        try(@Nullable IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(worldIn,pos,true)){
+            if (worldIn.getLightFor(EnumSkyBlock.BLOCK, pos) > 11) {
+                this.turnIntoWater(worldIn,pos, accessor); //用的是发光Block产生的热量,所以不扣地表温度
+                return;
+            }
+
+            if(accessor == null) return;
+            int light = ChunkUtil.getNeighborsLightFor(worldIn,EnumSkyBlock.SKY,pos);
+            if(light == 0 && FLUID_PHYSICS_INFO.computeIfAbsent(worldIn.provider.getDimension(), CREATE_INFO_FUNC).getSkyLight().checkWhenSnowSmelting)
+                return;
+            accessor.setSkyLight(light);
+            double temp = accessor.getTemperature();
+            if(temp > TemperatureProperty.ICE_POINT){
+                this.turnIntoWater(worldIn,pos,accessor);
+                accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*8);
+            }
         }
 
-        if(accessor == null) return;
-        int light = ChunkUtil.getNeighborsLightFor(worldIn,EnumSkyBlock.SKY,pos);
-        if(light == 0) return;
-        accessor.setSkyLight(light);
-        double temp = accessor.getTemperature();
-        if(temp > TemperatureProperty.ICE_POINT){
-            this.turnIntoWater(worldIn,pos,accessor.getAtmosphereHere());
-            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*8);
-        }
     }
 
-    protected void turnIntoWater(World worldIn, BlockPos pos, @Nullable Atmosphere atmosphere) {
+    protected void turnIntoWater(World worldIn, BlockPos pos, @Nullable IAtmosphereAccessor accessor) {
         if (worldIn.provider.doesWaterVaporize()) {
-            if(atmosphere != null){
-                atmosphere.addSteam(Fluid.BUCKET_VOLUME,pos);
+            if(accessor != null && accessor.canAccessAtmosphere()){
+                accessor.fillFluidToAtmosphere(FluidRegistry.WATER,Fluid.BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);
             }
             worldIn.setBlockToAir(pos);
         } else {

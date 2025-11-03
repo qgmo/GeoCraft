@@ -73,24 +73,21 @@ public class ConstantUnderlying extends UnderlyingLayer {
     @Override
     public void sendHeat(@Nonnull HeatPack pack, @Nullable Vec3d direction) {}
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;
     }
 
     @Override
-    public float getTemperature(BlockPos pos) {
+    public float getTemperature(@Nonnull BlockPos pos) {
         return temperature.get();
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "fg";
-    }
-
-    @Override
-    public boolean isSerializable() {
-        return false;
     }
 
     @Override

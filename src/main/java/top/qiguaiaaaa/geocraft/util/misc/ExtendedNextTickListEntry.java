@@ -50,6 +50,11 @@ public class ExtendedNextTickListEntry extends NextTickListEntry {
         this.setScheduledTime(world.getTotalWorldTime()+delay);
     }
 
+    public ExtendedNextTickListEntry(@Nonnull BlockPos pos,@Nonnull Block block,long scheduledTime){
+        super(pos,block);
+        this.setScheduledTime(scheduledTime);
+    }
+
     public double getDisSqToNearestPlayer() {
         return disSqToNearestPlayer;
     }

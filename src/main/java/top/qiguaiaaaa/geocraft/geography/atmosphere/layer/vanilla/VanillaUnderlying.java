@@ -79,28 +79,25 @@ public class VanillaUnderlying extends UnderlyingLayer {
     @Override
     public void tick(@Nullable Chunk chunk, @Nonnull Map<EnumFacing, Triple<Atmosphere, Chunk, EnumFacing>> neighbors, int x, int z) {}
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;
     }
 
     @Override
-    public float getTemperature(BlockPos pos) {
-        if(atmosphere.getAtmosphereWorldInfo().getWorld().isBlockLoaded(pos)){
-            Biome curBiome = atmosphere.getAtmosphereWorldInfo().getWorld().getBiome(pos);
+    public float getTemperature(@Nonnull BlockPos pos) {
+        if(atmosphere.getAtmosphereInfo().getWorld().isBlockLoaded(pos)){
+            Biome curBiome = atmosphere.getAtmosphereInfo().getWorld().getBiome(pos);
             return DefaultTemperatureState.toRealTemperature(curBiome.getTemperature(pos));
         }
         return DefaultTemperatureState.toRealTemperature(((VanillaAtmosphere)atmosphere).getBiome().getTemperature(pos));
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "vg";
-    }
-
-    @Override
-    public boolean isSerializable() {
-        return true;
     }
 
     @Override
@@ -110,8 +107,8 @@ public class VanillaUnderlying extends UnderlyingLayer {
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
-        setAltitude(Altitude.getMiddleHeight(chunk));
+    public void onLoad(@Nullable Chunk chunk) {
+        if(chunk != null) setAltitude(Altitude.getMiddleHeight(chunk));
         super.onLoad(chunk);
     }
 }

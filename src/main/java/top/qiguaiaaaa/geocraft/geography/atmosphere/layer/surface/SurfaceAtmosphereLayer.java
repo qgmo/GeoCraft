@@ -135,7 +135,7 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
 
     public void 更新高度缓存(){
         起始高度 = lowerLayer.getTopY();
-        相对起始高度 =起始高度-atmosphere.getUnderlying().getTopY();
+        相对起始高度 =起始高度-atmosphere.getUnderlying(new BlockPos(0,getCenterY(),0)).getTopY();
     }
 
     public void 更新缓存(){
@@ -172,7 +172,7 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
     @Override
     public Vec3d 计算水平风速分量(Atmosphere to, EnumFacing dir){
         Vec3d wind = Vec3d.ZERO;
-        Altitude 对方平均海拔 = to.getUnderlying().getAltitude();
+        Altitude 对方平均海拔 = to.getUnderlying(new BlockPos(0,getCenterY(),0)).getAltitude();
         if(getTopY()>对方平均海拔.get()){
             double 对方大气同高度气压 = to.getPressure(new BlockPos(0,getCenterY(),0));
             double 水平风 = Math.sqrt(Math.abs(本层气压-对方大气同高度气压)/平均密度)/4*(本层气压>对方大气同高度气压?1:-1);
@@ -230,7 +230,7 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
 
     @Override
     protected void 热量平流(Atmosphere to,EnumFacing dir) {
-        if (to.getUnderlying().getAltitude().get() > getTopY()) return;
+        if (to.getUnderlying(new BlockPos(0,getCenterY(),0)).getAltitude().get() > getTopY()) return;
         double windSpeedSize = Math.abs(MathUtil.获得带水平正负方向的速度(winds.get(dir),dir));
         if (windSpeedSize == 0) return;
         double heatTransferQuantity = 计算热量平流量(to, windSpeedSize);
@@ -263,8 +263,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         if( Double.isNaN(期望蒸发量) || Double.isInfinite(期望蒸发量)
                 || (实际蒸发量 = Math.min((int)期望蒸发量,water.getFluidAmount()))<=0)
             return;
-        if(!water.addAmount(-实际蒸发量)) return;
-        steam.addAmount(实际蒸发量);
+        if(water.fill(-实际蒸发量,true)==0) return;
+        steam.fill(实际蒸发量,true);
         double 能量吸收量 = ((double) 实际蒸发量)* AtmosphereUtil.Constants.水汽化热;
         能量吸收量 = Math.min(能量吸收量,heatCapacity*10);
         temperature.addHeat(-能量吸收量,heatCapacity);
@@ -294,8 +294,8 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         if( Double.isNaN(期望凝结量) || Double.isInfinite(期望凝结量)
                 || (实际凝结量 = Math.min((int)期望凝结量,steam.getFluidAmount()))<=0)
             return;
-        if(!steam.addAmount(-实际凝结量)) return;
-        water.addAmount(实际凝结量);
+        if(steam.fill(-实际凝结量,true)==0) return;
+        water.fill(实际凝结量,true);
         double 能量释放量 = ((double) 实际凝结量)* AtmosphereUtil.Constants.水汽化热;
         能量释放量 = Math.min(能量释放量,heatCapacity*10);
         temperature.addHeat(能量释放量,heatCapacity);
@@ -308,8 +308,9 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
     }
 
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
+    public void onLoad(@Nullable Chunk chunk) {
         onLoadWithoutChunk();
+        if(chunk == null) return;
         更新缓存();
         updateHeatCapacity();
         更新长波辐射参数();
@@ -518,6 +519,7 @@ public abstract class SurfaceAtmosphereLayer extends QiguaiAtmosphereLayer {
         return P / (AtmosphereUtil.Constants.干空气比热容 * modifiedT);       // kg/m^3
     }
 
+    @Nonnull
     @Override
     public TemperatureState getTemperature() {
         return temperature;

@@ -33,6 +33,8 @@ import javax.annotation.Nullable;
 
 /**
  * 辐射热量包，用于在层级之间（一般是上下）传递热量
+ * @since 0.1
+ * @author QiguaiAAAA
  */
 public class HeatPack implements StuffPack {
     public static final int MIN_HEAT = 20; //小于该值的热量包被视为空
@@ -95,6 +97,8 @@ public class HeatPack implements StuffPack {
     /**
      * 热量包的类型
      * 若类型为null，则层级应当将热量全部吸收
+     * @since 0.1
+     * @author QiguaiAAAA
      */
     public enum HeatType {
         SHORT_WAVE, //短波辐射

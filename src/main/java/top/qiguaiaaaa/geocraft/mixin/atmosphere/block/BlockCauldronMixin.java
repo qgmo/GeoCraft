@@ -55,14 +55,14 @@ public class BlockCauldronMixin {
         if(accessor == null) return;
         Atmosphere atmosphere = accessor.getAtmosphereHere();
         if(atmosphere == null) return;
-        if(atmosphere.drainWater(333,pos,true) <333) return;
+        if(atmosphere.drainWater(333,pos,false) <333) return;
         double temp = accessor.getTemperature(false);
 
         if (temp< TemperatureProperty.ICE_POINT) return;
 
         IBlockState iblockstate = worldIn.getBlockState(pos);
         if (iblockstate.getValue(BlockCauldron.LEVEL) < 3) {
-            atmosphere.drainWater(333,pos,false);
+            atmosphere.drainWater(333,pos,true);
             worldIn.setBlockState(pos, iblockstate.cycleProperty(BlockCauldron.LEVEL), Constants.BlockFlags.SEND_TO_CLIENTS);
         }
     }

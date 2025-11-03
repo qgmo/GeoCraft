@@ -82,6 +82,7 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         if (!world.isAreaLoaded(pos,1)){
             return;
         }
+
         state = curState;
         material = state.getMaterial();
         int liquidMeta = state.getValue(LEVEL);

@@ -39,6 +39,8 @@ import javax.annotation.Nullable;
 /**
  * 下垫面层级
  * 所有下垫面层级应当从该类继承
+ * @since 0.1
+ * @author QiguaiAAAA
  */
 public abstract class UnderlyingLayer extends BaseLayer{
     protected long heatCapacity; //热容
@@ -91,15 +93,12 @@ public abstract class UnderlyingLayer extends BaseLayer{
      * @param chunk 层级所在区块
      */
     @Override
-    public void onLoad(@Nonnull Chunk chunk) {
+    public void onLoad(@Nullable Chunk chunk) {
         onLoadWithoutChunk();
+        if(chunk == null) return;
         this.load(chunk);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void onLoadWithoutChunk() {
         for(GeographyState state:states.values())
             if(!state.isLoaded())

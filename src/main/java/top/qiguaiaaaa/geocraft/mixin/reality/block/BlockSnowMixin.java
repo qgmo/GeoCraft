@@ -38,7 +38,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
@@ -53,13 +52,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
-import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
-import top.qiguaiaaaa.geocraft.api.util.*;
+import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
+import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
+import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.block.IBlockSnow;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
@@ -69,8 +69,12 @@ import java.util.Random;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 
+/**
+ * @see top.qiguaiaaaa.geocraft.mixin.common.block.BlockSnowMixin
+ * @author QiguaiAAAA
+ */
 @Mixin(value = BlockSnow.class)
-public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost {
+public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost, IBlockSnow {
     @Shadow @Final public static PropertyInteger LAYERS;
 
     public BlockSnowMixin(Material materialIn) {
@@ -81,43 +85,6 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
     @Unique
     public int tickRate(@Nonnull World worldIn) {
         return 5;
-    }
-
-    @Unique
-    private boolean trySmelt(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull Random random){
-        int layer = state.getValue(BlockSnow.LAYERS);
-        boolean isMixture = state.getValue(MIXTURE);
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        if (world.getLightFor(EnumSkyBlock.BLOCK, pos) > 11) {
-            this.turnIntoWater(world,pos,accessor == null?null:accessor.getAtmosphereHere(),8-layer); //用的是发光Block产生的热量,所以不扣地表温度
-            return true;
-        }
-
-        if(accessor == null) return false;
-        int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-        if(light == 0) return false;
-        accessor.setSkyLight(light);
-        double temp = accessor.getTemperature();
-        if(temp > TemperatureProperty.ICE_POINT){
-            if(isMixture){
-                this.turnIntoWater(world,pos,accessor.getAtmosphereHere(),8-layer);
-            }else{
-                this.turnIntoMixture(world,pos,layer);
-            }
-            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*layer/2.0);
-            return !isMixture;
-        }else{
-            if(isMixture){
-                if(layer == 8){
-                    world.setBlockState(pos,Blocks.ICE.getDefaultState());
-                }else{
-                    world.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState().withProperty(LAYERS,layer).withProperty(MIXTURE,false));
-                }
-                accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*layer/2.0);
-                return layer==8;
-            }
-            return false;
-        }
     }
 
     @Inject(method = "canPlaceBlockAt",at = @At("HEAD"),cancellable = true)
@@ -142,6 +109,12 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
             cir.setReturnValue(true);
         }
     }
+
+    /**
+     * 注意该Mixin的优先级低于 {@link top.qiguaiaaaa.geocraft.mixin.common.block.BlockSnowMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo)}
+     * 因此当前的 Mixin 会覆盖 Common 的 Mixin
+     * @reason 复写自定义逻辑
+     */
     @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         ci.cancel();
@@ -192,22 +165,18 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                     world.setBlockState(downPos,downState.withProperty(BlockSnow.LAYERS,8)
                             .withProperty(MIXTURE,false));
                 }
-                IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-                if(accessor == null) return true;
-                int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-                if(light == 0) return true;
-                accessor.setSkyLight(light);
+                try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
+                    if(accessor == null) return true;
 
-                accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*totalWater);
+                    accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*totalWater);
+                }
             }
         }else if(downState.getBlock() instanceof ILayeredFluidHost){
             ILayeredFluidHost permeableBlock = (ILayeredFluidHost) downState.getBlock();
             int curLayers = getLayers(world,pos,state,null);
             boolean hasHalfQuanta = (curLayers&1) !=0 && state.getValue(MIXTURE);
 
-            IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-            int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-            if(accessor != null) accessor.setSkyLight(light);
+            @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true);
 
             int curQuantaWater = getLayers(world,pos,state,FluidRegistry.WATER);
             if(hasHalfQuanta) curQuantaWater++;
@@ -240,7 +209,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
             }else{
                 int total = curQuantaSnow+curQuantaWater;
                 if(curQuantaWater>curQuantaSnow){
-                    turnIntoWater(world,pos,accessor == null?null:accessor.getAtmosphereHere(),total);
+                    turnIntoWater(world,pos,accessor,total);
                     if(accessor != null)
                         accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curQuantaSnow);
                 }else if(curQuantaSnow == curQuantaWater){
@@ -253,6 +222,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                         accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curQuantaWater);
                 }
             }
+            if(accessor != null) accessor.close();
             return true;
         }else{
             FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,downPos,downState, GeoFluids.SNOW);
@@ -261,24 +231,6 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
             world.scheduleUpdate(downPos,this,tickRate(world));
         }
         return true;
-    }
-
-    @Unique
-    protected void turnIntoMixture(World worldIn, BlockPos pos, int layer) {
-        worldIn.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState().withProperty(LAYERS,layer).withProperty(MIXTURE,true));
-    }
-
-    @Unique
-    protected void turnIntoWater(World worldIn, BlockPos pos, @Nullable Atmosphere atmosphere, int level) {
-        if (worldIn.provider.doesWaterVaporize()) {
-            if(atmosphere != null){
-                atmosphere.addSteam((8-level)* FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos);
-            }
-            worldIn.setBlockToAir(pos);
-        } else {
-            worldIn.setBlockState(pos, Blocks.WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,level));
-            worldIn.neighborChanged(pos, Blocks.WATER, pos);
-        }
     }
 
     @Shadow
@@ -340,12 +292,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         if(layer == 0) return;
         boolean mixture = state.getValue(MIXTURE);
 
-        IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true);
-        int light = world.getLightFor(EnumSkyBlock.SKY,pos);
-        if(light <=0) accessor = null;
-        if(accessor != null){
-            accessor.setSkyLight(light);
-        }
+        final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true);
 
         final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
 
@@ -403,6 +350,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                 }
             }
         }
+        if(accessor != null) accessor.close();
     }
 
     @Override

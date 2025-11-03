@@ -76,11 +76,9 @@ public abstract class FluidStackState extends FluidState{
     }
 
     @Override
-    public boolean addAmount(int amount) {
-        if(super.addAmount(amount)){
-            stack.amount = this.amount;
-            return true;
-        }
-        return false;
+    public int fill(int amount, boolean doFill) {
+        amount = super.fill(amount,doFill);
+        if(doFill) stack.amount += amount;
+        return amount;
     }
 }

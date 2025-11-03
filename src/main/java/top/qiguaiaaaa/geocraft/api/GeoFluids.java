@@ -27,27 +27,14 @@
 
 package top.qiguaiaaaa.geocraft.api;
 
-import com.google.common.collect.Sets;
 import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * 天圆地方(GeoCraft)的所有流体索引
+ * @since 0.1
+ * @author QiguaiAAAA
  */
 public final class GeoFluids {
     public static Fluid CARBON_DIOXIDE;
     public static Fluid SNOW;
-
-    public final static class FluidSets{
-        public static final Set<Fluid> WATER_SET = Collections.unmodifiableSet(Sets.newHashSet(FluidRegistry.WATER));
-
-        public static final Set<Fluid> LAVA_SET = Collections.unmodifiableSet(Sets.newHashSet(FluidRegistry.LAVA));
-
-        public static Set<Fluid> SNOW_SET;
-
-        public static Set<Fluid> SNOW_LAYER_SET;
-    }
 }

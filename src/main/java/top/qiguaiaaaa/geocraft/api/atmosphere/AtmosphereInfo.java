@@ -35,14 +35,21 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.storage.WorldInfo;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 
 import javax.annotation.Nonnull;
 
-public class AtmosphereWorldInfo {
-    protected final WorldServer world;
+/**
+ * 大气信息
+ * @since 0.1
+ * @version 0.2.0
+ * @author QiguaiAAAA
+ */
+public class AtmosphereInfo {
+    protected final World world;
     protected IAtmosphereSystem system;
 
     protected boolean waterFreeze = true;
@@ -95,6 +102,7 @@ public class AtmosphereWorldInfo {
     /**
      * 指定位置的水是否能够蒸发
      * @param pos 位置
+     * @since 0.1
      * @return 若能,则返回true,否则返回false
      */
     public boolean canWaterEvaporate(@Nonnull BlockPos pos){
@@ -105,6 +113,7 @@ public class AtmosphereWorldInfo {
      * 指定位置是否能够凝结水成冰
      * @param pos 位置
      * @param neighborWaterCheck 是否检查周边水方块
+     * @since 0.1
      * @return 如果能，则返回true
      */
     public boolean canWaterFreeze(@Nonnull BlockPos pos, boolean neighborWaterCheck) {
@@ -132,15 +141,39 @@ public class AtmosphereWorldInfo {
         return false;
     }
 
-    public AtmosphereWorldInfo(@Nonnull WorldServer world) {
+    public AtmosphereInfo(@Nonnull WorldServer world) {
         this.world = world;
     }
 
     @Nonnull
-    public WorldServer getWorld() {
+    public World getWorld() {
         return world;
     }
 
+    /**
+     * 获取当前的世界信息
+     * @since 0.2.0
+     * @return 一个 {@link WorldInfo}实例
+     */
+    @Nonnull
+    public WorldInfo getWorldInfo(){
+        return world.getWorldInfo();
+    }
+
+    /**
+     * 检查当前大气是否是位于客户端的大气系统
+     * @since 0.2.0
+     * @return 若是，则返回true
+     */
+    public final boolean isClientSide(){
+        return world.isRemote;
+    }
+
+    /**
+     * 获取当前的大气系统
+     * @since 0.1
+     * @return 当前大气系统，为一个 {@link IAtmosphereSystem}实例
+     */
     @Nonnull
     public IAtmosphereSystem getSystem() {
         return system;

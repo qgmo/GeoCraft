@@ -25,23 +25,32 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
-
-import top.qiguaiaaaa.geocraft.api.property.*;
+package top.qiguaiaaaa.geocraft.api.fluid;
 
 /**
- * 天圆地方(GeoCraft)的所有{@link IGeographyProperty}索引
- * @since 0.1
+ * 物质状态
+ * @since 0.2.0
  * @author QiguaiAAAA
  */
-public final class GeoCraftProperties {
-    public static INumberProperty<Long> HEAT_CAPACITY;
-    public static INumberProperty<Double> ALTITUDE;
-    public static INumberProperty<Double> REFLECTIVITY;
-    public static TemperatureProperty FINAL_TEMPERATURE;
-    public static TemperatureProperty TEMPERATURE;
-    public static TemperatureProperty DEEP_TEMPERATURE;
-    public static FluidProperty WATER;
-    public static FluidProperty STEAM;
-    public static FluidProperty CARBON_DIOXIDE;
+public enum StateOfMatter {
+    /**
+     * 固体
+     * @since 0.2.0
+     */
+    SOLID,
+    /**
+     * 液体
+     * @since 0.2.0
+     */
+    LIQUID,
+    /**
+     * 气体
+     * @since 0.2.0
+     */
+    GAS,
+    /**
+     * 等离子体
+     * @since 0.2.0
+     */
+    PLASMA
 }

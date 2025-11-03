@@ -66,7 +66,7 @@ public class AtmosphereSteam extends FluidProperty implements IAtmospherePropert
     @Override
     public void onFlow(@Nonnull AtmosphereLayer from, Chunk fromChunk, Atmosphere to, Chunk toChunk, @Nonnull EnumFacing direction, @Nonnull Vec3d windSpeed) {
         double fromTop = from.getBeginY()+from.getDepth();
-        if (to.getUnderlying().getAltitude().get() > fromTop) return;
+        if (to.getUnderlying(BlockPos.ORIGIN).getAltitude().get() > fromTop) return;
         FluidState steam = from.getSteam();
         if(steam == null) return;
         double speed = MathUtil.获得带水平正负方向的速度(windSpeed,direction);
@@ -75,8 +75,8 @@ public class AtmosphereSteam extends FluidProperty implements IAtmospherePropert
         speed = speed+计算水气压差动力(fromWP,toWP);
         if(speed >1e-5){
             int waterTransferAmount = getSteamTransferAmount(steam.getFluidAmount()/4.0,speed);
-            if(steam.addAmount(-waterTransferAmount)){
-                to.addSteam(waterTransferAmount,centerPos);
+            if(steam.fill(-waterTransferAmount,true)!=0){
+                to.addSteam(waterTransferAmount,centerPos,true);
             }
         }else if(speed <-1e-5){
             Layer layer = to.getLayer(centerPos);
@@ -86,8 +86,8 @@ public class AtmosphereSteam extends FluidProperty implements IAtmospherePropert
             int transferAmount = getSteamTransferAmount(toSteam.getFluidAmount()
                             *Math.min((fromTop-layer.getBeginY())/ from.getDepth(),1)/4.0,
                     -speed);
-            if(toSteam.addAmount(-transferAmount)){
-                steam.addAmount(transferAmount);
+            if(toSteam.fill(-transferAmount,true)!=0){
+                steam.fill(transferAmount,true);
             }
         }
     }
@@ -102,14 +102,14 @@ public class AtmosphereSteam extends FluidProperty implements IAtmospherePropert
         if(speed >1e-6){
             double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
             int waterTransferAmount = getSteamTransferAmountVertically(from.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,speed, dis);
-            if(from.addAmount(-waterTransferAmount)){
-                to.addAmount(waterTransferAmount);
+            if(from.fill(-waterTransferAmount,true)!=0){
+                to.fill(waterTransferAmount,true);
             }
         }else if(speed <-1e-6){
             double dis = Altitude.to物理高度(upper.getBeginY()+upper.getDepth()/2-(lower.getBeginY()+lower.getDepth()/2));
             int waterTransferAmount = getSteamTransferAmountVertically(to.getFluidAmount()/ AtmosphereUtil.Constants.大气单元底面积,-speed, dis);
-            if(to.addAmount(-waterTransferAmount)){
-                from.addAmount(waterTransferAmount);
+            if(to.fill(-waterTransferAmount,true)!=0){
+                from.fill(waterTransferAmount,true);
             }
         }
     }

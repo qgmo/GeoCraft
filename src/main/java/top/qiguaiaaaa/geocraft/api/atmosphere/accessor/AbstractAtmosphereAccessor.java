@@ -35,6 +35,7 @@ import top.qiguaiaaaa.geocraft.api.util.exception.AtmosphereNotLoadedException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * {@link IAtmosphereAccessor}抽象层，没有数据获取功能
@@ -49,7 +50,7 @@ public abstract class AbstractAtmosphereAccessor implements IAtmosphereAccessor{
     public AbstractAtmosphereAccessor(@Nonnull IAtmosphereSystem system, @Nonnull AtmosphereData data,@Nonnull BlockPos pos, boolean notAir) {
         this.system = system;
         this.data = data;
-        this.pos = pos;
+        this.pos = pos.toImmutable();
         this.notAir = notAir;
     }
 
@@ -113,6 +114,11 @@ public abstract class AbstractAtmosphereAccessor implements IAtmosphereAccessor{
         this.skyLight = light;
     }
 
+    @Override
+    public int getSkyLight() {
+        return skyLight;
+    }
+
     /**
      * {@inheritDoc}
      * @return {@inheritDoc}
@@ -132,6 +138,9 @@ public abstract class AbstractAtmosphereAccessor implements IAtmosphereAccessor{
         return temp;
     }
 
+    @Override
+    public void close() {}
+
     /**
      * 检查大气数据是否已经被加载，该方法不会检查大气是否已经初始化
      * @return 若大气数据已经加载，则返回true
@@ -147,5 +156,10 @@ public abstract class AbstractAtmosphereAccessor implements IAtmosphereAccessor{
      */
     protected void checkAtmosphereDataLoaded(){
         if(!isAtmosphereDataLoaded()) throw new AtmosphereNotLoadedException(getWorld().provider.getDimension(),pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getWorld(),pos);
     }
 }

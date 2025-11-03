@@ -45,8 +45,7 @@ public final class BaseUtil {
         return new File(configurationDir+File.separator+ GeoCraft.MODID+".cfg");
     }
     public static boolean getRandomResult(Random rand,double possibility){
-        final int accuracy = 100000000;
-        return rand.nextInt(accuracy) <= possibility*accuracy;
+        return rand.nextDouble() <= possibility;
     }
     public static int[] toIntArray(String[] array){
         int[] ints = new int[array.length];

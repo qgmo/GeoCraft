@@ -31,9 +31,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fluids.IFluidBlock;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 
@@ -41,11 +43,13 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static top.qiguaiaaaa.geocraft.configs.GeneralConfig.*;
 import static top.qiguaiaaaa.geocraft.util.MiscUtil.getValidWorld;
 
 /**
+ * @since 0.1
  * @author QiguaiAAAA
  */
 public final class BlockUpdater {
@@ -76,6 +80,32 @@ public final class BlockUpdater {
         schedules.add(entry);
     }
 
+    /**
+     * @since 0.2.0
+     */
+    public static void scheduleUpdates(@Nonnull World world,@Nonnull Set<ExtendedNextTickListEntry> entries){
+        WorldServer validWorld = getValidWorld(world);
+        if(validWorld == null) return;
+        Set<ExtendedNextTickListEntry> schedules = WORLD_SCHEDULE_MAP.computeIfAbsent(validWorld,CREATE_SCHEDULE_LIST);
+        schedules.addAll(entries);
+    }
+
+    /**
+     * @since 0.2.0
+     */
+    @Nonnull
+    public static Set<NextTickListEntry> queryEntries(@Nonnull final World world,@Nonnull final BlockPos pos){
+        final Set<ExtendedNextTickListEntry> schedules = WORLD_SCHEDULE_MAP.get(world);
+        if(schedules == null) return Collections.emptySet();
+        return schedules.stream().filter(entry -> entry.position.equals(pos)).collect(Collectors.toSet());
+    }
+
+    @Nonnull
+    public static Set<ExtendedNextTickListEntry> getEntries(@Nonnull final World world){
+        final Set<ExtendedNextTickListEntry> schedules = WORLD_SCHEDULE_MAP.get(world);
+        return schedules == null?Collections.emptySet():schedules;
+    }
+
     public static void onWorldTick(@Nonnull WorldServer world){
         if(!ENABLE_BLOCK_UPDATER.getValue()) return;
         final long beginTime = System.currentTimeMillis();
@@ -88,7 +118,9 @@ public final class BlockUpdater {
         Iterator<ExtendedNextTickListEntry> iterator = schedules.iterator();
         while (iterator.hasNext()) {
             ExtendedNextTickListEntry entry = iterator.next();
-            if(world.getTotalWorldTime()<entry.scheduledTime) continue;
+            if(world.getTotalWorldTime()<entry.scheduledTime){
+                continue;
+            }
             iterator.remove();
             if(drop) continue;
             drop = READY_TO_UPDATES.size()>MAX_UPDATE_NUM;

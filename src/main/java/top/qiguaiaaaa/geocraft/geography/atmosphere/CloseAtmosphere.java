@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.geography.atmosphere;
 
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -78,13 +79,13 @@ public class CloseAtmosphere extends QiguaiAtmosphere {
 
     @Nullable
     @Override
-    public AtmosphereLayer getBottomAtmosphereLayer() {
+    public AtmosphereLayer getBottomAtmosphereLayer(@Nonnull BlockPos pos) {
         return atmosphereLayer;
     }
 
     @Nonnull
     @Override
-    public UnderlyingLayer getUnderlying() {
+    public UnderlyingLayer getUnderlying(@Nonnull BlockPos pos) {
         return underlying;
     }
 
@@ -113,7 +114,7 @@ public class CloseAtmosphere extends QiguaiAtmosphere {
         if(debug) GeoCraft.getLogger().info("{} {} Atmosphere updated {}",x,z,tickTimes);
         ExtendedChunkPos chunkPos = new ExtendedChunkPos(x,z);
         final Map<EnumFacing, Triple<Atmosphere,Chunk,EnumFacing>> neighbors = new EnumMap<>(EnumFacing.class);
-        final WorldServer world = worldInfo.getWorld();
+        final World world = worldInfo.getWorld();
         final IAtmosphereSystem system = worldInfo.getSystem();
         for(EnumFacing facing: ChunkUtil.HORIZONTALS){
             ExtendedChunkPos facingPos = chunkPos.offset(facing);

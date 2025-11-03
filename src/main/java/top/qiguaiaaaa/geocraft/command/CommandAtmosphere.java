@@ -416,7 +416,7 @@ public class CommandAtmosphere extends ExtendedCommand {
             if("steam".equalsIgnoreCase(args[0])){
                 FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
                 if(steam == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-                if(!steam.addAmount((int) value)){
+                if(steam.fill((int) value,true) == 0){
                     throw new NumberInvalidException("commands.generic.num.tooSmall", value, -steam.getFluidAmount());
                 }
                 notifyCommandListener(sender,this,"geocraft.command.atmosphere.add.water",x,pos.getY(),z,steam);
@@ -425,7 +425,7 @@ public class CommandAtmosphere extends ExtendedCommand {
             if("water".equalsIgnoreCase(args[0])){
                 FluidState water = layer.getWater();
                 if(water == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-                if(!water.addAmount((int) value)){
+                if(water.fill((int) value,true) == 0){
                     throw new NumberInvalidException("commands.generic.num.tooSmall", value, -water.getFluidAmount());
                 }
                 notifyCommandListener(sender,this,"geocraft.command.atmosphere.add.water",x,pos.getY(),z,water);
@@ -446,7 +446,7 @@ public class CommandAtmosphere extends ExtendedCommand {
             GeographyState state = getState(property,layer);
             if(state instanceof FluidState){
                 FluidState gas = (FluidState) state;
-                gas.addAmount((int) value);
+                gas.fill((int) value,true);
                 notifyCommandListener(sender,this,"geocraft.command.atmosphere.add.gas",x,pos.getY(),z,gas.getFluidAmount());
                 return;
             }
@@ -544,8 +544,8 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             if("ground_temp".equalsIgnoreCase(args[0])){
-                notifyCommandListener(sender,this,"geocraft.command.atmosphere.query.ground_temp",x,z,atmosphere.getUnderlying().getTemperature());
-                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) atmosphere.getUnderlying().getTemperature().get());
+                notifyCommandListener(sender,this,"geocraft.command.atmosphere.query.ground_temp",x,z,atmosphere.getUnderlying(pos).getTemperature());
+                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) atmosphere.getUnderlying(pos).getTemperature().get());
                 return;
             }
             if("wind".equalsIgnoreCase(args[0])){
@@ -559,7 +559,7 @@ public class CommandAtmosphere extends ExtendedCommand {
                 return;
             }
             if("underlying".equalsIgnoreCase(args[0])){
-                UnderlyingLayer underlying1 = atmosphere.getUnderlying();
+                UnderlyingLayer underlying1 = atmosphere.getUnderlying(pos);
                 SurfaceUnderlying underlying;
                 if(underlying1 instanceof SurfaceUnderlying){
                     underlying = (SurfaceUnderlying) underlying1;

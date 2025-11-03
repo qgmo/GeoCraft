@@ -37,6 +37,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
@@ -50,7 +51,7 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
 
 public final class MoreRealityFluidPhysicsCore {
     @Nullable
-    public static IBlockState evaporateWater(World world, BlockPos pos, IBlockState state, Random rand,IAtmosphereAccessor accessor,Atmosphere atmosphere){
+    public static IBlockState evaporateWater(World world, BlockPos pos, IBlockState state, Random rand,IAtmosphereAccessor accessor){
         if(!world.isAirBlock(pos.up())) return state;
 
         int meta = state.getValue(LEVEL);
@@ -60,7 +61,8 @@ public final class MoreRealityFluidPhysicsCore {
         if(!BaseUtil.getRandomResult(rand,possibility)){
             return state;
         }
-        if(!atmosphere.addSteam(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos)) return state;
+        if(accessor.fillFluidToAtmosphere(FluidRegistry.WATER,FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true) == 0)
+            return state;
         accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA);
         if(meta == 7) return null;
         state = state.withProperty(LEVEL,meta+1);
@@ -69,7 +71,7 @@ public final class MoreRealityFluidPhysicsCore {
     public static IBlockState freezeWater(World world, BlockPos pos, IBlockState state, Random rand,IAtmosphereAccessor accessor){
         int meta = state.getValue(LEVEL);
         if(meta >=8) return state;
-        if(!accessor.getSystem().getAtmosphereWorldInfo().canWaterFreeze()) return state;
+        if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze()) return state;
 
         double possibility  = WaterUtil.getFreezePossibility(accessor);
         if(possibility <= 0) return state;
@@ -80,7 +82,7 @@ public final class MoreRealityFluidPhysicsCore {
             return state;
         }
         if(meta == 0){
-            if(!accessor.getSystem().getAtmosphereWorldInfo().canWaterFreeze(pos,true)) return state;
+            if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze(pos,true)) return state;
             return Blocks.ICE.getDefaultState();
         }
         if(!WaterUtil.canPlaceSnow(world,pos)) return state;
@@ -123,7 +125,7 @@ public final class MoreRealityFluidPhysicsCore {
     public static boolean canRainAt(World world,BlockPos pos){
         Atmosphere atmosphere = AtmosphereSystemManager.getAtmosphere(world, pos);
         if(atmosphere == null) return false;
-        if(atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,true)<FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME) return false;
+        if(atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,pos,false)<FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME) return false;
         float temp = atmosphere.getAtmosphereTemperature(pos);
         if(temp <= TemperatureProperty.UNAVAILABLE) return false;
         if (!(temp < TemperatureProperty.ICE_POINT) && !(temp > TemperatureProperty.BOILED_POINT)) {

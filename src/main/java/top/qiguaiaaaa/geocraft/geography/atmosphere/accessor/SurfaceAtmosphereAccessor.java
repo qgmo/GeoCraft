@@ -28,17 +28,25 @@
 package top.qiguaiaaaa.geocraft.geography.atmosphere.accessor;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
+import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.AverageAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
+import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
+import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.state.TemperatureState;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.layer.surface.SurfaceUnderlying;
 
 import javax.annotation.Nonnull;
+import java.util.function.BiFunction;
 
 public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
     public SurfaceAtmosphereAccessor(@Nonnull IAtmosphereSystem system, @Nonnull AtmosphereData data, @Nonnull BlockPos pos, boolean notAir) {
@@ -49,12 +57,12 @@ public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
     public double getTemperature() {
         if(notAir && skyLight>0 && skyLight<=15){
             return getAtmosphereValue((dir, atmosphere) -> {
-                UnderlyingLayer underlying = atmosphere.getUnderlying();
-                Altitude altitude = underlying.getAltitude();
+                final UnderlyingLayer underlying = atmosphere.getUnderlying(pos);
+                final Altitude altitude = underlying.getAltitude();
                 if(pos.getY()>= altitude.get()) return (double) atmosphere.getTemperature(mutableBlockPos.setPos(pos.getX() + dir[0], pos.getY(), pos.getZ() + dir[1]), notAir);
                 double 高差 = Altitude.to物理高度(altitude.get()-pos.getY());//>0
                 double surfaceTemp = underlying.getTemperature().get()+高差* AtmosphereUtil.Constants.对流层温度直减率;
-                TemperatureState deepTempState = underlying.getTemperature(GeoCraftProperties.DEEP_TEMPERATURE);
+                final TemperatureState deepTempState = underlying.getTemperature(GeoCraftProperties.DEEP_TEMPERATURE);
                 if(deepTempState == null) throw new RuntimeException("Atmosphere Underlying Type not suited! Try another accessor!");
                 double deepTemp = deepTempState.get()+Altitude.to物理高度(Math.max(altitude.get()- SurfaceUnderlying.过渡距离 -pos.getY(),0))* AtmosphereUtil.Constants.地下温度直增率;
                 return (skyLight/15d)*(surfaceTemp-deepTemp)+deepTemp;
@@ -63,6 +71,48 @@ public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
             return super.getTemperature();
         }
 
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, int amount, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        final int filled = super.fillFluidToAtmosphere(fluid, amount, state, temp, doFill);
+        if(filled <= 0) return 0;
+        if(doFill) dealWithHeatChange(fluid,state,temp,filled);
+        return filled;
+    }
+
+    @Override
+    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, @Nonnull FluidStack stack, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+        final int filled = super.fillFluidToAtmosphere(fluid, stack, state, temp, doFill);
+        if(filled <= 0) return 0;
+        if(doFill) dealWithHeatChange(fluid,state,temp,filled);
+        return filled;
+    }
+
+    protected void dealWithHeatChange(@Nonnull Fluid fluid,@Nonnull StateOfMatter state,double temp,final int filled){
+        if(filled <= 0) return;
+        if(fluid == FluidRegistry.WATER){
+            int heatCapacity = -1;
+            switch (state){
+                case GAS:
+                    heatCapacity =  1860;
+                    break;
+                case LIQUID:
+                    heatCapacity = 4200;
+                    break;
+            }
+            if(heatCapacity<0) return;
+            assert data.getAtmosphere() != null;
+            final Atmosphere atmosphere = data.getAtmosphere();
+            Layer layer = atmosphere.getLayer(pos);
+            if(!(layer instanceof AtmosphereLayer)) layer = layer.getUpperLayer();
+            assert layer != null;
+            final double tempDiff = layer.getTemperature().get()-temp;
+            double heatToDrained = tempDiff*filled*heatCapacity;
+            if(heatToDrained<0){
+                layer.putHeat(-heatToDrained,pos);
+            }else layer.drainHeat(heatToDrained,pos);
+        }
     }
 
     @Override
@@ -76,13 +126,13 @@ public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
         clearInvalidData();
         final double average = amount/datas.size();
         forAtmospheresDo((dir, atmosphere) -> {
-            UnderlyingLayer underlying = atmosphere.getUnderlying();
+            final UnderlyingLayer underlying = atmosphere.getUnderlying(pos);
             if(pos.getY()>underlying.getAltitude().get()){
-                atmosphere.getUnderlying().putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
+                underlying.putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
                 return null;
             }
             double modifiedY = skyLight==0?pos.getY():skyLight/15d* SurfaceUnderlying.过渡距离+underlying.getAltitude().get()- SurfaceUnderlying.过渡距离;
-            atmosphere.getUnderlying().putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
+            underlying.putHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
             return null;
         });
     }
@@ -97,12 +147,12 @@ public class SurfaceAtmosphereAccessor extends AverageAtmosphereAccessor {
         clearInvalidData();
         final double average = amount/datas.size();
         return drawAtmosphereProperty((dir,atmosphere)->{
-            UnderlyingLayer underlying = atmosphere.getUnderlying();
+            UnderlyingLayer underlying = atmosphere.getUnderlying(pos);
             if(pos.getY()>underlying.getAltitude().get()){
-                return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
+                return underlying.drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],pos.getY(),pos.getZ()+dir[1]));
             }
             double modifiedY = skyLight==0?pos.getY():skyLight/15d* SurfaceUnderlying.过渡距离+underlying.getAltitude().get()- SurfaceUnderlying.过渡距离;
-            return atmosphere.getUnderlying().drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
+            return underlying.drainHeat(average,mutableBlockPos.setPos(pos.getX()+dir[0],modifiedY,pos.getZ()+dir[1]));
         });
     }
 }

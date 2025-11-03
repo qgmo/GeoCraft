@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.configs;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
+import top.qiguaiaaaa.geocraft.api.configs.GeoConfig;
 import top.qiguaiaaaa.geocraft.api.configs.item.base.ConfigBoolean;
 import top.qiguaiaaaa.geocraft.api.configs.item.number.ConfigInteger;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.AtmosphereSystemInfo;
@@ -50,7 +51,10 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public final class AtmosphereConfig {
+
+    @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_ATMOSPHERE = new ConfigCategory("atmosphere");
+    @GeoConfig.Since("0.1")
     public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging",
             false,"开启详细的大气日志记录",true){
         @Override
@@ -61,10 +65,12 @@ public final class AtmosphereConfig {
     };
 
     @Config.RangeInt(min = 1)
+    @GeoConfig.Since("0.1")
     public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100,
             "大气加载的最大距离，单位为区块。\n" +
                     "The max loaded distance for Atmosphere, measured in chunks.");
 
+    @GeoConfig.Since("0.1")
     public static final ConfigMap<Integer, AtmosphereSystemInfo> ATMOSPHERE_SYSTEM_TYPES =
             new ConfigMap<Integer, AtmosphereSystemInfo>(CATEGORY_ATMOSPHERE,"customAtmosphereSystem",
                     "配置每个维度使用的大气系统。注意，切换大气系统后原大气系统的数据可能丢失，建议提前备份。\n" +
@@ -110,6 +116,7 @@ public final class AtmosphereConfig {
                             "不同大气系统有不同的配置项，请参阅相关文档获取详细信息。\n" +
                             "Different atmosphere systems have different configuration items. Please refer to the relevant documentation for detailed information.");
 
+    @GeoConfig.Since("0.1")
     public static final ConfigMap<ConfigurableBlockState,Integer> SPECIFIC_HEAT_CAPACITIES =
             new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"specificHeatCapacities","方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)",ConfigurableBlockState::getInstanceByString, Integer::parseInt,
                     //水
@@ -252,6 +259,8 @@ public final class AtmosphereConfig {
                     }
                 }
             };
+
+    @GeoConfig.Since("0.1")
     public static final ConfigMap<ConfigurableBlockState,Integer> UNDERLYING_REFLECTIVITY =
             new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"underlyingReflectivity","下垫面方块的反射率，默认为12%，单位为%", ConfigurableBlockState::getInstanceByString,Integer::parseInt,
                     //水
@@ -417,10 +426,13 @@ public final class AtmosphereConfig {
                     }
                 }
             };
+
+    @GeoConfig.Since("0.1")
     public static final ConfigBoolean ALLOW_CAULDRON_GET_INFINITE_WATER = new ConfigBoolean(CATEGORY_ATMOSPHERE,"allowCauldronGetInfiniteWater",
             false,"是否允许炼药锅接无限量的水，即在接水时不会消耗大气水");
 
     @Config.RangeInt(min = 2)
+    @GeoConfig.Since("0.1")
     public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE,
             "atmosphereUnderlyingRecalculateGap",400,"大气重新计算下垫面性质的间隔时间，单位为大气刻"){
         @Override

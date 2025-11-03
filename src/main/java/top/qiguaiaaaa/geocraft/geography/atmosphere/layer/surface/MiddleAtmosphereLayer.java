@@ -35,16 +35,15 @@ import net.minecraft.world.chunk.Chunk;
 import org.apache.commons.lang3.tuple.Triple;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
-import top.qiguaiaaaa.geocraft.api.property.AtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IAtmosphereProperty;
 import top.qiguaiaaaa.geocraft.api.setting.GeoAtmosphereSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.Altitude;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.SurfaceAtmosphere;
-import top.qiguaiaaaa.geocraft.geography.property.GeographyPropertyManager;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Map;
 
 import static top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere.TEMPERATURE_NOISE;
@@ -52,10 +51,10 @@ import static top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere.TEMPERATURE_NOIS
 public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
     public static final int 默认相对起始高度 = GroundAtmosphereLayer.厚度, 最大厚度 =68,最高高度=300,第二温度过渡区间长度=12;
     protected double 第二温度过渡开始相对高度,厚度;
-    public MiddleAtmosphereLayer(SurfaceAtmosphere atmosphere) {
+    public MiddleAtmosphereLayer(@Nonnull SurfaceAtmosphere atmosphere) {
         super(atmosphere);
         相对起始高度 = 默认相对起始高度;
-        起始高度 = atmosphere.getUnderlying().getAltitude().get()+ 相对起始高度;
+        起始高度 = atmosphere.getUnderlying(BlockPos.ORIGIN).getAltitude().get()+ 相对起始高度;
         厚度 = Math.min(最大厚度,最高高度-起始高度);
         第二温度过渡开始相对高度 = 相对起始高度+厚度-第二温度过渡区间长度/2.0;
     }
@@ -69,7 +68,7 @@ public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     public float getTemperature(@Nonnull BlockPos pos, boolean notAir) {
-        double 地面海拔 = atmosphere.getUnderlying().getAltitude().get();
+        double 地面海拔 = atmosphere.getUnderlying(BlockPos.ORIGIN).getAltitude().get();
         double 相对海拔 = pos.getY()-地面海拔;
         if(相对海拔< 相对起始高度 -0.1){
             if(isLowerLayerValid) return low.getTemperature(pos,notAir);
@@ -102,6 +101,7 @@ public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
         return 厚度;
     }
 
+    @Nonnull
     @Override
     public String getTagName() {
         return "ma";
@@ -150,11 +150,11 @@ public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
 
     @Override
     protected double[] 对外长波辐射() {
-        final double 变化上限 = temperature.get()/2*heatCapacity;
-        double 总量 = 长波发射率 * AtmosphereUtil.Constants.斯特藩_玻尔兹曼常数 *
-                Math.pow(temperature.get(), 4) *
-                AtmosphereUtil.Constants.大气单元底面积* GeoAtmosphereSetting.getSimulationGap() /1500 * Altitude.to物理高度(getDepth());
-        总量 = MathHelper.clamp(总量,-变化上限,变化上限);
+        double 总量 = AtmosphereUtil.calcRadiation(temperature.get(),
+                heatCapacity,
+                AtmosphereUtil.Constants.大气单元底面积,
+                GeoAtmosphereSetting.getSimulationGap(),
+                长波发射率*Altitude.to物理高度(getDepth())/1500d);
         return new double[]{总量*0.7,总量*0.3};
     }
 
@@ -172,7 +172,7 @@ public class MiddleAtmosphereLayer extends SurfaceAtmosphereLayer {
     }
 
     @Override
-    public void tick(Chunk chunk, @Nonnull Map<EnumFacing, Triple<Atmosphere, Chunk, EnumFacing>> neighbors, int x, int z) {
+    public void tick(@Nullable Chunk chunk, @Nonnull Map<EnumFacing, Triple<Atmosphere, Chunk, EnumFacing>> neighbors, int x, int z) {
         super.tick(chunk, neighbors,x,z);
         ((SurfaceAtmosphere)atmosphere).setDownWind(this);
     }
