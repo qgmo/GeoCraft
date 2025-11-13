@@ -27,11 +27,17 @@
 
 package top.qiguaiaaaa.geocraft.api.util;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.IFluidBlock;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 
@@ -52,7 +58,41 @@ public final class LayeredFluidHostUtil {
      * 此值为1~16所有整数的最小公倍数
      */
     public static final int DEFAULT_MAX_HEIGHT = 720720;
-    public static final int EIGHTH_OF_HEIGHT = DEFAULT_MAX_HEIGHT/8;
+    public static final int SECOND_HEIGHT = DEFAULT_MAX_HEIGHT/2,
+            THIRD_HEIGHT = DEFAULT_MAX_HEIGHT/3,
+            FORTH_HEIGHT = DEFAULT_MAX_HEIGHT/4,
+            FIFTH_HEIGHT = DEFAULT_MAX_HEIGHT/5,
+            SIXTH_HEIGHT = DEFAULT_MAX_HEIGHT/6,
+            SEVENTH_HEIGHT = DEFAULT_MAX_HEIGHT/7,
+            EIGHTH_HEIGHT = DEFAULT_MAX_HEIGHT/8,
+            NINTH_HEIGHT = DEFAULT_MAX_HEIGHT/9,
+            TENTH_HEIGHT = DEFAULT_MAX_HEIGHT/10,
+            ELEVENTH_HEIGHT = DEFAULT_MAX_HEIGHT/11,
+            TWELFTH_HEIGHT = DEFAULT_MAX_HEIGHT/12,
+            THIRTEEN_HEIGHT = DEFAULT_MAX_HEIGHT/13,
+            FOURTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/14,
+            FIFTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/15,
+            SIXTEENTH_HEIGHT = DEFAULT_MAX_HEIGHT/16,
+            EMPTY_HEIGHT = 0;
+
+    public static final IntList HEIGHTS = IntLists.unmodifiable(new IntArrayList(new int[]{
+            DEFAULT_MAX_HEIGHT
+            ,DEFAULT_MAX_HEIGHT
+            ,SECOND_HEIGHT
+            ,THIRD_HEIGHT
+            ,FORTH_HEIGHT
+            ,FIFTH_HEIGHT
+            ,SIXTH_HEIGHT
+            ,SEVENTH_HEIGHT
+            ,EIGHTH_HEIGHT
+            ,NINTH_HEIGHT
+            ,TENTH_HEIGHT
+            ,ELEVENTH_HEIGHT
+            ,TWELFTH_HEIGHT
+            ,THIRTEEN_HEIGHT
+            ,FOURTEENTH_HEIGHT
+            ,FIFTEENTH_HEIGHT
+            ,SIXTEENTH_HEIGHT}));
 
     private static final ThreadLocal<Set<FlowChoice>> FULL_FLOW_CHOICES = ThreadLocal.withInitial(HashSet::new);
     private static final ToIntFunction<FlowChoice> SORT_BY_NEXT_HEIGHT = FlowChoice::getNextLayerHeight;
@@ -115,5 +155,37 @@ public final class LayeredFluidHostUtil {
         choices.addAll(fullChoices);
         fullChoices.clear();
         return centralLayers;
+    }
+
+    /**
+     * 指定方块状态是否是一个载流方块的方块状态
+     * @param state 需要检查的方块状态
+     * @return 若该方块状态是一个载流方块的方块状态,则返回true.否则返回false
+     */
+    public static boolean isLayeredFluidHost(final IBlockState state){
+        return state.getBlock() instanceof ILayeredFluidHost;
+    }
+
+    /**
+     * 指定方块是否是一个载流方块
+     * @param block 需要检查的方块
+     * @return 若是,则返回true,否则返回false
+     */
+    public static boolean isLayeredFluidHost(final Block block){
+        return block instanceof ILayeredFluidHost;
+    }
+
+    public static class Sources{
+        private static final IBlockState ATMOSPHERE = Blocks.AIR.getDefaultState();
+        public static boolean isAtmosphere(final IBlockState source){
+            return source == ATMOSPHERE;
+        }
+        public static boolean isFluid(final IBlockState source){
+            if(source == null) return false;
+            return FluidUtil.isFluid(source.getBlock());
+        }
+        public static boolean isLayeredFluidHost(final IBlockState source){
+            return LayeredFluidHostUtil.isLayeredFluidHost(source);
+        }
     }
 }

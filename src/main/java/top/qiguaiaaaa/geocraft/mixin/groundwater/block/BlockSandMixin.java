@@ -58,12 +58,6 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 public class BlockSandMixin extends BlockFalling implements IBlockSoil {
     @Shadow @Final public static PropertyEnum<BlockSand.EnumType> VARIANT;
 
-    @Unique
-    private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.SAND);
-    @Unique
-    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.SAND),
-            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.SAND);
-
     @Inject(method = "<init>",at = @At(value = "RETURN"))
     private void injectDefaultState(CallbackInfo ci) {
         this.setTickRandomly(true);
@@ -106,21 +100,6 @@ public class BlockSandMixin extends BlockFalling implements IBlockSoil {
     @Override
     public BlockSoilType getType(@Nonnull IBlockState state) {
         return BlockSoilType.SAND;
-    }
-
-    @Override
-    public int getMaxStableHumidity(@Nonnull IBlockState state) {
-        return STABLE_HUMIDITY;
-    }
-
-    @Override
-    public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return FLOW_IN_P;
-    }
-
-    @Override
-    public double getRainInPossibility(@Nonnull IBlockState state) {
-        return RAIN_IN_P;
     }
 
     @Override

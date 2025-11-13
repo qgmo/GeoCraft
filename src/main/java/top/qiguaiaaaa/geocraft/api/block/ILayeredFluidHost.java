@@ -29,12 +29,15 @@ package top.qiguaiaaaa.geocraft.api.block;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidStack;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -157,7 +160,7 @@ public interface ILayeredFluidHost {
      * @see #addLayer(World, BlockPos, IBlockState, Fluid, int, int)
      */
     default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer){
-        addLayer(world, pos, state, fluid, layer,0,0);
+        addLayer(world, pos, state, fluid, layer,null,0,0);
     }
 
     /**
@@ -172,13 +175,14 @@ public interface ILayeredFluidHost {
      * @param disabledBlockFlags 禁止的方块更新 flags
      */
     default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags){
-        addLayer(world, pos, state, fluid, layer, disabledBlockFlags,0);
+        addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags,0);
     }
 
     /**
      * 添加或移除指定层(layer)指定的流体<br/>
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}<br/>
-     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。
+     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。<br/>
+     * 和 {@link #setLayer(World, BlockPos, IBlockState, Fluid, int, int, int)}不同的是，addLayer要求指定位置的方块状态一定是state。
      * @param world 世界
      * @param pos 位置
      * @param state 状态，必须是当前方块的状态
@@ -188,6 +192,24 @@ public interface ILayeredFluidHost {
      * @param enabledBlockFlags 需要的方块更新 flags
      */
     default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags,final int enabledBlockFlags){
+        addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags, enabledBlockFlags);
+    }
+
+    /**
+     * 添加或移除指定层(layer)指定的流体<br/>
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}<br/>
+     * 一般请使用{@link #addLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}，因为该方法会直接添加而不返回具体添加了多少。<br/>
+     * 和 {@link #setLayer(World, BlockPos, IBlockState, Fluid, int, int, int)}不同的是，addLayer要求指定位置的方块状态一定是state。
+     * @param world 世界
+     * @param pos 位置
+     * @param state 状态，必须是当前方块的状态
+     * @param fluid 需要添加或移除的流体
+     * @param layer 层数,若为负值则为提取(remove or drain).建议使用{@link #drainLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}
+     * @param nbt NBT标签
+     * @param disabledBlockFlags 禁止的方块更新 flags
+     * @param enabledBlockFlags 需要的方块更新 flags
+     */
+    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
         if(layer == 0) return;
         final int curLayer = getLayers(world, pos, state, fluid),maxLayer = getMaxLayers(world, pos, state, fluid);
         layer = MathHelper.clamp(layer,-curLayer,maxLayer-curLayer);
@@ -207,7 +229,7 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, boolean doAdd){
-        return addLayer(world, pos, state, fluid, layer, 0,0,doAdd);
+        return addLayer(world, pos, state, fluid, layer,null, 0,0,doAdd);
     }
 
     /**
@@ -224,7 +246,7 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags, boolean doAdd){
-        return addLayer(world, pos, state, fluid, layer, disabledBlockFlags,0, doAdd);
+        return addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags,0, doAdd);
     }
 
     /**
@@ -242,11 +264,30 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
+        return addLayer(world, pos, state, fluid, layer,null, disabledBlockFlags, enabledBlockFlags, doAdd);
+    }
+
+    /**
+     * 添加指定层液体。<br/>
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
+     * @param world 世界
+     * @param pos 位置
+     * @param state 状态
+     * @param fluid 要添加的流体
+     * @param layer 层数
+     * @param nbt NBT标签
+     * @param disabledBlockFlags 禁止的方块更新 flags
+     * @param enabledBlockFlags 启用的方块更新 flags
+     * @param doAdd 是否真的添加
+
+     * @return 实际添加的层数
+     */
+    default int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
         if(layer == 0) return 0;
         int curLayer = getLayers(world,pos,state,fluid);
         int layerInFact = MathHelper.clamp(layer,-curLayer, getMaxLayers(world,pos,state,fluid)-curLayer);
         if(layerInFact == 0) return 0;
-        if(doAdd) addLayer(world, pos, state, fluid,layerInFact,disabledBlockFlags,enabledBlockFlags);
+        if(doAdd) addLayer(world, pos, state, fluid,layerInFact,nbt,disabledBlockFlags,enabledBlockFlags);
         return layerInFact;
     }
 
@@ -262,7 +303,7 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, boolean doAdd){
-        return addAmountInQB(world, pos, state, fluid, amount,0,0, doAdd);
+        return addAmountInQB(world, pos, state, fluid, amount,null,0,0, doAdd);
     }
 
     /**
@@ -278,7 +319,7 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags, boolean doAdd){
-        return addAmountInQB(world, pos, state, fluid, amount, disabledBlockFlags,0, doAdd);
+        return addAmountInQB(world, pos, state, fluid, amount,null, disabledBlockFlags,0, doAdd);
     }
 
     /**
@@ -295,6 +336,24 @@ public interface ILayeredFluidHost {
      * @return 实际添加的层数
      */
     default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount, final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
+        return addAmountInQB(world, pos, state, fluid, amount,null, disabledBlockFlags, enabledBlockFlags, doAdd);
+    }
+
+    /**
+     * 添加指定量液体，以QB为单位。<br/>
+     * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
+     * @param world 世界
+     * @param pos 位置
+     * @param state 状态
+     * @param fluid 要添加的流体
+     * @param amount 液体量
+     * @param nbt NBT
+     * @param disabledBlockFlags 禁止的方块更新 flags
+     * @param enabledBlockFlags 允许的方块更新 flags
+     * @param doAdd 是否真的添加
+     * @return 实际添加的层数
+     */
+    default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount,@Nullable NBTTagCompound nbt, final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
         if(amount == 0L) return 0L;
         if(amount < 0L) return -drainAmountInQB(world, pos, state, fluid, -amount, doAdd);
         final long amountPerLayer = getAmountInQBPerLayer(world, pos, state,fluid);
@@ -303,7 +362,7 @@ public interface ILayeredFluidHost {
         long curAmount = getAmountInQB(world, pos, state, fluid);
         long amountInFact = Math.min(amount, getMaxAmountInQB(world, pos, state, fluid)-curAmount);
         if(amountInFact == 0) return 0;
-        return addLayer(world,pos,state,fluid,(int)(amount/amountPerLayer),disabledBlockFlags,enabledBlockFlags,doAdd)*amountPerLayer;
+        return addLayer(world,pos,state,fluid,(int)(amount/amountPerLayer),nbt,disabledBlockFlags,enabledBlockFlags,doAdd)*amountPerLayer;
     }
 
     /**
@@ -374,6 +433,18 @@ public interface ILayeredFluidHost {
         return drainLayer(world,pos,state,fluid,(int) (amount/amountPerLayer),disabledBlockFlags,enabledBlockFlags,doDrain)*amountPerLayer;
     }
 
+    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, boolean doDrain){
+        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),doDrain)));
+    }
+
+    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, final int disabledBlockFlags, boolean doDrain){
+        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),disabledBlockFlags,doDrain)));
+    }
+
+    default FluidStack drainAmountInMB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull FluidStack stack, final int disabledBlockFlags,final int enabledBlockFlags, boolean doDrain){
+        return new FluidStack(stack,QBUtil.toMB(drainAmountInQB(world,pos,state, stack.getFluid(),QBUtil.toQBFromMB(stack.amount),disabledBlockFlags,enabledBlockFlags,doDrain)));
+    }
+
     /**
      * 将指定流体流体层数设置到指定层数
      * @param world 世界
@@ -381,9 +452,10 @@ public interface ILayeredFluidHost {
      * @param state 方框状态
      * @param fluid 指定流体
      * @param newLayer 新的层数
+     * @return 是否成功
      */
-    default void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer){
-        setLayer(world, pos, state, fluid, newLayer,0,0);
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer){
+        return setLayer(world, pos, state, fluid, newLayer,null,0,0);
     }
 
     /**
@@ -394,21 +466,37 @@ public interface ILayeredFluidHost {
      * @param fluid 指定流体
      * @param newLayer 新的层数
      * @param disabledBlockFlags 禁止的BlockFlags
+     * @return 是否成功
      */
-    default void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags){
-        setLayer(world, pos, state, fluid, newLayer, disabledBlockFlags,0);
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags){
+        return setLayer(world, pos, state, fluid, newLayer,null, disabledBlockFlags,0);
     }
 
     /**
-     * 将指定流体流体层数设置到指定层数
+     * 在世界某处放置具有指定流体层数的方块
      * @param world 世界
      * @param pos 当前位置
-     * @param state 方框状态
+     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是本方块
      * @param fluid 指定流体
      * @param newLayer 新的层数
      * @param disabledBlockFlags 禁止的BlockFlags
+     * @return 是否成功
      */
-    void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags);
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags){
+        return setLayer(world, pos, state, fluid, newLayer,null, disabledBlockFlags, enabledBlockFlags);
+    }
+
+    /**
+     * 在世界某处放置具有指定流体层数的方块
+     * @param world 世界
+     * @param pos 当前位置
+     * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是本方块
+     * @param fluid 指定流体
+     * @param newLayer 新的层数
+     * @param disabledBlockFlags 禁止的BlockFlags
+     * @return 是否成功
+     */
+    boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags);
 
     /**
      * 指定流体以指定条件是否能够流入当前方块

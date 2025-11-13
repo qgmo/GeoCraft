@@ -54,11 +54,6 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  */
 @Mixin(value = BlockClay.class)
 public class BlockClayMixin extends Block implements IBlockSoil {
-    @Unique
-    private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.CLAY);
-    @Unique
-    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.CLAY),
-    RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.CLAY);
 
     public BlockClayMixin(Material materialIn) {
         super(materialIn);
@@ -106,20 +101,5 @@ public class BlockClayMixin extends Block implements IBlockSoil {
     @Unique
     public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
         dropWaterWhenBroken(worldIn, pos, state);
-    }
-
-    @Override
-    public int getMaxStableHumidity(@Nonnull IBlockState state) {
-        return STABLE_HUMIDITY;
-    }
-
-    @Override
-    public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return FLOW_IN_P;
-    }
-
-    @Override
-    public double getRainInPossibility(@Nonnull IBlockState state) {
-        return RAIN_IN_P;
     }
 }

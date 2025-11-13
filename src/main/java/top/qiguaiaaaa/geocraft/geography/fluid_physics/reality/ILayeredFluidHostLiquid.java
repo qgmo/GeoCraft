@@ -27,9 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality;
 
-import net.minecraft.block.BlockSnow;
+import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -38,12 +39,11 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
-import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
+import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,13 +54,13 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  * @author QiguaiAAAA
  */
 public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
-    int HEIGHT_PER_QUANTA = 90090;
+    int HEIGHT_PER_QUANTA = LayeredFluidHostUtil.EIGHTH_HEIGHT;
     @Nonnull
     Fluid getFluid();
 
     @Override
     default boolean isAcceptedFluid(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return fluid == FluidRegistry.WATER;
+        return fluid == getFluid();
     }
 
     @Override
@@ -83,12 +83,12 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
         if(getFluid() == FluidRegistry.WATER && fluid == GeoFluids.SNOW){
             return getHeight(world,pos,state,FluidRegistry.WATER);
         }
-        return 0;
+        return LayeredFluidHostUtil.EMPTY_HEIGHT;
     }
 
     @Override
     default int getHeightPerLayer(@Nullable World world,@Nullable BlockPos pos,@Nonnull IBlockState state){
-        return LayeredFluidHostUtil.EIGHTH_OF_HEIGHT;
+        return LayeredFluidHostUtil.EIGHTH_HEIGHT;
     }
 
     @Override
@@ -97,60 +97,45 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
     }
 
     @Override
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid , int layer,final int disabledBlockFlags,final int enabledBlockFlags){
+    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid , int layer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
         if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){
             int quantaWater = getLayers(world,pos,state,FluidRegistry.WATER);
             layer = MathHelper.clamp(layer,0,8- getLayers(world,pos,state,FluidRegistry.WATER));
             if(layer == 0) return;
             try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)) {
-                int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
-                if(quantaWater == layer){
-                    world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
-                            .withProperty(BlockProperties.MIXTURE,true)
-                            .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
-                }else if(quantaWater< layer){
-                    world.setBlockState(pos,Blocks.SNOW_LAYER.getDefaultState()
-                            .withProperty(BlockSnow.LAYERS, layer +quantaWater),flags);
-                    if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quantaWater);
-                }else {
-                    setLayer(world,pos,state,FluidRegistry.WATER,quantaWater+ layer,disabledBlockFlags,enabledBlockFlags);
-                    if(accessor != null)
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer);
-                }
+                final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+                MoreRealityFluidPhysicsCore.mixSnowWithWater(world,pos,accessor,quantaWater,layer,flags);
             }
         }
         if(fluid != getFluid()) return;
-        int newQuanta = 8-state.getValue(LEVEL)+ layer;
+        if(layer == 0) return;
+        int newQuanta = Math.max(8-state.getValue(LEVEL),0)+ layer;
         setLayer(world,pos,state,fluid,newQuanta,disabledBlockFlags,enabledBlockFlags);
     }
 
     @Override
-    default void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid , int newLayer,final int disabledBlockFlags,final int enabledBlockFlags){
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid , int newLayer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags){
         if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){
-            this.addLayer(world, pos, state, fluid, newLayer,disabledBlockFlags,enabledBlockFlags);
-            return;
+            final int waterQuanta = Math.max(8-state.getValue(LEVEL),0);
+            final int snowQuanta = MathHelper.clamp(newLayer,0,8-waterQuanta);
+            return MoreRealityFluidPhysicsCore.mixSnowWithWater(world,pos,null,waterQuanta,snowQuanta,APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
         }
-        if(fluid != getFluid()) return;
+        if(fluid != getFluid()) return false;
         newLayer = Math.min(newLayer,8);
+        final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags);
         if(newLayer <= 0) {
-            world.setBlockState(pos,Blocks.AIR.getDefaultState(),APIMathUtil.getModifiedFlag(Constants.BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags));
-            return;
+            return world.setBlockState(pos,Blocks.AIR.getDefaultState(),flags);
         }
-        world.setBlockState(pos,state.withProperty(LEVEL,8- newLayer), APIMathUtil.getModifiedFlag(Constants.BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags));
+        return world.setBlockState(pos,state.withProperty(LEVEL,8- newLayer), flags);
     }
 
     @Nullable
     @Override
     default IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer){
         if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){
-            int quantaWater = Math.max(8-state.getValue(LEVEL),1);
+            int quantaWater = Math.max(8-state.getValue(LEVEL),0);
             if(layer <0 || layer + quantaWater>8) return null;
-            if(layer ==0) return state;
-            if(layer <quantaWater) return getLayerState(state,FluidRegistry.WATER, layer +quantaWater);
-            if(layer == quantaWater) return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockProperties.MIXTURE,true)
-                    .withProperty(BlockSnow.LAYERS, layer +quantaWater);
-            return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockSnow.LAYERS, layer +quantaWater);
+            return MoreRealityFluidPhysicsCore.getSnowWaterMixState(layer,quantaWater,state.getBlock() instanceof BlockStaticLiquid);
         }
         if(fluid != getFluid()) return null;
         if(layer <= 0) return Blocks.AIR.getDefaultState();

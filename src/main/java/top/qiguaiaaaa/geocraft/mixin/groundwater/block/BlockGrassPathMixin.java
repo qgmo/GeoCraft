@@ -59,13 +59,6 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 @Mixin(BlockGrassPath.class)
 public class BlockGrassPathMixin extends Block implements IBlockSoil,IBlockFalling {
 
-    @Unique
-    private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.GRASS_PATH);
-
-    @Unique
-    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS_PATH),
-            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.GRASS_PATH);
-
     @Nonnull
     @Override
     @Unique
@@ -137,22 +130,5 @@ public class BlockGrassPathMixin extends Block implements IBlockSoil,IBlockFalli
     @Override
     public BlockSoilType getType(@Nonnull IBlockState state) {
         return BlockSoilType.GRASS_PATH;
-    }
-
-    @Override
-    @Unique
-    public int getMaxStableHumidity(@Nonnull IBlockState state) {
-        return STABLE_HUMIDITY;
-    }
-
-    @Override
-    @Unique
-    public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return FLOW_IN_P;
-    }
-
-    @Override
-    public double getRainInPossibility(@Nonnull IBlockState state) {
-        return RAIN_IN_P;
     }
 }

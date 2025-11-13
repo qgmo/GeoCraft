@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
  */
 public interface IBlockStateLayeredFluidHost extends ILayeredFluidHost{
     /**
-     * 获取指定流体下指定层数时的方块状态，已弃用
+     * 获取指定流体下指定层数时的方块状态
      * @param state 查询的方块状态
      * @param fluid 指定流体
      * @param layer 指定层数

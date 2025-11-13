@@ -40,6 +40,7 @@ import net.minecraft.init.PotionTypes;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.PotionUtils;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -48,10 +49,9 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.Constants.BlockFlags;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -59,8 +59,10 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.util.*;
+import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
+import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
@@ -69,9 +71,12 @@ import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
+import static top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode.getCurrentMode;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_MODE;
 
 public interface IBlockSoil extends IBlockStateLayeredFluidHost {
@@ -81,31 +86,30 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
      * 土壤将自身水掉下去的能力
      * @return 湿度变化
      */
-    default int dropWaterDown(World worldIn, BlockPos pos){
-        BlockPos down = pos.down();
-        IBlockState downState = worldIn.getBlockState(down);
+    default int dropWaterDown(World worldIn, BlockPos pos,IBlockState state){
+        final BlockPos down = pos.down();
+        final IBlockState downState = worldIn.getBlockState(down);
         if(downState.getMaterial() == Material.AIR){
-            if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.MORE_REALITY)
-                worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), Constants.BlockFlags.DEFAULT);
+            if(getCurrentMode() == FluidPhysicsMode.MORE_REALITY)
+                worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), BlockFlags.DEFAULT);
             return -1;
-        }else if(FluidUtil.getFluid(downState) == FluidRegistry.WATER){
-            if(FLUID_PHYSICS_MODE.getValue() != FluidPhysicsMode.MORE_REALITY) return -1;
-            int meta = downState.getValue(BlockLiquid.LEVEL);
-            if(meta >0 && meta<=7){
-                worldIn.setBlockState(down,downState.withProperty(BlockLiquid.LEVEL,meta-1),Constants.BlockFlags.DEFAULT);
-                return -1;
-            }
-        }else if(!BlockLiquidUpdater.isBlocked(downState)){
-            if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.MORE_REALITY) {
+        }else if(LayeredFluidHostUtil.isLayeredFluidHost(downState)){
+            ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
+            final boolean canFill = host.canFill(worldIn,down,downState,FluidRegistry.WATER,EnumFacing.UP,state);
+            if(!canFill) return 0;
+            final long filled = host.addAmountInQB(worldIn,down,downState,FluidRegistry.WATER,QBUtil.QUANTA_VOLUME,true);
+            return filled>0?-1:0;
+        }else if(RealityBlockLiquidUpdater.WATER_UPDATER.canMoveDownTo(downState)){
+            if(getCurrentMode() == FluidPhysicsMode.MORE_REALITY) {
                 FluidOperationUtil.triggerDestroyBlockEffectByFluid(worldIn,down,downState,FluidRegistry.WATER);
-                worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), Constants.BlockFlags.DEFAULT);
+                worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), BlockFlags.DEFAULT);
             }
             return -1;
         }else if(downState.getBlock() == Blocks.CAULDRON){
-            if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.VANILLA){
+            if(getCurrentMode() == FluidPhysicsMode.VANILLA){
                 if(!BaseUtil.getRandomResult(worldIn.rand,0.3)) return 0;
                 if(downState.getValue(BlockCauldron.LEVEL) <3){
-                    worldIn.setBlockState(pos, downState.cycleProperty(BlockCauldron.LEVEL), Constants.BlockFlags.SEND_TO_CLIENTS);
+                    worldIn.setBlockState(pos, downState.cycleProperty(BlockCauldron.LEVEL), BlockFlags.SEND_TO_CLIENTS);
                     return -1;
                 }
             }
@@ -126,12 +130,12 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
         for(EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
             BlockPos facingPos = pos.offset(facing);
             IBlockState facingState = worldIn.getBlockState(facingPos);
-            if(!canFlowInto(worldIn,facingPos,facingState)) continue;
+            if(!canFlowInto(worldIn,facingPos,facingState,facing,state)) continue;
             if(facingState.getMaterial() == Material.AIR){
                 averageModeFlowDirections.add(new FlowChoice(facing));
                 continue;
             }
-            ILayeredFluidHost host = (ILayeredFluidHost)facingState.getBlock();
+            final ILayeredFluidHost host = (ILayeredFluidHost)facingState.getBlock();
             int facingHeight = host.getHeight(worldIn,facingPos,facingState,FluidRegistry.WATER);
             int facingHeightPerLayer = host.getHeightPerLayer(worldIn,facingPos,facingState);
             if(facingHeight+facingHeightPerLayer<=(humidity-1)*getHeightPerLayer(worldIn,pos,state)){
@@ -203,20 +207,23 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
 
     default void onRandomTick(World worldIn, BlockPos pos, IBlockState state, Random random){
         if(worldIn.isRemote) return;
-        int humidity = getLayers(worldIn,pos,state,FluidRegistry.WATER);
+        final int humidity = getLayers(worldIn,pos,state,FluidRegistry.WATER);
         int newHumidity = humidity;
-        int rnd = random.nextInt(3);
-        if(rnd == 0){ //吸收上面的水
-            if(humidity < 4) {
-                newHumidity += drainUpWater(worldIn,pos,state);
-            }
-        }else if(rnd == 1){ //向下掉水
-            if(humidity >getMaxStableHumidity(state)){
-                newHumidity += dropWaterDown(worldIn, pos);
-            }
-        }else if(humidity>getMaxStableHumidity(state)) { //水平平衡
-            flowWaterHorizontally(worldIn,pos,state,humidity);
-            return;
+        final int rnd = random.nextInt(3);
+        switch (rnd){
+            case 0: //吸收上面的水
+                if(humidity < 4) {
+                    newHumidity += drainUpWater(worldIn,pos,state);
+                }
+                break;
+            case 1: //向下掉水
+                if(humidity >getMaxStableHumidity(state)){
+                    newHumidity += dropWaterDown(worldIn, pos,state);
+                }
+                break;
+            default: //水平平衡
+                flowWaterHorizontally(worldIn,pos,state,humidity);
+                return;
         }
         if(humidity == newHumidity){
             if(humidity == 0) return;
@@ -232,21 +239,25 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     default void dropWaterWhenBroken(World world, BlockPos pos, IBlockState state){
         int humidity = getLayers(world,pos,state,FluidRegistry.WATER);
         if(humidity == 0) return;
-        if(FLUID_PHYSICS_MODE.getValue() != FluidPhysicsMode.MORE_REALITY){
+        if(getCurrentMode() != FluidPhysicsMode.MORE_REALITY){
             world.spawnParticle(EnumParticleTypes.BLOCK_CRACK,
                     pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5,
                     0, 0, 0, Block.getStateId(Blocks.WATER.getDefaultState()));
             return;
         }
-        world.setBlockState(pos, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-humidity),Constants.BlockFlags.DEFAULT);
+        world.setBlockState(pos, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-humidity),BlockFlags.DEFAULT);
     }
 
+    /**
+     * 当玩家右键土壤添加水分的操作
+     * @see BlockCauldron#onBlockActivated(World, BlockPos, IBlockState, EntityPlayer, EnumHand, EnumFacing, float, float, float)
+     */
+    @MultiThread({ThreadType.MINECRAFT_CLIENT,ThreadType.MINECRAFT_SERVER})
     default boolean onPlayerUseBottle(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ){
-        if(worldIn.isRemote) return false;
-        ItemStack stack = playerIn.getHeldItem(hand);
+        final ItemStack stack = playerIn.getHeldItem(hand);
         if(stack.isEmpty()) return false;
         int moisture = getLayers(worldIn,pos,state,FluidRegistry.WATER);
-        Item item = stack.getItem();
+        final Item item = stack.getItem();
         if(moisture >2) return false;
         if (item == Items.POTIONITEM && PotionUtils.getPotionFromItem(stack) == PotionTypes.WATER) {
             if (!playerIn.capabilities.isCreativeMode) {
@@ -270,13 +281,12 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
      * @param state 目标方块状态
      * @return 能，则true，否，则反之
      */
-    default boolean canFlowInto(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state){
+    default boolean canFlowInto(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull EnumFacing fromFacing,@Nonnull IBlockState source){
         if(state.getMaterial() == Material.AIR) return true;
         Block block = state.getBlock();
         if(block instanceof ILayeredFluidHost){
             ILayeredFluidHost permeableBlock = (ILayeredFluidHost) block;
-            return permeableBlock.isAcceptedFluid(world,pos,state,FluidRegistry.WATER)
-                    && !permeableBlock.isFull(world,pos,state,FluidRegistry.WATER);
+            return permeableBlock.canFill(world,pos,state,FluidRegistry.WATER,fromFacing,source);
         }
         return false;
     }
@@ -284,11 +294,21 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     @Nonnull
     BlockSoilType getType(@Nonnull IBlockState state);
 
-    int getMaxStableHumidity(@Nonnull IBlockState state);
+    default int getMaxStableHumidity(@Nonnull IBlockState state){
+        return getType(state).getMaxStableHumidity();
+    }
 
-    double getFlowInPossibility(@Nonnull IBlockState state);
+    default double getFlowInPossibility(@Nonnull IBlockState state){
+        return getType(state).getFlowInPossibility();
+    }
 
-    double getRainInPossibility(@Nonnull IBlockState state);
+    default double getRainInPossibility(@Nonnull IBlockState state){
+        return getType(state).getRainInPossibility();
+    }
+
+    //******************
+    // ILayeredFluidHost
+    //******************
 
     @Override
     default boolean isAcceptedFluid(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
@@ -315,12 +335,17 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
 
     @Override
     default int getEmptyHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid){
-        return 0;
+        return LayeredFluidHostUtil.EMPTY_HEIGHT;
     }
 
     @Override
     default int getHeightPerLayer(@Nullable World world,@Nullable BlockPos pos,@Nonnull IBlockState state){
-        return 180180;
+        return LayeredFluidHostUtil.FIFTH_HEIGHT;
+    }
+
+    @Override
+    default int getMaxHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+        return fluid == FluidRegistry.WATER || fluid == null?LayeredFluidHostUtil.FIFTH_HEIGHT*4:LayeredFluidHostUtil.EMPTY_HEIGHT;
     }
 
     @Override
@@ -329,9 +354,9 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     }
 
     @Override
-    default void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags){
-        if(fluid != FluidRegistry.WATER) return;
-        world.setBlockState(pos,state.withProperty(HUMIDITY, newLayer), APIMathUtil.getModifiedFlag(Constants.BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags));
+    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
+        if(fluid != FluidRegistry.WATER) return false;
+        return world.setBlockState(pos,state.withProperty(HUMIDITY, newLayer), APIMathUtil.getModifiedFlag(BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags));
     }
 
     @Nullable
@@ -353,10 +378,12 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     default boolean canFill(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, @Nonnull EnumFacing side, @Nullable IBlockState source){
         if(fluid != FluidRegistry.WATER) return false;
         if(isFull(world,pos,state,fluid)) return false;
-        if(source != null && source.getBlock() == Blocks.AIR){
+        if(LayeredFluidHostUtil.Sources.isAtmosphere(source)){
             return BaseUtil.getRandomResult(world.rand,getRainInPossibility(state));
+        }else if (LayeredFluidHostUtil.Sources.isFluid(source)){
+            return BaseUtil.getRandomResult(world.rand, getFlowInPossibility(state));
         }
-        return BaseUtil.getRandomResult(world.rand, getFlowInPossibility(state));
+        return true;
     }
 
     @Override
@@ -368,6 +395,6 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     @Override
     default boolean isFull(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid != FluidRegistry.WATER && fluid != null) return true;
-        return state.getValue(HUMIDITY) == 4;
+        return state.getValue(HUMIDITY) >= 4;
     }
 }

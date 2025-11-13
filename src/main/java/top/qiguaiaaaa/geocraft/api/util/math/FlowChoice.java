@@ -76,7 +76,7 @@ public class FlowChoice {
      */
     public FlowChoice(@Nonnull EnumFacing direction,int currentLayers){
         this.direction = direction;
-        this.heightPerLayer = LayeredFluidHostUtil.EIGHTH_OF_HEIGHT;
+        this.heightPerLayer = LayeredFluidHostUtil.EIGHTH_HEIGHT;
         this.emptyHeight = 0;
         this.currentLayers = currentLayers;
         this.maxLayers = 8;

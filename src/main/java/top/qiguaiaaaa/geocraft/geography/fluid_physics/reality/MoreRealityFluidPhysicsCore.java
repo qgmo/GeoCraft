@@ -27,23 +27,29 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality;
 
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockSnow;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.FluidRegistry;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
+import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Random;
 
@@ -137,5 +143,42 @@ public final class MoreRealityFluidPhysicsCore {
 
         }
         return false;
+    }
+
+    public static boolean mixSnowWithWater(@Nonnull World world,@Nonnull BlockPos pos,@Nullable IAtmosphereAccessor accessor,int quantaWater,int quantaSnow,final int flags){
+        if(quantaWater+quantaSnow == 0) return false;
+        final IBlockState mixState = getSnowWaterMixState(quantaSnow,quantaWater);
+        if(!world.setBlockState(pos,mixState,flags)) return false;
+        if(accessor != null){
+            if(quantaWater< quantaSnow){
+                accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quantaWater);
+            }else if(quantaWater>quantaSnow){
+                accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* quantaSnow);
+            }
+        }
+        return true;
+    }
+
+    public static IBlockState getSnowWaterMixState(int snow,int water){
+        BaseUtil.checkAndReturn(snow+water,0,8);
+        if(snow == water){
+            return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockProperties.MIXTURE,true).withProperty(BlockSnow.LAYERS,snow+water);
+        }else if(snow<water){
+            return Blocks.FLOWING_WATER.getDefaultState().withProperty(LEVEL,snow+water);
+        }else {
+            return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockSnow.LAYERS,snow+water);
+        }
+    }
+
+    public static IBlockState getSnowWaterMixState(int snow,int water,boolean requireStatic){
+        if(!requireStatic) return getSnowWaterMixState(snow,water);
+        BaseUtil.checkAndReturn(snow+water,0,8);
+        if(snow == water){
+            return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockProperties.MIXTURE,true).withProperty(BlockSnow.LAYERS,snow+water);
+        }else if(snow<water){
+            return Blocks.WATER.getDefaultState().withProperty(LEVEL,snow+water);
+        }else {
+            return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockSnow.LAYERS,snow+water);
+        }
     }
 }

@@ -49,7 +49,9 @@ import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
+import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static net.minecraft.block.BlockFarmland.MOISTURE;
@@ -122,5 +124,6 @@ public final class SoilEventHandler {
             if(state == null) continue;
             GeoSoilSetting.setBiomeWaterProtectionBlock(biome,state);
         }
+        Arrays.stream(BlockSoilType.values()).forEach(BlockSoilType::init);
     }
 }

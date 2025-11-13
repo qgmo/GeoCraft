@@ -35,6 +35,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -68,13 +69,6 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  */
 @Mixin(BlockFarmland.class)
 public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IBlockFalling {
-    @Unique
-    private static final int STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.FARMLAND);
-
-    @Unique
-    private static final double FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.FARMLAND),
-            RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.FARMLAND);
-
     @Unique
     private static boolean isRandomTick = false;
     @Shadow @Final protected static AxisAlignedBB field_194405_c;
@@ -135,7 +129,7 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
 
     @Inject(method = "turnToDirt",at = @At("HEAD"),cancellable = true)
     private static void turnToDirt_Inject(World world, BlockPos pos, CallbackInfo ci) {
-        IBlockState state = world.getBlockState(pos);
+        final IBlockState state = world.getBlockState(pos);
         if(!(state.getBlock() instanceof IBlockSoil)) return;
         ci.cancel();
         int quanta = ((IBlockSoil)state.getBlock()).getLayers(world,pos,state,FluidRegistry.WATER);
@@ -159,21 +153,6 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
         return BlockSoilType.FARMLAND;
     }
 
-    @Override
-    public int getMaxStableHumidity(@Nonnull IBlockState state) {
-        return STABLE_HUMIDITY;
-    }
-
-    @Override
-    public double getFlowInPossibility(@Nonnull IBlockState state) {
-        return FLOW_IN_P;
-    }
-
-    @Override
-    public double getRainInPossibility(@Nonnull IBlockState state) {
-        return RAIN_IN_P;
-    }
-
     //***********
     // IPermeableBlock
     //***********
@@ -186,34 +165,17 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
     }
 
     @Override
-    public int getMaxLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid == FluidRegistry.WATER || fluid == null) return 4;
-        return 0;
-    }
-
-    @Override
     public int getHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid == FluidRegistry.WATER || fluid == null) return getHeightPerLayer(world,pos,state)* getLayers(world,pos,state,fluid);
         return 0;
     }
 
     @Override
-    public int getMaxHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid == FluidRegistry.WATER || fluid == null) return 576576;
-        return 0;
-    }
-
-    @Override
-    public int getHeightPerLayer(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state) {
-        return 144144;
-    }
-
-    @Override
-    public void setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,final int disabledBlockFlags,final int enabledBlockFlags) {
-        if(fluid != FluidRegistry.WATER) return;
+    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags) {
+        if(fluid != FluidRegistry.WATER) return false;
         newLayer = MathHelper.clamp(newLayer,0,4);
         int moisture = newLayer == 0?0: newLayer *2-1;
-        world.setBlockState(pos,state.withProperty(MOISTURE,moisture), APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
+        return world.setBlockState(pos,state.withProperty(MOISTURE,moisture), APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
     }
 
     @Nullable
@@ -228,6 +190,6 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
     @Override
     public boolean isFull(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
         if(fluid != FluidRegistry.WATER) return true;
-        return state.getValue(MOISTURE) == 7;
+        return state.getValue(MOISTURE) >= 7;
     }
 }

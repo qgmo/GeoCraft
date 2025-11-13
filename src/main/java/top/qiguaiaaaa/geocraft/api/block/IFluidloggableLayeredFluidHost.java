@@ -31,6 +31,7 @@ import git.jbredwards.fluidlogged_api.api.block.IFluidloggable;
 import git.jbredwards.fluidlogged_api.api.util.FluidState;
 import git.jbredwards.fluidlogged_api.api.util.FluidloggedUtils;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -76,7 +77,7 @@ public interface IFluidloggableLayeredFluidHost extends IFluidloggable, ILayered
     @Override
     default int getHeightPerLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state){
         FluidState fluidState = FluidState.get(world,pos);
-        if(fluidState.isEmpty()) return LayeredFluidHostUtil.EIGHTH_OF_HEIGHT;
+        if(fluidState.isEmpty()) return LayeredFluidHostUtil.EIGHTH_HEIGHT;
         return LayeredFluidHostUtil.DEFAULT_MAX_HEIGHT/fluidState.getQuantaPerBlock();
     }
 
@@ -88,7 +89,7 @@ public interface IFluidloggableLayeredFluidHost extends IFluidloggable, ILayered
     }
 
     @Override
-    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer,int disabledBlockFlags) {
+    default void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, int disabledBlockFlags,int enabledBlockFlags) {
         FluidState fluidState = FluidState.get(world,pos);
         if(layer == 0) return;
         if(fluidState.isEmpty()){

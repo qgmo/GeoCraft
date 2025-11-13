@@ -27,6 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.api.util;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongLists;
 import net.minecraftforge.fluids.Fluid;
 
 /**
@@ -37,13 +40,27 @@ public final class QBUtil {
     public static final long BUCKET_VOLUME = 72072000L;
     public static final long MB_VOLUME = BUCKET_VOLUME/Fluid.BUCKET_VOLUME;
     public static final long QUANTA_VOLUME = BUCKET_VOLUME/8L;
+    public static final LongList VOLUMES_1_TO_16;
 
-    public static int toMB(long DMU){
-        return (int) (DMU/MB_VOLUME);
+    static {
+        final long[] volumes = new long[17];
+        volumes[0] = BUCKET_VOLUME;
+        for(int i=1;i<17;i++){
+            volumes[i] = volumes[0]/(long) i;
+        }
+        VOLUMES_1_TO_16 = LongLists.unmodifiable(new LongArrayList(volumes));
     }
 
-    public static int toQuanta(long DMU){
-        return (int) (DMU/QUANTA_VOLUME);
+    public static int toMB(long QB){
+        return (int) (QB/MB_VOLUME);
+    }
+
+    public static int toQuanta(long QB){
+        return (int) (QB/QUANTA_VOLUME);
+    }
+
+    public static double toPreciseQuanta(long QB){
+        return QB/(double)QUANTA_VOLUME;
     }
 
     public static long toQBFromMB(int mB){

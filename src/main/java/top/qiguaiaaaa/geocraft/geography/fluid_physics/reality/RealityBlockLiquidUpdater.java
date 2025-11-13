@@ -64,6 +64,8 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     private static final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 
+    public static final RealityBlockLiquidUpdater WATER_UPDATER = new RealityBlockLiquidUpdater(Blocks.FLOWING_WATER,Material.WATER,FluidRegistry.WATER);
+
     public RealityBlockLiquidUpdater(@Nonnull BlockDynamicLiquid liquid, @Nonnull Material material,@Nonnull Fluid fluid) {
         super(liquid, material,fluid);
     }

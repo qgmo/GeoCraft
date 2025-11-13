@@ -61,18 +61,6 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 @Mixin(value = BlockDirt.class)
 public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
     @Shadow @Final public static PropertyEnum<BlockDirt.DirtType> VARIANT;
-    @Unique
-    private static final int DIRT_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.DIRT),
-    COAST_DIRT_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.COARSE_DIRT),
-    PODZOL_STABLE_HUMIDITY = SoilConfig.STABLE_HUMIDITY.getValue().get(BlockSoilType.PODZOL);
-
-    @Unique
-    private static final double DIRT_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.DIRT),
-    COAST_DIRT_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.COARSE_DIRT),
-    PODZOL_FLOW_IN_P = SoilConfig.FLOW_IN_POSSIBILITY.getValue().get(BlockSoilType.PODZOL),
-            DIRT_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.DIRT),
-    COAST_DIRT_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.COARSE_DIRT),
-    PODZOL_RAIN_IN_P = SoilConfig.RAIN_IN_POSSIBILITY.getValue().get(BlockSoilType.PODZOL);
     public BlockDirtMixin(Material materialIn) {
         super(materialIn);
     }
@@ -156,42 +144,6 @@ public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
             case COARSE_DIRT:return BlockSoilType.COARSE_DIRT;
             case DIRT:
             default:return BlockSoilType.DIRT;
-        }
-    }
-
-    @Override
-    public int getMaxStableHumidity(@Nonnull IBlockState state) {
-        switch (state.getValue(VARIANT)){
-            case PODZOL:
-                return PODZOL_STABLE_HUMIDITY;
-            case COARSE_DIRT:
-                return COAST_DIRT_STABLE_HUMIDITY;
-            case DIRT:
-            default:return DIRT_STABLE_HUMIDITY;
-        }
-    }
-
-    @Override
-    public double getFlowInPossibility(@Nonnull IBlockState state) {
-        switch (state.getValue(VARIANT)){
-            case COARSE_DIRT:
-                return COAST_DIRT_FLOW_IN_P;
-            case PODZOL:
-                return PODZOL_FLOW_IN_P;
-            case DIRT:
-            default:return DIRT_FLOW_IN_P;
-        }
-    }
-
-    @Override
-    public double getRainInPossibility(@Nonnull IBlockState state) {
-        switch (state.getValue(VARIANT)){
-            case COARSE_DIRT:
-                return COAST_DIRT_RAIN_IN_P;
-            case PODZOL:
-                return PODZOL_RAIN_IN_P;
-            case DIRT:
-            default:return DIRT_RAIN_IN_P;
         }
     }
 }

@@ -27,6 +27,8 @@
 
 package top.qiguaiaaaa.geocraft.geography.soil;
 
+import top.qiguaiaaaa.geocraft.configs.SoilConfig;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -44,9 +46,29 @@ public enum BlockSoilType {
     FARMLAND("farmland"),
     CLAY("clay");
     public final String configName;
+    private int stableHumidity;
+    private double flowInP,rainInP;
 
     BlockSoilType(String configName) {
         this.configName = configName;
+    }
+
+    public void init(){
+        stableHumidity = SoilConfig.STABLE_HUMIDITY.get(this);
+        flowInP = SoilConfig.FLOW_IN_POSSIBILITY.get(this);
+        rainInP = SoilConfig.RAIN_IN_POSSIBILITY.get(this);
+    }
+
+    public int getMaxStableHumidity() {
+        return stableHumidity;
+    }
+
+    public double getFlowInPossibility() {
+        return flowInP;
+    }
+
+    public double getRainInPossibility() {
+        return rainInP;
     }
 
     @Nullable
