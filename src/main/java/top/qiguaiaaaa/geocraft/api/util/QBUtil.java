@@ -40,6 +40,7 @@ public final class QBUtil {
     public static final long BUCKET_VOLUME = 72072000L;
     public static final long MB_VOLUME = BUCKET_VOLUME/Fluid.BUCKET_VOLUME;
     public static final long QUANTA_VOLUME = BUCKET_VOLUME/8L;
+    public static final long HALF_QUANTA_VOLUME = BUCKET_VOLUME/16L;
     public static final LongList VOLUMES_1_TO_16;
 
     static {
