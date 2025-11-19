@@ -487,7 +487,7 @@ public interface ILayeredFluidHost {
     }
 
     /**
-     * 在世界某处放置具有指定流体层数的方块
+     * 在世界某处放置具有指定流体层数的方块。需要注意，提供的方块状态是指示性的。若提供的方块状态已经存储了一部分流体，并且当前方块支持多流体存储，并且设置的是另一个流体，那么放置时一般会放置同时含有存储流体+设置流体的方块。
      * @param world 世界
      * @param pos 当前位置
      * @param state 方块状态，该方块状态是指示性的，不代表指定位置的确是本方块
@@ -535,7 +535,7 @@ public interface ILayeredFluidHost {
      * @return 若当前方块不支持含有该流体或当前流体已满，则返回true，否则为false
      */
     default boolean isFull(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
-        return getLayers(world,pos,state,fluid) == getMaxLayers(world,pos,state,fluid);
+        return getLayers(world,pos,state,fluid) >= getMaxLayers(world,pos,state,fluid);
     }
 
     /**
@@ -548,6 +548,6 @@ public interface ILayeredFluidHost {
      */
     default boolean isEmpty(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nullable Fluid fluid){
         if(isFull(world,pos,state,fluid)) return false;
-        return getLayers(world,pos,state,fluid) == 0;
+        return getLayers(world,pos,state,fluid) <= 0;
     }
 }

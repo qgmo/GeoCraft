@@ -60,8 +60,8 @@ import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.C
 public interface IBlockSnow {
 
     default boolean trySmelt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random){
-        int layer = state.getValue(BlockSnow.LAYERS);
-        boolean isMixture = state.getValue(MIXTURE);
+        final int layer = state.getValue(BlockSnow.LAYERS);
+        final boolean isMixture = state.getValue(MIXTURE);
         try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
             if (world.getLightFor(EnumSkyBlock.BLOCK, pos) > 11) {
                 this.turnIntoWater(world,pos, accessor,8-layer); //用的是发光Block产生的热量,所以不扣地表温度
@@ -97,11 +97,26 @@ public interface IBlockSnow {
         }
     }
 
-    default void turnIntoMixture(World worldIn, BlockPos pos, int layer) {
+    /**
+     * 将指定位置的雪方块转换为混合物
+     * @param worldIn 世界
+     * @param pos 位置
+     * @param layer 层数，应介于 1 到8
+     * @throws IllegalArgumentException 如果指定的层数不在 1 到 8 之间
+     */
+    default void turnIntoMixture(@Nonnull World worldIn,@Nonnull BlockPos pos, int layer) {
         worldIn.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState().withProperty(LAYERS,layer).withProperty(MIXTURE,true));
     }
 
-    default void turnIntoWater(World worldIn, BlockPos pos, @Nullable IAtmosphereAccessor accessor, int level) {
+    /**
+     * 在指定位置融化指定层数的雪方块
+     * @param worldIn 所在世界
+     * @param pos 位置
+     * @param accessor 大气访问器，可以为空
+     * @param level 融化的层数
+     * @throws NullPointerException 若世界或位置参数为 null
+     */
+    default void turnIntoWater(@Nonnull World worldIn,@Nonnull BlockPos pos, @Nullable IAtmosphereAccessor accessor, int level) {
         if (worldIn.provider.doesWaterVaporize()) {
             if(accessor != null && accessor.canAccessAtmosphere()){
                 accessor.fillFluidToAtmosphere(FluidRegistry.WATER,(8-level)* FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);

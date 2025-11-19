@@ -82,6 +82,9 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         super(materialIn);
     }
 
+    /**
+     * 用于下落动作
+     */
     @Override
     @Unique
     public int tickRate(@Nonnull World worldIn) {
@@ -91,15 +94,9 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
     @Inject(method = "canPlaceBlockAt",at = @At("HEAD"),cancellable = true)
     public void canPlaceBlockAt(World worldIn, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
-        IBlockState state = worldIn.getBlockState(pos.down());
-        Block block = state.getBlock();
-
-        if (block != Blocks.PACKED_ICE && block != Blocks.BARRIER) {
-            BlockFaceShape blockfaceshape = state.getBlockFaceShape(worldIn, pos.down(), EnumFacing.UP);
-            cir.setReturnValue(blockfaceshape == BlockFaceShape.SOLID || state.getBlock().isLeaves(state, worldIn, pos.down()) || block == this && state.getValue(BlockSnow.LAYERS) == 8);
-        } else {
-            cir.setReturnValue(false);
-        }
+        final BlockPos down = pos.down();
+        IBlockState state = worldIn.getBlockState(down);
+        cir.setReturnValue(canBePlacedOn(worldIn,down,state));
     }
 
     @Inject(method = "checkAndDropBlock",at = @At("HEAD"),cancellable = true)
@@ -132,19 +129,30 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         cir.setReturnValue(false);
     }
 
+    protected boolean canBePlacedOn(@Nonnull World world,@Nonnull BlockPos downPos,@Nonnull IBlockState downState){
+        Block block = downState.getBlock();
+
+        BlockFaceShape shape = downState.getBlockFaceShape(world, downPos, EnumFacing.UP);
+        return shape == BlockFaceShape.SOLID || block.isLeaves(downState, world, downPos) || block == this && downState.getValue(BlockSnow.LAYERS) == 8;
+    }
+
     @Unique
     protected boolean tryFallDown(World world,BlockPos pos,IBlockState state){
         if(world.isRemote) return false;
         final BlockPos downPos = pos.down();
         IBlockState downState = world.getBlockState(downPos);
         if(RealitySnowUpdater.isBlocked(world,downPos,downState,state)){
+            if(!canBePlacedOn(world,downPos,downState)){
+                world.setBlockToAir(pos);
+            }
             return false;
         }
-        boolean isMixture = state.getValue(MIXTURE);
-        if(downState.getBlock() == Blocks.SNOW_LAYER){ //雪和雪
+        final boolean isMixture = state.getValue(MIXTURE);
+        Block downBlock = downState.getBlock();
+        if(downBlock == Blocks.SNOW_LAYER){ //雪和雪
             boolean isDownMixture = downState.getValue(MIXTURE);
             final int newLayers = state.getValue(BlockSnow.LAYERS) + downState.getValue(BlockSnow.LAYERS);
-            if(isMixture == isDownMixture){ //直接合并
+            if(isMixture == isDownMixture){ //类型相同，直接合并
                 if(newLayers<=8){
                     world.setBlockToAir(pos);
                     world.setBlockState(downPos,downState.withProperty(BlockSnow.LAYERS,newLayers));
@@ -152,8 +160,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                     world.setBlockState(pos,state.withProperty(BlockSnow.LAYERS,newLayers-8));
                     world.setBlockState(downPos,downState.withProperty(BlockSnow.LAYERS,8));
                 }
-                world.scheduleUpdate(downPos,this,tickRate(world));
-            }else{
+            }else{ //否则，将多余的水冻结成冰
                 final int totalWater = isMixture? getLayers(world,pos,state,FluidRegistry.WATER): getLayers(world,downPos,downState,FluidRegistry.WATER);
                 if(newLayers<=8){
                     world.setBlockToAir(pos);
@@ -172,90 +179,100 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                     accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*totalWater/2d);
                 }
             }
-        }else if(downState.getBlock() instanceof ILayeredFluidHost){ //雪和其他方块
+        }else if(downBlock instanceof ILayeredFluidHost){ //雪和其他方块
             ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
-            final int curLayers = getLayers(world,pos,state,null);
-            final boolean hasHalfQuanta = ((curLayers>>1)&1) !=0 && state.getValue(MIXTURE);
-
-            final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true);
-
-            long curAmountWater = getAmountInQB(world,pos,state,FluidRegistry.WATER);
-            boolean melted = false,doMelted = false;
-            if(hasHalfQuanta) {
-                curAmountWater += QBUtil.HALF_QUANTA_VOLUME; //将另外半层雪融化，补充成整数层layer
-                melted = true;
-            }
-            boolean changed = false;
-            if(curAmountWater>0 && host.canFill(world,downPos,downState,FluidRegistry.WATER,EnumFacing.UP,state)){
-                final long filledAmount = host.addAmountInQB(world,downPos,downState,FluidRegistry.WATER,curAmountWater,true);
-                curAmountWater -=filledAmount; //减去已经填充的量
-                changed = filledAmount>0;
-                //现在，若剩余的量大于等于刚才融化以补充成整数层的量，说明没有用到融化的部分，因此不需要融化一部分雪以补充水。但若小于，则直接当成融化，并扣除相应热量。
-                if(curAmountWater<QBUtil.HALF_QUANTA_VOLUME){
-                    if(melted && accessor != null){
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*0.5);//真的融化掉
-                        doMelted = true;
-                    }
-                }
-            }
-
-            if(melted && !doMelted){
-                melted = false;
-                curAmountWater-= QBUtil.HALF_QUANTA_VOLUME; //没有用到，所以扣掉
-            }
-
-            if(changed) downState = world.getBlockState(downPos); //更新状态，因为下面的状态可能改变
-            if(downState.getBlock() instanceof ILayeredFluidHost) host = (ILayeredFluidHost) downState.getBlock();
-            else host = null;
-
+            final int curLayers_F = getLayers(world,pos,state,null); //这里的 layer为雪的载流方块单位
             long curAmountSnow = getAmountInQB(world,pos,state,GeoFluids.SNOW);
-            if(melted) curAmountSnow -= QBUtil.HALF_QUANTA_VOLUME; //如果上面真的融化，雪需要扣除相应的量
-            boolean frozen = false,doFreeze = false;
-            if(host != null && curAmountWater>=QBUtil.HALF_QUANTA_VOLUME && hasHalfQuanta){ //若有足够的水，则将半层水冻结成雪。这里水一定不会小于1/16 B
-                curAmountSnow += QBUtil.HALF_QUANTA_VOLUME;
-                curAmountWater-= QBUtil.HALF_QUANTA_VOLUME; //冻结一部分水
-                frozen = true;
-            }
-            if(host != null && curAmountSnow>0 && host.canFill(world,downPos,downState,GeoFluids.SNOW,EnumFacing.UP,state)){
-                final long filledAmount = host.addAmountInQB(world,downPos,downState,GeoFluids.SNOW,curAmountSnow,true);
-                curAmountSnow -= filledAmount;
-                if(curAmountSnow<QBUtil.HALF_QUANTA_VOLUME){ //说明可能用到了冻结的部分
-                    if(frozen && accessor != null) {
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*0.5);
-                        doFreeze = true;
+            if (isMixture) {
+                final boolean hasHalfQuanta = (curLayers_F >> 1 & 1) != 0;
+
+                try (final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world, pos, true)) {
+                    long curAmountWater = getAmountInQB(world, pos, state, FluidRegistry.WATER);
+
+                    final boolean melting, doMelted;
+                    if (hasHalfQuanta) {
+                        curAmountWater += QBUtil.HALF_QUANTA_VOLUME; //将另外半层雪融化，补充成整数层layer
+                        melting = true;
+                    } else melting = false;
+                    boolean changed;
+
+                    assert curAmountWater > 0;
+                    final long filledAmountWater = host.addAmountInQB(world, downPos, downState, FluidRegistry.WATER, curAmountWater, true);
+                    curAmountWater -= filledAmountWater; //减去已经填充的量
+                    changed = filledAmountWater > 0;
+                    //现在，若剩余的量大于等于刚才融化以补充成整数层的量，说明没有用到融化的部分，因此不需要融化一部分雪以补充水。但若小于，则直接当成融化，并扣除相应热量。
+                    doMelted = melting && curAmountWater < QBUtil.HALF_QUANTA_VOLUME;
+
+                    if (melting && !doMelted) {
+                        curAmountWater -= QBUtil.HALF_QUANTA_VOLUME; //没有用到，所以扣掉
+                    } else if (doMelted){
+                        curAmountSnow -= QBUtil.HALF_QUANTA_VOLUME; //如果上面真的融化，雪需要扣除相应的量
+                        if (accessor != null)
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA * 0.5);//真的融化掉
+                    }
+
+                    if (changed){
+                        downState = world.getBlockState(downPos); //更新状态，因为下面的状态可能改变
+                        if ((downBlock = downState.getBlock()) instanceof ILayeredFluidHost)
+                            host = (ILayeredFluidHost) downBlock;
+                        else host = null;
+                    }
+
+                    if (host != null) {
+                        final boolean freezing, doFreeze;
+                        if (curAmountWater >= QBUtil.HALF_QUANTA_VOLUME && hasHalfQuanta) { //若有足够的水，则将半层水冻结成雪。这里水一定不会小于1/16 B
+                            curAmountSnow += QBUtil.HALF_QUANTA_VOLUME;
+                            freezing = true;
+                        } else freezing = false;
+
+                        assert curAmountSnow > 0;
+                        final long filledAmountSnow = host.addAmountInQB(world, downPos, downState, GeoFluids.SNOW, curAmountSnow, true);
+                        curAmountSnow -= filledAmountSnow;
+                        changed |= filledAmountSnow > 0;
+                        doFreeze = freezing && curAmountSnow < QBUtil.HALF_QUANTA_VOLUME;
+
+                        if (freezing && !doFreeze) {
+                            curAmountSnow -= QBUtil.HALF_QUANTA_VOLUME;//没用到，还回去
+                        } else if (doFreeze) {
+                            curAmountWater -= QBUtil.HALF_QUANTA_VOLUME;
+                            if (accessor != null)
+                                accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA * 0.5);
+                        }
+                    }
+
+                    if (!changed) return false;
+
+                    if (curAmountSnow + curAmountWater < QBUtil.QUANTA_VOLUME) { //小于最小的可存储单位
+                        world.setBlockToAir(pos);
+                    } else {
+                        final long totalAmount = curAmountSnow + curAmountWater;
+                        final int totalLayers = QBUtil.toQuanta(totalAmount);
+                        if (curAmountWater > curAmountSnow) {
+                            turnIntoWater(world, pos, accessor, totalLayers);
+                            if (accessor != null)
+                                accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA * QBUtil.toPreciseQuanta(curAmountSnow));
+                        } else if (curAmountSnow == curAmountWater) {
+                            world.setBlockState(pos, state.withProperty(LAYERS, totalLayers)
+                                    .withProperty(MIXTURE, true));
+                        } else {
+                            world.setBlockState(pos, state.withProperty(LAYERS, totalLayers)
+                                    .withProperty(MIXTURE, false));
+                            if (accessor != null)
+                                accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA * QBUtil.toPreciseQuanta(curAmountWater));
+                        }
                     }
                 }
-                changed |= filledAmount>0;
-            }
 
-            if(frozen && !doFreeze){
-                frozen = false;
-                curAmountSnow -= QBUtil.HALF_QUANTA_VOLUME;//没用到，还回去
-                curAmountWater+= QBUtil.HALF_QUANTA_VOLUME;
-            }
-
-            if(!changed) return false;
-
-            if(curAmountSnow+curAmountWater<QBUtil.QUANTA_VOLUME){
-                world.setBlockToAir(pos);
-            }else{
-                final long totalAmount = curAmountSnow + curAmountWater;
-                final int totalLayers = QBUtil.toQuanta(totalAmount);
-                if(curAmountWater>curAmountSnow){
-                    turnIntoWater(world,pos,accessor,totalLayers);
-                    if(accessor != null)
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*QBUtil.toPreciseQuanta(curAmountSnow));
-                }else if(curAmountSnow == curAmountWater){
-                    world.setBlockState(pos,state.withProperty(LAYERS,totalLayers)
-                            .withProperty(MIXTURE,true));
-                }else {
-                    world.setBlockState(pos,state.withProperty(LAYERS,totalLayers)
-                            .withProperty(MIXTURE,false));
-                    if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*QBUtil.toPreciseQuanta(curAmountWater));
+                return true;
+            }else { //非混合物，很简单，直接像普通流体一样流入即可
+                final long filledAmountSnow = host.addAmountInQB(world,downPos,downState,GeoFluids.SNOW,curAmountSnow,true);
+                curAmountSnow = curAmountSnow-filledAmountSnow;
+                if(curAmountSnow<=0) world.setBlockToAir(pos);
+                else {
+                    final int quanta = Math.min(QBUtil.toQuanta(curAmountSnow),8);
+                    world.setBlockState(pos,state.withProperty(LAYERS,quanta));
                 }
             }
-            if(accessor != null) accessor.close();
             return true;
         }else{
             FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,downPos,downState, GeoFluids.SNOW);
@@ -283,9 +300,9 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         if(fluid == FluidRegistry.WATER){
             return state.getValue(MIXTURE)?state.getValue(LAYERS):0;
         }else if(fluid == GeoFluids.SNOW){
-            return state.getValue(MIXTURE)?state.getValue(LAYERS):state.getValue(LAYERS)*2;
+            return state.getValue(MIXTURE)?state.getValue(LAYERS):state.getValue(LAYERS)<<1;
         }else if(fluid == null){
-            return state.getValue(LAYERS)*2;
+            return state.getValue(LAYERS)<<1;
         }
         return 0;
     }
@@ -326,64 +343,64 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         if(layer == 0) return;
         final boolean mixture = state.getValue(MIXTURE);
 
-        final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true);
+        try(final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
 
-        final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
+            final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
 
-        int curSnowLayer = state.getValue(LAYERS);
-        if(mixture){
-            int curWaterLayer = curSnowLayer;
-            layer = MathHelper.clamp(layer,-curWaterLayer,16-2*curWaterLayer);
-            if(fluid == FluidRegistry.WATER){
-                curWaterLayer += layer;
-                if(layer <0){
-                    world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
-                    if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
+            int curSnowLayer = state.getValue(LAYERS);
+            if(mixture){
+                int curWaterLayer = curSnowLayer;
+                layer = MathHelper.clamp(layer,-curWaterLayer,16-2*curWaterLayer);
+                if(fluid == FluidRegistry.WATER){
+                    curWaterLayer += layer;
+                    if(layer <0){
+                        world.setBlockState(pos,state.withProperty(MIXTURE,false)
+                                .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
+                        if(accessor != null)
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
+                    }else{
+                        world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
+                        if(accessor != null)
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
+                    }
                 }else{
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
-                    if(accessor != null)
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
+                    curSnowLayer += layer;
+                    if(layer <0){
+                        world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
+                        if(accessor != null)
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
+                    }else{
+                        world.setBlockState(pos,state.withProperty(MIXTURE,false)
+                                .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
+                        if(accessor != null)
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
+                    }
                 }
             }else{
-                curSnowLayer += layer;
-                if(layer <0){
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
-                    if(accessor != null)
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
-                }else{
-                    world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
-                    if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
-                }
-            }
-        }else{
-            if(fluid == GeoFluids.SNOW){
-                layer = MathHelper.clamp(layer,-2*curSnowLayer,(8-curSnowLayer)<<1);
-                world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1),flag);
-            }else {
-                layer = MathHelper.clamp(layer,0,(8-curSnowLayer)<<1);
-                if(layer <curSnowLayer<<1){
+                if(fluid == GeoFluids.SNOW){
+                    layer = MathHelper.clamp(layer,-2*curSnowLayer,(8-curSnowLayer)<<1);
                     world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1),flag);
-                    if(accessor != null)
-                        accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
-                }else if(layer == curSnowLayer<<1){
-                    world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1)
-                            .withProperty(MIXTURE,true),flag);
-                }else{
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ layer)/2),flag);
-                    if(accessor != null){
-                        accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
+                }else {
+                    layer = MathHelper.clamp(layer,0,(8-curSnowLayer)<<1);
+                    if(layer <curSnowLayer<<1){
+                        world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1),flag);
+                        if(accessor != null)
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
+                    }else if(layer == curSnowLayer<<1){
+                        world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1)
+                                .withProperty(MIXTURE,true),flag);
+                    }else{
+                        world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ layer)/2),flag);
+                        if(accessor != null){
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
+                        }
                     }
                 }
             }
         }
-        if(accessor != null) accessor.close();
     }
 
     @Override
