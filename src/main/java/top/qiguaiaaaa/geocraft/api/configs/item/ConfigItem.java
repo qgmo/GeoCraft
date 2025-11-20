@@ -77,6 +77,7 @@ public abstract class ConfigItem<ValueType> {
     protected final boolean isFinal; //配置初始化后是否不可更改
     protected ValueType value;
     protected Property property;
+    protected boolean isDeprecated;
 
     @Nonnull
     public ConfigCategory getCategory() {
@@ -119,6 +120,22 @@ public abstract class ConfigItem<ValueType> {
     public void setValue(@Nonnull ValueType newValue){
         if(isFinal) return;
         this.value = newValue;
+    }
+
+    /**
+     * 标记当前配置项目是否已被弃用
+     * @param deprecated 是否被弃用
+     */
+    public void setDeprecated(boolean deprecated) {
+        isDeprecated = deprecated;
+    }
+
+    /**
+     * 该配置项是否已被弃用
+     * @return 若已被弃用,则返回 true
+     */
+    public boolean isDeprecated() {
+        return isDeprecated;
     }
 
     /**

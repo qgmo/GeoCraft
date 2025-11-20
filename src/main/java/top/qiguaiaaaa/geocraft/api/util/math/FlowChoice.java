@@ -120,7 +120,7 @@ public class FlowChoice {
     }
 
     public long apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true);
+        return Math.max(addedAmountInQB-host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true),0);
     }
 
     public void addAmountInQB(long amount){

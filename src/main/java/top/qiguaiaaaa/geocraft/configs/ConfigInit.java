@@ -124,7 +124,9 @@ public final class ConfigInit {
             }
             registerConfigCategory((ConfigCategory) val);
         }else if(val instanceof ConfigItem<?>){
-            registerConfigItem((ConfigItem<?>) val);
+            ConfigItem<?> item = (ConfigItem<?>) val;
+            if(field.isAnnotationPresent(Deprecated.class)) item.setDeprecated(true);
+            registerConfigItem(item);
         }
     }
 

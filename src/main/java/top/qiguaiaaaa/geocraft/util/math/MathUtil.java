@@ -67,4 +67,11 @@ public final class MathUtil {
         return cp[loc-1];
     }
 
+    public static boolean inRange(int a,int b,int c){
+        if(c>b){
+            b = (c = (b = b ^ c) ^ c) ^ b;
+        }
+        return a>=b && a <= c;
+    }
+
 }

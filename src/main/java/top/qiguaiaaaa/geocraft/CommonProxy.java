@@ -31,6 +31,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.capability.SavingScheduledTicksCapability;
+import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
 import top.qiguaiaaaa.geocraft.configs.ConfigInit;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityFluidOperationChecker;
@@ -60,6 +62,9 @@ public class CommonProxy {
         ConfigurationLoader.load();
     }
     public void preInit(FMLPreInitializationEvent event) {
+        SchedulingTicksCapability.register();
+        SavingScheduledTicksCapability.register();
+
         if(ConfigurationLoader.isInitialised()) return;
         if(!isConfigInitialised) initConfig();
         ConfigurationLoader.init(event.getSuggestedConfigurationFile());

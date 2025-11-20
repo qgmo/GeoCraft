@@ -33,9 +33,11 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.NextTickListEntry;
-import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
+import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -58,7 +60,8 @@ public class CommandQueryBlockState extends CommandBase {
         BlockPos pos = sender.getPosition();
         IBlockState state = sender.getEntityWorld().getBlockState(pos);
         notifyCommandListener(sender,this,state.toString());
-        Set<NextTickListEntry> entries = BlockUpdater.queryEntries(sender.getEntityWorld(),pos);
+        BlockUpdater updater = BlockUpdater.getBlockUpdater(sender.getEntityWorld());
+        Set<ExtendedNextTickListEntry> entries = updater == null? Collections.emptySet():updater.queryEntries(pos,false);
         entries.forEach(e -> notifyCommandListener(sender,this,e.toString()+" wait time "+(e.scheduledTime-sender.getEntityWorld().getTotalWorldTime())));
     }
 }

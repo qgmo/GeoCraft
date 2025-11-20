@@ -49,7 +49,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.mixin.IVanillaLikeFluidBlock;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla_like.update.VanillaLikeBlockDynamicLiquidUpdateTask;
-import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidSearchUtil;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;

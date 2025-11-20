@@ -27,18 +27,27 @@
 
 package top.qiguaiaaaa.geocraft.handler.event;
 
+import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
-import top.qiguaiaaaa.geocraft.handler.BlockUpdater;
+import top.qiguaiaaaa.geocraft.capability.SavingScheduledTicksCapability;
+import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
+import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
 import top.qiguaiaaaa.geocraft.world.storage.GeoCraftWorldSavedData;
+import top.qiguaiaaaa.geocraft.world.storage.ScheduledTicksData;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 @Mod.EventBusSubscriber
 public final class CommonEventHandler {
@@ -49,22 +58,65 @@ public final class CommonEventHandler {
     }
 
     @SubscribeEvent
+    @Deprecated
     public static void onWorldLoad(WorldEvent.Load event){
         World world = event.getWorld();
         if(world.isRemote) return;
         GeoCraftWorldSavedData data = getSavedData(world);
+        if(data == null) return;
         BlockUpdater.scheduleUpdates(world,data.getEntrySet());
         data.setEntrySet(BlockUpdater.getEntries(world));
         data.setWorld(world);
     }
 
+    @SubscribeEvent
+    public static void onWorldAttachCapabilities(AttachCapabilitiesEvent<World> event){
+        if(event.getObject().isRemote) return;
+        event.addCapability(BlockUpdater.ID, new ICapabilityProvider() {
+            @Override
+            public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+                return capability == SchedulingTicksCapability.BLOCK_UPDATER;
+            }
+
+            @Nullable
+            @Override
+            public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+                if(hasCapability(capability,facing)){
+                    final BlockUpdater updater = new BlockUpdater();
+                    updater.setWorld(event.getObject());
+                    return SchedulingTicksCapability.BLOCK_UPDATER.cast(updater);
+                }
+                return null;
+            }
+        });
+    }
+
+    @SubscribeEvent
+    public static void onChunkAttachCapabilities(AttachCapabilitiesEvent<Chunk> event){
+        if(event.getObject().getWorld() == null //??? 为什么在逻辑客户端这会是null
+                || event.getObject().getWorld().isRemote) return;
+        event.addCapability(ScheduledTicksData.ID, new ICapabilityProvider() {
+            @Override
+            public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+                return capability == SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA;
+            }
+
+            @Nullable
+            @Override
+            public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+                if(hasCapability(capability,facing)){
+                    ScheduledTicksData data = new ScheduledTicksData();
+                    data.setChunk(event.getObject());
+                    return SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA.cast(data);
+                }else return null;
+            }
+        });
+    }
+
+    @Nullable
+    @Deprecated
     static GeoCraftWorldSavedData getSavedData(@Nonnull World world){
-        GeoCraftWorldSavedData data = (GeoCraftWorldSavedData) world.getPerWorldStorage().getOrLoadData(GeoCraftWorldSavedData.class,GeoCraftWorldSavedData.DATA_NAME);
-        if(data == null) {
-            data = new GeoCraftWorldSavedData();
-            world.getPerWorldStorage().setData(GeoCraftWorldSavedData.DATA_NAME, data);
-        }
-        return data;
+        return (GeoCraftWorldSavedData) world.getPerWorldStorage().getOrLoadData(GeoCraftWorldSavedData.class,GeoCraftWorldSavedData.DATA_NAME);
     }
 
 }

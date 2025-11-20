@@ -25,18 +25,36 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
+package top.qiguaiaaaa.geocraft.capability;
 
-import org.apache.logging.log4j.Logger;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.util.EnumFacing;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityInject;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import top.qiguaiaaaa.geocraft.world.storage.ScheduledTicksData;
+
+import javax.annotation.Nullable;
 
 /**
- * @since 0.1
  * @author QiguaiAAAA
  */
-public final class GeoCraftAPI {
-    public final static String VERSION = "0.2.0-alpha.2";
-    public final static String MODID = "geocraft";
-    public final static String PROVIDERS = "GeoCraftAPI";
-    public final static Logger LOGGER = APIUtil.LOGGER;
+public class SavingScheduledTicksCapability {
+
+    @CapabilityInject(ScheduledTicksData.class)
+    public static Capability<ScheduledTicksData> SCHEDULED_TICKS_DATA;
+
+    public static void register(){
+        CapabilityManager.INSTANCE.register(ScheduledTicksData.class, new Capability.IStorage<ScheduledTicksData>() {
+            @Nullable
+            @Override
+            public NBTBase writeNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<ScheduledTicksData> capability, ScheduledTicksData instance, EnumFacing side, NBTBase nbt) {
+            }
+        },ScheduledTicksData::new);
+    }
 }

@@ -361,7 +361,7 @@ public interface ILayeredFluidHost {
         if(amount == 0L) return 0L;
         long curAmount = getAmountInQB(world, pos, state, fluid);
         long amountInFact = Math.min(amount, getMaxAmountInQB(world, pos, state, fluid)-curAmount);
-        if(amountInFact == 0) return 0;
+        if(amountInFact == 0L) return 0L;
         return addLayer(world,pos,state,fluid,(int)(amount/amountPerLayer),nbt,disabledBlockFlags,enabledBlockFlags,doAdd)*amountPerLayer;
     }
 

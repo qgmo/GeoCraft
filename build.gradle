@@ -23,7 +23,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.2.0-alpha.1'
+version = '0.2.0-alpha.2'
 group = 'top.qiguaiaaaa.geocraft' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'geocraft'
 
@@ -120,6 +120,8 @@ dependencies {
 
     implementation fg.deobf("curse.maven:ImmersiveEngineering-231951:2974106")
 
+    testImplementation 'junit:junit:4.13.2'
+
     // Real examples
     // compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     // compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
@@ -134,6 +136,10 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+}
+
+test{
+    useJUnit();
 }
 
 mixin {

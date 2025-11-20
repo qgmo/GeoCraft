@@ -76,19 +76,21 @@ public final class GeneralConfig {
                     "The max number of blocks to update by Block Updater inside GeoCraft. The excess part will be ignored.",true);
 
     @Config.RangeInt(min = 1)
+    @Deprecated
     public static final ConfigInteger BLOCK_UPDATER_CLEAN_PERIOD = new ConfigInteger(CATEGORY_BLOCK_UPDATER,
-            "cleaningPeriod",200,"BlockUpdater清理并丢弃过期的更新任务的时间间隔，单位为游戏刻，以防止在极端卡顿下的任务堆积造成的内存泄漏。\n" +
+            "cleaningPeriod",200,"[!!!自0.2.0-alpha.2版本开始弃用!!!]BlockUpdater清理并丢弃过期的更新任务的时间间隔，单位为游戏刻，以防止在极端卡顿下的任务堆积造成的内存泄漏。\n" +
             "The time interval for BlockUpdater to clean up and discard expired update tasks, measured in game ticks, which prevents memory leaks caused by task accumulation during severe server lag.");
 
     @Config.RangeInt(min = -1)
     public static final ConfigInteger BLOCK_UPDATER_MAX_TIME_USAGE = new ConfigInteger(CATEGORY_BLOCK_UPDATER,
             "maxTimeUsage",200,
-            "BlockUpdater在1游戏刻内的最大耗时，当用时超过该阈值时，将会丢弃缓存队列中不符合的更新任务。设为-1以禁用时间限制。\n" +
+            "BlockUpdater在1游戏刻内的最大耗时，当用时超过该阈值时，将会推迟剩余任务更新到下一游戏刻。设为-1以禁用时间限制。\n" +
                     "The maximum processing time allowed for BlockUpdater within a single game tick. When the processing time exceeds this threshold, non-compliant update tasks will be discarded. Set it to -1 to disable this function.");
 
+    @Deprecated
     public static final ConfigBoolean ALLOW_DYNAMIC_FLUID_UPDATE = new ConfigBoolean(CATEGORY_BLOCK_UPDATER,
             "allowDynamicFluidToUpdate",true,
-            "当BlockUpdater达到更新的时间限制时，仅允许动态流体方块更新。因为这些流体方块的更新方法的作用一般是向流体更新器提交更新任务，不会有太大开销。\n" +
+            "[!!!自0.2.0-alpha.2版本开始弃用!!!]当BlockUpdater达到更新的时间限制时，仅允许动态流体方块更新。因为这些流体方块的更新方法的作用一般是向流体更新器提交更新任务，不会有太大开销。\n" +
                     "When the BlockUpdater reaches its time limit for updates, only dynamic fluid block updates are permitted. This is because the primary function of these fluid block update methods is typically to submit update tasks to the FluidUpdateManager.");
 
     @Config.Ignore
