@@ -27,10 +27,8 @@
 
 package test_pack;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
@@ -38,6 +36,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import org.junit.Assert;
 import org.junit.Test;
+import test_pack.block.FakeBlock;
+import test_pack.block.state.FakeBlockStateContainer;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
@@ -50,26 +50,42 @@ import javax.annotation.Nullable;
  * @author QiguaiAAAA
  */
 public class LayeredFluidHostTest {
-    public Fluid testFluid = new FluidSnow();
+    public static PropertyInteger LAYERS = PropertyInteger.create("layers",1,8);
+    public static Fluid testFluid = new FluidSnow();
 
     @Test
     public void testQB(){
-        TestBlock block = new TestBlock();
-        long filled = block.addAmountInQB(null,null,null,testFluid,QBUtil.QUANTA_VOLUME,false);
+        TestBlock block = new TestBlock(Material.WATER);
+        long filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,7),testFluid,QBUtil.QUANTA_VOLUME,false);
         Assert.assertEquals(QBUtil.QUANTA_VOLUME,filled);
+        filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,3),testFluid,QBUtil.BUCKET_VOLUME,false);
+        Assert.assertEquals(QBUtil.BUCKET_VOLUME-3*QBUtil.QUANTA_VOLUME,filled);
+        filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,1),testFluid,QBUtil.BUCKET_VOLUME,true);
+        Assert.assertEquals(QBUtil.BUCKET_VOLUME-QBUtil.QUANTA_VOLUME,filled);
     }
 
-    public static class TestBlock implements ILayeredFluidHost{
-        public static PropertyInteger LAYERS = PropertyInteger.create("layers",1,8);
+    public static class TestBlock extends FakeBlock implements ILayeredFluidHost{
+
+        public TestBlock(@Nonnull Material material) {
+            super(material);
+            this.setDefaultState(this.getDefaultState().withProperty(LAYERS,1));
+            this.setRegistryName(GeoCraftTest.MODID,"test_block");
+        }
+
+        @Nonnull
+        @Override
+        public FakeBlockStateContainer createBlockStates() {
+            return new FakeBlockStateContainer(this,LAYERS);
+        }
 
         @Override
         public boolean isAcceptedFluid(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-            return true;
+            return fluid == testFluid;
         }
 
         @Override
         public int getLayers(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-            return state.getValue(LAYERS);
+            return fluid == null || isAcceptedFluid(world, pos, state, fluid)?state.getValue(LAYERS):0;
         }
 
         @Override
@@ -84,7 +100,7 @@ public class LayeredFluidHostTest {
 
         @Override
         public long getAmountInQBPerLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-            return QBUtil.QUANTA_VOLUME;
+            return isAcceptedFluid(world, pos, state, fluid)?QBUtil.QUANTA_VOLUME:0L;
         }
 
         @Override

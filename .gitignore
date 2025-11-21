@@ -22,6 +22,7 @@ eclipse
 run
 misc
 wiki
+logs
 
 # Files from Forge MDK
 forge*changelog.txt
