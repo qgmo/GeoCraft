@@ -119,8 +119,16 @@ public class FlowChoice {
         this(direction,0);
     }
 
+    /**
+     * 将该流动选择应用到具体世界中
+     * @param world 所在世界
+     * @param pos 应用的位置
+     * @param state 对应的方块状态
+     * @param fluid 流体
+     * @return 剩余未应用的流体量，单位为QB
+     */
     public long apply(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid){
-        return Math.max(addedAmountInQB-host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true),0);
+        return Math.max(addedAmountInQB-Math.max(host.addAmountInQB(world,pos,state,fluid,addedAmountInQB,true),0),0);
     }
 
     public void addAmountInQB(long amount){
@@ -138,6 +146,10 @@ public class FlowChoice {
 
     public int getAddedLayers() {
         return addedLayers;
+    }
+
+    public long getAddedAmountInQB() {
+        return addedAmountInQB;
     }
 
     public int getNewLayers(){

@@ -31,9 +31,12 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import test_pack.block.FakeBlock;
@@ -41,27 +44,66 @@ import test_pack.block.state.FakeBlockStateContainer;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * @author QiguaiAAAA
  */
 public class LayeredFluidHostTest {
-    public static PropertyInteger LAYERS = PropertyInteger.create("layers",1,8);
-    public static Fluid testFluid = new FluidSnow();
+    public static final PropertyInteger LAYERS = PropertyInteger.create("layers",1,8);
+    public static final Fluid testFluid = new FluidSnow();
+    public static final TestBlock block = new TestBlock(Material.WATER);
+
+    public static final Logger LOGGER = LogManager.getLogger("Layered Test");
 
     @Test
     public void testQB(){
-        TestBlock block = new TestBlock(Material.WATER);
         long filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,7),testFluid,QBUtil.QUANTA_VOLUME,false);
         Assert.assertEquals(QBUtil.QUANTA_VOLUME,filled);
         filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,3),testFluid,QBUtil.BUCKET_VOLUME,false);
         Assert.assertEquals(QBUtil.BUCKET_VOLUME-3*QBUtil.QUANTA_VOLUME,filled);
         filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,1),testFluid,QBUtil.BUCKET_VOLUME,true);
         Assert.assertEquals(QBUtil.BUCKET_VOLUME-QBUtil.QUANTA_VOLUME,filled);
+    }
+
+    @Test
+    public void testAverageFlow(){
+        int T = 5000;
+        while (T-->0){
+            LOGGER.info("Test {} begin!",T+1);
+            final Map<EnumFacing,IBlockState> facingState = new HashMap<>();
+            final Random random = new Random(System.nanoTime());
+            for(EnumFacing facing:EnumFacing.HORIZONTALS){
+                if(random.nextDouble()<0.2) continue;
+                IBlockState state = block.getDefaultState().withProperty(LAYERS,random.nextInt(8)+1);
+                facingState.put(facing,state);
+                LOGGER.info("Dir {} is state {}",facing,state);
+            }
+
+            final List<FlowChoice> averageModeFlowDirections = new ArrayList<>();
+            facingState.forEach((facing, state) -> averageModeFlowDirections.add(new FlowChoice(null,BlockPos.ORIGIN,state,block,facing,testFluid)));
+
+            final int centralLayers = random.nextInt(8)+1;
+            LOGGER.info("Central layers is {}",centralLayers);
+            int left = LayeredFluidHostUtil.averageFlow(centralLayers,
+                    block.getHeightPerLayer(null,null,null),
+                    block.getAmountInQBPerLayer(null,null,null,testFluid),
+                    0,
+                    averageModeFlowDirections
+            );
+
+            LOGGER.info("Central left : {}",left);
+
+            for(FlowChoice choice:averageModeFlowDirections){
+                Assert.assertNotNull(choice);
+                Assert.assertEquals(0,choice.apply(null,BlockPos.ORIGIN,facingState.get(choice.direction),testFluid));
+            }
+        }
     }
 
     public static class TestBlock extends FakeBlock implements ILayeredFluidHost{

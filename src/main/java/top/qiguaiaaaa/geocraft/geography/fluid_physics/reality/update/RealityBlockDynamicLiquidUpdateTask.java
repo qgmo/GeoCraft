@@ -35,11 +35,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
@@ -180,7 +182,10 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
 
             long left = 0;
             for(@Nonnull FlowChoice choice:averageModeFlowDirections){ //向四周流动
-                if(choice.getAddedLayers() == 0) continue;
+                if(choice.getAddedLayers() == 0){
+                    left += choice.getAddedAmountInQB();
+                    continue;
+                }
                 BlockPos facingPos = pos.offset(choice.direction);
                 if(choice.isAir()){
                     directlyFlowInto(world,facingPos,world.getBlockState(facingPos),8-choice.getNewLayers());
@@ -188,7 +193,7 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                     left += choice.apply(world,facingPos,world.getBlockState(facingPos),fluid);
                 }
             }
-            //newLiquidQuanta += QBUtil.toQuanta(left);
+            newLiquidQuanta += QBUtil.toQuanta(left);
 
             liquidMeta = 8 - newLiquidQuanta;
             if (newLiquidQuanta<=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态

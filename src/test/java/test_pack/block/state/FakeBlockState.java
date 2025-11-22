@@ -56,6 +56,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author QiguaiAAAA
@@ -375,5 +376,16 @@ public class FakeBlockState implements IBlockState {
             }
         }
         return iterator.next();
+    }
+
+    @Override
+    public String toString() {
+        Assert.assertNotNull(block.getRegistryName());
+        StringBuilder builder =  new StringBuilder(block.getRegistryName().toString());
+        builder.append("[");
+        AtomicBoolean isFirst = new AtomicBoolean(true);
+        properties.forEach((property, val) -> builder.append(isFirst.getAndSet(false)?"":",").append(property.getName()).append("=").append(val.toString()));
+        builder.append("]");
+        return builder.toString();
     }
 }

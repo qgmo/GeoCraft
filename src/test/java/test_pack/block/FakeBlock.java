@@ -28,7 +28,6 @@
 package test_pack.block;
 
 import net.minecraft.block.material.Material;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import test_pack.block.state.FakeBlockState;
 import test_pack.block.state.FakeBlockStateContainer;
 import test_pack.registry.FakeRegistryEntry;

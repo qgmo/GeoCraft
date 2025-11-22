@@ -148,8 +148,11 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
 
         if(newHumidity != humidity){
             long left = 0;
-            for(FlowChoice choice:averageModeFlowDirections){ //向四周流动
-                if(choice.getAddedLayers() == 0) continue;
+            for(@Nonnull FlowChoice choice:averageModeFlowDirections){ //向四周流动
+                if(choice.getAddedLayers() == 0){
+                    left += choice.getAddedAmountInQB();
+                    continue;
+                }
                 BlockPos facingPos = pos.offset(choice.direction);
                 if(choice.isAir()){
                     if(FLUID_PHYSICS_MODE.getValue() != FluidPhysicsMode.MORE_REALITY) continue;

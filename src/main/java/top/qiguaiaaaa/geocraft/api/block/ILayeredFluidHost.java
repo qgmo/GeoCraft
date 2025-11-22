@@ -351,7 +351,7 @@ public interface ILayeredFluidHost {
      * @param disabledBlockFlags 禁止的方块更新 flags
      * @param enabledBlockFlags 允许的方块更新 flags
      * @param doAdd 是否真的添加
-     * @return 实际添加的层数
+     * @return 实际添加的量
      */
     default long addAmountInQB(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, long amount,@Nullable NBTTagCompound nbt, final int disabledBlockFlags,final int enabledBlockFlags, boolean doAdd){
         if(amount == 0L) return 0L;

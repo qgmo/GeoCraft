@@ -110,8 +110,8 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
         }
         if(fluid != getFluid()) return;
         if(layer == 0) return;
-        int newQuanta = Math.max(8-state.getValue(LEVEL),0)+ layer;
-        setLayer(world,pos,state,fluid,newQuanta,disabledBlockFlags,enabledBlockFlags);
+        int newQuanta = getLayers(world, pos, state, fluid)+ layer;
+        setLayer(world,pos,state,fluid,newQuanta,disabledBlockFlags | Constants.BlockFlags.NOTIFY_NEIGHBORS,enabledBlockFlags);
     }
 
     @Override
@@ -123,7 +123,7 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
         }
         if(fluid != getFluid()) return false;
         newLayer = Math.min(newLayer,8);
-        final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags);
+        final int flags = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
         if(newLayer <= 0) {
             return world.setBlockState(pos,Blocks.AIR.getDefaultState(),flags);
         }
