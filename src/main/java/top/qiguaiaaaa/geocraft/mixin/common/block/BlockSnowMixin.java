@@ -47,6 +47,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
@@ -63,7 +64,7 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_INFO;
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.CREATE_INFO_FUNC;
 
-@Mixin(value = BlockSnow.class,priority = 999)
+@Mixin(value = BlockSnow.class,priority = 1100)
 public class BlockSnowMixin extends Block implements IBlockSnow {
     @Shadow @Final public static PropertyInteger LAYERS;
 
@@ -83,7 +84,7 @@ public class BlockSnowMixin extends Block implements IBlockSnow {
      * @see top.qiguaiaaaa.geocraft.mixin.reality.block.BlockSnowMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo)
      * @reason 引导到自定义的融化行为
      */
-    @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true,order = 999)
+    @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         ci.cancel();
         if(worldIn.isRemote) return;

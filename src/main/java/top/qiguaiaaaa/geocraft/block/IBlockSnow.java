@@ -59,6 +59,14 @@ import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.C
  */
 public interface IBlockSnow {
 
+    /**
+     * 尝试融化雪
+     * @param world 所在世界
+     * @param pos 所在位置
+     * @param state 一个雪的方块状态
+     * @param random 随机数发生器
+     * @return 是否变成了非雪方块
+     */
     default boolean trySmelt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random){
         final int layer = state.getValue(BlockSnow.LAYERS);
         final boolean isMixture = state.getValue(MIXTURE);
@@ -81,7 +89,7 @@ public interface IBlockSnow {
                     this.turnIntoMixture(world,pos,layer);
                 }
                 accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*layer/2.0);
-                return !isMixture;
+                return isMixture;
             }else{
                 if(isMixture){
                     if(layer == 8){

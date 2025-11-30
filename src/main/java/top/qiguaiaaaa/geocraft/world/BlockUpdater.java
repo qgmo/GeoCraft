@@ -34,7 +34,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
+import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
+import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import top.qiguaiaaaa.geocraft.util.math.MathUtil;
@@ -42,7 +46,9 @@ import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -51,9 +57,11 @@ import static top.qiguaiaaaa.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER
 
 /**
  * @since 0.1
- * @version 0.2.0-alpha.2
+ * @version 0.2.0-alpha.3
  * @author QiguaiAAAA
  */
+@ThreadSafe
+@MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
 public final class BlockUpdater {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"block_updater");
     private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(SchedulingTicksCapability.BLOCK_UPDATER,null)?
@@ -61,7 +69,7 @@ public final class BlockUpdater {
     private static final Comparator<ExtendedNextTickListEntry> compareByDistanceToPlayer =
             Comparator.comparingDouble(ExtendedNextTickListEntry::getDisSqToNearestPlayer);
     static final int MAX_UPDATE_NUM = BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
-    static final Map<World,BlockUpdater> UPDATERS_CACHE = new HashMap<>();
+    static final Map<World,BlockUpdater> UPDATERS_CACHE = new ConcurrentHashMap<>();
 
     final Set<ExtendedNextTickListEntry> schedules = new LinkedHashSet<>();
     final LinkedList<ExtendedNextTickListEntry> readyTicks = new LinkedList<>();
@@ -79,6 +87,7 @@ public final class BlockUpdater {
     }
 
     @Nonnull
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public Set<ExtendedNextTickListEntry> getPendingTicks() {
         return schedules;
     }
@@ -86,6 +95,7 @@ public final class BlockUpdater {
     /**
      * @since 0.2.0
      */
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void schedule(@Nonnull BlockPos pos,@Nonnull Block block,int delay){
         ExtendedNextTickListEntry entry = new ExtendedNextTickListEntry(world,pos,block,delay,0);
         schedules.add(entry);
@@ -94,18 +104,21 @@ public final class BlockUpdater {
     /**
      * @since 0.2.0
      */
-    public void scheduleAll(@Nonnull Collection<ExtendedNextTickListEntry> entries){
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
+    public synchronized void scheduleAll(@Nonnull Collection<ExtendedNextTickListEntry> entries){
         schedules.addAll(entries);
     }
 
     /**
      * @since 0.2.0
      */
-    public void updateTick(){
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public synchronized void updateTick(){
         final long beginTime = System.currentTimeMillis();
+
         Iterator<ExtendedNextTickListEntry> iterator = schedules.iterator();
         while (iterator.hasNext()) {
-            ExtendedNextTickListEntry entry = iterator.next();
+            final ExtendedNextTickListEntry entry = iterator.next();
             if(world.getTotalWorldTime()<entry.scheduledTime){
                 continue;
             }
@@ -140,15 +153,18 @@ public final class BlockUpdater {
      * @since 0.2.0
      */
     @Nonnull
-    public Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final BlockPos pos,final boolean doRemove){
+    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
+    public synchronized Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final BlockPos pos,final boolean doRemove){
         Set<ExtendedNextTickListEntry> set = null;
+        Collection<ExtendedNextTickListEntry> collectionToQuery;
         for(byte i =(byte) 0;i<2;i++){
             final Iterator<ExtendedNextTickListEntry> iterator;
             if (i == 0) {
-                iterator = schedules.iterator();
+                collectionToQuery = schedules;
             } else {
-                iterator = readyTicks.iterator();
+                collectionToQuery = readyTicks;
             }
+            iterator = collectionToQuery.iterator();
             while (iterator.hasNext()){
                 final ExtendedNextTickListEntry entry = iterator.next();
                 if(entry.position.equals(pos)){
@@ -165,6 +181,7 @@ public final class BlockUpdater {
      * @since 0.2.0
      */
     @Nonnull
+    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
     public Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final Chunk chunk,final boolean doRemove){
         return queryEntries(chunk.x<<4,0,chunk.z<<4,16,256,16,doRemove);
     }
@@ -173,7 +190,8 @@ public final class BlockUpdater {
      * @since 0.2.0
      */
     @Nonnull
-    public Set<ExtendedNextTickListEntry> queryEntries(final int x,final int y,final int z,final int dx,final int dy,final int dz,final boolean doRemove){
+    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
+    public synchronized Set<ExtendedNextTickListEntry> queryEntries(final int x,final int y,final int z,final int dx,final int dy,final int dz,final boolean doRemove){
         final int toX = x + dx,toY = y+dy,toZ=z+dz;
         Set<ExtendedNextTickListEntry> set = null;
         for(byte i =(byte) 0;i<2;i++){
@@ -196,10 +214,12 @@ public final class BlockUpdater {
     }
 
     @Nullable
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
     public static BlockUpdater getBlockUpdater(@Nonnull World world){
         return UPDATERS_CACHE.computeIfAbsent(world,putBlockUpdateToCache);
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void scheduleUpdate(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull Block block, int delay){
         if(!ENABLE_BLOCK_UPDATER.getValue()){
             world.scheduleUpdate(pos,block,delay);
@@ -213,11 +233,14 @@ public final class BlockUpdater {
     /**
      * @since 0.2.0
      */
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
     public static void scheduleUpdates(@Nonnull World world,@Nonnull Set<ExtendedNextTickListEntry> entries){
         if(!ENABLE_BLOCK_UPDATER.getValue()){
-            for(ExtendedNextTickListEntry entry:entries){
-                world.scheduleBlockUpdate(entry.position,entry.getBlock(),(int) (entry.scheduledTime-world.getTotalWorldTime()),entry.priority);
-            }
+            FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(()->{
+                for(ExtendedNextTickListEntry entry:entries){
+                    world.scheduleBlockUpdate(entry.position,entry.getBlock(),(int) (entry.scheduledTime-world.getTotalWorldTime()),entry.priority);
+                }
+            });
             return;
         }
         final BlockUpdater updater = getBlockUpdater(world);
@@ -226,12 +249,14 @@ public final class BlockUpdater {
     }
 
     @Nonnull
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static Set<ExtendedNextTickListEntry> getEntries(@Nonnull final World world){
         final BlockUpdater updater = getBlockUpdater(world);
         if(updater == null) return Collections.emptySet();
         return updater.getPendingTicks();
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void onWorldTick(@Nonnull WorldServer world){
         if(!ENABLE_BLOCK_UPDATER.getValue()) return;
         final BlockUpdater updater = UPDATERS_CACHE.computeIfAbsent(world,putBlockUpdateToCache);
@@ -239,6 +264,7 @@ public final class BlockUpdater {
         updater.updateTick();
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void onServerStop(){
         UPDATERS_CACHE.clear();
     }

@@ -61,7 +61,7 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
     }
 
     /**
-     * 该方法会覆盖土壤水的相关 Mixin,因为优先级更低
+     * 该方法会在土壤水的相关 Mixin后工作,因为优先级更低
      * @see top.qiguaiaaaa.geocraft.mixin.groundwater.block.BlockFarmlandMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo)
      * @since 0.1
      * @reason 更改湿度保持逻辑

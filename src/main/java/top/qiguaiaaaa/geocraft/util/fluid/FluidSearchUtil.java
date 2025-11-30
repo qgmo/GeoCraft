@@ -181,6 +181,7 @@ public final class FluidSearchUtil {
 
                 BlockPos nextPos = current.pos.offset(dir);
                 if (visited.contains(nextPos)) continue;
+                if(!world.isBlockLoaded(nextPos)) continue;
 
                 IBlockState nextState = world.getBlockState(nextPos);
                 if (nextState.getMaterial() != material || nextState.getBlock() instanceof IFluidBlock) continue;
@@ -195,7 +196,6 @@ public final class FluidSearchUtil {
                     if (newSameLevelIter > sameLevelIterationLimit) continue;
 
                     visited.add(nextPos);
-                    if(!world.isBlockLoaded(nextPos)) continue;
                     queue.add(new FluidSourceSearchNode(
                             nextPos,
                             dir,
@@ -272,6 +272,7 @@ public final class FluidSearchUtil {
 
                 BlockPos nextPos = current.pos.offset(dir);
                 if (visited.contains(nextPos)) continue;
+                if (!world.isBlockLoaded(nextPos)) continue;
 
                 IBlockState nextState = world.getBlockState(nextPos);
                 if (FluidUtil.getFluid(nextState) != fluid) continue;

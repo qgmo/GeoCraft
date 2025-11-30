@@ -88,6 +88,9 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
         isRandomTick = false;
     }
 
+    /**
+     * @see top.qiguaiaaaa.geocraft.mixin.reality.block.BlockFarmlandMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo) 
+     */
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,order = 999)
     public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
         if(isRandomTick) return;

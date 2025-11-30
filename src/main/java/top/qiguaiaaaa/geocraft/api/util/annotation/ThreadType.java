@@ -34,6 +34,17 @@ package top.qiguaiaaaa.geocraft.api.util.annotation;
 public enum ThreadType {
     MINECRAFT_SERVER,
     MINECRAFT_CLIENT,
+    /**
+     * @see top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager
+     */
     FLUID_PRESSURE_MANAGER,
-    FLUID_PRESSURE_TASKS
+    /**
+     * @see top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager
+     */
+    FLUID_PRESSURE_TASKS,
+    /**
+     * @since 0.2.0-alpha.3
+     * @see net.minecraft.world.storage.ThreadedFileIOBase
+     */
+    CHUNK_IO_THREADS
 }

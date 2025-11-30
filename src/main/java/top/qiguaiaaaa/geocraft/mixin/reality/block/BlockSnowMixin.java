@@ -52,6 +52,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -142,9 +143,9 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         final BlockPos downPos = pos.down();
         IBlockState downState = world.getBlockState(downPos);
         if(RealitySnowUpdater.isBlocked(world,downPos,downState,state)){
-            if(!canBePlacedOn(world,downPos,downState)){
-                world.setBlockToAir(pos);
-            }
+//            if(!canBePlacedOn(world,downPos,downState)){
+//                world.setBlockToAir(pos);
+//            }
             return false;
         }
         final boolean isMixture = state.getValue(MIXTURE);
@@ -179,7 +180,8 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                     accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*totalWater/2d);
                 }
             }
-        }else if(downBlock instanceof ILayeredFluidHost){ //雪和其他方块
+        }
+        else if(downBlock instanceof ILayeredFluidHost){ //雪和其他方块
             ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
             final int curLayers_F = getLayers(world,pos,state,null); //这里的 layer为雪的载流方块单位
             long curAmountSnow = getAmountInQB(world,pos,state,GeoFluids.SNOW);
@@ -274,7 +276,8 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                 }
             }
             return true;
-        }else{
+        }
+        else{
             FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,downPos,downState, GeoFluids.SNOW);
             world.setBlockToAir(pos);
             world.setBlockState(downPos,state);
@@ -288,6 +291,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
 
     //**********
     // ILayeredFluidHost Block
+    // 注意，雪的载流方块的层数为 16，单层为 62.5 mB ，这和雪本身的Layers属性有不同
     //**********
 
     @Override
@@ -380,20 +384,20 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                 }
             }else{
                 if(fluid == GeoFluids.SNOW){
-                    layer = MathHelper.clamp(layer,-2*curSnowLayer,(8-curSnowLayer)<<1);
-                    world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1),flag);
+                    layer = MathHelper.clamp(layer,-(curSnowLayer<<1),(8-curSnowLayer)<<1);
+                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (layer>>1)),flag);
                 }else {
                     layer = MathHelper.clamp(layer,0,(8-curSnowLayer)<<1);
                     if(layer <curSnowLayer<<1){
-                        world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1),flag);
+                        world.setBlockState(pos,state.withProperty(LAYERS,((curSnowLayer<<1)+ layer)>>1),flag);
                         if(accessor != null)
                             accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
                     }else if(layer == curSnowLayer<<1){
-                        world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ layer)>>1)
+                        world.setBlockState(pos,state.withProperty(LAYERS,((curSnowLayer<<1)+ layer)>>1)
                                 .withProperty(MIXTURE,true),flag);
                     }else{
                         world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ layer)/2),flag);
+                                .withProperty(BlockLiquid.LEVEL,8-(((curSnowLayer<<1)+ layer)>>1)),flag);
                         if(accessor != null){
                             accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
                         }
@@ -405,7 +409,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
 
     @Override
     public int addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, int disabledBlockFlags, int enabledBlockFlags, boolean doAdd) {
-        layer = (layer>>>1)<<1;
+        layer = (layer>>1)<<1;
         return IBlockStateLayeredFluidHost.super.addLayer(world, pos, state, fluid, layer, nbt, disabledBlockFlags, enabledBlockFlags, doAdd);
     }
 
@@ -441,16 +445,16 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
             }
         }else{
             if(fluid == GeoFluids.SNOW){
-                world.setBlockState(pos,state.withProperty(LAYERS,(newLayer)>>1),flag);
+                world.setBlockState(pos,state.withProperty(LAYERS,newLayer>>1),flag);
             }else {
                 if(newLayer <curSnowLayer<<1){
-                    world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ newLayer)>>1),flag);
+                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (newLayer>>1)),flag);
                 }else if(newLayer == curSnowLayer<<1){
-                    world.setBlockState(pos,state.withProperty(LAYERS,(curSnowLayer+ newLayer)>>1)
+                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (newLayer>>1))
                             .withProperty(MIXTURE,true),flag);
                 }else{
                     world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ newLayer)/2),flag);
+                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ (newLayer>>1))),flag);
                 }
             }
         }
