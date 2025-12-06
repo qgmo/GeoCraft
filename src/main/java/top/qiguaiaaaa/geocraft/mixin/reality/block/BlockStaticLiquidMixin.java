@@ -50,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.ILayeredFluidHostLiquid;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure.RealityPressureTaskBuilder;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
@@ -64,7 +64,7 @@ import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowChecker, FluidSettable, ILayeredFluidHostLiquid {
+public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowChecker, FluidSettable, ILayeredFluidHostFiniteLiquid {
     @Unique
     private static final boolean debug = false;
     @Unique

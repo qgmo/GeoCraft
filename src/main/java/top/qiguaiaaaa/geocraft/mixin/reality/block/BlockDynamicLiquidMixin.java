@@ -47,7 +47,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.ILayeredFluidHostLiquid;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.update.RealityBlockDynamicLiquidUpdateTask;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
@@ -58,7 +58,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettable, IVanillaFlowChecker, ILayeredFluidHostLiquid {
+public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettable, IVanillaFlowChecker, ILayeredFluidHostFiniteLiquid {
     private static final ThreadLocal<List<FlowChoice>> averageFlowChoices = ThreadLocal.withInitial(ArrayList::new);
     @Unique
     private Fluid thisFluid;

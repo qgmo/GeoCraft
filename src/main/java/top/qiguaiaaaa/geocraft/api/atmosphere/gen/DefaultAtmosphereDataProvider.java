@@ -29,8 +29,7 @@ package top.qiguaiaaaa.geocraft.api.atmosphere.gen;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.*;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.ChunkPos;
@@ -58,7 +57,7 @@ import java.util.Set;
  */
 public class DefaultAtmosphereDataProvider implements IAtmosphereDataProvider {
     private static final Logger LOGGER = LogManager.getLogger("AtmosphereDataProvider");
-    protected final Set<Long> droppedAtmospheres = Sets.newHashSet();
+    protected final LongSet droppedAtmospheres = new LongOpenHashSet();
     public final WorldServer world;
     public final IAtmosphereDataLoader atmosphereLoader;
     protected final Long2ObjectMap<AtmosphereData> loadedAtmosphere = new Long2ObjectOpenHashMap<>(65536);
@@ -155,12 +154,14 @@ public class DefaultAtmosphereDataProvider implements IAtmosphereDataProvider {
         for (ChunkPos forced : this.world.getPersistentChunks().keySet()) {
             this.droppedAtmospheres.remove(ChunkPos.asLong(forced.x, forced.z));
         }
-        Iterator<Long> iterator = this.droppedAtmospheres.iterator();
+        LongIterator iterator = this.droppedAtmospheres.iterator();
         for (int i = 0; i < 1000 && iterator.hasNext(); iterator.remove()) {
-            Long id = iterator.next();
-            AtmosphereData data = this.loadedAtmosphere.get(id);
+            long id = iterator.next();
+            final AtmosphereData data = this.loadedAtmosphere.get(id);
+            if(data == null) continue;
+            if(data.getChunk() != null && data.getChunk().isLoaded()) continue;
 
-            if (data != null && data.isUnloadQueued()) {
+            if (data.isUnloadQueued()) {
                 if(data.getAtmosphere() != null) {
                     data.getAtmosphere().onUnload();
                 }

@@ -35,13 +35,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
@@ -49,7 +47,7 @@ import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.ILayeredFluidHostLiquid;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.pressure.RealityPressureTaskBuilder;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.task.pressure.IFluidPressureSearchTaskResult;
@@ -173,7 +171,7 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         updater.checkNeighborsToFindFlowChoices(world,pos,state,liquidQuanta,averageModeFlowDirections,slopeModeFlowDirections);
 
         if(!averageModeFlowDirections.isEmpty()){ //平均流动模式
-            int newLiquidQuanta = LayeredFluidHostUtil.averageFlow(liquidQuanta,ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA, QBUtil.QUANTA_VOLUME,0,averageModeFlowDirections);
+            int newLiquidQuanta = LayeredFluidHostUtil.averageFlow(liquidQuanta, ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA, QBUtil.QUANTA_VOLUME,0,averageModeFlowDirections);
 
             if(newLiquidQuanta == liquidQuanta){
                 this.placeStaticBlock(world,pos,state,FlowingMode.AVERAGE_MODE);

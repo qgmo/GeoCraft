@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.fluid_physics.reality;
+package top.qiguaiaaaa.geocraft.block.reality;
 
 import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.state.IBlockState;
@@ -44,6 +44,7 @@ import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
+import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.MoreRealityFluidPhysicsCore;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +54,7 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
 /**
  * @author QiguaiAAAA
  */
-public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
+public interface ILayeredFluidHostFiniteLiquid extends IBlockStateLayeredFluidHost {
     int HEIGHT_PER_QUANTA = LayeredFluidHostUtil.EIGHTH_HEIGHT;
     @Nonnull
     Fluid getFluid();
@@ -116,7 +117,7 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
 
     @Override
     default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid , int newLayer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags){
-        if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){
+        if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){ //雪水混合
             final int waterQuanta = Math.max(8-state.getValue(LEVEL),0);
             final int snowQuanta = MathHelper.clamp(newLayer,0,8-waterQuanta);
             return MoreRealityFluidPhysicsCore.mixSnowWithWater(world,pos,null,waterQuanta,snowQuanta,APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
@@ -133,13 +134,14 @@ public interface ILayeredFluidHostLiquid extends IBlockStateLayeredFluidHost {
     @Nullable
     @Override
     default IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer){
-        if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){
-            int quantaWater = Math.max(8-state.getValue(LEVEL),0);
+        if(fluid == GeoFluids.SNOW && getFluid() == FluidRegistry.WATER){ //雪水混合
+            int quantaWater = Math.max(8-state.getValue(LEVEL),1);
             if(layer <0 || layer + quantaWater>8) return null;
             return MoreRealityFluidPhysicsCore.getSnowWaterMixState(layer,quantaWater,state.getBlock() instanceof BlockStaticLiquid);
         }
         if(fluid != getFluid()) return null;
-        if(layer <= 0) return Blocks.AIR.getDefaultState();
+        if(layer<0) return null;
+        if(layer == 0) return Blocks.AIR.getDefaultState();
         return state.withProperty(LEVEL,Math.max(8- layer,0));
     }
 

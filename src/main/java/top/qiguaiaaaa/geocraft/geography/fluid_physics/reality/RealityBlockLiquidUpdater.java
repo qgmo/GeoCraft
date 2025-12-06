@@ -45,6 +45,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.block.reality.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.vanilla.BlockLiquidUpdater;
 
@@ -90,7 +91,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
             Block block = facingState.getBlock();
             ILayeredFluidHost permeableBlock = (block instanceof ILayeredFluidHost)?(ILayeredFluidHost) block:null;
 
-            int facingHeight,facingQuanta,facingHeightPerLayer = ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
+            int facingHeight,facingQuanta,facingHeightPerLayer = ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
             if(permeableBlock != null){
                 facingHeight = permeableBlock.getHeight(worldIn,mutablePos,facingState,fluid);
                 facingQuanta = permeableBlock.getLayers(worldIn,mutablePos,facingState,fluid);
@@ -98,17 +99,17 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
                 int facingMeta = getDepth(facingState);
                 if(facingMeta <0 || facingMeta>7) facingMeta = 8;
                 facingQuanta = 8-facingMeta;
-                facingHeight = facingQuanta* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
+                facingHeight = facingQuanta* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
             }
 
-            if(facingHeight+facingHeightPerLayer<=(liquidQuanta-1)* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA){
+            if(facingHeight+facingHeightPerLayer<=(liquidQuanta-1)* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA){
                 averageModeFlowDirections.add(permeableBlock == null?
                         new FlowChoice(facing,facingQuanta):
                         new FlowChoice(worldIn,mutablePos,facingState,permeableBlock,facing,fluid));
             }
 
             if(!canFlowInto2RegardlessPermeable(facingState)) continue;
-            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
+            if(slopeModeFlowDirections != null && facingHeight<liquidQuanta* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA) slopeModeFlowDirections.add(facing);
         }
     }
 
@@ -158,7 +159,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
     public boolean canFlowIntoWhenSnowLayer(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,int quanta){
         if(state.getBlock() != Blocks.SNOW_LAYER) return true;
         if(((ILayeredFluidHost)Blocks.SNOW_LAYER).isFull(world,pos,state,FluidRegistry.WATER)) return false;
-        return ((ILayeredFluidHost)Blocks.SNOW_LAYER).getHeight(world,pos,state, FluidRegistry.WATER)<(quanta-1)* ILayeredFluidHostLiquid.HEIGHT_PER_QUANTA;
+        return ((ILayeredFluidHost)Blocks.SNOW_LAYER).getHeight(world,pos,state, FluidRegistry.WATER)<(quanta-1)* ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
     }
 
     /**
