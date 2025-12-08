@@ -28,6 +28,10 @@
 package top.qiguaiaaaa.geocraft.geography.fluid_physics;
 
 import io.netty.util.internal.ConcurrentSet;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.server.MinecraftServer;
@@ -56,7 +60,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager.WorldPressureInfo.CREATE_WORLD_PRESSURE_INFO;
+import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager.WorldPressureInfoFastutil.CREATE_WORLD_PRESSURE_INFO_FASTUTIL;
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager.WorldQueueTaskInfo.CREATE_WORLD_QUEUE_TASK_INFO;
+import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPressureSearchManager.WorldQueueTaskInfoFastutil.CREATE_WORLD_QUEUE_TASK_INFO_FASTUTIL;
 import static top.qiguaiaaaa.geocraft.util.MiscUtil.getValidWorld;
 
 /**
@@ -235,8 +241,8 @@ public final class FluidPressureSearchManager implements Runnable{
         WorldServer validWorld = getValidWorld(world);
         if(validWorld == null) return false;
         WorldPressureInfo runningInfo = getOrCreateWorldInfo(validWorld);
-        WorldQueueTaskInfo queueInfo = queueMap.computeIfAbsent(validWorld,CREATE_WORLD_QUEUE_TASK_INFO);
-        return runningInfo.getRunningTaskLocks().contains(pos) || queueInfo.queuedTaskLocks.contains(pos);
+        WorldQueueTaskInfo queueInfo = getOrCreateWorldQueue(validWorld);
+        return runningInfo.isPosLocked(pos) || queueInfo.isPosQueued(pos);
     }
 
     /**
@@ -251,8 +257,7 @@ public final class FluidPressureSearchManager implements Runnable{
         WorldServer validWorld = getValidWorld(world);
         if(validWorld == null) return null;
         WorldPressureInfo info = getOrCreateWorldInfo(validWorld);
-        info.getRunningTaskLocks().remove(pos);
-        return info.getTaskResults().remove(pos);
+        return info.pullResult(pos);
     }
 
     /**
@@ -264,7 +269,7 @@ public final class FluidPressureSearchManager implements Runnable{
     public static void addTask(@Nonnull World world,@Nonnull IFluidPressureSearchTask task){
         WorldServer validWorld = getValidWorld(world);
         if(validWorld == null) return;
-        WorldQueueTaskInfo info = queueMap.computeIfAbsent(validWorld,CREATE_WORLD_QUEUE_TASK_INFO);
+        WorldQueueTaskInfo info = getOrCreateWorldQueue(validWorld);
         info.queueTask(task);
     }
 
@@ -288,7 +293,7 @@ public final class FluidPressureSearchManager implements Runnable{
 
         if(world.getTotalWorldTime()%FluidPhysicsConfig.PRESSURE_EMPTY_RESULTS_PERIOD.getValue() == 0){
             WorldPressureInfo info = getOrCreateWorldInfo(world);
-            info.getTaskResults().clear();
+            info.clearResults();
         }
     }
 
@@ -372,10 +377,7 @@ public final class FluidPressureSearchManager implements Runnable{
             WorldPressureInfo info = getOrCreateWorldInfo(world);
             pushNewTasks(world,info);
             updateTasks(world,info);
-            if(info.getRunningTasks().isEmpty()){
-                info.getRunningTaskLocks().clear();
-                continue;
-            }
+            info.clearIfClean();
             if(totalTimes.get()%FluidPhysicsConfig.PRESSURE_DROP_EXCESS_TASKS_PERIOD.getValue() == 0){
                 int size = info.getRunningTasks().size();
                 Deque<IFluidPressureSearchTask> deque = info.getRunningTasks();
@@ -417,7 +419,6 @@ public final class FluidPressureSearchManager implements Runnable{
             updateTasksInPool(info);
             return;
         }
-        final Map<BlockPos,IFluidPressureSearchTaskResult> resMap = info.getTaskResults();
         final Deque<IFluidPressureSearchTask> queue = info.getRunningTasks();
         for(int i=0;i<MAX_UPDATE_TASKS;i++){
             if(queue.isEmpty()) break;
@@ -427,28 +428,40 @@ public final class FluidPressureSearchManager implements Runnable{
                 info.unlockPos(task);
                 continue;
             }
-            if(!world.isBlockLoaded(task.getBeginPos())){
-                info.unlockPos(task);
+            IBlockState beginState;
+            try {
+                if(!world.isBlockLoaded(task.getBeginPos())){
+                    info.unlockPos(task);
+                    continue;
+                }
+                beginState = world.getBlockState(task.getBeginPos());
+                if(!task.isEqualState(beginState)){
+                    info.unlockPos(task);
+                    continue;
+                }
+            }catch (IndexOutOfBoundsException e) { //Fastutil的多线程错误
+                info.pushNewTask(task);
+                continue;
+            }catch (Throwable e){
+                GeoCraft.getLogger().warn("When preparing loading pressure for fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getBeginPos(),world.provider.getDimension());
+                GeoCraft.getLogger().warn("FluidPressureSearchManager caught an unknown error:",e);
                 continue;
             }
-            IBlockState beginState = world.getBlockState(task.getBeginPos());
-            if(!task.isEqualState(beginState)){
-                info.unlockPos(task);
-                continue;
-            }
+
             try {
                 IFluidPressureSearchTaskResult res = task.search(world);
                 if(task.isFinished()){
-                    if(res != null) resMap.put(task.getBeginPos(),res);
+                    if(res != null) info.putResultAndUnlock(task.getBeginPos(),res);
                     scheduleUpdate(world,task.getBeginPos(),beginState.getBlock());
-                    info.unlockPos(task);
                     task.finish();
                 }else{
                     queue.add(task);
                 }
+            }catch (IndexOutOfBoundsException e){  //Fastutil的多线程错误
+                info.pushNewTask(task);
             }catch (Throwable e){
                 GeoCraft.getLogger().warn("When loading pressure for fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getBeginPos(),world.provider.getDimension());
-                GeoCraft.getLogger().warn("FluidPressureSearchManager caught an error:",e);
+                GeoCraft.getLogger().warn("FluidPressureSearchManager caught an unknown error:",e);
                 task.cancel();
                 info.unlockPos(task);
             }
@@ -475,15 +488,25 @@ public final class FluidPressureSearchManager implements Runnable{
                     info.unlockPos(task);
                     continue;
                 }
-                if(!info.world.isBlockLoaded(task.getBeginPos())){
-                    info.unlockPos(task);
+                try {
+                    if(!info.world.isBlockLoaded(task.getBeginPos())){
+                        info.unlockPos(task);
+                        continue;
+                    }
+                    IBlockState beginState = info.world.getBlockState(task.getBeginPos());
+                    if(!task.isEqualState(beginState)){
+                        info.unlockPos(task);
+                        continue;
+                    }
+                }catch (IndexOutOfBoundsException e){
+                    info.pushNewTask(task);
+                    continue;
+                }catch (Throwable e){
+                    GeoCraft.getLogger().warn("When preparing loading pressure for fluid {} at {} in world {},",task.getFluid().getUnlocalizedName(),task.getBeginPos(),info.world.provider.getDimension());
+                    GeoCraft.getLogger().warn("FluidPressureSearchManager caught an unknown error:",e);
                     continue;
                 }
-                IBlockState beginState = info.world.getBlockState(task.getBeginPos());
-                if(!task.isEqualState(beginState)){
-                    info.unlockPos(task);
-                    continue;
-                }
+
                 QUEUE_SUBMIT_TASKS.add(new RunnableFluidPressureSearchTask(info,task));
             }
             threadPool.invokeAll(QUEUE_SUBMIT_TASKS);
@@ -579,7 +602,19 @@ public final class FluidPressureSearchManager implements Runnable{
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.FLUID_PRESSURE_MANAGER})
     @Nonnull
     static WorldPressureInfo getOrCreateWorldInfo(@Nonnull WorldServer world){
+        if(FluidPhysicsConfig.USE_COMPRESSED_COORDINATE.getValue()){
+            return worldMap.computeIfAbsent(world,CREATE_WORLD_PRESSURE_INFO_FASTUTIL);
+        }
         return worldMap.computeIfAbsent(world,CREATE_WORLD_PRESSURE_INFO);
+    }
+
+    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.FLUID_PRESSURE_MANAGER})
+    @Nonnull
+    static WorldQueueTaskInfo getOrCreateWorldQueue(@Nonnull WorldServer world){
+        if(FluidPhysicsConfig.USE_COMPRESSED_COORDINATE.getValue()){
+            return queueMap.computeIfAbsent(world,CREATE_WORLD_QUEUE_TASK_INFO_FASTUTIL);
+        }
+        return queueMap.computeIfAbsent(world,CREATE_WORLD_QUEUE_TASK_INFO);
     }
 
     /**
@@ -598,19 +633,15 @@ public final class FluidPressureSearchManager implements Runnable{
         }
 
         public final Deque<IFluidPressureSearchTask> runningTasks = new ConcurrentLinkedDeque<>();
-        public final Map<BlockPos,IFluidPressureSearchTaskResult> taskResults = new ConcurrentHashMap<>();
-        public final Set<BlockPos> runningTaskLocks = new ConcurrentSet<>();
+        private final Map<BlockPos,IFluidPressureSearchTaskResult> taskResults = new ConcurrentHashMap<>();
+        private final Set<BlockPos> runningTaskLocks = new ConcurrentSet<>();
 
-        public Deque<IFluidPressureSearchTask> getRunningTasks() {
+        public final Deque<IFluidPressureSearchTask> getRunningTasks() {
             return runningTasks;
         }
 
-        public Map<BlockPos, IFluidPressureSearchTaskResult> getTaskResults() {
-            return taskResults;
-        }
-
-        public Set<BlockPos> getRunningTaskLocks() {
-            return runningTaskLocks;
+        public void clearResults(){
+            taskResults.clear();
         }
 
         public void pushNewTask(IFluidPressureSearchTask task){
@@ -620,6 +651,77 @@ public final class FluidPressureSearchManager implements Runnable{
 
         public void unlockPos(IFluidPressureSearchTask task){
             runningTaskLocks.remove(task.getBeginPos());
+        }
+
+        public boolean isPosLocked(@Nonnull BlockPos pos){
+            return runningTaskLocks.contains(pos);
+        }
+
+        public void putResultAndUnlock(@Nonnull BlockPos pos, @Nonnull IFluidPressureSearchTaskResult result){
+            taskResults.put(pos,result);
+            runningTaskLocks.remove(pos);
+        }
+
+        @Nullable
+        @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+        public IFluidPressureSearchTaskResult pullResult(@Nonnull BlockPos pos){
+            runningTaskLocks.remove(pos);
+            return taskResults.remove(pos);
+        }
+
+        public void clearIfClean(){
+            if(runningTasks.isEmpty())
+                runningTaskLocks.clear();
+        }
+    }
+
+    static class WorldPressureInfoFastutil extends WorldPressureInfo{
+        static final Function<WorldServer,WorldPressureInfoFastutil> CREATE_WORLD_PRESSURE_INFO_FASTUTIL = WorldPressureInfoFastutil::new;
+
+        private WorldPressureInfoFastutil(WorldServer world) {
+            super(world);
+        }
+
+        private final Long2ObjectMap<IFluidPressureSearchTaskResult> taskResults = new Long2ObjectOpenHashMap<>();
+        private final LongSet runningTaskLocks = new LongOpenHashSet();
+
+        @Override
+        public synchronized void clearResults() {
+            taskResults.clear();
+        }
+
+        @Override
+        public synchronized void pushNewTask(IFluidPressureSearchTask task) {
+            runningTasks.add(task);
+            runningTaskLocks.add(task.getBeginPos().toLong());
+        }
+
+        @Override
+        public synchronized void unlockPos(IFluidPressureSearchTask task) {
+            runningTaskLocks.remove(task.getBeginPos().toLong());
+        }
+
+        @Override
+        public synchronized boolean isPosLocked(@Nonnull BlockPos pos) {
+            return runningTaskLocks.contains(pos.toLong());
+        }
+
+        @Override
+        public synchronized void putResultAndUnlock(@Nonnull BlockPos pos, @Nonnull IFluidPressureSearchTaskResult result) {
+            taskResults.put(pos.toLong(),result);
+            runningTaskLocks.remove(pos.toLong());
+        }
+
+        @Nullable
+        @Override
+        public synchronized IFluidPressureSearchTaskResult pullResult(@Nonnull BlockPos pos) {
+            return taskResults.remove(pos.toLong());
+        }
+
+        @Override
+        public synchronized void clearIfClean() {
+            if(runningTasks.isEmpty())
+                runningTaskLocks.clear();
         }
     }
 
@@ -632,7 +734,7 @@ public final class FluidPressureSearchManager implements Runnable{
     static class WorldQueueTaskInfo{
         static final Function<WorldServer,WorldQueueTaskInfo> CREATE_WORLD_QUEUE_TASK_INFO = k-> new WorldQueueTaskInfo();
         public final Set<IFluidPressureSearchTask> queuedTasks = new ConcurrentSet<>();
-        public final Set<BlockPos> queuedTaskLocks = new ConcurrentSet<>();
+        private final Set<BlockPos> queuedTaskLocks = new ConcurrentSet<>();
 
         public void queueTask(IFluidPressureSearchTask task){
             queuedTasks.add(task);
@@ -642,6 +744,32 @@ public final class FluidPressureSearchManager implements Runnable{
         public void clear(){
             queuedTasks.clear();
             queuedTaskLocks.clear();
+        }
+
+        public boolean isPosQueued(@Nonnull BlockPos pos){
+            return queuedTaskLocks.contains(pos);
+        }
+    }
+
+    static class WorldQueueTaskInfoFastutil extends WorldQueueTaskInfo{
+        static final Function<WorldServer,WorldQueueTaskInfo> CREATE_WORLD_QUEUE_TASK_INFO_FASTUTIL = k-> new WorldQueueTaskInfo();
+        private final LongSet queuedTaskLocks = new LongOpenHashSet();
+
+        @Override
+        public synchronized void queueTask(IFluidPressureSearchTask task) {
+            queuedTasks.clear();
+            queuedTaskLocks.clear();
+        }
+
+        @Override
+        public synchronized void clear() {
+            queuedTasks.clear();
+            queuedTaskLocks.clear();
+        }
+
+        @Override
+        public boolean isPosQueued(@Nonnull BlockPos pos) {
+            return queuedTaskLocks.contains(pos.toLong());
         }
     }
 
@@ -686,9 +814,10 @@ public final class FluidPressureSearchManager implements Runnable{
             try {
                 IFluidPressureSearchTaskResult res = task.search(info.world);
                 if(task.isFinished()){
-                    if(res != null) info.getTaskResults().put(task.getBeginPos(),res);
+                    if(res != null){
+                        info.putResultAndUnlock(task.getBeginPos(),res);
+                    }
                     scheduleUpdate(info.world,task.getBeginPos(),task.getBeginState().getBlock());
-                    info.unlockPos(task);
                     task.finish();
                 }else{
                     info.getRunningTasks().add(task);

@@ -81,7 +81,8 @@ public final class AtmosphereConfig {
                             .waterEvaporate(true)
                             .waterFreeze(true)
                             .setRainSmoothingConstant(256)
-                            .setVaporExchangeRate(1e-6)),
+                            .setVaporExchangeRate(1e-6)
+                            .setMaxLoadDistance(100)),
                     new ConfigEntry<>(-1, CloseAtmosphereSystemInfo.create()
                             .setFinalTemperature(CloseAtmosphereSystem.HELL_TEMP)
                             .setPressure(2e5)
@@ -89,7 +90,8 @@ public final class AtmosphereConfig {
                             .waterEvaporate(true)
                             .waterFreeze(false)
                             .setVaporExchangeRate(1e-5)
-                            .setRainSmoothingConstant(Integer.MAX_VALUE)),
+                            .setRainSmoothingConstant(Integer.MAX_VALUE)
+                            .setMaxLoadDistance(100)),
                     new ConfigEntry<>(1, VanillaAtmosphereSystemInfo.create()
                             .setMaxWaterDrainedMultiplier(50000)
                             .setRainingCloudExponent(20)
@@ -97,7 +99,8 @@ public final class AtmosphereConfig {
                             .waterEvaporate(false)
                             .waterFreeze(false)
                             .setVaporExchangeRate(0)
-                            .setRainSmoothingConstant(Integer.MAX_VALUE))){
+                            .setRainSmoothingConstant(Integer.MAX_VALUE)
+                            .setMaxLoadDistance(100))){
                 @Override
                 public void load(@Nonnull Configuration config) {
                     super.load(config);

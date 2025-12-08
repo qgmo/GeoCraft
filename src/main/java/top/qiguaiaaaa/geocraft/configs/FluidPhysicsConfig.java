@@ -256,6 +256,11 @@ public final class FluidPhysicsConfig {
             "压强系统暂停运行的最长时间，单位为毫秒。将此值设置为0则允许压强系统一直等待下去，直到被其他线程唤醒。\n" +
                     "Max pause time for the pressure system (ms). A value of 0 means it will wait indefinitely until another thread resumes it.");
 
+    @GeoConfig.Since("0.2.0-beta.1")
+    public static final ConfigBoolean USE_COMPRESSED_COORDINATE = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
+            "useCompressedCoordinate",false,
+            "[实验性功能]使用压缩为长整型的 BlockPos 以减少大规模流体更新时的内存开销。");
+
     // *******************************
     // Vanilla Config
     // *******************************
