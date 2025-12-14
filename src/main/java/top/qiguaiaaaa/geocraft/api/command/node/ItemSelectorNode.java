@@ -29,21 +29,27 @@ package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public class ItemSelectorNode extends ParameterNode {
+public class ItemSelectorNode extends ParameterNode<Item> {
 
-    public static final DefaultParser DEFAULT_PARSER = (node, context) -> context.put(node.name, Items.AIR);
+    public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> context.put(node.name, Items.AIR);
 
     public ItemSelectorNode(@Nonnull String name) {
         super(name);
@@ -62,14 +68,14 @@ public class ItemSelectorNode extends ParameterNode {
         context.put(name,item);
     }
 
+    @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final boolean parsed = checkAndParse(args,context);
-        if(childNode!=null){
-            final String curText = parsed?args.pollFirst():null;
-            childNode.execute(args, context);
-            if(parsed) args.addFirst(curText);
-        }
-        context.remove(name);
+    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
+        return Item.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
+    }
+
+    @Override
+    public int getParametersLength() {
+        return 1;
     }
 }

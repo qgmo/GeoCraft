@@ -28,9 +28,13 @@
 package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 
@@ -42,6 +46,12 @@ public interface ExecuteNode extends ICommandNode {
     @Override
     default <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException{
         run(context,args);
+    }
+
+    @Nullable
+    @Override
+    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos){
+        return null;
     }
 
     void run(@Nonnull Context context,@Nonnull List<String> args) throws CommandException;

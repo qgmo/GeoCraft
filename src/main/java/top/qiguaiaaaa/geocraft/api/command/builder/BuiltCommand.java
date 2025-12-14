@@ -84,13 +84,16 @@ public class BuiltCommand extends CommandBase {
     @Nonnull
     @Override
     public List<String> getTabCompletions(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args, @Nullable BlockPos targetPos) {
-        return super.getTabCompletions(server, sender, args, targetPos);
+        if(node == null) return super.getTabCompletions(server, sender, args, targetPos);
+        final List<String> suggests = node.suggest(server,sender,new LinkedList<>(Arrays.asList(args)),targetPos);
+        if(suggests == null) return super.getTabCompletions(server, sender, args, targetPos);
+        return suggests;
     }
 
     @Override
     public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
         if(node != null){
-            node.execute(new LinkedList<>(Arrays.asList(args)),new Context(server,sender));
+            node.execute(new LinkedList<>(Arrays.asList(args)),new Context(this,server,sender));
         }
     }
 }

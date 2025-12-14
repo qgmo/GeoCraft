@@ -25,48 +25,61 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import com.google.common.collect.Lists;
+import net.minecraft.command.*;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import top.qiguaiaaaa.geocraft.api.command.Context;
+import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class DoubleNode extends ParameterNode{
-    public static final DefaultParser DEFAULT_PARSER = (node, context) -> context.put(node.name,0d);
-    public DoubleNode(@Nonnull String name) {
+public abstract class NumberNode<T extends Number> extends ParameterNode<T> {
+    public NumberNode(@Nonnull String name) {
         super(name);
-        setDefaultParser(DEFAULT_PARSER);
+    }
+
+    protected T minValue;
+    protected T maxValue;
+
+    public void setMinValue(@Nonnull T minValue) {
+        this.minValue = minValue;
+    }
+
+    public void setMaxValue(@Nonnull T maxValue) {
+        this.maxValue = maxValue;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final boolean parsed = checkAndParse(args,context);
-        if(childNode != null){
-            String v= parsed?args.pollFirst():null;
-            childNode.execute(args,context);
-            if(parsed){
-                args.addFirst(v);
-            }
-        }
-        context.remove(name);
+    public int getParametersLength() {
+        return 1;
     }
 
+    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
+
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException {
+    public <V extends List<String> & Deque<String>> boolean checkValid(@Nonnull V args, @Nonnull Context context) throws WrongUsageException {
         if(args.isEmpty()&&!isOptional()) throw new WrongUsageException("wrong!");
         return !args.isEmpty();
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        context.put(name, CommandBase.parseDouble(args.get(0)));
+    public <T1 extends List<String> & Deque<String>> void parseParameter(@Nonnull T1 args, @Nonnull Context context) throws CommandException {
+        context.put(name, parseNumber(args.get(0)));
+    }
+
+    @Nullable
+    @Override
+    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
+        return Lists.newArrayList(String.valueOf(MathHelper.clamp(0,minValue.doubleValue(),maxValue.doubleValue())));
     }
 }

@@ -25,26 +25,27 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.NumberInvalidException;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public interface ICommandNode {
+public class LongNode extends NumberNode<Long>{
+    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> context.put(node.getName(),0L);
+    public LongNode(@Nonnull String name) {
+        super(name);
+        setDefaultParser(DEFAULT_PARSER);
+        setMinValue(Long.MIN_VALUE);
+        setMaxValue(Long.MAX_VALUE);
+    }
 
-    <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException;
-
-    @Nullable
-    <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server,@Nonnull ICommandSender sender,@Nonnull T args, @Nullable BlockPos targetPos);
+    @Override
+    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        return CommandBase.parseLong(arg,minValue,maxValue);
+    }
 }

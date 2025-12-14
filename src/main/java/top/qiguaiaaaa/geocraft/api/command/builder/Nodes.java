@@ -27,12 +27,20 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.item.Item;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.BooleanNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.DoubleNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
+import top.qiguaiaaaa.geocraft.api.function.TriPredicate;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -40,12 +48,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public class Nodes {
+public final class Nodes {
+
+    private Nodes(){}
 
     @Nonnull
     public static ConditionalSplitNodeBuilder split(){
@@ -66,23 +76,33 @@ public class Nodes {
     public static RelayExecuteNodeBuilder relay(){return new RelayExecuteNodeBuilder();}
 
     @Nonnull
-    public static DoubleNodeBuilder doubleP(@Nonnull final String name){
-        return new DoubleNodeBuilder(name);
+    public static <N extends Number> NumberNodeBuilder<N,NumberNode<N>> number(@Nonnull final String name, @Nonnull NumberType<N> type){
+        return type.create(name);
     }
 
     @Nonnull
-    public static BlockPosNodeBuilder blockPos(@Nonnull final String name){
-        return new BlockPosNodeBuilder(name);
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> integer(@Nonnull final String name){
+        return NumberType.INTEGER.create(name);
     }
 
     @Nonnull
-    public static ItemSelectorNodeBuilder selectItem(@Nonnull final String name){
-        return new ItemSelectorNodeBuilder(name);
+    public static ParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,BooleanNode::new);
     }
 
     @Nonnull
-    public static AtmosphereSelectorNodeBuilder selectAtmosphere(@Nonnull final String name){
-        return new AtmosphereSelectorNodeBuilder(name);
+    public static ParameterNodeBuilder<BlockPos,BlockPosNode> blockPos(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,BlockPosNode::new);
+    }
+
+    @Nonnull
+    public static ParameterNodeBuilder<Item,ItemSelectorNode> selectItem(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
+    }
+
+    @Nonnull
+    public static ParameterNodeBuilder<IAtmosphereAccessor,AtmosphereNode> selectAtmosphere(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,AtmosphereNode::new);
     }
 
     @Nonnull
@@ -90,30 +110,43 @@ public class Nodes {
         return new PermitNodeBuilder();
     }
 
-    public abstract static class ParameterNodeBuilder<T extends ParameterNode> implements INodeBuilder<T> {
+    public abstract static class ParameterNodeBuilder<P,T extends ParameterNode<P>> implements INodeBuilder<T> {
         protected final String name;
         protected INodeBuilder<?> childNode;
         protected ICommandNode bakedChildNode;
         protected boolean optional;
+        protected ParameterNode.DefaultParser<P> parser;
 
         protected ParameterNodeBuilder(@Nonnull String name) {
             this.name = name;
         }
 
         @Nonnull
-        public ParameterNodeBuilder<T> asOptional(){
+        public ParameterNodeBuilder<P,T> asOptional(){
             optional = true;
             return this;
         }
 
         @Nonnull
-        public ParameterNodeBuilder<T> then(@Nonnull INodeBuilder<?> childNode){
+        public ParameterNodeBuilder<P,T> defaultAs(@Nonnull DefaultSupplier<P> supplier){
+            this.parser = (node, context) -> context.put(node.getName(),supplier.supply(context));
+            return this;
+        }
+
+        @Nonnull
+        public ParameterNodeBuilder<P,T> defaultCalc(ParameterNode.DefaultParser<P> parser){
+            this.parser = parser;
+            return this;
+        }
+
+        @Nonnull
+        public ParameterNodeBuilder<P,T> then(@Nonnull INodeBuilder<?> childNode){
             this.childNode = childNode;
             return this;
         }
 
         @Nonnull
-        public ParameterNodeBuilder<T> then(@Nonnull ICommandNode childNode){
+        public ParameterNodeBuilder<P,T> then(@Nonnull ICommandNode childNode){
             this.bakedChildNode = childNode;
             return this;
         }
@@ -123,64 +156,112 @@ public class Nodes {
         public T build() {
             final T instance = buildInstance();
             instance.setChildNode(bakedChildNode!=null?bakedChildNode:childNode.build());
+            instance.setDefaultParser(parser);
+            instance.setOptional(optional);
             return instance;
         }
 
         @Nonnull
         protected abstract T buildInstance();
+
+        @FunctionalInterface
+        public interface DefaultSupplier<P>{
+            P supply(@Nonnull Context context);
+        }
     }
 
-    public static class DoubleNodeBuilder extends ParameterNodeBuilder<DoubleNode>{
+    public static class FastParameterNodeBuilder<P,T extends ParameterNode<P>> extends ParameterNodeBuilder<P,T>{
 
-        protected DoubleNodeBuilder(@Nonnull String name) {
+        protected final Function<String,T> builder;
+
+        protected FastParameterNodeBuilder(@Nonnull String name,@Nonnull Function<String,T> builder) {
             super(name);
+            this.builder = builder;
         }
 
         @Nonnull
         @Override
-        protected DoubleNode buildInstance() {
-            return new DoubleNode(name);
+        protected T buildInstance() {
+            return builder.apply(name);
         }
     }
 
-    public static class AtmosphereSelectorNodeBuilder extends ParameterNodeBuilder<AtmosphereNode>{
+    public static class NumberNodeBuilder<N extends Number,T extends NumberNode<N>> extends FastParameterNodeBuilder<N,T>{
+        protected N minValue,maxValue;
 
-        protected AtmosphereSelectorNodeBuilder(@Nonnull String name) {
-            super(name);
+        public NumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+            super(name, builder);
+        }
+
+        @Nonnull
+        public NumberNodeBuilder<N,T> min(N minValue){
+            this.minValue = minValue;
+            return this;
+        }
+
+        @Nonnull
+        public NumberNodeBuilder<N,T> max(N maxValue) {
+            this.maxValue = maxValue;
+            return this;
         }
 
         @Nonnull
         @Override
-        protected AtmosphereNode buildInstance() {
-            return new AtmosphereNode(name);
-        }
-    }
-
-    public static class ItemSelectorNodeBuilder extends ParameterNodeBuilder<ItemSelectorNode>{
-
-        protected ItemSelectorNodeBuilder(@Nonnull String name) {
-            super(name);
+        public NumberNodeBuilder<N, T> asOptional() {
+            return (NumberNodeBuilder<N, T>) super.asOptional();
         }
 
         @Nonnull
         @Override
-        protected ItemSelectorNode buildInstance() {
-            return new ItemSelectorNode(name);
-        }
-    }
-
-    public static class BlockPosNodeBuilder extends ParameterNodeBuilder<BlockPosNode>{
-
-        protected BlockPosNodeBuilder(@Nonnull String name) {
-            super(name);
+        public NumberNodeBuilder<N, T> defaultAs(@Nonnull DefaultSupplier<N> supplier) {
+            return (NumberNodeBuilder<N, T>) super.defaultAs(supplier);
         }
 
         @Nonnull
         @Override
-        protected BlockPosNode buildInstance() {
-            return new BlockPosNode(name);
+        public NumberNodeBuilder<N, T> defaultCalc(ParameterNode.DefaultParser<N> parser) {
+            return (NumberNodeBuilder<N, T>) super.defaultCalc(parser);
+        }
+
+        @Nonnull
+        @Override
+        public NumberNodeBuilder<N, T> then(@Nonnull INodeBuilder<?> childNode) {
+            return (NumberNodeBuilder<N, T>) super.then(childNode);
+        }
+
+        @Nonnull
+        @Override
+        public NumberNodeBuilder<N, T> then(@Nonnull ICommandNode childNode) {
+            return (NumberNodeBuilder<N, T>) super.then(childNode);
+        }
+
+        @Nonnull
+        @Override
+        public T build() {
+            final T instance = super.build();
+            if(maxValue!=null) instance.setMaxValue(maxValue);
+            if(minValue!=null) instance.setMinValue(minValue);
+            return instance;
         }
     }
+
+    public static class ComparableNumberNodeBuilder<N extends Number & Comparable<N>,T extends NumberNode<N>> extends NumberNodeBuilder<N,T>{
+
+        public ComparableNumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+            super(name, builder);
+        }
+
+        @Nonnull
+        @Override
+        public T build() {
+            final T instance = super.build();
+            if(maxValue != null && minValue != null && maxValue.compareTo(minValue)<0) throw new IllegalArgumentException(String.valueOf(maxValue.compareTo(minValue)));
+            if(maxValue != null) instance.setMaxValue(maxValue);
+            if(minValue != null) instance.setMinValue(minValue);
+            return instance;
+        }
+    }
+
     public static class PermitNodeBuilder implements INodeBuilder<PermitNode>{
         private BiFunction<MinecraftServer, ICommandSender,Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
 
@@ -239,6 +320,13 @@ public class Nodes {
         @FunctionalInterface
         public interface CommandRunFunction{
             void run(@Nonnull World world, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nonnull Context context) throws CommandException;
+
+            static void notifyCommandListener(@Nonnull Context context, String translationKey, Object... translationArgs) {
+                CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), translationKey, translationArgs);
+            }
+            static void notifyCommandListener(@Nonnull Context context, String translationKey,final int flags, Object... translationArgs) {
+                CommandBase.notifyCommandListener(context.getSender(), context.getCommand(),flags, translationKey, translationArgs);
+            }
         }
     }
 
@@ -354,7 +442,7 @@ public class Nodes {
         protected List<ConditionBuilder> conditions = new ArrayList<>();
 
         @Nonnull
-        public ConditionBuilder as(@Nonnull BiPredicate<List<String>,Context> condition){
+        public ConditionBuilder as(@Nonnull TriPredicate<MinecraftServer, ICommandSender,List<String>> condition){
             final ConditionBuilder builder =new ConditionBuilder(condition);
             conditions.add(builder);
             return builder;
@@ -369,11 +457,11 @@ public class Nodes {
         }
 
         public class ConditionBuilder{
-            final BiPredicate<List<String>,Context> predicate;
+            final TriPredicate<MinecraftServer, ICommandSender,List<String>> predicate;
             INodeBuilder<?> child;
             ICommandNode bakedChild;
 
-            public ConditionBuilder(@Nonnull BiPredicate<List<String>, Context> predicate) {
+            public ConditionBuilder(@Nonnull TriPredicate<MinecraftServer, ICommandSender,List<String>> predicate) {
                 this.predicate = predicate;
             }
 

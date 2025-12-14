@@ -27,21 +27,25 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class BlockPosNode extends ParameterNode {
-    public static final DefaultParser DEFAULT_PARSER = (node, context) -> context.put(node.name, context.getSender().getPosition());
+public class BlockPosNode extends ParameterNode<BlockPos> {
+    public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.put(node.name, context.getSender().getPosition());
 
     public BlockPosNode(@Nonnull String name) {
         super(name);
@@ -60,23 +64,26 @@ public class BlockPosNode extends ParameterNode {
         context.put(name,pos);
     }
 
+    @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final boolean parsed = checkAndParse(args,context);
-        if(childNode != null){
-            String x=null,y=null,z=null;
-            if(parsed){
-                x = args.pollFirst();
-                y = args.pollFirst();
-                z = args.pollFirst();
-            }
-            childNode.execute(args,context);
-            if(parsed){
-                args.addFirst(z);
-                args.addFirst(y);
-                args.addFirst(x);
-            }
+    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
+        final List<String> suggests = Lists.newArrayList("~");
+        switch (args.size()){
+            case 1:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getX()):String.valueOf(targetPos.getX()));
+                break;
+            case 2:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getY()):String.valueOf(targetPos.getY()));
+                break;
+            case 3:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getZ()):String.valueOf(targetPos.getZ()));
+                break;
         }
-        context.remove(name);
+        return suggests;
+    }
+
+    @Override
+    public int getParametersLength() {
+        return 3;
     }
 }

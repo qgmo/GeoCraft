@@ -27,10 +27,13 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node;
 
+import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.command.Context;
@@ -38,14 +41,15 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class AtmosphereNode extends ParameterNode {
-    public static final DefaultParser DEFAULT_PARSER = (parameterNode, context) -> {
+public class AtmosphereNode extends ParameterNode<IAtmosphereAccessor> {
+    public static final DefaultParser<IAtmosphereAccessor> DEFAULT_PARSER = (parameterNode, context) -> {
         final BlockPos pos = context.getSender().getPosition();
         final boolean notAir;
         final World world = context.getWorld();
@@ -86,25 +90,26 @@ public class AtmosphereNode extends ParameterNode {
         context.put(name,accessor);
     }
 
+    @Nullable
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
-        final boolean parsed = checkAndParse(args,context);
-        if(childNode != null){
-            String x=null,y=null,z=null,bool=null;
-            if(parsed){
-                x = args.pollFirst();
-                y = args.pollFirst();
-                z = args.pollFirst();
-                bool = args.pollFirst();
-            }
-            childNode.execute(args,context);
-            if(parsed){
-                args.addFirst(bool);
-                args.addFirst(z);
-                args.addFirst(y);
-                args.addFirst(x);
-            }
+    public List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull List<String> args, @Nullable BlockPos targetPos) {
+        final List<String> suggests = args.size()<=3?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
+        switch (args.size()){
+            case 1:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getX()):String.valueOf(targetPos.getX()));
+                break;
+            case 2:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getY()):String.valueOf(targetPos.getY()));
+                break;
+            case 3:
+                suggests.add(targetPos==null?String.valueOf(sender.getPosition().getZ()):String.valueOf(targetPos.getZ()));
+                break;
         }
-        context.remove(name);
+        return suggests;
+    }
+
+    @Override
+    public int getParametersLength() {
+        return 4;
     }
 }

@@ -25,26 +25,32 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
-
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.Context;
+package top.qiguaiaaaa.geocraft.api.function;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * @author QiguaiAAAA
  */
-public interface ICommandNode {
+@FunctionalInterface
+public interface TriPredicate<T,F,U> {
+    boolean test(T t,F f,U u);
 
-    <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException;
+    @Nonnull
+    default TriPredicate<T,F,U> and(@Nonnull TriPredicate<? super T,? super F, ? super U> other) {
+        Objects.requireNonNull(other);
+        return (T t,F f, U u) -> test(t,f,u) && other.test(t,f,u);
+    }
 
-    @Nullable
-    <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server,@Nonnull ICommandSender sender,@Nonnull T args, @Nullable BlockPos targetPos);
+    @Nonnull
+    default TriPredicate<T,F,U> negate() {
+        return (T t,F f,U u) -> !test(t,f,u);
+    }
+
+    @Nonnull
+    default TriPredicate<T,F,U> or(@Nonnull TriPredicate<? super T,? super F,? super U> other) {
+        Objects.requireNonNull(other);
+        return (T t,F f,U u) -> test(t, f, u) || other.test(t, f, u);
+    }
 }

@@ -27,7 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command;
 
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -40,11 +43,13 @@ import java.util.Map;
  * @author QiguaiAAAA
  */
 public final class Context{
+    public final ICommand command;
     private final Map<String,Object> contexts = new HashMap<>();
     private final ICommandSender sender;
     private final MinecraftServer server;
 
-    public Context(@Nonnull MinecraftServer server,@Nonnull ICommandSender sender) {
+    public Context(@Nonnull ICommand command,@Nonnull MinecraftServer server,@Nonnull ICommandSender sender) {
+        this.command = command;
         this.sender = sender;
         this.server = server;
     }
@@ -79,8 +84,22 @@ public final class Context{
     }
 
     @Nonnull
+    public EntityPlayerMP getSenderAsPlayer() throws PlayerNotFoundException {
+        if (sender instanceof EntityPlayerMP) {
+            return (EntityPlayerMP)sender;
+        } else {
+            throw new PlayerNotFoundException("commands.generic.player.unspecified");
+        }
+    }
+
+    @Nonnull
     public World getWorld() {
         return sender.getEntityWorld();
+    }
+
+    @Nonnull
+    public ICommand getCommand() {
+        return command;
     }
 
     @Nonnull

@@ -28,27 +28,34 @@
 package top.qiguaiaaaa.geocraft.api.command.node;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class ParameterNode extends NoSplitNode implements IOptionalNode{
+public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalNode{
+    private static final ThreadLocal<Stack<String>> ParasStack = ThreadLocal.withInitial(Stack::new);
     protected final String name;
     protected boolean optional;
-    protected DefaultParser defaultParser;
+    protected DefaultParser<P> defaultParser;
 
     public ParameterNode(@Nonnull String name) {
         this.name = name;
     }
 
-    public void setDefaultParser(DefaultParser defaultParser) {
+    public void setDefaultParser(DefaultParser<P> defaultParser) {
         this.defaultParser = defaultParser;
     }
 
@@ -66,8 +73,54 @@ public abstract class ParameterNode extends NoSplitNode implements IOptionalNode
         return optional;
     }
 
-    public abstract <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException;
-    public abstract <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException;
+    @Override
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull Context context) throws CommandException {
+        final boolean parsed = checkAndParse(args,context);
+        final Stack<String> paras = parsed?ParasStack.get():null;
+        if(childNode != null){
+            if(parsed){
+                paras.clear();
+                for(int i=0;i<getParametersLength();i++){
+                    paras.push(args.pollFirst());
+                }
+            }
+            try {
+                childNode.execute(args,context);
+            }finally {
+                if(parsed){
+                    while (!paras.isEmpty()){
+                        args.addFirst(paras.pop());
+                    }
+                }
+            }
+        }
+        context.remove(name);
+    }
+
+    @Nullable
+    @Override
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
+        if(args.size()>getParametersLength()){
+            final Stack<String> paras = ParasStack.get();
+            paras.clear();
+            for(int i=0;i<getParametersLength();i++){
+                paras.push(args.pollFirst());
+            }
+            try {
+                return childNode.suggest(server, sender, args, targetPos);
+            }finally {
+                while (!paras.isEmpty()){
+                    args.addFirst(paras.pop());
+                }
+            }
+        }else if(args.size()==0){
+            return null;
+        }else {
+            final List<String> suggests = suggestParameter(server,sender,args,targetPos);
+            return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.getLast()))
+                    .map(s -> s.replace(args.get(0),"")).collect(Collectors.toList());
+        }
+    }
 
     protected final <T extends List<String> & Deque<String>> boolean checkAndParse(@Nonnull T args, @Nonnull Context context) throws CommandException{
         if(checkValid(args,context)){
@@ -78,10 +131,19 @@ public abstract class ParameterNode extends NoSplitNode implements IOptionalNode
         return false;
     }
 
-    public interface DefaultParser{
-        void parser(@Nonnull ParameterNode node,@Nonnull Context context) throws CommandException;
+    public abstract int getParametersLength();
 
-        default DefaultParser andThen(@Nonnull DefaultParser after) {
+    public abstract <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull Context context) throws WrongUsageException;
+
+    public abstract <T extends List<String> & Deque<String>> void parseParameter(@Nonnull T args, @Nonnull Context context) throws CommandException;
+
+    @Nullable
+    public abstract List<String> suggestParameter(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender,@Nonnull List<String> args,@Nullable BlockPos targetPos);
+
+    public interface DefaultParser<T>{
+        void parser(@Nonnull ParameterNode<T> node,@Nonnull Context context) throws CommandException;
+
+        default DefaultParser<T> andThen(@Nonnull DefaultParser<T> after) {
             Objects.requireNonNull(after);
 
             return (l, r) -> {

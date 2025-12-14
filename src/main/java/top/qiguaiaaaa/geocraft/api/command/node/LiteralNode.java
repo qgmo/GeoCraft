@@ -27,16 +27,18 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.Context;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
@@ -62,9 +64,30 @@ public class LiteralNode extends PermitNode implements IOptionalNode {
         }else if(!isOptional()) throw new WrongUsageException("wrong!");
         else node = defaultNode;
         if(node != null){
-            String first = args.pollFirst();
-            node.execute(args,context);
-            args.addFirst(first);
+            final String first = args.pollFirst();
+            try {
+                node.execute(args,context);
+            }finally {
+                args.addFirst(first);
+            }
+        }
+    }
+
+    @Nullable
+    @Override
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull T args, @Nullable BlockPos targetPos) {
+        if(args.size()>1){
+            final String first = args.pollFirst();
+            try {
+                ICommandNode nextNode = literal2Node.get(first);
+                return nextNode.suggest(server, sender, args, targetPos);
+            }finally {
+                args.addFirst(first);
+            }
+        }else if(args.size()>0){
+            return Lists.newArrayList(literal2Node.keySet());
+        }else {
+            return null;
         }
     }
 
