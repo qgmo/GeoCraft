@@ -30,78 +30,50 @@ package top.qiguaiaaaa.geocraft.api.command.node;
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class LiteralNode extends PermitNode implements IOptionalNode {
-    protected final Map<String, ICommandNode> literal2Node = new LinkedHashMap<>();
+public class LiteralNode extends PermitNode implements ISmartNode{
 
-    protected ICommandNode defaultNode;
+    protected final @Nonnull String literal;
 
-    protected boolean optional;
+    protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
 
-    public void addLiteral(@Nonnull String literal,@Nonnull ICommandNode node){
-        literal2Node.put(literal,node);
+    public LiteralNode(@Nonnull String literal){
+        this.literal= literal;
     }
 
+    @Override
+    public boolean match(@Nonnull List<String> args, @Nonnull CommandContext context) {
+        if(matchChecker!=null) return matchChecker.test(args,context);
+        return args.size()>0 && literal.equals(args.get(0));
+    }
+
+    @Override
+    public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> checker) {
+        this.matchChecker = checker;
+    }
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new WrongUsageException("Not enough permission!");
-        ICommandNode node;
-        if(args.size()>0){
-            node = literal2Node.get(args.getFirst());
-        }else if(!isOptional()) throw new WrongUsageException("wrong!");
-        else node = defaultNode;
-        if(node != null){
-            final String first = args.pollFirst();
-            try {
-                node.execute(args,context);
-            }finally {
-                args.addFirst(first);
-            }
-        }
+        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
+        if(!match(args,context)) throw new WrongUsageException("Wrong");
+        if(childNode != null) childNode.execute(args,context);
     }
 
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        if(args.size()>1){
-            final String first = args.pollFirst();
-            try {
-                ICommandNode nextNode = literal2Node.get(first);
-                return nextNode.suggest(args, context);
-            }finally {
-                args.addFirst(first);
-            }
-        }else if(args.size()>0){
-            return Lists.newArrayList(literal2Node.keySet());
-        }else {
-            return null;
-        }
-    }
-
-    public void setDefaultNode(@Nullable ICommandNode defaultNode) {
-        this.defaultNode = defaultNode;
-    }
-
-    @Override
-    public void setOptional(boolean optional) {
-        this.optional = optional;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return optional;
+        return Lists.newArrayList(literal);
     }
 }

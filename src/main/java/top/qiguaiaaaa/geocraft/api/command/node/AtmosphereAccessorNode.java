@@ -31,18 +31,16 @@ import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -50,7 +48,7 @@ import java.util.function.BiFunction;
 /**
  * @author QiguaiAAAA
  */
-public class AtmosphereNode extends ParameterNode<IAtmosphereAccessor> {
+public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccessor> {
     public static final DefaultParser<IAtmosphereAccessor> DEFAULT_PARSER = (parameterNode, context) -> {
         final BlockPos pos = context.getSender().getPosition();
         final boolean notAir;
@@ -80,16 +78,15 @@ public class AtmosphereNode extends ParameterNode<IAtmosphereAccessor> {
         return suggests;
     };
 
-    public AtmosphereNode(@Nonnull String name) {
+    public AtmosphereAccessorNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
-        if(args.size()<4 && args.size()>0 || args.size()==0 && !isOptional()) throw new WrongUsageException("Wrong usage!");
-        return args.size()>=4;
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+        return MATCH_FOUR_PARAMETER.check(this,args,context);
     }
 
     @Override

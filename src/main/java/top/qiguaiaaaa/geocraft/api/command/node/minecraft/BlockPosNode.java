@@ -25,51 +25,64 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public class ItemSelectorNode extends ParameterNode<Item> {
+public class BlockPosNode extends SmartParameterNode<BlockPos> {
+    public static final DefaultParser<BlockPos> DEFAULT_PARSER = (node, context) -> context.getSender().getPosition();
 
-    public static final DefaultParser<Item> DEFAULT_PARSER = (node, context) -> Items.AIR;
-    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> Item.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList()));
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
+        final List<String> suggests = Lists.newArrayList("~");
+        final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
+        switch (args.size()){
+            case 1:
+                suggests.add(String.valueOf(pos.getX()));
+                break;
+            case 2:
+                suggests.add(String.valueOf(pos.getY()));
+                break;
+            case 3:
+                suggests.add(String.valueOf(pos.getZ()));
+                break;
+        }
+        return suggests;
+    });
 
-    public ItemSelectorNode(@Nonnull String name) {
+    public BlockPosNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws WrongUsageException {
-        if(!isOptional()&&args.isEmpty()) throw new WrongUsageException("wrong!");
-        return args.size()>=1;
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+        return MATCH_THREE_PARAMETER.check(this,args,context);
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Item parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.getItemByText(context.getSender(),args.getFirst());
+    public <T extends List<String> & Deque<String>> BlockPos parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return CommandBase.parseBlockPos(context.getSender(),args.toArray(new String[0]), 0,false);
     }
 
     @Override
     public int getParametersLength() {
-        return 1;
+        return 3;
     }
 }

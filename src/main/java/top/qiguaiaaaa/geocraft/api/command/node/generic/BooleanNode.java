@@ -31,26 +31,30 @@ import com.google.common.collect.Lists;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class BooleanNode extends ParameterNode<Boolean> {
+public class BooleanNode extends SmartParameterNode<Boolean> {
     public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
+    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0 && ("true".equals(args.get(0))) || "false".equals(args.get(0));
 
     public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
     public BooleanNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
+        setMatcher(DEFAULT_MATCHER);
     }
 
     @Override
@@ -59,9 +63,8 @@ public class BooleanNode extends ParameterNode<Boolean> {
     }
 
     @Override
-    public <V extends List<String> & Deque<String>> boolean checkValid(@Nonnull V args, @Nonnull ExecuteContext context) throws WrongUsageException {
-        if(args.isEmpty()&&!isOptional()) throw new WrongUsageException("wrong!");
-        return !args.isEmpty();
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
+        return MATCH_ONE_PARAMETER.check(this,args,context);
     }
 
     @Override

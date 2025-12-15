@@ -25,37 +25,20 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node;
 
-import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class StringNode extends SmartParameterNode<String> {
-    public StringNode(@Nonnull String name) {
-        super(name);
-    }
+public interface ISmartNode extends ICommandNode{
+    boolean match(@Nonnull List<String> args, @Nonnull CommandContext context);
 
-    @Override
-    public int getParametersLength() {
-        return 1;
-    }
-
-    @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
-        return MATCH_ONE_PARAMETER.check(this,args,context);
-    }
-
-    @Override
-    public <T extends List<String> & Deque<String>> String parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) {
-        return args.getFirst();
-    }
+    void setMatcher(@Nullable BiPredicate<List<String>,CommandContext> checker);
 }
