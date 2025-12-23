@@ -52,6 +52,7 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
+@Deprecated
 @Mixin(value = BlockClay.class)
 public class BlockClayMixin extends Block implements IBlockSoil {
 

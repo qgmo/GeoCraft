@@ -58,6 +58,7 @@ import static net.minecraft.block.BlockDirt.SNOWY;
 import static net.minecraft.block.BlockDirt.VARIANT;
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 
+@Deprecated
 @Mixin(value = BlockDirt.class)
 public class BlockDirtMixin extends Block implements IBlockSoil, IBlockFalling {
     @Shadow @Final public static PropertyEnum<BlockDirt.DirtType> VARIANT;

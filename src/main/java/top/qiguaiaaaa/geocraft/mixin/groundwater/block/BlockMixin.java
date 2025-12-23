@@ -25,18 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
+package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
 
-import org.apache.logging.log4j.Logger;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import net.minecraft.block.Block;
+import net.minecraft.util.ResourceLocation;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
+
+import javax.annotation.Nullable;
 
 /**
- * @since 0.1
  * @author QiguaiAAAA
  */
-public final class GeoCraftAPI {
-    public final static String VERSION = "0.2.0-beta.2";
-    public final static String MODID = "geocraft";
-    public final static String PROVIDERS = "GeoCraftAPI";
-    public final static Logger LOGGER = APIUtil.LOGGER;
+@Mixin(value = Block.class)
+public abstract class BlockMixin {
+
+    @Shadow private static void registerBlock(int id, ResourceLocation textualID, Block block_){}
+
+    @Inject(method = "registerBlock(ILjava/lang/String;Lnet/minecraft/block/Block;)V",at=@At("HEAD"),cancellable = true)
+    private static void 天圆地方$registerBlock(final int id,final String textualID,final Block block_,final CallbackInfo ci){
+        final @Nullable Block overrideBlock = RegistryHandler.queryOverrideVanillaBlock(textualID);
+        if(overrideBlock != null){
+            ci.cancel();
+            registerBlock(id,new ResourceLocation(textualID),overrideBlock);
+        }
+    }
 }

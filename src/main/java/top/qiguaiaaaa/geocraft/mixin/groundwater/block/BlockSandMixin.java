@@ -54,6 +54,7 @@ import java.util.Random;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 
+@Deprecated
 @Mixin(value = BlockSand.class)
 public class BlockSandMixin extends BlockFalling implements IBlockSoil {
     @Shadow @Final public static PropertyEnum<BlockSand.EnumType> VARIANT;

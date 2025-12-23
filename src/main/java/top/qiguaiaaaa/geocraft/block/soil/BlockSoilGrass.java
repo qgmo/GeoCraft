@@ -25,11 +25,12 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
+package top.qiguaiaaaa.geocraft.block.soil;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockGrass;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,57 +39,68 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
 
-import static net.minecraft.block.BlockGrass.SNOWY;
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 
-@Deprecated
-@Mixin(value = BlockGrass.class)
-public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling {
-    @Unique
+/**
+ * 为了更好的兼容性，采用继承替换而非直接 Mixin
+ * @author QiguaiAAAA
+ */
+public class BlockSoilGrass extends BlockGrass implements IBlockSoil, IBlockFalling {
     private final ThreadLocal<Boolean> isRandomTick = ThreadLocal.withInitial(()-> Boolean.FALSE);
-    public BlockGrassMixin(Material materialIn) {
-        super(materialIn);
-    }
 
-    @Inject(method = "<init>",at =@At("RETURN"))
-    protected void BlockGrass(CallbackInfo ci) {
+    public BlockSoilGrass() {
         this.setDefaultState(this.blockState.getBaseState()
                 .withProperty(SNOWY, Boolean.FALSE)
                 .withProperty(HUMIDITY, 0));
+        this.setSoundType(SoundType.PLANT);
     }
 
-    /**
-     * {@link Block#getStateFromMeta(int)}
-     */
-    public IBlockState func_176203_a(int meta) {
-        if(meta>4) return this.getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
+    @Override
+    public void updateTick(@Nonnull final World worldIn, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final Random rand) {
+        if(worldIn.isRemote) return;
+        if(!isRandomTick.get()){
+            if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
+            checkAndFall(worldIn, pos);
+            return;
+        }
+        if (!worldIn.isAreaLoaded(pos, 3)) return;
+        if (worldIn.getLightFromNeighbors(pos.up()) < 4 && worldIn.getBlockState(pos.up()).getLightOpacity(worldIn, pos.up()) > 2) {
+            worldIn.setBlockState(pos, state.withProperty(HUMIDITY,state.getValue(HUMIDITY)));
+            return;
+        }
+        final BlockPosI.Mutable mutablePos = new BlockPosI.Mutable();
+        if (worldIn.getLightFromNeighbors(pos.up()) >= 9) {
+            for (int i = 0; i < 4; ++i) {
+                mutablePos.setPos(pos.getX()+rand.nextInt(3) - 1, pos.getY()+rand.nextInt(5) - 3, pos.getZ()+rand.nextInt(3) - 1);
+
+                if (mutablePos.getY() >= 0 && mutablePos.getY() < 256 && !worldIn.isBlockLoaded(mutablePos)) {
+                    return;
+                }
+
+                mutablePos.upM();
+                IBlockState upState = worldIn.getBlockState(mutablePos);
+                mutablePos.downM();
+                IBlockState curPosState = worldIn.getBlockState(mutablePos);
+
+                mutablePos.upM();
+                if (curPosState.getBlock() == Blocks.DIRT && curPosState.getValue(BlockDirt.VARIANT) == BlockDirt.DirtType.DIRT && worldIn.getLightFromNeighbors(mutablePos) >= 4 && upState.getLightOpacity(worldIn, pos.up()) <= 2) {
+                    worldIn.setBlockState(mutablePos.downM(), Blocks.GRASS.getDefaultState().withProperty(HUMIDITY,curPosState.getValue(HUMIDITY)));
+                }
+            }
+        }
     }
 
-    @Inject(method = "getMetaFromState",at = @At("HEAD"), cancellable = true)
-    protected void getMetaFromState(IBlockState state, CallbackInfoReturnable<Integer> cir) {
-        cir.cancel();
-        cir.setReturnValue(state.getValue(HUMIDITY));
-    }
-
-    @Inject(method = "createBlockState",at = @At("HEAD"), cancellable = true)
-    protected void createBlockState(CallbackInfoReturnable<BlockStateContainer> cir) {
-        cir.cancel();
-        cir.setReturnValue(new BlockStateContainer(this, SNOWY, HUMIDITY));
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return state.getValue(HUMIDITY);
     }
 
     @Override
@@ -116,7 +128,7 @@ public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling 
     }
 
     @Override
-    public void onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+    public void onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state) {
         if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
     }
@@ -126,33 +138,22 @@ public class BlockGrassMixin extends Block implements IBlockSoil, IBlockFalling 
         return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
 
-    @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
-    public void updateTick_CheckFalling(World world,BlockPos pos,IBlockState state,Random rand,CallbackInfo ci){
-        if(isRandomTick.get()) return;
-        ci.cancel();
-        if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
-        if(!world.isRemote){
-            checkAndFall(world, pos);
-        }
+    @Nonnull
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, SNOWY, HUMIDITY);
     }
 
-    @Redirect(method = "updateTick",at =
-    @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)Z",
-            ordinal = 0))
-    public boolean updateTick_TurnToDirt(World instance, BlockPos pos, IBlockState state) {
-        IBlockState curState = instance.getBlockState(pos);
-        return instance.setBlockState(pos, state.withProperty(HUMIDITY,curState.getValue(HUMIDITY)));
+    @Nonnull
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        if(meta>4) return this.getDefaultState();
+        return this.getDefaultState().withProperty(HUMIDITY,meta);
     }
 
-    @Redirect(method = "updateTick",at =
-    @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;)Z",
-            ordinal = 1))
-    public boolean updateTick_TurnToGrass(World instance, BlockPos pos, IBlockState state) {
-        IBlockState curState = instance.getBlockState(pos);
-        return instance.setBlockState(pos, Blocks.GRASS.getDefaultState().withProperty(HUMIDITY,curState.getValue(HUMIDITY)));
-    }
+    //********************
+    // IBlockSoil
+    //********************
 
     @Nonnull
     @Override

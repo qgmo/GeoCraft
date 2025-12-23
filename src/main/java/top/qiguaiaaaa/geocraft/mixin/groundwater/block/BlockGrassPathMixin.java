@@ -56,6 +56,7 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
+@Deprecated
 @Mixin(BlockGrassPath.class)
 public class BlockGrassPathMixin extends Block implements IBlockSoil,IBlockFalling {
 

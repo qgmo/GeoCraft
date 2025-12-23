@@ -48,6 +48,7 @@ import static net.minecraft.block.BlockFarmland.MOISTURE;
 /**
  * @author QiguaiAAAA
  */
+@Deprecated
 @Mixin(BlockFarmland.class)
 public abstract class BlockFarmlandMixin extends Block implements IBlockSoil {
     @Shadow protected abstract boolean hasCrops(World worldIn, BlockPos pos);

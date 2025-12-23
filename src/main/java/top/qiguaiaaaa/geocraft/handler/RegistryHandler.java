@@ -27,19 +27,55 @@
 
 package top.qiguaiaaaa.geocraft.handler;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
-import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
 import top.qiguaiaaaa.geocraft.handler.event.*;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+
 public final class RegistryHandler {
+    private static final Map<String, Block> OverrideVanillaBlockRegistry = new HashMap<>();
+
+    public static void registerVanillaBlockOverride(@Nonnull String blockId,@Nonnull Block newBlock){
+        OverrideVanillaBlockRegistry.put(blockId,newBlock);
+    }
+
+    @Nullable
+    public static Block queryOverrideVanillaBlock(@Nonnull String blockId){
+        return OverrideVanillaBlockRegistry.get(blockId);
+    }
+
+    static {
+        registerVanillaBlockOverrides();
+    }
+
+    /**
+     * @see Block#registerBlocks()
+     */
+    private static void registerVanillaBlockOverrides(){
+        registerVanillaBlockOverride("grass",new BlockSoilGrass().setHardness(0.6F).setTranslationKey("grass"));
+        registerVanillaBlockOverride("dirt",new BlockSoilDirt().setHardness(0.5F).setTranslationKey("dirt"));
+        registerVanillaBlockOverride("sand",new BlockSoilSand().setHardness(0.5F).setTranslationKey("sand"));
+        registerVanillaBlockOverride("gravel",new BlockSoilGravel().setHardness(0.6F).setTranslationKey("gravel"));
+        registerVanillaBlockOverride("grass_path",new BlockSoilGrassPath().setHardness(0.65F).setTranslationKey("grassPath"));
+        registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
+                .setHardness(0.6F).setTranslationKey("farmland"));
+        registerVanillaBlockOverride("clay",new BlockSoilClay().setHardness(0.6F).setTranslationKey("clay"));
+    }
+
     public static void registerGeographyProperties(RegistryEvent.Register<IGeographyProperty> event){
         IForgeRegistry<IGeographyProperty> registry =event.getRegistry();
         registry.register(DefaultTemperature.TEMPERATURE);

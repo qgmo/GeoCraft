@@ -69,69 +69,69 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
  */
 @Mixin(BlockFarmland.class)
 public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IBlockFalling {
-    @Unique
-    private static boolean isRandomTick = false;
+//    @Unique
+//    private static boolean isRandomTick = false;
     @Shadow @Final protected static AxisAlignedBB field_194405_c;
 
-    @Shadow @Final public static PropertyInteger MOISTURE;
+//    @Shadow @Final public static PropertyInteger MOISTURE;
 
     public BlockFarmlandMixin(Material materialIn) {
         super(materialIn);
     }
 
-    @Override
-    @Unique
-    public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
-        isRandomTick = true;
-        this.onRandomTick(worldIn, pos, state, random);
-        super.randomTick(worldIn, pos, state, random);
-        isRandomTick = false;
-    }
+//    @Override
+//    @Unique
+//    public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
+//        isRandomTick = true;
+//        this.onRandomTick(worldIn, pos, state, random);
+//        super.randomTick(worldIn, pos, state, random);
+//        isRandomTick = false;
+//    }
 
-    /**
-     * @see top.qiguaiaaaa.geocraft.mixin.reality.block.BlockFarmlandMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo) 
-     */
-    @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,order = 999)
-    public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
-        if(isRandomTick) return;
-        ci.cancel();
-        if(getLayers(worldIn,pos,state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
-        if (!worldIn.isRemote) {
-            this.checkAndFall(worldIn, pos);
-        }
-    }
+//    /**
+//     * @see top.qiguaiaaaa.geocraft.mixin.reality.block.BlockFarmlandMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo)
+//     */
+//    @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,order = 999)
+//    public void updateTick(@Nonnull World worldIn, @Nonnull BlockPos pos, IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
+//        if(isRandomTick) return;
+//        ci.cancel();
+//        if(getLayers(worldIn,pos,state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
+//        if (!worldIn.isRemote) {
+//            this.checkAndFall(worldIn, pos);
+//        }
+//    }
 
-    @Override
-    @Unique
-    public int getDustColor(IBlockState state) {
-        return 0xFF866043;
-    }
+//    @Override
+//    @Unique
+//    public int getDustColor(IBlockState state) {
+//        return 0xFF866043;
+//    }
+//
+//    @Override
+//    public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+//        dropWaterWhenBroken(worldIn, pos, state);
+//    }
 
-    @Override
-    public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
-        dropWaterWhenBroken(worldIn, pos, state);
-    }
+//    @Inject(method = "neighborChanged",at =@At("TAIL"))
+//    public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos,CallbackInfo ci) {
+//        state = worldIn.getBlockState(pos);
+//        if(state.getBlock() != this) return;
+//        if(getLayers(worldIn,pos,state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
+//        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
+//    }
 
-    @Inject(method = "neighborChanged",at =@At("TAIL"))
-    public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos,CallbackInfo ci) {
-        state = worldIn.getBlockState(pos);
-        if(state.getBlock() != this) return;
-        if(getLayers(worldIn,pos,state,FluidRegistry.WATER) <= getMaxStableHumidity(state)) return;
-        worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
-    }
+//    @Override
+//    public int tickRate(@Nonnull World worldIn) {
+//        return 5;
+//    }
 
-    @Override
-    public int tickRate(@Nonnull World worldIn) {
-        return 5;
-    }
-
-    @Override
-    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
-        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
-    }
+//    @Override
+//    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+//        return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
+//    }
 
     @Inject(method = "turnToDirt",at = @At("HEAD"),cancellable = true)
-    private static void turnToDirt_Inject(World world, BlockPos pos, CallbackInfo ci) {
+    private static void 天圆地方$turnToDirt_Inject(World world, BlockPos pos, CallbackInfo ci) {
         final IBlockState state = world.getBlockState(pos);
         if(!(state.getBlock() instanceof IBlockSoil)) return;
         ci.cancel();
@@ -150,49 +150,49 @@ public abstract class BlockFarmlandMixin extends Block implements IBlockSoil, IB
     // IBlockSoil
     //***********
 
-    @Nonnull
-    @Override
-    public BlockSoilType getType(@Nonnull IBlockState state) {
-        return BlockSoilType.FARMLAND;
-    }
+//    @Nonnull
+//    @Override
+//    public BlockSoilType getType(@Nonnull IBlockState state) {
+//        return BlockSoilType.FARMLAND;
+//    }
 
-    //***********
-    // IPermeableBlock
-    //***********
-
-    @Override
-    public int getLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid != null && fluid != FluidRegistry.WATER) return 0;
-        int moisture = state.getValue(MOISTURE);
-        return (moisture+1)>>1;
-    }
-
-    @Override
-    public int getHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid == FluidRegistry.WATER || fluid == null) return getHeightPerLayer(world,pos,state)* getLayers(world,pos,state,fluid);
-        return 0;
-    }
-
-    @Override
-    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags) {
-        if(fluid != FluidRegistry.WATER) return false;
-        newLayer = MathHelper.clamp(newLayer,0,4);
-        int moisture = newLayer == 0?0: newLayer *2-1;
-        return world.setBlockState(pos,state.withProperty(MOISTURE,moisture), APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
-    }
-
-    @Nullable
-    @Override
-    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer) {
-        if(fluid != FluidRegistry.WATER) return null;
-        if(layer <0 || layer >4) return null;
-        int moisture = layer == 0?0: layer *2-1;
-        return state.withProperty(MOISTURE,moisture);
-    }
-
-    @Override
-    public boolean isFull(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
-        if(fluid != FluidRegistry.WATER) return true;
-        return state.getValue(MOISTURE) >= 7;
-    }
+//    //***********
+//    // IPermeableBlock
+//    //***********
+//
+//    @Override
+//    public int getLayers(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+//        if(fluid != null && fluid != FluidRegistry.WATER) return 0;
+//        int moisture = state.getValue(MOISTURE);
+//        return (moisture+1)>>1;
+//    }
+//
+//    @Override
+//    public int getHeight(@Nullable World world, @Nullable BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+//        if(fluid == FluidRegistry.WATER || fluid == null) return getHeightPerLayer(world,pos,state)* getLayers(world,pos,state,fluid);
+//        return 0;
+//    }
+//
+//    @Override
+//    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags) {
+//        if(fluid != FluidRegistry.WATER) return false;
+//        newLayer = MathHelper.clamp(newLayer,0,4);
+//        int moisture = newLayer == 0?0: newLayer *2-1;
+//        return world.setBlockState(pos,state.withProperty(MOISTURE,moisture), APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags));
+//    }
+//
+//    @Nullable
+//    @Override
+//    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer) {
+//        if(fluid != FluidRegistry.WATER) return null;
+//        if(layer <0 || layer >4) return null;
+//        int moisture = layer == 0?0: layer *2-1;
+//        return state.withProperty(MOISTURE,moisture);
+//    }
+//
+//    @Override
+//    public boolean isFull(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nullable Fluid fluid) {
+//        if(fluid != FluidRegistry.WATER) return true;
+//        return state.getValue(MOISTURE) >= 7;
+//    }
 }

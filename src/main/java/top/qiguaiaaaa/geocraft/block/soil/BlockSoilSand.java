@@ -25,10 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
+package top.qiguaiaaaa.geocraft.block.soil;
 
-import net.minecraft.block.BlockFalling;
-import net.minecraft.block.BlockGravel;
+import net.minecraft.block.BlockSand;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -36,13 +36,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.block.IBlockSoil;
-import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
 import javax.annotation.Nonnull;
@@ -53,56 +47,71 @@ import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 /**
  * @author QiguaiAAAA
  */
-@Deprecated
-@Mixin(value = BlockGravel.class)
-public class BlockGravelMixin extends BlockFalling implements IBlockSoil {
+public class BlockSoilSand extends BlockSand implements IBlockSoil {
 
-    @Inject(method = "<init>",at = @At(value = "RETURN"))
-    private void injectDefaultState(CallbackInfo ci) {
+    public BlockSoilSand(){
         this.setTickRandomly(true);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(HUMIDITY,0));
-    }
-
-    @Override
-    @Unique
-    public IBlockState getStateFromMeta(int meta) {
-        if(meta>=5) return this.getDefaultState();
-        return this.getDefaultState().withProperty(HUMIDITY,meta);
-    }
-
-    @Override
-    @Unique
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(HUMIDITY);
+        this.setDefaultState(this.blockState.getBaseState().withProperty(VARIANT, BlockSand.EnumType.SAND).withProperty(HUMIDITY,0));
+        this.setSoundType(SoundType.SAND);
     }
 
     @Nonnull
     @Override
-    @Unique
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this,HUMIDITY);
+    public IBlockState getStateFromMeta(int meta) {
+        if(meta>=10) return this.getDefaultState();
+        return this.getDefaultState().withProperty(VARIANT,BlockSand.EnumType.byMetadata(meta%2)).withProperty(HUMIDITY,meta/2);
     }
 
     @Override
-    @Unique
-    public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
+    public int getMetaFromState(@Nonnull final IBlockState state) {
+        return state.getValue(VARIANT).getMetadata()+state.getValue(HUMIDITY)*2;
+    }
+
+    @Nonnull
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, VARIANT,HUMIDITY);
+    }
+
+    @Override
+    public void randomTick(final @Nonnull World worldIn,
+                           final @Nonnull BlockPos pos,
+                           final @Nonnull IBlockState state,
+                           final @Nonnull Random random) {
         this.onRandomTick(worldIn, pos, state, random);
     }
 
     @Override
-    @Unique
-    public void onPlayerDestroy(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state) {
+    public void updateTick(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state,final @Nonnull Random rand) {
+        if(state.getValue(HUMIDITY) == getMaxStableHumidity(state)) return;
+        super.updateTick(worldIn, pos, state, rand);
+    }
+
+    @Override
+    public void onPlayerDestroy(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
         dropWaterWhenBroken(worldIn, pos, state);
     }
 
     @Override
-    public boolean onBlockActivated(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull EntityPlayer playerIn, @Nonnull EnumHand hand, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public boolean onBlockActivated(final @Nonnull World worldIn,
+                                    final @Nonnull BlockPos pos,
+                                    final @Nonnull IBlockState state,
+                                    final @Nonnull EntityPlayer playerIn,
+                                    final @Nonnull EnumHand hand,
+                                    final @Nonnull EnumFacing facing,
+                                    final float hitX,
+                                    final float hitY,
+                                    final float hitZ) {
         return onPlayerUseBottle(worldIn, pos, state, playerIn, hand, facing, hitX, hitY, hitZ);
     }
+
+    //********************
+    // IBlockSoil
+    //********************
 
     @Nonnull
     @Override
     public BlockSoilType getType(@Nonnull IBlockState state) {
-        return BlockSoilType.GRAVEL;
+        return BlockSoilType.SAND;
     }
 }
