@@ -28,7 +28,6 @@
 package top.qiguaiaaaa.geocraft.handler;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -36,6 +35,8 @@ import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
+import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
 import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
@@ -73,6 +74,8 @@ public final class RegistryHandler {
         registerVanillaBlockOverride("grass_path",new BlockSoilGrassPath().setHardness(0.65F).setTranslationKey("grassPath"));
         registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
                 .setHardness(0.6F).setTranslationKey("farmland"));
+        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowExtended():new BlockSnowMoreReality())
+                .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
         registerVanillaBlockOverride("clay",new BlockSoilClay().setHardness(0.6F).setTranslationKey("clay"));
     }
 

@@ -65,13 +65,14 @@ public class BlockLiquidUpdater {
      * @param state 需要检测的方块状态
      * @return 若阻挡，则返回true
      */
-    public static boolean isBlocked(IBlockState state) {
-        Block block = state.getBlock();
-        Material material = state.getMaterial();
+    public static boolean isBlocked(final @Nonnull IBlockState state) {
+        final Block block = state.getBlock();
+        final Material material = state.getMaterial();
 
-        if (!(block instanceof BlockDoor) && block != Blocks.STANDING_SIGN && block != Blocks.LADDER && block != Blocks.REEDS) {
+        if (!(block instanceof BlockDoor) && block != Blocks.STANDING_SIGN && block != Blocks.LADDER && block != Blocks.REEDS) { //来自原版
             return material == Material.PORTAL || material == Material.STRUCTURE_VOID || material.blocksMovement();
         }
+        if(material.isLiquid() && !(block instanceof BlockLiquid)) return false; // Fix #3 ，BOP 之类的模组可能会加入 Material 为流体但不是 BlockLiquid 的方块，要排除
         return true;
     }
 
@@ -103,9 +104,11 @@ public class BlockLiquidUpdater {
      * @param state 该方块位置的方块状态
      * @return 若能,则返回true,否则返回false
      */
-    public boolean canFlowInto(IBlockState state){
-        Material material = state.getMaterial();
-        return material != this.material && material != Material.LAVA && !isBlocked(state);
+    public boolean canFlowInto(final @Nonnull IBlockState state){
+        final Material material = state.getMaterial();
+        return material != this.material //不是同种流体
+                && material != Material.LAVA //目标不是岩浆
+                && !isBlocked(state);
     }
 
     /**

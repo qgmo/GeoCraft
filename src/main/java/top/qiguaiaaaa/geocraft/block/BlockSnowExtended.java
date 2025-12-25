@@ -29,6 +29,8 @@ package top.qiguaiaaaa.geocraft.block;
 
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockSnow;
+import net.minecraft.block.SoundType;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -44,21 +46,52 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Random;
 
-import static net.minecraft.block.BlockSnow.LAYERS;
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_INFO;
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.CREATE_INFO_FUNC;
 
 /**
- * Mixin Snow 的通用逻辑
- * @since 0.2.0
+ * @since 0.2.0-beta.2
  * @author QiguaiAAAA
  */
-@Deprecated
-public interface IBlockSnow {
+public class BlockSnowExtended extends BlockSnow {
+    public BlockSnowExtended(){
+        this.setTickRandomly(true);
+        this.setDefaultState(this.blockState.getBaseState()
+                .withProperty(LAYERS,1)
+                .withProperty(MIXTURE,false));
+        this.setSoundType(SoundType.SNOW);
+    }
+
+    /**
+     * 自定义的融化行为
+     */
+    @Override
+    public void updateTick(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state,final @Nonnull Random rand) {
+        if(worldIn.isRemote) return;
+        trySmelt(worldIn, pos, state, rand);
+    }
+
+    @Nonnull
+    @Override
+    public IBlockState getStateFromMeta(final int meta) {
+        return this.getDefaultState()
+                .withProperty(LAYERS,(meta&7)+1)
+                .withProperty(MIXTURE,(meta&8) != 0);
+    }
+
+    @Override
+    public int getMetaFromState(final @Nonnull IBlockState state) {
+        return (state.getValue(LAYERS)-1)|(state.getValue(MIXTURE)?8:0);
+    }
+
+    @Nonnull
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this,LAYERS,MIXTURE);
+    }
 
     /**
      * 尝试融化雪
@@ -68,7 +101,7 @@ public interface IBlockSnow {
      * @param random 随机数发生器
      * @return 是否变成了非雪方块
      */
-    default boolean trySmelt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random){
+    protected boolean trySmelt(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nonnull IBlockState state,final @Nonnull Random random){
         final int layer = state.getValue(BlockSnow.LAYERS);
         final boolean isMixture = state.getValue(MIXTURE);
         try(@Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
@@ -113,7 +146,7 @@ public interface IBlockSnow {
      * @param layer 层数，应介于 1 到8
      * @throws IllegalArgumentException 如果指定的层数不在 1 到 8 之间
      */
-    default void turnIntoMixture(@Nonnull World worldIn,@Nonnull BlockPos pos, int layer) {
+    protected void turnIntoMixture(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final int layer) {
         worldIn.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState().withProperty(LAYERS,layer).withProperty(MIXTURE,true));
     }
 
@@ -125,7 +158,7 @@ public interface IBlockSnow {
      * @param level 融化的层数
      * @throws NullPointerException 若世界或位置参数为 null
      */
-    default void turnIntoWater(@Nonnull World worldIn,@Nonnull BlockPos pos, @Nullable IAtmosphereAccessor accessor, int level) {
+    protected void turnIntoWater(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nullable IAtmosphereAccessor accessor,final int level) {
         if (worldIn.provider.doesWaterVaporize()) {
             if(accessor != null && accessor.canAccessAtmosphere()){
                 accessor.fillFluidToAtmosphere(FluidRegistry.WATER,(8-level)* FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);

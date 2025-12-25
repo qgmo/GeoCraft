@@ -822,6 +822,9 @@ public final class FluidPressureSearchManager implements Runnable{
                 }else{
                     info.getRunningTasks().add(task);
                 }
+            }catch (IndexOutOfBoundsException e){  //Fastutil的多线程错误
+                task.cancel();
+                info.unlockPos(task);
             }catch (Throwable e){
                 GeoCraft.getLogger().warn("When loading pressure for fluid {} at {} in world {},",
                         task.getFluid().getUnlocalizedName(),task.getBeginPos(),info.world.provider.getDimension());

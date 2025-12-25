@@ -65,6 +65,7 @@ import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_I
 import static top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo.CREATE_INFO_FUNC;
 
 @Mixin(value = BlockSnow.class,priority = 1100)
+@Deprecated
 public class BlockSnowMixin extends Block implements IBlockSnow {
     @Shadow @Final public static PropertyInteger LAYERS;
 

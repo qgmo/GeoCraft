@@ -80,16 +80,21 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param slopeModeFlowDirections Q>1 坡度流动模式下的选择集合
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void checkNeighborsToFindFlowChoices(World worldIn, BlockPos pos, IBlockState state , int liquidQuanta, List<FlowChoice> averageModeFlowDirections, @Nullable Set<EnumFacing> slopeModeFlowDirections){
-        for(EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
-            IBlockState facingState = worldIn.getBlockState(mutablePos.setPos(pos.getX()+facing.getXOffset(),pos.getY(),pos.getZ()+facing.getZOffset()));
+    public void checkNeighborsToFindFlowChoices(final @Nonnull World worldIn,
+                                                final @Nonnull BlockPos pos,
+                                                final @Nonnull IBlockState state ,
+                                                final int liquidQuanta,
+                                                final @Nonnull List<FlowChoice> averageModeFlowDirections,
+                                                final @Nullable Set<EnumFacing> slopeModeFlowDirections){
+        for(final @Nonnull EnumFacing facing:EnumFacing.Plane.HORIZONTAL){
+            final IBlockState facingState = worldIn.getBlockState(mutablePos.setPos(pos.getX()+facing.getXOffset(),pos.getY(),pos.getZ()+facing.getZOffset()));
             if(slopeModeFlowDirections==null?
-                    !canFlowIntoRegardedPermeable(worldIn,mutablePos,facingState,state,facing.getOpposite()):
-                    !canFlowInto2(worldIn,mutablePos,facingState,state,facing.getOpposite()))
+                    !canFlowIntoRegardedPermeable(worldIn,mutablePos,facingState,state,facing.getOpposite()): //不启用坡度流动，不用管坡度流动的情况
+                    !canFlowInto2(worldIn,mutablePos,facingState,state,facing.getOpposite())) //启用坡度流动，包含坡度流动的情况
                 continue;
 
-            Block block = facingState.getBlock();
-            ILayeredFluidHost permeableBlock = (block instanceof ILayeredFluidHost)?(ILayeredFluidHost) block:null;
+            final Block block = facingState.getBlock();
+            final ILayeredFluidHost permeableBlock = (block instanceof ILayeredFluidHost)?(ILayeredFluidHost) block:null;
 
             int facingHeight,facingQuanta,facingHeightPerLayer = ILayeredFluidHostFiniteLiquid.HEIGHT_PER_QUANTA;
             if(permeableBlock != null){
@@ -116,7 +121,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
     public boolean canFlowIntoRegardedPermeable(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull IBlockState fromState,@Nonnull EnumFacing from){
         if(canFlowInto(state)) return true;
         if(state.getBlock() instanceof ILayeredFluidHost){
-            ILayeredFluidHost block = (ILayeredFluidHost) state.getBlock();
+            final ILayeredFluidHost block = (ILayeredFluidHost) state.getBlock();
             return block.canFill(world, pos, state, fluid,from,fromState);
         }
         return false;
@@ -185,10 +190,11 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param downState 下方方块状态
      * @return 如果可以往下流动，则返回true
      */
-    public boolean canMoveDownTo(IBlockState downState){
+    public boolean canMoveDownTo(final @Nonnull IBlockState downState){
         if(downState.getBlock() instanceof IFluidBlock) return false;
-        Material material = downState.getMaterial();
+        final Material material = downState.getMaterial();
         if(material.isLiquid()){
+            if(!(downState.getBlock() instanceof BlockLiquid)) return false;
             if(material == Material.WATER && this.material == Material.LAVA) return true;
             if(material != this.material) return false;
             return downState.getValue(LEVEL) != 0;
@@ -268,7 +274,10 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param thisQuanta 搜寻者的液体量
      * @return 一个流动方向的集合，意味着最佳的流动方向
      */
-    public Set<EnumFacing> getPossibleFlowDirections(World worldIn, BlockPos pos,Set<EnumFacing> accessibleDirections,int thisQuanta) {
+    public Set<EnumFacing> getPossibleFlowDirections(final @Nonnull World worldIn,
+                                                     final @Nonnull BlockPos pos,
+                                                     final @Nonnull Set<EnumFacing> accessibleDirections,
+                                                     final int thisQuanta) {
         double difficulty = 10000d;
         Set<EnumFacing> possibleDirections = EnumSet.noneOf(EnumFacing.class);
 
@@ -297,7 +306,11 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param from 来源方向
      * @return 难易度，即坡度的余切值
      */
-    public double getSlopeDistance(World worldIn, BlockPos pos, int distance,int thisQuanta ,EnumFacing from) {
+    public double getSlopeDistance(final @Nonnull World worldIn,
+                                   final @Nonnull BlockPos pos,
+                                   final int distance,
+                                   final int thisQuanta ,
+                                   final @Nonnull EnumFacing from) {
         double difficulty = 10000d;
 
         for (EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
@@ -336,7 +349,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * Q>1 坡度流动模式的搜寻距离
      * @param worldIn 所在世界
      */
-    public int getSlopeFindDistance2(World worldIn) {
+    public int getSlopeFindDistance2(final @Nonnull World worldIn) {
         if(!FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()) return 0;
         int ans = FluidPhysicsConfig.slopeFindDistanceForWaterWhenQuantaAbove1.getValue();
         if(this.material == Material.LAVA && !worldIn.provider.doesWaterVaporize()){
@@ -351,7 +364,7 @@ public class RealityBlockLiquidUpdater extends BlockLiquidUpdater {
      * @param thisQuanta 自身流体量
      * @return 如果不是一个流体，则返回INT整形最大值。如果是一个流体，则返回自身流体量减去对方流体量的结果。
      */
-    public int getQuantaDiffer(IBlockState state,int thisQuanta){
+    public int getQuantaDiffer(final @Nonnull IBlockState state,final int thisQuanta){
         if(!isSameLiquid(state)) return Integer.MIN_VALUE;
         int quanta = 8- getDepth(state);
         if(quanta<0) quanta = 0;

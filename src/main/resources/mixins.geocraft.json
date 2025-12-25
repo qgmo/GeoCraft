@@ -5,7 +5,6 @@
   "refmap": "mixins.geocraft.refmap.json",
   "mixins": [
     "common.block.BlockFluidBaseAccessor",
-    "common.block.BlockSnowMixin",
     "common.item.ItemGlassBottleMixin",
     "common.item.ItemHoeMixin",
     "common.entity.EntityFallingBlockMixin",

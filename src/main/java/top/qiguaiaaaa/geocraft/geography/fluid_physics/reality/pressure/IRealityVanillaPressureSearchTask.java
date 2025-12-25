@@ -43,7 +43,7 @@ public interface IRealityVanillaPressureSearchTask extends IRealityPressureSearc
 
     default boolean canSearchInto(@Nonnull WorldServer world, @Nonnull BlockPos pos, int[] dir){
         if(!world.isBlockLoaded(pos)) return false;
-        IBlockState state = world.getBlockState(pos);
+        final IBlockState state = world.getBlockState(pos);
         if(state.getMaterial() == Material.AIR && (dir[1] != 0 || getBeginQuanta()>1 || pos.getY() < getBeginPos().getY())) return true;
         if(FluidUtil.getFluid(state) == getFluid()) return true;
         return false;

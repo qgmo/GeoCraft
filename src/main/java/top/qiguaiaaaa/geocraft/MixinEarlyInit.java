@@ -37,8 +37,6 @@ import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
-import top.qiguaiaaaa.geocraft.configs.SoilConfig;
-import zone.rong.mixinbooter.Context;
 import zone.rong.mixinbooter.IEarlyMixinLoader;
 
 import javax.annotation.Nullable;
@@ -48,6 +46,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 @IFMLLoadingPlugin.Name(GeoCraft.MODID)
 @IFMLLoadingPlugin.MCVersion(ForgeVersion.mcVersion)
+@IFMLLoadingPlugin.SortingIndex(1)
 public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
     public static final boolean isClient = FMLLaunchHandler.side() == Side.CLIENT;
     public static final Logger LOGGER = LogManager.getLogger(GeoCraft.MODID + " Init");
@@ -97,7 +96,7 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[0];
+        return new String[]{"top.qiguaiaaaa.geocraft.asm.FluidloggedAPICompatTransformer"};
     }
 
     @Override

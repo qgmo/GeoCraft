@@ -25,13 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.mixin.reality.block;
+package top.qiguaiaaaa.geocraft.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockSnow;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -44,15 +42,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import org.spongepowered.asm.mixin.Final;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -61,7 +50,6 @@ import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.block.IBlockSnow;
 import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 
@@ -72,74 +60,52 @@ import java.util.Random;
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.MIXTURE;
 
 /**
- * @see top.qiguaiaaaa.geocraft.mixin.common.block.BlockSnowMixin
+ * @since 0.2.0-beta.2
  * @author QiguaiAAAA
  */
-@Deprecated
-@Mixin(value = BlockSnow.class)
-public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost, IBlockSnow {
-    @Shadow @Final public static PropertyInteger LAYERS;
-
-    public BlockSnowMixin(Material materialIn) {
-        super(materialIn);
-    }
-
-    /**
-     * 用于下落动作
-     */
+public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockStateLayeredFluidHost {
     @Override
-    @Unique
-    public int tickRate(@Nonnull World worldIn) {
+    public int tickRate(final @Nonnull World worldIn) {
         return 5;
     }
 
-    @Inject(method = "canPlaceBlockAt",at = @At("HEAD"),cancellable = true)
-    public void canPlaceBlockAt(World worldIn, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        cir.cancel();
+    @Override
+    public boolean canPlaceBlockAt(final @Nonnull World worldIn,final @Nonnull BlockPos pos) {
         final BlockPos down = pos.down();
         IBlockState state = worldIn.getBlockState(down);
-        cir.setReturnValue(canBePlacedOn(worldIn,down,state));
+        return canBePlacedOn(worldIn,down,state);
     }
 
-    @Inject(method = "checkAndDropBlock",at = @At("HEAD"),cancellable = true)
-    private void checkAndDropBlock(World worldIn, BlockPos pos, IBlockState state, CallbackInfoReturnable<Boolean> cir) {
+    protected boolean checkAndDropBlock(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
         if (!this.canPlaceBlockAt(worldIn, pos)) {
             worldIn.scheduleUpdate(pos,this,tickRate(worldIn));
-            cir.setReturnValue(false);
+            return false;
         } else {
-            cir.setReturnValue(true);
+            return true;
         }
     }
 
-    /**
-     * 注意该Mixin的优先级低于 {@link top.qiguaiaaaa.geocraft.mixin.common.block.BlockSnowMixin#updateTick(World, BlockPos, IBlockState, Random, CallbackInfo)}
-     * 因此当前的 Mixin 会覆盖 Common 的 Mixin
-     * @reason 复写自定义逻辑
-     */
-    @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        ci.cancel();
+    @Override
+    public void updateTick(@Nonnull final World worldIn,final @Nonnull BlockPos pos,@Nonnull IBlockState state,final @Nonnull Random rand) {
         if(worldIn.isRemote) return;
         if(trySmelt(worldIn, pos, state, rand)) return;
         state = worldIn.getBlockState(pos);
         tryFallDown(worldIn, pos, state);
     }
 
-    @Inject(method = "isReplaceable",at =@At("HEAD"),cancellable = true)
-    public void isReplaceable(@Nonnull IBlockAccess worldIn, @Nonnull BlockPos pos,CallbackInfoReturnable<Boolean> cir){
-        cir.cancel();
-        cir.setReturnValue(false);
+    @Override
+    public boolean isReplaceable(@Nonnull final IBlockAccess worldIn,final @Nonnull BlockPos pos) {
+        return false;
     }
 
-    protected boolean canBePlacedOn(@Nonnull World world,@Nonnull BlockPos downPos,@Nonnull IBlockState downState){
-        Block block = downState.getBlock();
+    protected boolean canBePlacedOn(@Nonnull final World world,@Nonnull final BlockPos downPos,@Nonnull final IBlockState downState){
+        final Block block = downState.getBlock();
 
-        BlockFaceShape shape = downState.getBlockFaceShape(world, downPos, EnumFacing.UP);
+        final BlockFaceShape shape = downState.getBlockFaceShape(world, downPos, EnumFacing.UP);
         return shape == BlockFaceShape.SOLID || block.isLeaves(downState, world, downPos) || block == this && downState.getValue(BlockSnow.LAYERS) == 8;
     }
 
-    @Unique
-    protected boolean tryFallDown(World world,BlockPos pos,IBlockState state){
+    protected boolean tryFallDown(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nonnull IBlockState state){
         if(world.isRemote) return false;
         final BlockPos downPos = pos.down();
         IBlockState downState = world.getBlockState(downPos);
@@ -163,7 +129,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
                     world.setBlockState(downPos,downState.withProperty(BlockSnow.LAYERS,8));
                 }
             }else{ //否则，将多余的水冻结成冰
-                final int totalWater = isMixture? getLayers(world,pos,state,FluidRegistry.WATER): getLayers(world,downPos,downState,FluidRegistry.WATER);
+                final int totalWater = isMixture? getLayers(world,pos,state, FluidRegistry.WATER): getLayers(world,downPos,downState,FluidRegistry.WATER);
                 if(newLayers<=8){
                     world.setBlockToAir(pos);
                     world.setBlockState(downPos,downState
@@ -185,7 +151,7 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         else if(downBlock instanceof ILayeredFluidHost){ //雪和其他方块
             ILayeredFluidHost host = (ILayeredFluidHost) downState.getBlock();
             final int curLayers_F = getLayers(world,pos,state,null); //这里的 layer为雪的载流方块单位
-            long curAmountSnow = getAmountInQB(world,pos,state,GeoFluids.SNOW);
+            long curAmountSnow = getAmountInQB(world,pos,state, GeoFluids.SNOW);
             if (isMixture) {
                 final boolean hasHalfQuanta = (curLayers_F >> 1 & 1) != 0;
 
@@ -286,9 +252,6 @@ public class BlockSnowMixin extends Block implements IBlockStateLayeredFluidHost
         }
         return true;
     }
-
-    @Shadow
-    public boolean canPlaceBlockAt(@Nonnull World worldIn, @Nonnull BlockPos pos) {return false;}
 
     //**********
     // ILayeredFluidHost Block

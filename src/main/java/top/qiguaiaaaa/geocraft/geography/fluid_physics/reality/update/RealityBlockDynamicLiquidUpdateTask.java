@@ -67,18 +67,18 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
     protected static final ThreadLocal<List<FlowChoice>> AVERAGE_MODE_FLOW_CHOICES = ThreadLocal.withInitial(ArrayList::new);
-    protected final RealityBlockLiquidUpdater updater;
-    protected final BlockDynamicLiquid block;
+    protected final @Nonnull RealityBlockLiquidUpdater updater;
+    protected final @Nonnull BlockDynamicLiquid block;
     protected IBlockState state;
     protected Material material;
-    public RealityBlockDynamicLiquidUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos, @Nonnull RealityBlockLiquidUpdater updater) {
+    public RealityBlockDynamicLiquidUpdateTask(@Nonnull final Fluid fluid, @Nonnull final BlockPos pos, @Nonnull final RealityBlockLiquidUpdater updater) {
         super(fluid, pos);
         this.updater = updater;
         this.block = updater.getBlock();
     }
 
     @Override
-    public void onUpdate(@Nonnull World world, @Nonnull IBlockState curState, @Nonnull Random rand) {
+    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState curState, @Nonnull final Random rand) {
         if (!world.isAreaLoaded(pos,1)){
             return;
         }
@@ -94,14 +94,14 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
         int liquidQuanta = 8-liquidMeta;
         int updateRate = block.tickRate(world);
 
-        BlockPos downPos = pos.down();
-        IBlockState stateBelow = world.getBlockState(downPos);
-        boolean canMoveDown = updater.canMoveDownTo(world,downPos,stateBelow,liquidQuanta,state);
+        final @Nonnull BlockPos downPos = pos.down();
+        final @Nonnull IBlockState stateBelow = world.getBlockState(downPos);
+        final boolean canMoveDown = updater.canMoveDownTo(world,downPos,stateBelow,liquidQuanta,state);
 
         if(canMoveDown){ //向下流动
             if(isSameLiquid(stateBelow)){
                 flowDown(world,pos,stateBelow,liquidQuanta,updateRate);
-            }else if(stateBelow.getMaterial() == Material.WATER){ // 岩浆碰到水,消耗岩浆
+            }else if(stateBelow.getBlock() == Blocks.LAVA || stateBelow.getBlock() == Blocks.FLOWING_LAVA){ // 岩浆碰到水,消耗岩浆
                 liquidQuanta--;
                 liquidMeta = 8-liquidQuanta;
                 if (liquidQuanta<=0) world.setBlockState(pos,Blocks.AIR.getDefaultState(),updateFlag); //先更新自身状态
@@ -216,9 +216,9 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
                 this.placeStaticBlock(world, pos, state,FlowingMode.SLOPE_MODE_ON_WATER_2);
                 return;
             }
-            EnumFacing randomFacing = (EnumFacing) slopeModeFlowDirections.toArray()[rand.nextInt(slopeModeFlowDirections.size())];
-            int newLiquidQuanta = liquidQuanta - 1;
-            int newLiquidMeta = 8 - newLiquidQuanta;
+            final EnumFacing randomFacing = (EnumFacing) slopeModeFlowDirections.toArray()[rand.nextInt(slopeModeFlowDirections.size())];
+            final int newLiquidQuanta = liquidQuanta - 1;
+            final int newLiquidMeta = 8 - newLiquidQuanta;
             //更新自己
             state = state.withProperty(LEVEL, newLiquidMeta);
             world.setBlockState(pos, state, updateFlag);
@@ -284,10 +284,10 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
     /**
      * 是否是相同液体
      */
-    protected boolean isSameLiquid(IBlockState state){
-        Block block = state.getBlock();
+    protected boolean isSameLiquid(@Nonnull final IBlockState state){
+        final Block block = state.getBlock();
         if(block instanceof IFluidBlock) return false;
-        return state.getMaterial() == this.material;
+        return state.getMaterial() == this.material && state.getBlock() instanceof BlockLiquid;
     }
 
     @Nonnull
@@ -312,7 +312,7 @@ public class RealityBlockDynamicLiquidUpdateTask extends FluidUpdateBaseTask {
     protected boolean checkPressureTask(World worldIn){
         if(!FluidPhysicsConfig.PRESSURE_SYSTEM_FOR_REALITY.getValue()) return false;
         if(!worldIn.isRemote){
-            IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(worldIn,pos);
+            final IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(worldIn,pos);
             if(res == null || res.isEmpty()){
                 return false;
             }

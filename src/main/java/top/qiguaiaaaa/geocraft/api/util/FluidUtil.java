@@ -119,8 +119,8 @@ public final class FluidUtil {
      * @return 指定方块状态的液体，若没有则返回null
      */
     @Nullable
-    public static Fluid getFluid(@Nonnull IBlockState state) {
-        Block block = state.getBlock();
+    public static Fluid getFluid(@Nonnull final IBlockState state) {
+        final Block block = state.getBlock();
 
         if (block instanceof IFluidBlock) {
             return ((IFluidBlock)block).getFluid();
@@ -135,7 +135,8 @@ public final class FluidUtil {
     }
 
     @Nullable
-    public static Fluid getFluid(@Nonnull Material material){
+    @Deprecated
+    public static Fluid getFluid(@Nonnull final Material material){
         if(material == Material.WATER) return FluidRegistry.WATER;
         else if(material == Material.LAVA) return FluidRegistry.LAVA;
         return null;
@@ -148,11 +149,11 @@ public final class FluidUtil {
      * @return 指定方块的液体，若没有则返回null
      */
     @Nullable
-    public static Fluid getFluid(@Nonnull Block block) {
+    public static Fluid getFluid(@Nonnull final Block block) {
         if (block instanceof IFluidBlock) {
             return ((IFluidBlock)block).getFluid();
         }else if (block instanceof BlockLiquid) {
-            Material material = block.getDefaultState().getMaterial();
+            final Material material = block.getDefaultState().getMaterial();
             if (material == Material.WATER) {
                 return FluidRegistry.WATER;
             }else if (material == Material.LAVA) {
