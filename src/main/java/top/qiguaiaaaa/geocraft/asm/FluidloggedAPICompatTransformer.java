@@ -32,31 +32,40 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
+@SuppressWarnings("unused")
 public final class FluidloggedAPICompatTransformer implements IClassTransformer {
     static final String IFluidloggableClass = "git/jbredwards/fluidlogged_api/api/block/IFluidloggable";
     static final String IFluidloggableLayeredHostClass = "top/qiguaiaaaa/geocraft/api/block/IFluidloggableLayeredFluidHost";
 
     @Override
-    public byte[] transform(@Nonnull String name,@Nonnull String transformedName,@Nonnull byte[] basicClass) {
-        final ClassReader reader = new ClassReader(basicClass);
-        final ClassNode root = new ClassNode();
-        reader.accept(root,0);
-        boolean modified = false;
-        if(root.interfaces.contains(IFluidloggableClass)){
-            if(!root.interfaces.contains(IFluidloggableLayeredHostClass)){
-                modified = true;
-                //将所有含水方块桥接为载流方块
-                root.interfaces.add(IFluidloggableLayeredHostClass);
+    @Nullable
+    public byte[] transform(@Nullable String name, @Nullable String transformedName, @Nullable byte[] basicClass) {
+        if (basicClass == null || transformedName == null) return basicClass;
+        try{
+            final ClassReader reader = new ClassReader(basicClass);
+            final ClassNode root = new ClassNode();
+            reader.accept(root,0);
+            boolean modified = false;
+            if(root.interfaces.contains(IFluidloggableClass)){
+                if(!root.interfaces.contains(IFluidloggableLayeredHostClass)){
+                    modified = true;
+                    //将所有含水方块桥接为载流方块
+                    root.interfaces.add(IFluidloggableLayeredHostClass);
+                }
             }
+            if(!modified) return basicClass;
+            final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+            root.accept(writer);
+            System.out.println("[GeoCraft] Layered "+transformedName+" Successfully!");
+            return writer.toByteArray();
+        }catch (Throwable e){
+            e.printStackTrace();
+            return basicClass;
         }
-        if(!modified) return basicClass;
-        final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-        root.accept(writer);
-        return writer.toByteArray();
     }
 }

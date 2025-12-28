@@ -38,5 +38,5 @@ import java.util.Random;
  * @author QiguaiAAAA
  */
 public interface IVanillaLikeFluidBlock {
-    void onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand);
+    void 天圆地方$onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand);
 }

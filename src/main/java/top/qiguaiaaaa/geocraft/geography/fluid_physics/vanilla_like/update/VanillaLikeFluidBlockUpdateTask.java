@@ -47,6 +47,6 @@ public abstract class VanillaLikeFluidBlockUpdateTask extends FluidUpdateBaseTas
 
     @Override
     public void onUpdate(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-        ((IVanillaLikeFluidBlock)getBlock()).onFlowingTask(world,pos,state,rand);
+        ((IVanillaLikeFluidBlock)getBlock()).天圆地方$onFlowingTask(world,pos,state,rand);
     }
 }

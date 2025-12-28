@@ -40,12 +40,12 @@ import java.util.List;
 public final class MixinUtil {
     public static void linkLiquidWithFluid(){
         if(Blocks.FLOWING_WATER instanceof FluidSettable){
-            ((FluidSettable) Blocks.FLOWING_WATER).setCorrespondingFluid(FluidRegistry.WATER);
-            ((FluidSettable) Blocks.FLOWING_LAVA).setCorrespondingFluid(FluidRegistry.LAVA);
+            ((FluidSettable) Blocks.FLOWING_WATER).天圆地方$setCorrespondingFluid(FluidRegistry.WATER);
+            ((FluidSettable) Blocks.FLOWING_LAVA).天圆地方$setCorrespondingFluid(FluidRegistry.LAVA);
         }
         if(Blocks.WATER instanceof FluidSettable){
-            ((FluidSettable) Blocks.WATER).setCorrespondingFluid(FluidRegistry.WATER);
-            ((FluidSettable) Blocks.LAVA).setCorrespondingFluid(FluidRegistry.LAVA);
+            ((FluidSettable) Blocks.WATER).天圆地方$setCorrespondingFluid(FluidRegistry.WATER);
+            ((FluidSettable) Blocks.LAVA).天圆地方$setCorrespondingFluid(FluidRegistry.LAVA);
         }
     }
     public static List<String> getModMixins(){

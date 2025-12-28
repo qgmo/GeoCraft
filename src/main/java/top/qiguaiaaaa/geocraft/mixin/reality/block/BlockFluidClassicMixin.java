@@ -51,6 +51,9 @@ import top.qiguaiaaaa.geocraft.geography.fluid_physics.reality.update.RealityBlo
 
 import java.util.Random;
 
+/**
+ * @author QiguaiAAAA
+ */
 @Mixin(value = BlockFluidClassic.class)
 public abstract class BlockFluidClassicMixin extends BlockFluidBase {
 
@@ -62,8 +65,11 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
         super(fluid, material);
     }
 
+    /**
+     * @reason 复写模组流体的更新
+     */
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+    public void 天圆地方$updateTick(World world, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
@@ -71,7 +77,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
     }
 
     @Inject(method = "drain",at = @At("HEAD"),cancellable = true,remap = false)
-    private void drain(World world, BlockPos pos, boolean doDrain, CallbackInfoReturnable<FluidStack> cir) {
+    private void 天圆地方$drain(World world, BlockPos pos, boolean doDrain, CallbackInfoReturnable<FluidStack> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         final FluidStack fluidStack = new FluidStack(this.getFluid(), MathHelper.floor((this.getQuantaPercentage(world, pos) * Fluid.BUCKET_VOLUME)));
 
@@ -86,7 +92,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
      * 参考自Forge的BlockFluidFinite类
      */
     @Inject(method = "place",at =@At("HEAD"),cancellable = true,remap = false)
-    private void place(World world, BlockPos pos, FluidStack fluidStack, boolean doPlace, CallbackInfoReturnable<Integer> cir) {
+    private void 天圆地方$place(World world, BlockPos pos, FluidStack fluidStack, boolean doPlace, CallbackInfoReturnable<Integer> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.cancel();
         IBlockState existing = world.getBlockState(pos);
@@ -117,7 +123,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
     }
 
     @Inject(method = "canDrain",at = @At("HEAD"),cancellable = true,remap = false)
-    private void canDrain(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    private void 天圆地方$canDrain(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.setReturnValue(true);
         cir.cancel();

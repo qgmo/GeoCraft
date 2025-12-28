@@ -28,7 +28,6 @@
 package top.qiguaiaaaa.geocraft.mixin.vanilla_like;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
@@ -43,6 +42,7 @@ import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -69,10 +69,6 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     @Shadow(remap = false)
     protected boolean canCreateSources;
 
-    public BlockFluidClassicMixin(Fluid fluid, Material material, MapColor mapColor) {
-        super(fluid, material, mapColor);
-    }
-
     public BlockFluidClassicMixin(Fluid fluid, Material material) {
         super(fluid, material);
     }
@@ -82,7 +78,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
      * @reason Configure for Forge Fluids
      */
     @Inject(method = "updateTick",at= @At("HEAD"),cancellable = true)
-    public void updateTick(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
+    public void 天圆地方$updateTick(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand, CallbackInfo ci) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
@@ -90,7 +86,8 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     }
 
     @Override
-    public void onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand) {
+    @Unique
+    public void 天圆地方$onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand) {
         int quantaRemaining = quantaPerBlock - state.getValue(LEVEL);
         int newQuanta;
 
@@ -98,7 +95,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         Optional<BlockPos> sourcePosOption = Optional.empty();
         if(quantaRemaining == quantaPerBlock) sourcePosOption = Optional.of(pos);
         final BlockPos downPos = pos.up(densityDir);
-        boolean canMoveSourceDown = this.canMoveInto(world, downPos);
+        boolean canMoveSourceDown = this.天圆地方$canMoveInto(world, downPos);
         if(canMoveSourceDown){
             if (!sourcePosOption.isPresent())
                 sourcePosOption = FluidSearchUtil.findSource(world,pos,this.getFluid(),false,false,
@@ -129,7 +126,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
             // 无限液体
             if (!disableInfiniteFluidForAllModFluid.getValue() && adjacentSourceBlocks >= 2 && (world.getBlockState(downPos).getMaterial().isSolid() || isSourceBlock(world, downPos))) {
                 newQuanta = quantaPerBlock;
-            } else if (((BlockFluidBaseAccessor)this).hasVerticalFlowR(world, pos) && !isSameFluidUnder(world,downPos)) {//垂直流入
+            } else if (((BlockFluidBaseAccessor)this).hasVerticalFlowR(world, pos) && !天圆地方$isSameFluidUnder(world,downPos)) {//垂直流入
                 newQuanta = quantaPerBlock - 1;
             } else { //水平流动
                 int maxQuanta = -100;
@@ -169,7 +166,8 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         }
     }
 
-    private boolean canMoveInto(World worldIn,BlockPos pos){
+    @Unique
+    private boolean 天圆地方$canMoveInto(World worldIn, BlockPos pos){
         IBlockState state = worldIn.getBlockState(pos);
         if(FluidUtil.isFluid(state)){
             if(FluidUtil.getFluid(state) != this.getFluid()) return false;
@@ -178,7 +176,8 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         return this.canDisplace(worldIn,pos);
     }
 
-    private boolean isSameFluidUnder(World worldIn,BlockPos pos){
+    @Unique
+    private boolean 天圆地方$isSameFluidUnder(World worldIn, BlockPos pos){
         Fluid thisFluid = this.getFluid();
         Fluid underFluid = FluidUtil.getFluid(worldIn.getBlockState(pos));
         return thisFluid == underFluid;

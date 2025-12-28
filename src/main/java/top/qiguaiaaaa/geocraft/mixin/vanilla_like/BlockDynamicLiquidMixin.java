@@ -41,6 +41,7 @@ import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -66,7 +67,8 @@ import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.*;
 public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettable, IVanillaLikeFluidBlock {
     @Shadow
     int adjacentSourceBlocks;
-    private Fluid thisFluid;
+    @Unique
+    private Fluid 天圆地方$thisFluid;
 
     protected BlockDynamicLiquidMixin(Material materialIn) {
         super(materialIn);
@@ -76,18 +78,19 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
      * @author QiguaiAAAA
      */
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(thisFluid)) return;
+    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
         ci.cancel();
         if(worldIn.isRemote) return;
-        FluidUpdateManager.addTask(worldIn,new VanillaLikeBlockDynamicLiquidUpdateTask(thisFluid,pos,(BlockDynamicLiquid) (Block)this));
+        FluidUpdateManager.addTask(worldIn,new VanillaLikeBlockDynamicLiquidUpdateTask(天圆地方$thisFluid,pos,(BlockDynamicLiquid) (Block)this));
     }
 
     @Override
-    public void onFlowingTask(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state,@Nonnull Random rand){
+    @Unique
+    public void 天圆地方$onFlowingTask(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random rand){
         if (!world.isAreaLoaded(pos, this.getSlopeFindDistance(world))) return;
         int liquidMeta = state.getValue(LEVEL);
-        int spreadLevel = getSpreadLevel(world);
+        int spreadLevel = 天圆地方$getSpreadLevel(world);
 
         int updateRate = this.tickRate(world);
 
@@ -97,7 +100,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         //是否能够往下流
         Optional<BlockPos> sourcePosOption = Optional.empty();
         if(liquidMeta == 0) sourcePosOption = Optional.of(pos);
-        boolean canMoveSourceDown = this.canMoveInto(world, downPos, stateBelow);
+        boolean canMoveSourceDown = this.天圆地方$canMoveInto(world, downPos, stateBelow);
         if(canMoveSourceDown){
             if (!sourcePosOption.isPresent())
                 sourcePosOption = FluidSearchUtil.findSource(world,pos,material,false,false,
@@ -197,7 +200,8 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         }
     }
 
-    private boolean canMoveInto(World worldIn,BlockPos pos,IBlockState state){
+    @Unique
+    private boolean 天圆地方$canMoveInto(World worldIn, BlockPos pos, IBlockState state){
         if(state.getBlock() instanceof IFluidBlock) return false;
         Material material = state.getMaterial();
         if(material.isLiquid()){
@@ -207,7 +211,8 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
         return !this.isBlocked(worldIn,pos,state);
     }
 
-    private int getSpreadLevel(World world){
+    @Unique
+    private int 天圆地方$getSpreadLevel(World world){
         if (material == Material.LAVA && !world.provider.doesWaterVaporize()) {
             return 2;
         }
@@ -232,9 +237,9 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     private boolean isBlocked(World worldIn, BlockPos pos, IBlockState state){return false;}
 
     @Override
-    public void setCorrespondingFluid(Fluid fluid) {
-        if(thisFluid != null)return;
-        thisFluid = fluid;
+    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
+        if(天圆地方$thisFluid != null)return;
+        天圆地方$thisFluid = fluid;
     }
 
 }

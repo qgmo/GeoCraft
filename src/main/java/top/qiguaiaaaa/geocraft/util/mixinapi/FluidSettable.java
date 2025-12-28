@@ -37,5 +37,5 @@ public interface FluidSettable {
      * 设置相对应的流体
      * @param fluid 对应流体
      */
-    void setCorrespondingFluid(Fluid fluid);
+    void 天圆地方$setCorrespondingFluid(Fluid fluid);
 }

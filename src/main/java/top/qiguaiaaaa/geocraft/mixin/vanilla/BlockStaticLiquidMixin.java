@@ -51,37 +51,37 @@ import java.util.Random;
 @Mixin(value = BlockStaticLiquid.class)
 public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable {
     @Unique
-    private Fluid thisFluid;
+    private Fluid 天圆地方$thisFluid;
     @Unique
-    private boolean curRandomTick = false;
+    private boolean 天圆地方$curRandomTick = false;
 
     protected BlockStaticLiquidMixin(Material materialIn) {
         super(materialIn);
     }
 
     @Inject(method = "<init>",at = @At("RETURN"))
-    private void onInit(Material materialIn, CallbackInfo ci) {
+    private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
         this.setTickRandomly(true);
     }
 
     @Override
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
-        curRandomTick = true;
+        天圆地方$curRandomTick = true;
         super.randomTick(worldIn, pos, state, random);
-        curRandomTick = false;
+        天圆地方$curRandomTick = false;
     }
 
     @Inject(method = "updateTick",at = @At("RETURN"))
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(thisFluid,worldIn,pos,state,curRandomTick);
+    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+        IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(天圆地方$thisFluid,worldIn,pos,state, 天圆地方$curRandomTick);
         if(newState != null){
             worldIn.setBlockState(pos,newState);
         }
     }
 
     @Override
-    public void setCorrespondingFluid(Fluid fluid) {
-        this.thisFluid = fluid;
+    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
+        this.天圆地方$thisFluid = fluid;
     }
 
 }

@@ -39,6 +39,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -47,7 +48,6 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
-import top.qiguaiaaaa.geocraft.geography.fluid_physics.FluidPhysicsInfo;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 
 import javax.annotation.Nullable;
@@ -62,11 +62,11 @@ public class BlockSnowBlockMixin extends Block {
         super(materialIn);
     }
     @Inject(method = "updateTick",at =@At("HEAD"),cancellable = true)
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         ci.cancel();
         try(@Nullable IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(worldIn,pos,true)){
             if (worldIn.getLightFor(EnumSkyBlock.BLOCK, pos) > 11) {
-                this.turnIntoWater(worldIn,pos, accessor); //用的是发光Block产生的热量,所以不扣地表温度
+                this.天圆地方$turnIntoWater(worldIn,pos, accessor); //用的是发光Block产生的热量,所以不扣地表温度
                 return;
             }
 
@@ -77,14 +77,15 @@ public class BlockSnowBlockMixin extends Block {
             accessor.setSkyLight(light);
             double temp = accessor.getTemperature();
             if(temp > TemperatureProperty.ICE_POINT){
-                this.turnIntoWater(worldIn,pos,accessor);
+                this.天圆地方$turnIntoWater(worldIn,pos,accessor);
                 accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*8);
             }
         }
 
     }
 
-    protected void turnIntoWater(World worldIn, BlockPos pos, @Nullable IAtmosphereAccessor accessor) {
+    @Unique
+    protected void 天圆地方$turnIntoWater(World worldIn, BlockPos pos, @Nullable IAtmosphereAccessor accessor) {
         if (worldIn.provider.doesWaterVaporize()) {
             if(accessor != null && accessor.canAccessAtmosphere()){
                 accessor.fillFluidToAtmosphere(FluidRegistry.WATER,Fluid.BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true);

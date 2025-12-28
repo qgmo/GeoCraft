@@ -61,7 +61,7 @@ public abstract class BlockFluidBaseMixin extends Block {
     }
 
     @Inject(method = "shouldSideBeRendered",at = @At("HEAD"),cancellable = true)
-    public void shouldSideBeRendered(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side, CallbackInfoReturnable<Boolean> cir) {
+    public void 天圆地方$shouldSideBeRendered(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side, CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
         IBlockState neighbor = world.getBlockState(pos.offset(side));
         Fluid neighborFluid = FluidUtil.getFluid(neighbor);

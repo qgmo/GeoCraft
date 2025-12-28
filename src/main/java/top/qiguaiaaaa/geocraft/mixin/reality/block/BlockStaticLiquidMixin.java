@@ -66,11 +66,11 @@ import java.util.Random;
 @Mixin(value = BlockStaticLiquid.class)
 public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowChecker, FluidSettable, ILayeredFluidHostFiniteLiquid {
     @Unique
-    private static final boolean debug = false;
+    private static final boolean 天圆地方$debug = false;
     @Unique
-    private Fluid thisFluid;
+    private Fluid 天圆地方$thisFluid;
     @Unique
-    private final ThreadLocal<Boolean> curRandomTick = ThreadLocal.withInitial(()->Boolean.FALSE);
+    private final ThreadLocal<Boolean> 天圆地方$curRandomTick = ThreadLocal.withInitial(()->Boolean.FALSE);
 
     protected BlockStaticLiquidMixin(Material materialIn) {
         super(materialIn);
@@ -79,53 +79,53 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
     @Override
     @Unique
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
-        curRandomTick.set(Boolean.TRUE);
+        天圆地方$curRandomTick.set(Boolean.TRUE);
         super.randomTick(worldIn, pos, state, random);
-        curRandomTick.set(Boolean.FALSE);
+        天圆地方$curRandomTick.set(Boolean.FALSE);
     }
 
     @Inject(method = "neighborChanged",at =@At("HEAD"),cancellable = true)
-    private void beforeNeighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos,CallbackInfo ci){
+    private void 天圆地方$beforeNeighborChanged(IBlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, CallbackInfo ci){
         if(ServerStatusMonitor.isServerCloselyLagging()) ci.cancel();
     }
 
     @Inject(method = "<init>",at = @At("RETURN"))
-    private void onInit(Material materialIn, CallbackInfo ci) {
+    private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
         this.setTickRandomly(true);
     }
     @Inject(method = "updateTick",at = @At("TAIL"))
-    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
         if(worldIn.isRemote) return;
-        if(!GeoFluidSetting.isFluidToBePhysical(thisFluid)) return;
-        if(!isValidState(worldIn,pos,state)) return;
-        if(!canFlow(worldIn,pos,state,rand)){
+        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
+        if(!天圆地方$isValidState(worldIn,pos,state)) return;
+        if(!天圆地方$canFlow(worldIn,pos,state,rand)){
             if(FluidPhysicsConfig.PRESSURE_SYSTEM_FOR_REALITY.getValue()){
                 IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(worldIn,pos);
 
                 if(res == null || res.isEmpty()){
-                    sendPressureQuery(worldIn,pos,state,rand,false);
-                    if(debug) GeoCraft.getLogger().info("{}: no res,send query",pos);
+                    天圆地方$sendPressureQuery(worldIn,pos,state,rand,false);
+                    if(天圆地方$debug) GeoCraft.getLogger().info("{}: no res,send query",pos);
                 }else {
                     IBlockState nowState =state;
-                    if(debug) GeoCraft.getLogger().info("{}: has res :",pos);
+                    if(天圆地方$debug) GeoCraft.getLogger().info("{}: has res :",pos);
                     while (res.hasNext()) {
                         BlockPos toPos = res.next();
                         if(!nowState.getMaterial().isLiquid()) break;
-                        if(tryMoveInto(worldIn,toPos,pos,nowState)) break;
+                        if(天圆地方$tryMoveInto(worldIn,toPos,pos,nowState)) break;
                         nowState = worldIn.getBlockState(pos);
-                        if(debug) GeoCraft.getLogger().info("{} now State: {}",toPos,nowState);
+                        if(天圆地方$debug) GeoCraft.getLogger().info("{} now State: {}",toPos,nowState);
                     }
 
                     nowState = worldIn.getBlockState(pos);
-                    if(nowState!=state && FluidUtil.getFluid(nowState) == thisFluid){
-                        sendPressureQuery(worldIn,pos,nowState,rand,true);
+                    if(nowState!=state && FluidUtil.getFluid(nowState) == 天圆地方$thisFluid){
+                        天圆地方$sendPressureQuery(worldIn,pos,nowState,rand,true);
                     }else if(nowState == state){
-                        sendPressureQuery(worldIn,pos,state,rand,false);
+                        天圆地方$sendPressureQuery(worldIn,pos,state,rand,false);
                     }
                     if(nowState!=state) return;
                 }
             }
-            IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(thisFluid,worldIn,pos,state,curRandomTick.get());
+            IBlockState newState = EventFactory.afterBlockLiquidStaticUpdate(天圆地方$thisFluid,worldIn,pos,state, 天圆地方$curRandomTick.get());
             if(newState != null){
                 worldIn.setBlockState(pos,newState);
                 return;
@@ -137,13 +137,14 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
 
     @Override
     @Unique
-    public boolean canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand) {
+    public boolean 天圆地方$canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand) {
         BlockDynamicLiquid blockdynamicliquid = BlockLiquid.getFlowingBlock(this.material);
         IVanillaFlowChecker checker = (IVanillaFlowChecker) blockdynamicliquid;
-        return checker.canFlow(worldIn,pos,state,rand);
+        return checker.天圆地方$canFlow(worldIn,pos,state,rand);
     }
 
-    protected boolean isValidState(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull IBlockState state){
+    @Unique
+    protected boolean 天圆地方$isValidState(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state){
         if(state.getValue(LEVEL) >= 8){
             world.setBlockState(pos,Blocks.AIR.getDefaultState(), Constants.BlockFlags.SEND_TO_CLIENTS|Constants.BlockFlags.NO_OBSERVERS);
             return false;
@@ -152,33 +153,33 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
     }
 
     @Unique
-    protected void sendPressureQuery(World world,BlockPos pos,IBlockState state,Random rand,boolean directly){
+    protected void 天圆地方$sendPressureQuery(World world, BlockPos pos, IBlockState state, Random rand, boolean directly){
         if(FluidPressureSearchManager.isTaskRunning(world,pos)){
-            if(debug) GeoCraft.getLogger().info("{}: task running, returned",pos);
+            if(天圆地方$debug) GeoCraft.getLogger().info("{}: task running, returned",pos);
             return;
         }
         IBlockState up = world.getBlockState(pos.up());
-        if(FluidUtil.getFluid(up)==thisFluid && up.getValue(LEVEL)==0){
-            if(debug) GeoCraft.getLogger().info("{}: up is full water, returned",pos);
+        if(FluidUtil.getFluid(up)== 天圆地方$thisFluid && up.getValue(LEVEL)==0){
+            if(天圆地方$debug) GeoCraft.getLogger().info("{}: up is full water, returned",pos);
             return;
         }
         if(directly || BaseUtil.getRandomResult(rand,FluidPhysicsConfig.POSSIBILITY_FOR_STATIC_VANILLA_LIQUID_TO_CREATE_PRESSURE_TASK.getValue())) {
-            if(debug){
-                FluidPressureSearchManager.addTask(world,RealityPressureTaskBuilder.createVanillaTask_Debug(thisFluid,state,pos,BaseUtil.getRandomPressureSearchRange()));
+            if(天圆地方$debug){
+                FluidPressureSearchManager.addTask(world,RealityPressureTaskBuilder.createVanillaTask_Debug(天圆地方$thisFluid,state,pos,BaseUtil.getRandomPressureSearchRange()));
                 return;
             }
             FluidPressureSearchManager.addTask(world,
-                    RealityPressureTaskBuilder.createVanillaTask(thisFluid,state,pos, BaseUtil.getRandomPressureSearchRange())
+                    RealityPressureTaskBuilder.createVanillaTask(天圆地方$thisFluid,state,pos, BaseUtil.getRandomPressureSearchRange())
             );
         }
     }
 
     @Unique
-    protected boolean tryMoveInto(World world,BlockPos toPos,BlockPos srcPos,IBlockState myState){
+    protected boolean 天圆地方$tryMoveInto(World world, BlockPos toPos, BlockPos srcPos, IBlockState myState){
         if(!world.isBlockLoaded(toPos)) return false;
         IBlockState toState = world.getBlockState(toPos);
         final int updateFlag = ServerStatusMonitor.getRecommendedBlockFlags();
-        if(FluidUtil.getFluid(toState) == thisFluid){
+        if(FluidUtil.getFluid(toState) == 天圆地方$thisFluid){
             int toQuanta = 8-toState.getValue(LEVEL);
             int myQuanta = 8 -myState.getValue(LEVEL);
             if(toPos.getY() == srcPos.getY() && toQuanta>=myQuanta-1) return false;
@@ -199,7 +200,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
             if (quanta <= 0) {
                 world.setBlockState(srcPos, Blocks.AIR.getDefaultState(), updateFlag);
             } else world.setBlockState(srcPos, this.getDefaultState().withProperty(LEVEL, 8 - quanta), updateFlag);
-            FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,toPos,toState,thisFluid);
+            FluidOperationUtil.triggerDestroyBlockEffectByFluid(world,toPos,toState, 天圆地方$thisFluid);
             world.setBlockState(toPos, getFlowingBlock(material).getDefaultState().withProperty(LEVEL, 8 - movQuanta), updateFlag);
             return quanta == 0;
         }
@@ -209,9 +210,10 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
     private void updateLiquid(World worldIn, BlockPos pos, IBlockState state) {}
 
     @Override
-    public void setCorrespondingFluid(Fluid fluid) {
-        if(thisFluid == null){
-            thisFluid = fluid;
+    @Unique
+    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
+        if(天圆地方$thisFluid == null){
+            天圆地方$thisFluid = fluid;
         }
     }
 
@@ -221,7 +223,8 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements IVanillaFlowC
 
     @Nonnull
     @Override
-    public Fluid getFluid() {
-        return thisFluid;
+    @Unique
+    public Fluid 天圆地方$getFluid() {
+        return 天圆地方$thisFluid;
     }
 }

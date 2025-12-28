@@ -96,7 +96,8 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[]{"top.qiguaiaaaa.geocraft.asm.FluidloggedAPICompatTransformer"};
+        return new String[0];
+        //return new String[]{"top.qiguaiaaaa.geocraft.asm.FluidloggedAPICompatTransformer"};
     }
 
     @Override

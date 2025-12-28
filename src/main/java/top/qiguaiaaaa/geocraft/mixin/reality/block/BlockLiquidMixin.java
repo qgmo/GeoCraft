@@ -56,7 +56,7 @@ public abstract class BlockLiquidMixin extends Block {
     }
 
     @Inject(method = "getFlow",at = @At("HEAD"),cancellable = true)
-    protected void getFlow(IBlockAccess worldIn, BlockPos pos, IBlockState state, CallbackInfoReturnable<Vec3d> cir){
+    protected void 天圆地方$getFlow(IBlockAccess worldIn, BlockPos pos, IBlockState state, CallbackInfoReturnable<Vec3d> cir){
         if(state.getBlock() instanceof BlockStaticLiquid){
             cir.setReturnValue(new Vec3d(0,0,0));
             cir.cancel();
@@ -67,7 +67,7 @@ public abstract class BlockLiquidMixin extends Block {
      * @reason make Water disappear when mixing
      */
     @Inject(method = "checkForMixing",at = @At("HEAD"),cancellable = true)
-    public void checkForMixing(World worldIn, BlockPos pos, IBlockState state, CallbackInfoReturnable<Boolean> cir) {
+    public void 天圆地方$checkForMixing(World worldIn, BlockPos pos, IBlockState state, CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
         if (material == Material.LAVA) {
             boolean flag = false;

@@ -31,6 +31,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -62,7 +63,7 @@ import static top.qiguaiaaaa.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER
  */
 @ThreadSafe
 @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-public final class BlockUpdater {
+public class BlockUpdater {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"block_updater");
     private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(SchedulingTicksCapability.BLOCK_UPDATER,null)?
             w.getCapability(SchedulingTicksCapability.BLOCK_UPDATER,null):null;
@@ -137,7 +138,7 @@ public final class BlockUpdater {
         while (!readyTicks.isEmpty()){
             final ExtendedNextTickListEntry entry = readyTicks.poll();
             final IBlockState state = world.getBlockState(entry.position);
-            if(state.getBlock() != entry.getBlock()) continue;
+            if(isInvalidTickEntry(entry,state)) continue;
             state.getBlock().updateTick(world,entry.position,state,world.rand);
             i++;
             if((i&127) == 0){
@@ -147,6 +148,17 @@ public final class BlockUpdater {
         }
         schedules.addAll(readyTicks);
         readyTicks.clear();
+    }
+
+    /**
+     * 当前的 NTE 是否需要丢弃，否则就会被更新
+     * @param entry NTE 计划
+     * @param curState 目前该位置的真正方块状态
+     * @return 如果要被丢弃，返回 true
+     */
+    protected boolean isInvalidTickEntry(@Nonnull final NextTickListEntry entry,
+                                         @Nonnull final IBlockState curState){
+        return curState.getBlock() != entry.getBlock();
     }
 
     /**

@@ -42,5 +42,5 @@ public interface IVanillaFlowChecker {
      * @param rand 随机数生成器
      * @return 如果能够流动，则返回true
      */
-    boolean canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand);
+    boolean 天圆地方$canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand);
 }

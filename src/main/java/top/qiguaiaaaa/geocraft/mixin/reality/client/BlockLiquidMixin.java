@@ -40,16 +40,20 @@ import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 /**
@@ -64,23 +68,43 @@ public abstract class BlockLiquidMixin extends Block{
     }
 
     @Inject(method = "shouldSideBeRendered",at =@At("HEAD"),cancellable = true)
-    public void shouldSideBeRendered(IBlockState state, IBlockAccess access, BlockPos pos, EnumFacing side, CallbackInfoReturnable<Boolean> cir) {
+    public void 天圆地方$shouldSideBeRendered(@Nonnull final IBlockState thisState,
+                                          @Nonnull final IBlockAccess access,
+                                          @Nonnull final BlockPos pos,
+                                          @Nonnull final EnumFacing side,
+                                          @Nonnull final CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
-        if (FluidUtil.getFluid(access.getBlockState(pos.offset(side))) == FluidUtil.getFluid(this)) {
+        final IBlockState toState;
+        final Fluid fluid = FluidUtil.getFluid(toState = access.getBlockState(pos.offset(side)));
+        if(fluid == null  //对方不是流体
+                && toState.getMaterial() == this.material //又有流体的材质，例如 BOP 的水中珊瑚
+        ){
+            cir.setReturnValue(false); //不要渲染，保持原版的逻辑
+            return;
+        }
+
+        final Fluid thisFluid = FluidUtil.getFluid(this);
+
+        if (fluid == thisFluid) {
             cir.setReturnValue(false);
             return;
         }
-        cir.setReturnValue(side == EnumFacing.UP || super.shouldSideBeRendered(state, access, pos, side));
+        cir.setReturnValue(side == EnumFacing.UP || super.shouldSideBeRendered(thisState, access, pos, side));
     }
 
     @Inject(method = "shouldRenderSides",at =@At("HEAD"),cancellable = true)
-    public void shouldRenderSides(IBlockAccess blockAccess, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    public void 天圆地方$shouldRenderSides(final @Nonnull IBlockAccess blockAccess,
+                                       final @Nonnull BlockPos pos,
+                                       final @Nonnull CallbackInfoReturnable<Boolean> cir) {
         cir.cancel();
         for (int i = -1; i <= 1; ++i) {
             for (int j = -1; j <= 1; ++j) {
-                IBlockState state = blockAccess.getBlockState(pos.add(i, 0, j));
+                final IBlockState state = blockAccess.getBlockState(pos.add(i, 0, j));
 
-                if (FluidUtil.getFluid(state) != FluidUtil.getFluid(this) && !state.isFullBlock()) {
+                final Fluid fluid = FluidUtil.getFluid(state);
+                final Fluid thisFluid = FluidUtil.getFluid(this);
+
+                if (fluid != thisFluid && !state.isFullBlock()) { //不同流体相邻的面应当渲染
                     cir.setReturnValue(true);
                     return;
                 }
@@ -90,7 +114,11 @@ public abstract class BlockLiquidMixin extends Block{
     }
 
     @Inject(method = "randomDisplayTick",at =@At("HEAD"),cancellable = true)
-    public void randomDisplayTick(IBlockState stateIn, World worldIn, BlockPos pos, Random rand, CallbackInfo ci) {
+    public void 天圆地方$randomDisplayTick(@Nonnull final IBlockState stateIn,
+                                       @Nonnull final World worldIn,
+                                       @Nonnull final BlockPos pos,
+                                       @Nonnull final Random rand,
+                                       @Nonnull final CallbackInfo ci) {
         ci.cancel();
 
         double x = pos.getX();
