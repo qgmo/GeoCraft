@@ -203,8 +203,9 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     @Unique
     private boolean 天圆地方$canMoveInto(World worldIn, BlockPos pos, IBlockState state){
         if(state.getBlock() instanceof IFluidBlock) return false;
-        Material material = state.getMaterial();
+        final Material material = state.getMaterial();
         if(material.isLiquid()){
+            if(!(state.getBlock() instanceof BlockLiquid)) return false;
             if(material != this.material) return false;
             return state.getValue(LEVEL) != 0;
         }

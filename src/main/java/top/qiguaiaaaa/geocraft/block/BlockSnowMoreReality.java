@@ -76,7 +76,16 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
         return canBePlacedOn(worldIn,down,state);
     }
 
-    protected boolean checkAndDropBlock(final @Nonnull World worldIn,final @Nonnull BlockPos pos,final @Nonnull IBlockState state) {
+    @Override
+    public void neighborChanged(@Nonnull final IBlockState state,
+                                @Nonnull final World worldIn,
+                                @Nonnull final BlockPos pos,
+                                @Nonnull final Block blockIn,
+                                @Nonnull final BlockPos fromPos) {
+        this.checkAndFallBlock(worldIn, pos, state);
+    }
+
+    protected boolean checkAndFallBlock(final @Nonnull World worldIn, final @Nonnull BlockPos pos, final @Nonnull IBlockState state) {
         if (!this.canPlaceBlockAt(worldIn, pos)) {
             worldIn.scheduleUpdate(pos,this,tickRate(worldIn));
             return false;
@@ -306,64 +315,79 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
     }
 
     @Override
-    public void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int layer, @Nullable NBTTagCompound nbt, int disabledBlockFlags, int enabledBlockFlags) {
+    public void addLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int 添加的层数〇载流方块层, @Nullable NBTTagCompound nbt, int disabledBlockFlags, int enabledBlockFlags) {
         if(!isAcceptedFluid(world, pos, state, fluid)) return;
-        if(layer == 0) return;
+        if(添加的层数〇载流方块层== 0) return;
         final boolean mixture = state.getValue(MIXTURE);
 
         try(final @Nullable IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(world,pos,true)){
 
             final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
 
-            int curSnowLayer = state.getValue(LAYERS);
+            final int 雪本身层〇雪层 = state.getValue(LAYERS);
+            int 总层数〇载流方块层 = 雪本身层〇雪层<<1;
             if(mixture){
-                int curWaterLayer = curSnowLayer;
-                layer = MathHelper.clamp(layer,-curWaterLayer,16-2*curWaterLayer);
+                int 当前雪层数〇载流方块层 = 雪本身层〇雪层;
+                int 当前水层数〇载流方块层 = 雪本身层〇雪层;
+                添加的层数〇载流方块层 = MathHelper.clamp(添加的层数〇载流方块层,-雪本身层〇雪层,16-总层数〇载流方块层); //修正
+
+                总层数〇载流方块层 += 添加的层数〇载流方块层; //此时总层数可能范围 1 ～ 16
+
+                if(总层数〇载流方块层==1){ //仅剩一层载流方块层，转换为雪层为零层，此时需要特殊处理，变成空气
+                    world.setBlockState(pos,Blocks.AIR.getDefaultState(),flag);
+                    return;
+                }
                 if(fluid == FluidRegistry.WATER){
-                    curWaterLayer += layer;
-                    if(layer <0){
+                    当前水层数〇载流方块层 += 添加的层数〇载流方块层;
+                    if(添加的层数〇载流方块层 <0){ //扣水，此时水小于雪
                         world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                                .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
+                                .withProperty(LAYERS,总层数〇载流方块层>>1),flag);
                         if(accessor != null)
-                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
-                    }else{
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*当前水层数〇载流方块层/2d);
+                    }else{ //加水，此时水多于雪
                         world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
+                                .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
                         if(accessor != null)
-                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*当前雪层数〇载流方块层/2d);
                     }
-                }else{
-                    curSnowLayer += layer;
-                    if(layer <0){
+                }else{ // 雪
+                    当前雪层数〇载流方块层 += 添加的层数〇载流方块层;
+                    if(添加的层数〇载流方块层 <0){ //扣雪，此时水多于雪
                         world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                                .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
+                                .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
                         if(accessor != null)
-                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curSnowLayer/2d);
-                    }else{
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*当前雪层数〇载流方块层/2d);
+                    }else{ //加雪，此时雪多于水
                         world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                                .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
+                                .withProperty(LAYERS,总层数〇载流方块层>>1),flag);
                         if(accessor != null)
-                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*curWaterLayer/2d);
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*当前水层数〇载流方块层/2d);
                     }
                 }
-            }else{
-                if(fluid == GeoFluids.SNOW){
-                    layer = MathHelper.clamp(layer,-(curSnowLayer<<1),(8-curSnowLayer)<<1);
-                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (layer>>1)),flag);
-                }else {
-                    layer = MathHelper.clamp(layer,0,(8-curSnowLayer)<<1);
-                    if(layer <curSnowLayer<<1){
-                        world.setBlockState(pos,state.withProperty(LAYERS,((curSnowLayer<<1)+ layer)>>1),flag);
+            }else{ //此时都是纯雪
+                if(fluid == GeoFluids.SNOW){ //雪
+                    添加的层数〇载流方块层 = MathHelper.clamp(添加的层数〇载流方块层,-总层数〇载流方块层,(8-雪本身层〇雪层)<<1); //(8-雪本身层〇雪层) 计算空余层数〇雪层，然后转换为载流方块层
+                    总层数〇载流方块层 += 添加的层数〇载流方块层;
+                    if(总层数〇载流方块层 <= 1){
+                        world.setBlockState(pos,Blocks.AIR.getDefaultState(),flag);
+                    }else world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1),flag);
+                }else { //水
+                    final int 当前雪层数〇载流方块层 = 总层数〇载流方块层;
+                    添加的层数〇载流方块层 = MathHelper.clamp(添加的层数〇载流方块层,0,(8-雪本身层〇雪层)<<1); //(8-雪本身层〇雪层) 计算空余层数〇雪层，然后转换为载流方块层
+                    final int 当前水层数〇载流方块层 = 添加的层数〇载流方块层;
+                    总层数〇载流方块层 += 添加的层数〇载流方块层; //一定是增加的
+                    if(当前水层数〇载流方块层<当前雪层数〇载流方块层){
+                        world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1),flag);
                         if(accessor != null)
-                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
-                    }else if(layer == curSnowLayer<<1){
-                        world.setBlockState(pos,state.withProperty(LAYERS,((curSnowLayer<<1)+ layer)>>1)
+                            accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* 当前水层数〇载流方块层/2d);
+                    }else if(当前雪层数〇载流方块层 == 当前水层数〇载流方块层){
+                        world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1)
                                 .withProperty(MIXTURE,true),flag);
                     }else{
                         world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                                .withProperty(BlockLiquid.LEVEL,8-(((curSnowLayer<<1)+ layer)>>1)),flag);
+                                .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
                         if(accessor != null){
-                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* layer/2d);
+                            accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA* 添加的层数〇载流方块层/2d);
                         }
                     }
                 }
@@ -378,93 +402,129 @@ public class BlockSnowMoreReality extends BlockSnowExtended implements IBlockSta
     }
 
     @Override
-    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags) {
+    public boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int 新的层数〇载流方块层,@Nullable NBTTagCompound nbt,final int disabledBlockFlags,final int enabledBlockFlags) {
         if(!isAcceptedFluid(world, pos, state, fluid)) return false;
-        if(newLayer<0 || newLayer > 16) return false;
+        if(新的层数〇载流方块层<0 || 新的层数〇载流方块层 > 16) return false;
         final boolean mixture = state.getValue(MIXTURE);
 
         final int flag = APIMathUtil.getModifiedFlag(Constants.BlockFlags.DEFAULT,disabledBlockFlags,enabledBlockFlags);
 
-        int curSnowLayer = state.getValue(LAYERS);
+        final int 雪本身层〇雪层 = state.getValue(LAYERS);
+        int 总层数〇载流方块层 = 雪本身层〇雪层<<1;
         if(mixture){
-            int curWaterLayer = curSnowLayer;
+            int 当前雪层数〇载流方块层 = 雪本身层〇雪层;
+            int 当前水层数〇载流方块层 = 雪本身层〇雪层;
+
+            if(新的层数〇载流方块层>16-雪本身层〇雪层) return false; //没有空闲空间了
+            if(新的层数〇载流方块层==雪本身层〇雪层) return true; //和原来一样，没变化
+
+            总层数〇载流方块层 = 雪本身层〇雪层 + 新的层数〇载流方块层; //此时总层数可能范围 1 ～ 16
+
+            if(总层数〇载流方块层==1){ //仅剩一层载流方块层，转换为雪层为零层，此时需要特殊处理，变成空气
+                return world.setBlockState(pos,Blocks.AIR.getDefaultState(),flag);
+            }
             if(fluid == FluidRegistry.WATER){
-                curWaterLayer = newLayer;
-                if(curWaterLayer <curSnowLayer){
-                    world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
-                }else if(curWaterLayer>curSnowLayer){
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
+                当前水层数〇载流方块层 = 新的层数〇载流方块层;
+                if(当前水层数〇载流方块层 <当前雪层数〇载流方块层){
+                    return world.setBlockState(pos,state.withProperty(MIXTURE,false)
+                            .withProperty(LAYERS,总层数〇载流方块层>>1),flag);
+                }else{ //水多于雪
+                    return world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                            .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
                 }
-            }else{
-                curSnowLayer = newLayer;
-                if(curSnowLayer <curWaterLayer){
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+curWaterLayer)/2),flag);
-                }else if(curSnowLayer>curWaterLayer){
-                    world.setBlockState(pos,state.withProperty(MIXTURE,false)
-                            .withProperty(LAYERS,(curSnowLayer+curWaterLayer)>>1),flag);
+            }else{ // 雪
+                当前雪层数〇载流方块层 = 新的层数〇载流方块层;
+                if(当前雪层数〇载流方块层<当前水层数〇载流方块层){ //水多于雪
+                    return world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                            .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
+                }else{ //雪多于水
+                    return world.setBlockState(pos,state.withProperty(MIXTURE,false)
+                            .withProperty(LAYERS,总层数〇载流方块层>>1),flag);
                 }
             }
-        }else{
-            if(fluid == GeoFluids.SNOW){
-                world.setBlockState(pos,state.withProperty(LAYERS,newLayer>>1),flag);
-            }else {
-                if(newLayer <curSnowLayer<<1){
-                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (newLayer>>1)),flag);
-                }else if(newLayer == curSnowLayer<<1){
-                    world.setBlockState(pos,state.withProperty(LAYERS,curSnowLayer+ (newLayer>>1))
+        }else{ //此时都是纯雪
+            if(fluid == GeoFluids.SNOW){ //雪
+                if(总层数〇载流方块层 == 新的层数〇载流方块层) return true;//没变化
+                总层数〇载流方块层 = 新的层数〇载流方块层;
+                if(总层数〇载流方块层 <= 1){
+                    return world.setBlockState(pos,Blocks.AIR.getDefaultState(),flag);
+                }else return world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1),flag);
+            }else { //水
+                if(新的层数〇载流方块层 == 0) return true;//没变化
+                final int 当前雪层数〇载流方块层 = 总层数〇载流方块层;
+                if(新的层数〇载流方块层>16-当前雪层数〇载流方块层) return false; //没有空闲空间了
+                final int 当前水层数〇载流方块层 = 新的层数〇载流方块层;
+                总层数〇载流方块层 = 当前雪层数〇载流方块层+当前水层数〇载流方块层; //相等
+                if(当前水层数〇载流方块层<当前雪层数〇载流方块层){ //水少于雪
+                    return world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1),flag);
+                }else if(当前雪层数〇载流方块层 == 当前水层数〇载流方块层){ //水等于雪
+                    return world.setBlockState(pos,state.withProperty(LAYERS,总层数〇载流方块层>>1)
                             .withProperty(MIXTURE,true),flag);
-                }else{
-                    world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
-                            .withProperty(BlockLiquid.LEVEL,8-(curSnowLayer+ (newLayer>>1))),flag);
+                }else{ //水多余雪
+                    return world.setBlockState(pos,Blocks.FLOWING_WATER.getDefaultState()
+                            .withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1)),flag);
                 }
             }
         }
-        return true;
     }
 
     @Nullable
     @Override
-    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int layer) {
+    public IBlockState getLayerState(@Nonnull IBlockState state, @Nonnull Fluid fluid, int 新的层数〇载流方块层) {
         if(!isAcceptedFluid(null,null,state,fluid)) return null;
+        if(新的层数〇载流方块层<0 || 新的层数〇载流方块层 > 16) return null;
         final boolean mixture = state.getValue(MIXTURE);
-        final int curLayer = state.getValue(LAYERS);
-        if(layer<0) return null;
-        if(mixture && layer > getMaxLayers(null, null, state, fluid)) return null;
-        else if(!mixture){
-            if(fluid == FluidRegistry.WATER) if(layer>16-curLayer*2) return null;
-            if(fluid == GeoFluids.SNOW) if(layer>16) return null;
-        }
+        final int 雪本身层〇雪层 = state.getValue(LAYERS);
+        int 总层数〇载流方块层 = 雪本身层〇雪层<<1;
 
-        if(fluid == GeoFluids.SNOW){
-            if(mixture){
-                if(layer ==curLayer) return state;
-                if(layer == 0 && curLayer>1) return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-curLayer/2);
-                if(layer <curLayer) return Blocks.FLOWING_WATER.getDefaultState()
-                        .withProperty(BlockLiquid.LEVEL,8-(curLayer+ layer)/2);
-                return state.withProperty(MIXTURE,false).withProperty(LAYERS,(curLayer+ layer)>>1);
+        if(mixture){
+            int 当前雪层数〇载流方块层 = 雪本身层〇雪层;
+            int 当前水层数〇载流方块层 = 雪本身层〇雪层;
+
+            if(新的层数〇载流方块层>16-雪本身层〇雪层) return null; //没有空闲空间了
+            if(新的层数〇载流方块层==雪本身层〇雪层) return state; //和原来一样，没变化
+
+            总层数〇载流方块层 = 雪本身层〇雪层 + 新的层数〇载流方块层; //此时总层数可能范围 1 ～ 16
+
+            if(总层数〇载流方块层==1){ //仅剩一层载流方块层，转换为雪层为零层，此时需要特殊处理，变成空气
+                return Blocks.AIR.getDefaultState();
             }
-            if(layer == 0) return Blocks.AIR.getDefaultState();
-            return state.withProperty(LAYERS, layer>>1);
-        }else if(fluid == FluidRegistry.WATER){
-            if(mixture){
-                if(layer ==curLayer) return state;
-                if(layer == 0) return state.withProperty(MIXTURE,false)
-                        .withProperty(LAYERS,curLayer/2);
-                if(layer >curLayer) return Blocks.FLOWING_WATER.getDefaultState()
-                        .withProperty(BlockLiquid.LEVEL,8-(curLayer+ layer)/2);
-                return state.withProperty(MIXTURE,false).withProperty(LAYERS,(curLayer+ layer)>>1);
+            if(fluid == FluidRegistry.WATER){
+                当前水层数〇载流方块层 = 新的层数〇载流方块层;
+                if(当前水层数〇载流方块层 <当前雪层数〇载流方块层){
+                    return state.withProperty(MIXTURE,false).withProperty(LAYERS,总层数〇载流方块层>>1);
+                }else{ //水多于雪
+                    return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1));
+                }
+            }else{ // 雪
+                当前雪层数〇载流方块层 = 新的层数〇载流方块层;
+                if(当前雪层数〇载流方块层<当前水层数〇载流方块层){ //水多于雪
+                    return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1));
+                }else{ //雪多于水
+                    return state.withProperty(MIXTURE,false).withProperty(LAYERS,总层数〇载流方块层>>1);
+                }
             }
-            if(layer == 0) return state;
-            if(layer == curLayer<<1) return
-                    state.withProperty(MIXTURE,true)
-                            .withProperty(LAYERS, layer);
-            else if(layer > curLayer<<1) return Blocks.FLOWING_WATER.getDefaultState()
-                    .withProperty(BlockLiquid.LEVEL,8-(curLayer*2+ layer)/2);
-            else return state.withProperty(LAYERS, (layer +curLayer*2)>>1);
+        }else{ //此时都是纯雪
+            if(fluid == GeoFluids.SNOW){ //雪
+                if(总层数〇载流方块层 == 新的层数〇载流方块层) return state;//没变化
+                总层数〇载流方块层 = 新的层数〇载流方块层;
+                if(总层数〇载流方块层 <= 1){
+                    return Blocks.AIR.getDefaultState();
+                }else return state.withProperty(LAYERS,总层数〇载流方块层>>1);
+            }else { //水
+                if(新的层数〇载流方块层 == 0) return state;//没变化
+                final int 当前雪层数〇载流方块层 = 总层数〇载流方块层;
+                if(新的层数〇载流方块层>16-当前雪层数〇载流方块层) return null; //没有空闲空间了
+                final int 当前水层数〇载流方块层 = 新的层数〇载流方块层;
+                总层数〇载流方块层 = 当前雪层数〇载流方块层+当前水层数〇载流方块层; //相等
+                if(当前水层数〇载流方块层<当前雪层数〇载流方块层){ //水少于雪
+                    return state.withProperty(LAYERS,总层数〇载流方块层>>1);
+                }else if(当前雪层数〇载流方块层 == 当前水层数〇载流方块层){ //水等于雪
+                    return state.withProperty(LAYERS,总层数〇载流方块层>>1).withProperty(MIXTURE,true);
+                }else{ //水多余雪
+                    return Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-(总层数〇载流方块层>>1));
+                }
+            }
         }
-        return null;
     }
 }

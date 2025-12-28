@@ -137,6 +137,7 @@ public class BlockUpdater {
         int i = 0;
         while (!readyTicks.isEmpty()){
             final ExtendedNextTickListEntry entry = readyTicks.poll();
+            if(!world.isBlockLoaded(entry.position)) continue; //避免触发区块加载，可能导致死锁，Fix #3
             final IBlockState state = world.getBlockState(entry.position);
             if(isInvalidTickEntry(entry,state)) continue;
             state.getBlock().updateTick(world,entry.position,state,world.rand);

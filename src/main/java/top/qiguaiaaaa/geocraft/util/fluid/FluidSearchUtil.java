@@ -48,7 +48,10 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public final class FluidSearchUtil {
-    private static final Set<BlockPos> EMPTY_BLOCKPOS_SET = new HashSet<>();
+    private static final ThreadLocal<Queue<FluidSourceSearchNode>> SearchSourceQueue = ThreadLocal.withInitial(LinkedList::new);
+    private static final ThreadLocal<Queue<FluidSearchNode>> SearchQueue = ThreadLocal.withInitial(LinkedList::new);
+    private static final ThreadLocal<Set<BlockPos>> SearchVisitedSet = ThreadLocal.withInitial(HashSet::new);
+    private static final Set<BlockPos> EMPTY_BLOCKPOS_SET = Collections.emptySet();
     public static final int[][] DIRS4 = {
             { 1, 0}, { -1, 0}, {0, 1}, {0, -1}};
     public static final int[][] DIRS6 = {
@@ -139,19 +142,22 @@ public final class FluidSearchUtil {
                                                     int maxIterations,
                                                     int sameLevelIterationLimit) {
 
-        Queue<FluidSourceSearchNode> queue = new LinkedList<>();
-        Set<BlockPos> visited = new HashSet<>();
+        final Queue<FluidSourceSearchNode> queue = SearchSourceQueue.get();
+        final Set<BlockPos> visited = SearchVisitedSet.get();
+        queue.clear();
+        visited.clear();
 
         queue.add(new FluidSourceSearchNode(startPos, EnumFacing.UP, 0, 0));
         visited.add(startPos);
 
         while (!queue.isEmpty()) {
-            FluidSourceSearchNode current = queue.poll();
+            final FluidSourceSearchNode current = queue.poll();
 
             if (current.iteration > maxIterations) continue;
-            IBlockState state = world.getBlockState(current.pos);
+            final IBlockState state = world.getBlockState(current.pos);
             if (state.getMaterial() != material || state.getBlock() instanceof IFluidBlock)
                 continue;
+            if(!(state.getBlock() instanceof BlockLiquid)) continue; // 不是流体
             // 检查是否为源方块
             int level = FluidUtil.getFluidQuanta(world, current.pos, state);
             if (!(ignoreSameY && ( current.pos.getY() == startPos.getY()) ) && level == 8) return Optional.of(current.pos);
@@ -185,6 +191,7 @@ public final class FluidSearchUtil {
 
                 IBlockState nextState = world.getBlockState(nextPos);
                 if (nextState.getMaterial() != material || nextState.getBlock() instanceof IFluidBlock) continue;
+                if(!(nextState.getBlock() instanceof BlockLiquid)) continue; // 不是流体
 
                 int nextLevel = FluidUtil.getFluidQuanta(world, nextPos, nextState);
                 boolean nextFalling = nextState.getValue(BlockLiquid.LEVEL) >= 8;
@@ -232,8 +239,10 @@ public final class FluidSearchUtil {
                                                         int maxIterations,
                                                         int sameQuantaIterationLimit) {
 
-        Queue<FluidSourceSearchNode> queue = new LinkedList<>();
-        Set<BlockPos> visited = new HashSet<>();
+        final Queue<FluidSourceSearchNode> queue = SearchSourceQueue.get();
+        final Set<BlockPos> visited = SearchVisitedSet.get();
+        queue.clear();
+        visited.clear();
 
         queue.add(new FluidSourceSearchNode(startPos, EnumFacing.UP, 0, 0));
         visited.add(startPos);
@@ -479,8 +488,10 @@ public final class FluidSearchUtil {
     }
 
     private static Optional<BlockPos> findFluidIterate(World world, BlockPos startPos, Fluid fluid, Set<BlockPos> ignoreBlocks, boolean searchInFlat, boolean upwardPriority, int maxIterations){
-        Queue<FluidSearchNode> queue = new LinkedList<>();
-        Set<BlockPos> visited = new HashSet<>();
+        final Queue<FluidSearchNode> queue = SearchQueue.get();
+        final Set<BlockPos> visited = SearchVisitedSet.get();
+        queue.clear();
+        visited.clear();
         if(ignoreBlocks == null) ignoreBlocks = EMPTY_BLOCKPOS_SET;
 
         queue.add(new FluidSearchNode(startPos, EnumFacing.UP, 0));

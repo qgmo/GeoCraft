@@ -202,7 +202,7 @@ public interface ILayeredFluidHost {
      * 和 {@link #setLayer(World, BlockPos, IBlockState, Fluid, int, int, int)}不同的是，addLayer要求指定位置的方块状态一定是state。
      * @param world 世界
      * @param pos 位置
-     * @param state 状态，必须是当前方块的状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 需要添加或移除的流体
      * @param layer 层数,若为负值则为提取(remove or drain).建议使用{@link #drainLayer(World, BlockPos, IBlockState, Fluid, int, boolean)}
      * @param nbt NBT标签
@@ -222,7 +222,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param layer 层数
      * @param doAdd 是否真的添加
@@ -237,7 +237,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param layer 层数
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -254,7 +254,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param layer 层数
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -272,7 +272,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param layer 层数
      * @param nbt NBT标签
@@ -296,7 +296,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param amount 液体量
      * @param doAdd 是否真的添加
@@ -311,7 +311,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param amount 液体量
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -327,7 +327,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param amount 液体量
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -344,7 +344,7 @@ public interface ILayeredFluidHost {
      * 在添加前一般需要检测{@link #canFill(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 要添加的流体
      * @param amount 液体量
      * @param nbt NBT
@@ -370,7 +370,7 @@ public interface ILayeredFluidHost {
      * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，需要和 world#getBlockState 一致
      * @param fluid 要吸取的流体
      * @param layer 层数
      * @param doDrain 是否真的吸取
@@ -385,7 +385,7 @@ public interface ILayeredFluidHost {
      * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，需要和 world#getBlockState 一致
      * @param fluid 要吸取的流体
      * @param layer 层数
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -401,7 +401,7 @@ public interface ILayeredFluidHost {
      * 在吸取前一般需要先检查{@link #canDrain(World, BlockPos, IBlockState, Fluid, EnumFacing, IBlockState)}
      * @param world 世界
      * @param pos 位置
-     * @param state 状态
+     * @param state 状态，需要和 world#getBlockState 一致
      * @param fluid 要吸取的流体
      * @param layer 层数
      * @param disabledBlockFlags 禁止的方块更新 flags
@@ -446,10 +446,11 @@ public interface ILayeredFluidHost {
     }
 
     /**
-     * 将指定流体流体层数设置到指定层数
+     * 将指定流体流体层数设置到指定层数。和 addLayer 的区别在于 setLayer 不应该考虑流体状态变化而导致的变化。<br/>
+     * @see top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality#setLayer(World, BlockPos, IBlockState, Fluid, int, NBTTagCompound, int, int)
      * @param world 世界
      * @param pos 当前位置
-     * @param state 方框状态
+     * @param state 方块状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 指定流体
      * @param newLayer 新的层数
      * @return 是否成功
@@ -462,7 +463,7 @@ public interface ILayeredFluidHost {
      * 将指定流体流体层数设置到指定层数
      * @param world 世界
      * @param pos 当前位置
-     * @param state 方框状态
+     * @param state 方块状态，不一定和 world#getBlockState 一致，例如放置方块的时候
      * @param fluid 指定流体
      * @param newLayer 新的层数
      * @param disabledBlockFlags 禁止的BlockFlags
