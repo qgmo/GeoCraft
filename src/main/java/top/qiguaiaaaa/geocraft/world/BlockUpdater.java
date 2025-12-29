@@ -50,6 +50,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -72,12 +73,19 @@ public class BlockUpdater {
     static final int MAX_UPDATE_NUM = BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
     static final Map<World,BlockUpdater> UPDATERS_CACHE = new ConcurrentHashMap<>();
 
+    final ReentrantLock scheduleLock = new ReentrantLock();
     final Set<ExtendedNextTickListEntry> schedules = new LinkedHashSet<>();
+    final ReentrantLock readyTickLock = new ReentrantLock();
     final LinkedList<ExtendedNextTickListEntry> readyTicks = new LinkedList<>();
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    final ExtendedNextTickListEntry[] ticksTempEntry = new ExtendedNextTickListEntry[100];
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    int tempLoc = 0;
 
     World world;
     Consumer<ExtendedNextTickListEntry> calcDistanceToClosestPlayer;
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void setWorld(@Nonnull World world) {
         this.world = world;
         calcDistanceToClosestPlayer = entry -> entry.calcDisSqToNearestPlayer(world);
@@ -106,49 +114,87 @@ public class BlockUpdater {
      * @since 0.2.0
      */
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
-    public synchronized void scheduleAll(@Nonnull Collection<ExtendedNextTickListEntry> entries){
-        schedules.addAll(entries);
+    public void scheduleAll(@Nonnull Collection<ExtendedNextTickListEntry> entries){
+        scheduleLock.lock();
+        try {
+            schedules.addAll(entries);
+        }finally {
+            scheduleLock.unlock();
+        }
     }
 
     /**
      * @since 0.2.0
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public synchronized void updateTick(){
+    public void updateTick(){
         final long beginTime = System.currentTimeMillis();
 
-        Iterator<ExtendedNextTickListEntry> iterator = schedules.iterator();
-        while (iterator.hasNext()) {
-            final ExtendedNextTickListEntry entry = iterator.next();
-            if(world.getTotalWorldTime()<entry.scheduledTime){
-                continue;
+        scheduleLock.lock();
+        try {
+            final Iterator<ExtendedNextTickListEntry> iterator = schedules.iterator();
+            readyTickLock.lock(); //只要其他方法没有出现获取 scheduleLock 还要获取 readyTickLock 的情况，这里就是安全的
+            try {
+                while (iterator.hasNext()) {
+                    final ExtendedNextTickListEntry entry = iterator.next();
+                    if(world.getTotalWorldTime()<entry.scheduledTime){
+                        continue;
+                    }
+                    iterator.remove();
+                    readyTicks.add(entry);
+                    if(readyTicks.size()>MAX_UPDATE_NUM) break;
+                }
+            }finally {
+                readyTickLock.unlock();
             }
-            iterator.remove();
-            readyTicks.add(entry);
-            if(readyTicks.size()>MAX_UPDATE_NUM) break;
+        }finally {
+            scheduleLock.unlock();
         }
 
         if(GeneralConfig.SORT_UPDATE_TASKS_BY_DISTANCE_TO_PLAYERS.getValue()){
-            readyTicks.forEach(calcDistanceToClosestPlayer);
-            readyTicks.sort(compareByDistanceToPlayer);
+            readyTickLock.lock();
+            try {
+                readyTicks.forEach(calcDistanceToClosestPlayer);
+                readyTicks.sort(compareByDistanceToPlayer);
+            }finally {
+                readyTickLock.unlock();
+            }
         }
 
         final int maxTimeUsage = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
-        int i = 0;
-        while (!readyTicks.isEmpty()){
-            final ExtendedNextTickListEntry entry = readyTicks.poll();
-            if(!world.isBlockLoaded(entry.position)) continue; //避免触发区块加载，可能导致死锁，Fix #3
-            final IBlockState state = world.getBlockState(entry.position);
-            if(isInvalidTickEntry(entry,state)) continue;
-            state.getBlock().updateTick(world,entry.position,state,world.rand);
-            i++;
-            if((i&127) == 0){
-                if(maxTimeUsage <0) continue;
-                if(System.currentTimeMillis()-beginTime>maxTimeUsage) break;
+        readyTickLock.lock();
+        try {
+            while (!readyTicks.isEmpty()){
+                tempLoc = -1;
+                for (int j=0;j<ticksTempEntry.length;j++){
+                    ticksTempEntry[++tempLoc] = readyTicks.poll();
+                    if(readyTicks.isEmpty()) break;
+                }
+                readyTickLock.unlock(); //释放锁，避免触发区块加载导致死锁
+                try {
+                    while (tempLoc>-1){
+                        final ExtendedNextTickListEntry entry = ticksTempEntry[tempLoc--];
+                        if(!world.isBlockLoaded(entry.position)) continue;
+                        final IBlockState state = world.getBlockState(entry.position);
+                        if(isInvalidTickEntry(entry,state)) continue;
+                        state.getBlock().updateTick(world,entry.position,state,world.rand);
+                    }
+                    if(maxTimeUsage <0) continue;
+                    if(System.currentTimeMillis()-beginTime>maxTimeUsage) break;
+                }finally {
+                    readyTickLock.lock();
+                }
             }
+        }finally {
+            scheduleLock.lock();
+            try {
+                schedules.addAll(readyTicks);
+                readyTicks.clear();
+            }finally {
+                scheduleLock.unlock();
+            }
+            readyTickLock.unlock();
         }
-        schedules.addAll(readyTicks);
-        readyTicks.clear();
     }
 
     /**
@@ -157,6 +203,7 @@ public class BlockUpdater {
      * @param curState 目前该位置的真正方块状态
      * @return 如果要被丢弃，返回 true
      */
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     protected boolean isInvalidTickEntry(@Nonnull final NextTickListEntry entry,
                                          @Nonnull final IBlockState curState){
         return curState.getBlock() != entry.getBlock();
@@ -167,24 +214,32 @@ public class BlockUpdater {
      */
     @Nonnull
     @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-    public synchronized Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final BlockPos pos,final boolean doRemove){
+    public Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final BlockPos pos,final boolean doRemove){
         Set<ExtendedNextTickListEntry> set = null;
         Collection<ExtendedNextTickListEntry> collectionToQuery;
+        ReentrantLock lock;
         for(byte i =(byte) 0;i<2;i++){
             final Iterator<ExtendedNextTickListEntry> iterator;
             if (i == 0) {
                 collectionToQuery = schedules;
+                lock = scheduleLock;
             } else {
                 collectionToQuery = readyTicks;
+                lock = readyTickLock;
             }
-            iterator = collectionToQuery.iterator();
-            while (iterator.hasNext()){
-                final ExtendedNextTickListEntry entry = iterator.next();
-                if(entry.position.equals(pos)){
-                    if(doRemove) iterator.remove();
-                    if(set == null) set = new HashSet<>();
-                    set.add(entry);
+            lock.lock();
+            try {
+                iterator = collectionToQuery.iterator();
+                while (iterator.hasNext()){
+                    final ExtendedNextTickListEntry entry = iterator.next();
+                    if(entry.position.equals(pos)){
+                        if(doRemove) iterator.remove();
+                        if(set == null) set = new HashSet<>();
+                        set.add(entry);
+                    }
                 }
+            }finally {
+                lock.unlock();
             }
         }
         return set == null?Collections.emptySet():set;
@@ -204,23 +259,33 @@ public class BlockUpdater {
      */
     @Nonnull
     @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-    public synchronized Set<ExtendedNextTickListEntry> queryEntries(final int x,final int y,final int z,final int dx,final int dy,final int dz,final boolean doRemove){
+    public Set<ExtendedNextTickListEntry> queryEntries(final int x,final int y,final int z,final int dx,final int dy,final int dz,final boolean doRemove){
         final int toX = x + dx,toY = y+dy,toZ=z+dz;
         Set<ExtendedNextTickListEntry> set = null;
+        Collection<ExtendedNextTickListEntry> collectionToQuery;
+        ReentrantLock lock;
         for(byte i =(byte) 0;i<2;i++){
             final Iterator<ExtendedNextTickListEntry> iterator;
             if (i == 0) {
-                iterator = schedules.iterator();
+                collectionToQuery = schedules;
+                lock = scheduleLock;
             } else {
-                iterator = readyTicks.iterator();
+                collectionToQuery = readyTicks;
+                lock = readyTickLock;
             }
-            while (iterator.hasNext()){
-                final ExtendedNextTickListEntry entry = iterator.next();
-                if(MathUtil.inRange(entry.position.getX(),x,toX) && MathUtil.inRange(entry.position.getY(),y,toY) && MathUtil.inRange(entry.position.getZ(),z,toZ)){
-                    if(doRemove) iterator.remove();
-                    if(set == null) set = new HashSet<>();
-                    set.add(entry);
+            lock.lock();
+            try {
+                iterator = collectionToQuery.iterator();
+                while (iterator.hasNext()){
+                    final ExtendedNextTickListEntry entry = iterator.next();
+                    if(MathUtil.inRange(entry.position.getX(),x,toX) && MathUtil.inRange(entry.position.getY(),y,toY) && MathUtil.inRange(entry.position.getZ(),z,toZ)){
+                        if(doRemove) iterator.remove();
+                        if(set == null) set = new HashSet<>();
+                        set.add(entry);
+                    }
                 }
+            }finally {
+                lock.unlock();
             }
         }
         return set == null?Collections.emptySet():set;
