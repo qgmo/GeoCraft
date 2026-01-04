@@ -27,6 +27,8 @@
 
 package top.qiguaiaaaa.geocraft.api.command;
 
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
@@ -38,6 +40,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralsNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.EntitySelectorNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.ParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
@@ -45,10 +48,15 @@ import top.qiguaiaaaa.geocraft.api.command.node.*;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.BooleanNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.StringNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.UUIDNode;
 import top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockPosNode;
+import top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockSelectorNode;
 import top.qiguaiaaaa.geocraft.api.command.node.minecraft.ItemSelectorNode;
 
 import javax.annotation.Nonnull;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.UUID;
 
 /**
  * @author QiguaiAAAA
@@ -108,6 +116,16 @@ public final class Nodes {
     }
 
     @Nonnull
+    public static NumberNodeBuilder<BigInteger,NumberNode<BigInteger>> bigInteger(@Nonnull final String name){
+        return NumberType.BIG_INTEGER.create(name);
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<BigDecimal,NumberNode<BigDecimal>> bigDecimal(@Nonnull final String name){
+        return NumberType.BIG_DECIMAL.create(name);
+    }
+
+    @Nonnull
     public static ParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BooleanNode::new);
     }
@@ -118,17 +136,47 @@ public final class Nodes {
     }
 
     @Nonnull
+    public static ParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,UUIDNode::new);
+    }
+
+    @Nonnull
     public static ParameterNodeBuilder<BlockPos, BlockPosNode> blockPos(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BlockPosNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<Item, ItemSelectorNode> selectItem(@Nonnull final String name){
+    public static ParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode> selectAtmosphere(@Nonnull final String name){
+    public static ParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,BlockSelectorNode::new);
+    }
+
+    @Nonnull
+    public static EntitySelectorNodeBuilder entity(@Nonnull final String name){
+        return new EntitySelectorNodeBuilder(name).asSingle();
+    }
+
+    @Nonnull
+    public static EntitySelectorNodeBuilder entity(@Nonnull final String name, @Nonnull final Class<? extends Entity> targetClass){
+        return new EntitySelectorNodeBuilder(name).asSingle().target(targetClass);
+    }
+
+    @Nonnull
+    public static EntitySelectorNodeBuilder entities(@Nonnull final String name){
+        return new EntitySelectorNodeBuilder(name);
+    }
+
+    @Nonnull
+    public static EntitySelectorNodeBuilder entities(@Nonnull final String name,@Nonnull final Class<? extends Entity> targetClass){
+        return new EntitySelectorNodeBuilder(name).target(targetClass);
+    }
+
+    @Nonnull
+    public static ParameterNodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode> atmosphere(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name, AtmosphereAccessorNode::new);
     }
 

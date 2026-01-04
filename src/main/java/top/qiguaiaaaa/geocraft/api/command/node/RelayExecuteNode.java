@@ -40,9 +40,12 @@ import java.util.List;
 public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode{
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        ExecuteNode.super.execute(args,context);
-        if(childNode != null) childNode.execute(args,context);
-        onFinal(context,args);
+        try {
+            ExecuteNode.super.execute(args,context);
+            if(childNode != null) childNode.execute(args,context);
+        }finally {
+            onFinal(context,args);
+        }
     }
 
     public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{

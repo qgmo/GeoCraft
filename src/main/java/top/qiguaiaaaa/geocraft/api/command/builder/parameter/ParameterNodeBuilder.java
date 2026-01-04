@@ -48,7 +48,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>> implem
     protected ParameterNode.DefaultParser<P> parser;
     protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider;
 
-    protected ParameterNodeBuilder(@Nonnull String name) {
+    public ParameterNodeBuilder(@Nonnull String name) {
         this.name = name;
     }
 

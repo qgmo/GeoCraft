@@ -100,9 +100,9 @@ public class CommandAtmosphere{
                                 ).then(
                                         number("value", NumberType.DOUBLE).then(
                                                 blockPos("pos").asOptional().then(
-                                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
+                                                        relay(CommandAtmosphere::processAtmosphereInfo).then(
                                                                 execute(CommandAtmosphere::set)
-                                                        )
+                                                        ).after(CommandAtmosphere::afterProcessAtmosphereInfo)
                                                 )
                                         ))).done()
                         .literal("stop").then(
