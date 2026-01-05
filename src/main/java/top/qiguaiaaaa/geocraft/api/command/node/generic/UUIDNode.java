@@ -35,6 +35,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -59,6 +60,18 @@ public class UUIDNode extends SmartParameterNode<UUID> {
     @Override
     public int getParametersLength() {
         return 1;
+    }
+
+    @Nonnull
+    @Override
+    public Type getType() {
+        return UUID.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.uuid";
     }
 
     @Override

@@ -111,4 +111,16 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
     public int getParametersLength() {
         return 4;
     }
+
+    @Nonnull
+    @Override
+    public Class<IAtmosphereAccessor> getType() {
+        return IAtmosphereAccessor.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.geocraft.atmosphereAccessor";
+    }
 }

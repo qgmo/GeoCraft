@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -38,20 +39,26 @@ import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
- * @author QiguaiAAAA
+ * 一个智能化的参数节点，可以用于智能分支{@link SmartSplitNode}。<br/>
+ * 该智能参数节点默认使用 {@link this#checkValid(List, CommandContext)} 作为 {@link this#match(List, CommandContext)} 方法的逻辑。
  */
 public abstract class SmartParameterNode<P> extends ParameterNode<P> implements ISmartNode {
     public static final ValidChecker MATCH_ONE_PARAMETER = (self,args,context) -> {
-        if(!self.isOptional()&&args.isEmpty()) throw new WrongUsageException("wrong!");
-        return args.size()>=1;
+        if(args.size()>=1) return true;
+        else if(self.isOptional()) return false;
+        else throw new WrongUsageException("api.geo.command.parameter.smart.checker1", self.getLocalizedParameter());
     };
     public static final ValidChecker MATCH_THREE_PARAMETER = ((self, args, context) -> {
-        if(args.size()<3 && args.size()>0 || args.size()==0 && !self.isOptional()) throw new WrongUsageException("Wrong usage!");
-        return args.size()>=3;
+        if(args.size()>=3) return true;
+        else if(args.size()>=1) throw new WrongUsageException("api.geo.command.parameter.smart.checker3",I18n.format(self.getLocalizedName())); //只有一到两个参数，填了一半，不能用默认值
+        else if(self.isOptional()) return false; //可以用默认值
+        else throw new WrongUsageException("api.geo.command.parameter.smart.checker3",self.getLocalizedParameter());
     });
     public static final ValidChecker MATCH_FOUR_PARAMETER = ((self, args, context) -> {
-        if(args.size()<4 && args.size()>0 || args.size()==0 && !self.isOptional()) throw new WrongUsageException("Wrong usage!");
-        return args.size()>=4;
+        if(args.size()>=4) return true;
+        else if(args.size()>=1) throw new WrongUsageException("api.geo.command.parameter.smart.checker4",I18n.format(self.getLocalizedName())); //只有一到三个参数，填了一半，不能用默认值
+        else if(self.isOptional()) return false; //可以用默认值
+        else throw new WrongUsageException("api.geo.command.parameter.smart.checker4",self.getLocalizedParameter());
     });
 
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
@@ -81,6 +88,14 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
         return checkValid(args,(CommandContext) context);
     }
 
+    /**
+     * @see ParameterNode#checkValid(List, ExecuteContext)
+     * @param args 未解析的参数列表
+     * @param context 命令通用上下文
+     * @return 为 true 表示可以解析，为 false 表示不能解析，但可以用默认值，仅当 {@link #isOptional()} 为 true 时使用。
+     * @throws WrongUsageException 当{@link #isOptional()} 为 false 时，且语法错误，则抛出该错误表示无法解析。
+     * 请注意，当在 {@link #match(List, CommandContext)} 时，抛出错误不会终止命令执行，而是会返回匹配失败，继续匹配下一个智能节点。
+     */
     public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context) throws WrongUsageException;
 
     public interface ValidChecker{

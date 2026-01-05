@@ -33,6 +33,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.List;
 
@@ -47,6 +48,18 @@ public class StringNode extends SmartParameterNode<String> {
     @Override
     public int getParametersLength() {
         return 1;
+    }
+
+    @Nonnull
+    @Override
+    public Type getType() {
+        return String.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.string";
     }
 
     @Override

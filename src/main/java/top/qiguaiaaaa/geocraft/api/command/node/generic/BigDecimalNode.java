@@ -43,6 +43,18 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
         setDefaultParser(DEFAULT_PARSER);
     }
 
+    @Nonnull
+    @Override
+    public Class<BigDecimal> getType() {
+        return BigDecimal.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.bigDecimal";
+    }
+
     @Override
     protected BigDecimal parseNumber(@Nonnull String arg) throws NumberInvalidException {
         try {

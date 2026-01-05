@@ -44,6 +44,18 @@ public class DoubleNode extends NumberNode<Double>{
         setMaxValue(Double.MAX_VALUE);
     }
 
+    @Nonnull
+    @Override
+    public Class<Double> getType() {
+        return Double.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.double";
+    }
+
     @Override
     protected Double parseNumber(@Nonnull String arg) throws NumberInvalidException {
         return CommandBase.parseDouble(arg,minValue,maxValue);

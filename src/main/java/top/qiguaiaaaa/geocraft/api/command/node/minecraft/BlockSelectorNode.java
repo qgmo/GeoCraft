@@ -63,6 +63,18 @@ public class BlockSelectorNode extends SmartParameterNode<Block> {
         return 1;
     }
 
+    @Nonnull
+    @Override
+    public Class<Block> getType() {
+        return Block.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.minecraft.block";
+    }
+
     @Override
     public <T extends List<String> & Deque<String>> Block parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         return CommandBase.getBlockByText(context.getSender(), args.getFirst());

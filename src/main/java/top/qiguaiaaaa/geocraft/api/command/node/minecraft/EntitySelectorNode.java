@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
 
+import com.google.common.reflect.TypeToken;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.EntitySelector;
 import net.minecraft.command.WrongUsageException;
@@ -37,6 +38,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -49,6 +51,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) ->
             Arrays.asList("@s","@a","@p","@r","@e", context.getSender().getName()));
 
+    protected static final TypeToken<List<Entity>> Token = new TypeToken<List<Entity>>(List.class) {};
     protected boolean allowPlayerName = true;
     protected boolean allowUUID = true;
     protected boolean requireSingleEntity = false;
@@ -95,6 +98,18 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     @Override
     public int getParametersLength() {
         return 1;
+    }
+
+    @Nonnull
+    @Override
+    public Type getType() {
+        return Token.getType();
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.minecraft.entitySelector";
     }
 
     @Override

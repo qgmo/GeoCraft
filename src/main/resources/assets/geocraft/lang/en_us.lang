@@ -1,3 +1,21 @@
+api.geo.command.parameter.generic.bigDecimal=BigDecimal
+api.geo.command.parameter.generic.bigInteger=BigInteger
+api.geo.command.parameter.generic.boolean=Boolean
+api.geo.command.parameter.generic.double=Double
+api.geo.command.parameter.generic.integer=Integer
+api.geo.command.parameter.generic.long=Long
+api.geo.command.parameter.generic.string=String
+api.geo.command.parameter.generic.uuid=UUID
+api.geo.command.parameter.minecraft.blockPos=BlockPos
+api.geo.command.parameter.minecraft.block=Block
+api.geo.command.parameter.minecraft.entitySelector=TargetSelector
+api.geo.command.parameter.minecraft.item=Item
+api.geo.command.parameter.geocraft.atmosphereAccessor=AtmosphereAccessor
+
+api.geo.command.parameter.smart.checker1=Parameter %s is required to accepted one argument.
+api.geo.command.parameter.smart.checker3=Parameter %s is required to accepted at least three arguments.
+api.geo.command.parameter.smart.checker4=Parameter %s is required to accepted at least four arguments.
+
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded
 geocraft.command.atmosphere_system.null=Current world doesn't exist an Atmosphere System.

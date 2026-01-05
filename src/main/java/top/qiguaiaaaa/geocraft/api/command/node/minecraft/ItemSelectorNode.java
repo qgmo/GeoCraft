@@ -39,6 +39,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -72,5 +73,17 @@ public class ItemSelectorNode extends SmartParameterNode<Item> {
     @Override
     public int getParametersLength() {
         return 1;
+    }
+
+    @Nonnull
+    @Override
+    public Type getType() {
+        return Item.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.minecraft.item";
     }
 }

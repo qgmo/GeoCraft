@@ -62,6 +62,18 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
         return 1;
     }
 
+    @Nonnull
+    @Override
+    public Class<Boolean> getType() {
+        return Boolean.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.boolean";
+    }
+
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws WrongUsageException {
         return MATCH_ONE_PARAMETER.check(this,args,context);

@@ -43,6 +43,18 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
         setDefaultParser(DEFAULT_PARSER);
     }
 
+    @Nonnull
+    @Override
+    public Class<BigInteger> getType() {
+        return BigInteger.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.bigInteger";
+    }
+
     @Override
     protected BigInteger parseNumber(@Nonnull String arg) throws NumberInvalidException {
         try {

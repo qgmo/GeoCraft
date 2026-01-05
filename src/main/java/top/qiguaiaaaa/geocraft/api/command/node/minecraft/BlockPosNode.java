@@ -85,4 +85,16 @@ public class BlockPosNode extends SmartParameterNode<BlockPos> {
     public int getParametersLength() {
         return 3;
     }
+
+    @Nonnull
+    @Override
+    public Class<BlockPos> getType() {
+        return BlockPos.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.minecraft.blockPos";
+    }
 }
