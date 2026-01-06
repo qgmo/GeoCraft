@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
@@ -38,12 +39,17 @@ import java.util.List;
 import java.util.function.BiFunction;
 
 /**
+ * 参数节点构建器
  * @author QiguaiAAAA
+ * @param <P> 参数类型
+ * @param <T> 参数类型对应的参数节点类型
+ * @param <SELF> 自身类型，用于 {@link #smart()}
  */
-public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>> implements INodeBuilder<T> {
+public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends ParameterNodeBuilder<P,T,SELF>> implements INodeBuilder<T> {
     protected final String name;
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
+    protected SmartSplitNodeBuilder.Inner<SELF> smartNode;
     protected boolean optional;
     protected ParameterNode.DefaultParser<P> parser;
     protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider;
@@ -52,41 +58,53 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>> implem
         this.name = name;
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
-    public ParameterNodeBuilder<P, T> asOptional() {
+    public SELF asOptional() {
         optional = true;
-        return this;
+        return (SELF) this;
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
-    public ParameterNodeBuilder<P, T> defaultAs(@Nullable ParameterNode.DefaultParser<P> parser) {
+    public SELF defaultAs(@Nullable ParameterNode.DefaultParser<P> parser) {
         this.parser = parser;
-        return this;
+        return (SELF) this;
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
-    public ParameterNodeBuilder<P, T> then(@Nonnull INodeBuilder<?> childNode) {
+    public SELF then(@Nonnull INodeBuilder<?> childNode) {
         this.childNode = childNode;
-        return this;
+        return (SELF) this;
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
-    public ParameterNodeBuilder<P, T> then(@Nonnull ICommandNode childNode) {
+    public SELF then(@Nonnull ICommandNode childNode) {
         this.bakedChildNode = childNode;
-        return this;
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public SELF suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+        this.suggestProvider = suggestProvider;
+        return (SELF) this;
     }
 
     @Nonnull
-    public ParameterNodeBuilder<P, T> suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
-        this.suggestProvider = suggestProvider;
-        return this;
+    @SuppressWarnings("unchecked")
+    public SmartSplitNodeBuilder.Inner<SELF> smart(){
+        return smartNode = new SmartSplitNodeBuilder.Inner<>((SELF) this);
     }
 
     @Nonnull
     @Override
     public T build() {
         final T instance = buildInstance();
-        instance.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
+        if(smartNode == null) instance.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
+        else instance.setChildNode(smartNode.build());
         instance.setDefaultParser(parser);
         instance.setOptional(optional);
         instance.setSuggestProvider(suggestProvider);

@@ -35,9 +35,18 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
+public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends FunctionalParameterNodeBuilder<P,T,SELF>> extends ParameterNodeBuilder<P, T,SELF> {
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
-        super(name, builder);
+    protected final Function<String, T> builder;
+
+    public FunctionalParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        super(name);
+        this.builder = builder;
+    }
+
+    @Nonnull
+    @Override
+    protected T buildInstance() {
+        return builder.apply(name);
     }
 }

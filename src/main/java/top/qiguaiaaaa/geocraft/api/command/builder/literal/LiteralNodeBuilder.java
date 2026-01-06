@@ -29,8 +29,10 @@ package top.qiguaiaaaa.geocraft.api.command.builder.literal;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.LiteralNode;
 
 import javax.annotation.Nonnull;
@@ -48,6 +50,7 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
 
     private INodeBuilder<?> childNode;
     private ICommandNode bakedChildNode;
+    private SmartSplitNodeBuilder.Inner<LiteralNodeBuilder> smartNode;
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
     private final @Nonnull String name;
 
@@ -55,6 +58,12 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
         this.name = name;
     }
 
+    /**
+     * 设置该字面量节点作为智能节点的匹配函数。
+     * @see ISmartNode#match(List, CommandContext)
+     * @param matcher 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
+     * @return {@link LiteralNodeBuilder} 自身
+     */
     @Nonnull
     public LiteralNodeBuilder matchIf(@Nullable BiPredicate<List<String>, CommandContext> matcher) {
         this.matchChecker = matcher;
@@ -73,6 +82,12 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
         return this;
     }
 
+    /**
+     * 配置当前字面量节点能够被使用的权限条件
+     * @see LiteralNode#setChecker(Function)
+     * @param funcCheckPermission 权限检查函数
+     * @return {@link LiteralNodeBuilder} 自身
+     */
     @Nonnull
     public LiteralNodeBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
         this.funcCheckPermission = funcCheckPermission;
@@ -80,11 +95,17 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
     }
 
     @Nonnull
+    public SmartSplitNodeBuilder.Inner<LiteralNodeBuilder> smart(){
+        return smartNode = new SmartSplitNodeBuilder.Inner<>(this);
+    }
+
+    @Nonnull
     @Override
     public LiteralNode build() {
         final LiteralNode node = new LiteralNode(name);
         node.setChecker(funcCheckPermission);
-        node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
+        if(smartNode == null) node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
+        else node.setChildNode(smartNode.build());
         node.setMatcher(matchChecker);
         return node;
     }

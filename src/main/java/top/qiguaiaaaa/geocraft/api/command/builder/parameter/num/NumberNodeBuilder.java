@@ -27,23 +27,16 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FastParameterNodeBuilder<N, T> {
+public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder<N, T,NumberNodeBuilder<N,T>> {
     protected N minValue, maxValue;
 
     public NumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
@@ -60,36 +53,6 @@ public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extend
     public NumberNodeBuilder<N, T> max(N maxValue) {
         this.maxValue = maxValue;
         return this;
-    }
-
-    @Nonnull
-    @Override
-    public NumberNodeBuilder<N, T> asOptional() {
-        return (NumberNodeBuilder<N, T>) super.asOptional();
-    }
-
-    @Nonnull
-    @Override
-    public NumberNodeBuilder<N, T> defaultAs(@Nullable ParameterNode.DefaultParser<N> parser) {
-        return (NumberNodeBuilder<N, T>) super.defaultAs(parser);
-    }
-
-    @Nonnull
-    @Override
-    public NumberNodeBuilder<N, T> then(@Nonnull INodeBuilder<?> childNode) {
-        return (NumberNodeBuilder<N, T>) super.then(childNode);
-    }
-
-    @Nonnull
-    @Override
-    public NumberNodeBuilder<N, T> then(@Nonnull ICommandNode childNode) {
-        return (NumberNodeBuilder<N, T>) super.then(childNode);
-    }
-
-    @Nonnull
-    @Override
-    public NumberNodeBuilder<N, T> suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
-        return (NumberNodeBuilder<N, T>) super.suggest(suggestProvider);
     }
 
     @Nonnull

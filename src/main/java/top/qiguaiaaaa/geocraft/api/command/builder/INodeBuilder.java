@@ -32,9 +32,16 @@ import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import javax.annotation.Nonnull;
 
 /**
+ * 命令节点的构建器
+ * @param <T> 节点类型，必须实现 {@link ICommandNode}
  * @author QiguaiAAAA
  */
 public interface INodeBuilder<T extends ICommandNode> {
+
+    /**
+     * 构建方法，将对应类型的节点构建出来
+     * @return 构建完成的节点
+     */
     @Nonnull
     T build();
 }

@@ -28,21 +28,15 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import net.minecraft.entity.Entity;
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.ParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.node.minecraft.EntitySelectorNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
-public class EntitySelectorNodeBuilder extends ParameterNodeBuilder<List<Entity>,EntitySelectorNode> {
+public class EntitySelectorNodeBuilder extends ParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
     public EntitySelectorNodeBuilder(@Nonnull String name) {
         super(name);
     }
@@ -74,36 +68,6 @@ public class EntitySelectorNodeBuilder extends ParameterNodeBuilder<List<Entity>
     public EntitySelectorNodeBuilder allowUUID(final boolean allowed){
         allowUUID = allowed;
         return this;
-    }
-
-    @Nonnull
-    @Override
-    public EntitySelectorNodeBuilder asOptional() {
-        return (EntitySelectorNodeBuilder) super.asOptional();
-    }
-
-    @Nonnull
-    @Override
-    public EntitySelectorNodeBuilder defaultAs(@Nullable ParameterNode.DefaultParser<List<Entity>> parser) {
-        return (EntitySelectorNodeBuilder) super.defaultAs(parser);
-    }
-
-    @Nonnull
-    @Override
-    public EntitySelectorNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
-        return (EntitySelectorNodeBuilder) super.then(childNode);
-    }
-
-    @Nonnull
-    @Override
-    public EntitySelectorNodeBuilder then(@Nonnull ICommandNode childNode) {
-        return (EntitySelectorNodeBuilder) super.then(childNode);
-    }
-
-    @Nonnull
-    @Override
-    public EntitySelectorNodeBuilder suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
-        return (EntitySelectorNodeBuilder) super.suggest(suggestProvider);
     }
 
     @Nonnull

@@ -27,7 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
 
 import javax.annotation.Nonnull;
@@ -36,7 +35,7 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T extends NumberNode<N>> extends NumberNodeBuilder<N, T> {
+public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T extends NumberNode<N>> extends NumberNodeBuilder<N,T> {
 
     public ComparableNumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
         super(name, builder);

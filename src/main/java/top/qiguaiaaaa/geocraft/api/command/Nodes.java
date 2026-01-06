@@ -42,6 +42,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralsNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.EntitySelectorNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.ParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
@@ -126,32 +127,32 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BooleanNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<String, StringNode> string(@Nonnull final String name){
+    public static FastParameterNodeBuilder<String, StringNode> string(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,StringNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
+    public static FastParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,UUIDNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<BlockPos, BlockPosNode> blockPos(@Nonnull final String name){
+    public static FastParameterNodeBuilder<BlockPos, BlockPosNode> blockPos(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BlockPosNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BlockSelectorNode::new);
     }
 
@@ -176,7 +177,7 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ParameterNodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode> atmosphere(@Nonnull final String name){
+    public static FastParameterNodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode> atmosphere(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name, AtmosphereAccessorNode::new);
     }
 
@@ -186,8 +187,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static SmartSplitNodeBuilder smart(){
-        return new SmartSplitNodeBuilder();
+    public static SmartSplitNodeBuilder.Outer smart(){
+        return new SmartSplitNodeBuilder.Outer();
     }
 
 }
