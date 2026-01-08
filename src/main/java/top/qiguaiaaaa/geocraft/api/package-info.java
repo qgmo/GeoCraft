@@ -29,7 +29,7 @@
  * @since 0.1
  * @author QiguaiAAAA
  */
-@API(apiVersion = GeoCraftAPI.VERSION,owner = GeoCraftAPI.MODID,provides = GeoCraftAPI.PROVIDERS)
+@API(apiVersion = GeoCraftAPI.API_VERSION_NAME,owner = GeoCraftAPI.MODID,provides = GeoCraftAPI.PROVIDERS)
 package top.qiguaiaaaa.geocraft.api;
 
 import net.minecraftforge.fml.common.API;

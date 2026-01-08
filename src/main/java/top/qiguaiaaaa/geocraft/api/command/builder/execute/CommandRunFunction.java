@@ -47,7 +47,7 @@ public interface CommandRunFunction {
         CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), translationKey, translationArgs);
     }
 
-    static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, final int flags, Object... translationArgs) {
+    static void notifyCommandListener(@Nonnull ExecuteContext context,  final int flags, String translationKey, Object... translationArgs) {
         CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), flags, translationKey, translationArgs);
     }
 }

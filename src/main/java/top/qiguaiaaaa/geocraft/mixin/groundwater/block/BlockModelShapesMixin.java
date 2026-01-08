@@ -30,7 +30,6 @@ package top.qiguaiaaaa.geocraft.mixin.groundwater.block;
 import com.google.common.collect.Maps;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirt;
-import net.minecraft.block.BlockGrass;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
