@@ -38,6 +38,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import javax.annotation.Nullable;
 import java.util.*;
 
+@Deprecated
 public abstract class ExtendedCommand extends CommandBase {
     protected Set<SubCommand> subCommands = new HashSet<>();
 

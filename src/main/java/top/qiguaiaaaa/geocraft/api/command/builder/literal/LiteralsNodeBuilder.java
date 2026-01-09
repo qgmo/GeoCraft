@@ -31,11 +31,13 @@ import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralsNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.literal.LiteralsNode;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -91,6 +93,11 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
+    public LiteralsChoiceInnerBuilder when(@Nonnull final String... literals){
+        return new LiteralsChoiceInnerBuilder(literals);
+    }
+
+    @Nonnull
     public LiteralsNodeBuilder permitIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
         this.funcCheckPermission = funcCheckPermission;
         return this;
@@ -109,5 +116,25 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
         node.setChildNode(bakedDefaultChild != null ? bakedDefaultChild : defaultChild.build());
         node.setOptional(optional);
         return node;
+    }
+
+    public class LiteralsChoiceInnerBuilder{
+        protected final String[] names;
+
+        LiteralsChoiceInnerBuilder(@Nonnull final String... literals){
+            this.names = Objects.requireNonNull(literals);
+        }
+
+        @Nonnull
+        public LiteralsNodeBuilder then(@Nonnull final INodeBuilder<?> nodeBuilder){
+            Arrays.stream(names).forEach(name -> ifThen(name,nodeBuilder));
+            return LiteralsNodeBuilder.this;
+        }
+
+        @Nonnull
+        public LiteralsNodeBuilder then(@Nonnull final ICommandNode node) {
+            Arrays.stream(names).forEach(name -> ifThen(name,node));
+            return LiteralsNodeBuilder.this;
+        }
     }
 }

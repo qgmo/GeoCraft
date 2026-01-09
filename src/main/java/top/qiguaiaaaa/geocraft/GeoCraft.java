@@ -68,7 +68,7 @@ public class GeoCraft {
     }
     @EventHandler
     public void onServerStarting(FMLServerStartingEvent event){
-        event.registerServerCommand(new CommandAtmosphere());
+        event.registerServerCommand(CommandAtmosphere.create());
 //        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();

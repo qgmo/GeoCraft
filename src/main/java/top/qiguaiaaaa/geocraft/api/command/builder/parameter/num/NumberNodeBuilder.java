@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.number.NumberNode;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;

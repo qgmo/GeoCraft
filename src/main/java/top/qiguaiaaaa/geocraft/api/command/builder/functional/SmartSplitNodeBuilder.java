@@ -27,14 +27,15 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
+import net.minecraft.command.SyntaxErrorException;
+import top.qiguaiaaaa.geocraft.api.command.Nodes;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.ExecuteNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.literal.LiteralNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -48,6 +49,10 @@ import java.util.function.Function;
  * @author QiguaiAAAA
  */
 public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<SELF>> {
+
+    public static final CommandRunFunction DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
+        if(!args.isEmpty()) throw new SyntaxErrorException("Wrong!");
+    };
 
     private SmartSplitNodeBuilder(){}
 
@@ -66,10 +71,11 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      * @param <T> 添加个节点类型，必须是 {@link ISmartNode} 的实现类
      */
     @Nonnull
-    public <T extends ISmartNode> SmartNodeInnerBuilder<T> then(@Nonnull final INodeBuilder<T> builder){
+    @SuppressWarnings("unchecked")
+    public <T extends ISmartNode> SELF then(@Nonnull final INodeBuilder<T> builder){
         final SmartNodeInnerBuilder<T> b = new SmartNodeInnerBuilder<>(Objects.requireNonNull(builder));
         smarts.add(b);
-        return b;
+        return (SELF) this;
     }
 
     /**
@@ -97,9 +103,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
     @Nonnull
     @SuppressWarnings("unchecked")
     public SELF execute(@Nonnull final CommandRunFunction func){
-        final ExecuteNodeBuilder builder = new ExecuteNodeBuilder();
-        builder.run(Objects.requireNonNull(func));
-        defaultBuilder = builder;
+        defaultBuilder = Nodes.execute(DEFAULT_EXECUTE_FUNC_CHECKER.then(func));
         return (SELF) this;
     }
 
@@ -192,7 +196,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
 
         LiteralNodeInnerBuilder(@Nonnull final String name) {
             super(new LiteralNodeBuilder(name));
-            literalBuilder = (LiteralNodeBuilder) defaultBuilder;
+            literalBuilder = (LiteralNodeBuilder) super.child;
         }
 
         @Nonnull

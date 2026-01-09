@@ -65,6 +65,7 @@ public class BlockPosNode extends SmartParameterNode<BlockPos> {
         final List<String> suggests = Lists.newArrayList("~");
         final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
         switch (args.size()){
+            case 0:
             case 1:
                 suggests.add(String.valueOf(pos.getX()));
                 break;

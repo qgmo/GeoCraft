@@ -25,17 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
 
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.NumberInvalidException;
+
+import javax.annotation.Nonnull;
+import java.lang.reflect.Type;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class NoSplitNode implements ICommandNode {
-    protected ICommandNode childNode;
+public class LongNode extends NumberNode<Long> {
+    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
+    public LongNode(@Nonnull String name) {
+        super(name);
+        setDefaultParser(DEFAULT_PARSER);
+        setMinValue(Long.MIN_VALUE);
+        setMaxValue(Long.MAX_VALUE);
+    }
 
-    public void setChildNode(ICommandNode child){
-        childNode = child;
+    @Nonnull
+    @Override
+    public Type getType() {
+        return Long.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getLocalizedType() {
+        return "api.geo.command.parameter.generic.long";
+    }
+
+    @Override
+    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        return CommandBase.parseLong(arg,minValue,maxValue);
     }
 }

@@ -46,13 +46,16 @@ import java.util.function.BiFunction;
  * @param <SELF> 自身类型，用于 {@link #smart()}
  */
 public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends ParameterNodeBuilder<P,T,SELF>> implements INodeBuilder<T> {
+    public static final BiFunction<List<String>,SuggestContext,List<String>> USE_DEFAULT_SUGGESTOR = (strings, context) -> null;
+    public static final ParameterNode.DefaultParser<?> USE_DEFAULT_PARSER = (node,context) -> null;
     protected final String name;
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
     protected SmartSplitNodeBuilder.Inner<SELF> smartNode;
     protected boolean optional;
-    protected ParameterNode.DefaultParser<P> parser;
-    protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider;
+    @SuppressWarnings("unchecked")
+    protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
+    protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider = USE_DEFAULT_SUGGESTOR;
 
     public ParameterNodeBuilder(@Nonnull String name) {
         this.name = name;
@@ -105,9 +108,13 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
         final T instance = buildInstance();
         if(smartNode == null) instance.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
         else instance.setChildNode(smartNode.build());
-        instance.setDefaultParser(parser);
+        if(parser != USE_DEFAULT_PARSER){
+            instance.setDefaultParser(parser);
+        }
         instance.setOptional(optional);
-        instance.setSuggestProvider(suggestProvider);
+        if(suggestProvider != USE_DEFAULT_SUGGESTOR){
+            instance.setSuggestProvider(suggestProvider);
+        }
         return instance;
     }
 

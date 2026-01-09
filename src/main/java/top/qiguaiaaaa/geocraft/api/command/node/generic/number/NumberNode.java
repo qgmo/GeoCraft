@@ -25,19 +25,19 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
 
-import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.math.MathHelper;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -89,7 +89,7 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
     protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
         @Override
         public List<String> apply(List<String> strings, SuggestContext context) {
-            return Lists.newArrayList(String.valueOf(MathHelper.clamp(0,minValue.doubleValue(),maxValue.doubleValue())));
+            return Collections.singletonList(String.valueOf(0));
         }
     }
 }

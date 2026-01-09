@@ -44,7 +44,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.parameter.EntitySelectorNodeB
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.BooleanNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.number.NumberNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.StringNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.UUIDNode;
 import top.qiguaiaaaa.geocraft.api.command.node.geocraft.AtmosphereAccessorNode;

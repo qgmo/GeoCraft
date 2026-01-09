@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.node.execute;
 
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;

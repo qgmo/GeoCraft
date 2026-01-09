@@ -25,40 +25,61 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
+import java.math.BigInteger;
 
 /**
  * @author QiguaiAAAA
  */
-public class LongNode extends NumberNode<Long>{
-    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
-    public LongNode(@Nonnull String name) {
+public class BigIntegerNode extends NumberNode<BigInteger> {
+    public static final DefaultParser<BigInteger> DEFAULT_PARSER = (node, context) -> new BigInteger("0");
+
+    public BigIntegerNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Long.MIN_VALUE);
-        setMaxValue(Long.MAX_VALUE);
     }
 
     @Nonnull
     @Override
-    public Type getType() {
-        return Long.class;
+    public Class<BigInteger> getType() {
+        return BigInteger.class;
     }
 
     @Nonnull
     @Override
     public String getLocalizedType() {
-        return "api.geo.command.parameter.generic.long";
+        return "api.geo.command.parameter.generic.bigInteger";
     }
 
     @Override
-    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseLong(arg,minValue,maxValue);
+    protected BigInteger parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        try {
+            final BigInteger integer = new BigInteger(arg);
+            if(minValue != null){
+                if(minValue.compareTo(integer)>0){
+                    throw new NumberInvalidException("commands.generic.num.tooSmall", integer, minValue);
+                }
+            }
+            if(maxValue != null){
+                if(maxValue.compareTo(integer)<0){
+                    throw new NumberInvalidException("commands.generic.num.tooBig", integer, maxValue);
+                }
+            }
+            return integer;
+        }catch (NumberFormatException e){
+            throw new NumberInvalidException(e.getMessage());
+        }
+    }
+
+    @Nonnull
+    protected static BigInteger clamp(@Nonnull BigInteger value,@Nonnull BigInteger min,@Nonnull BigInteger max){
+        if(value.compareTo(min)>0){
+            if(value.compareTo(max)<0) return value;
+            else return max;
+        }else return min;
     }
 }

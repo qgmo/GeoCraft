@@ -32,7 +32,7 @@ import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

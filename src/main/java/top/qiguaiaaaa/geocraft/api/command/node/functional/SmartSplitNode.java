@@ -28,20 +28,19 @@
 package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 智能分支节点，可以根据{@link ISmartNode#match(List, CommandContext)}自动推断出下一个节点。
@@ -79,16 +78,23 @@ public class SmartSplitNode extends NoSplitNode {
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        final ICommandNode node = findNextNode(args, context);
-        if (node != null) return node.suggest(args, context);
-
-        final List<String> suggests = new ArrayList<>();
-        for(ISmartNode n:nodeList){
-            final List<String> suggest = n.suggest(args, context);
-            if(suggest != null) suggests.addAll(suggest);
+        GeoCraft.getLogger().info("[Smart] Provide Suggest For [len={}] : {}",args.size(),String.join(" ",args));
+        if(args.size()>1){ //Smart 的位置不需要建议
+            final ICommandNode node = findNextNode(args, context);
+            if (node != null) return node.suggest(args, context);
+            if(childNode != null) return childNode.suggest(args,context);
+            return Collections.emptyList();
         }
-        final List<String> suggest = childNode.suggest(args, context);
-        if(suggest != null) suggests.addAll(suggest);
-        return suggests.stream().filter(s->s.startsWith(args.getLast().trim())).collect(Collectors.toList());
+
+        return Stream.concat(nodeList.stream(),Stream.of(childNode))
+                .filter(Objects::nonNull)
+                .map(node -> node.suggest(args,context))
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .map(String::trim)
+                .distinct() //去重
+                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
+                .sorted()
+                .collect(Collectors.toList());
     }
 }

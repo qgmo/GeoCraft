@@ -29,9 +29,11 @@ package top.qiguaiaaaa.geocraft.api.command.node.generic;
 
 import net.minecraft.command.*;
 import net.minecraft.util.text.translation.I18n;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -119,23 +121,22 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+        GeoCraft.getLogger().info("[{}] Provide Suggest For [len={}] : {}",getLocalizedParameter(),args.size(),String.join(" ",args));
         if(args.size()>getParametersLength()){
             final Stack<String> paras = ParasStack.get();
-            for(int i=0;i<getParametersLength();i++){
-                paras.push(args.pollFirst());
-            }
             try {
+                for(int i=0;i<getParametersLength();i++){
+                    paras.push(args.pollFirst());
+                }
                 return childNode.suggest(args, context);
             }finally {
                 for(int i=0;i<getParametersLength();i++){
                     args.addFirst(paras.pop());
                 }
             }
-        }else if(args.size()==0){
-            return null;
         }else if(suggestProvider!=null){
             final List<String> suggests = suggestProvider.apply(args,context);
-            return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.getLast().trim())).collect(Collectors.toList());
+            return suggests==null?null:suggests.stream().filter(s -> s.startsWith(args.isEmpty()?"":args.getLast().trim())).collect(Collectors.toList());
         }else return null;
     }
 

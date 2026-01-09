@@ -35,6 +35,8 @@ import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
@@ -42,6 +44,22 @@ import java.util.List;
 @FunctionalInterface
 public interface CommandRunFunction {
     void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException;
+
+    @Nonnull
+    default CommandRunFunction then(@Nonnull final CommandRunFunction runFunc){
+        return (args, context) ->{
+            run(args,context);
+            runFunc.run(args,context);
+        };
+    }
+
+    @Nonnull
+    default CommandRunFunction then(@Nonnull final BiConsumer<List<String>,ExecuteContext> func){
+        return (args, context) -> {
+            run(args,context);
+            func.accept(args,context);
+        };
+    }
 
     static void notifyCommandListener(@Nonnull ExecuteContext context, String translationKey, Object... translationArgs) {
         CommandBase.notifyCommandListener(context.getSender(), context.getCommand(), translationKey, translationArgs);

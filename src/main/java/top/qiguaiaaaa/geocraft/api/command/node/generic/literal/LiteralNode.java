@@ -25,9 +25,8 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.generic.literal;
 
-import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
@@ -38,6 +37,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -70,12 +70,28 @@ public class LiteralNode extends PermitNode implements ISmartNode {
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
         if(!match(args,context)) throw new WrongUsageException("Wrong");
-        if(childNode != null) childNode.execute(args,context);
+        final String first = args.getFirst();
+        try {
+            args.pop();
+            if(childNode != null) childNode.execute(args,context);
+        }finally {
+            args.addFirst(first);
+        }
+
     }
 
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        return Lists.newArrayList(literal);
+        if(args.size()>1){
+            final String first = args.getFirst();
+            try {
+                args.pop();
+                return childNode == null? null : childNode.suggest(args,context);
+            }finally {
+                args.addFirst(first);
+            }
+        }
+        return Collections.singletonList(literal);
     }
 }

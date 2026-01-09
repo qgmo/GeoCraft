@@ -32,6 +32,7 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 
+@Deprecated
 public abstract class SubCommand extends ExtendedCommand {
     protected final ICommand father;
 

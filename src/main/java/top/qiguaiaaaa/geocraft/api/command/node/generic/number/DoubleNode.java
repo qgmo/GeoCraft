@@ -25,61 +25,39 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
 
 import javax.annotation.Nonnull;
-import java.math.BigDecimal;
 
 /**
  * @author QiguaiAAAA
  */
-public class BigDecimalNode extends NumberNode<BigDecimal> {
-    public static final DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> new BigDecimal("0");
-
-    public BigDecimalNode(@Nonnull String name) {
+public class DoubleNode extends NumberNode<Double> {
+    public static final DefaultParser<Double> DEFAULT_PARSER = (node, context) -> 0d;
+    public DoubleNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
+        setMinValue(Double.MIN_VALUE);
+        setMaxValue(Double.MAX_VALUE);
     }
 
     @Nonnull
     @Override
-    public Class<BigDecimal> getType() {
-        return BigDecimal.class;
+    public Class<Double> getType() {
+        return Double.class;
     }
 
     @Nonnull
     @Override
     public String getLocalizedType() {
-        return "api.geo.command.parameter.generic.bigDecimal";
+        return "api.geo.command.parameter.generic.double";
     }
 
     @Override
-    protected BigDecimal parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        try {
-            final BigDecimal decimal = new BigDecimal(arg);
-            if(minValue != null){
-                if(minValue.compareTo(decimal)>0){
-                    throw new NumberInvalidException("commands.generic.num.tooSmall", decimal, minValue);
-                }
-            }
-            if(maxValue != null){
-                if(maxValue.compareTo(decimal)<0){
-                    throw new NumberInvalidException("commands.generic.num.tooBig", decimal, maxValue);
-                }
-            }
-            return decimal;
-        }catch (NumberFormatException e){
-            throw new NumberInvalidException(e.getMessage());
-        }
-    }
-
-    @Nonnull
-    private static BigDecimal clamp(@Nonnull BigDecimal value,@Nonnull BigDecimal min,@Nonnull BigDecimal max){
-        if(value.compareTo(min)>0){
-            if(value.compareTo(max)<0) return value;
-            else return max;
-        }else return min;
+    protected Double parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        return CommandBase.parseDouble(arg,minValue,maxValue);
     }
 }
