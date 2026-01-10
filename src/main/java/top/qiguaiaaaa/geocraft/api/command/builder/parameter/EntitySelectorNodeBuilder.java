@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author QiguaiAAAA
  */
-public class EntitySelectorNodeBuilder extends ParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
+public class EntitySelectorNodeBuilder extends SmartParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
     public EntitySelectorNodeBuilder(@Nonnull String name) {
         super(name);
     }

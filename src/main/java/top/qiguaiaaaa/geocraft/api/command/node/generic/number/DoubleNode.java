@@ -52,7 +52,7 @@ public class DoubleNode extends NumberNode<Double> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.double";
     }
 

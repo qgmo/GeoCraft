@@ -77,7 +77,7 @@ public class OreSelectorNode extends SmartParameterNode<NonNullList<ItemStack>> 
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.forge.oreDirectory";
     }
 

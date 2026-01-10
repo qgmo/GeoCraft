@@ -77,11 +77,11 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         return name;
     }
 
-    public String getLocalizedName(){
+    public String getTranslationKey(){
         return localizedName==null?name:localizedName;
     }
 
-    public void setLocalizedName(@Nonnull final String localizedName) {
+    public void setTranslationKey(@Nonnull final String localizedName) {
         this.localizedName = localizedName;
     }
 
@@ -172,7 +172,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      * @return 类型的本地化键名
      */
     @Nonnull
-    public String getLocalizedType(){
+    public String getTypeTranslationKey(){
         final Type type = getType();
         if(type instanceof Class<?>){
             return ((Class<?>) type).getSimpleName();
@@ -184,9 +184,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         final StringBuilder builder = new StringBuilder();
         if(isOptional()) builder.append('[');
         else builder.append('<');
-        builder.append(I18n.translateToLocal(getLocalizedName()))
+        builder.append(I18n.translateToLocal(getTranslationKey()))
                 .append(':')
-                .append(I18n.translateToLocal(getLocalizedType()));
+                .append(I18n.translateToLocal(getTypeTranslationKey()));
         if(isOptional()) builder.append(']');
         else builder.append('>');
         return builder.toString();

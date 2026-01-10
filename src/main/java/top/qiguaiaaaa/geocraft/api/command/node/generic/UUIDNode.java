@@ -69,7 +69,7 @@ public class UUIDNode extends SmartParameterNode<UUID> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.uuid";
     }
 

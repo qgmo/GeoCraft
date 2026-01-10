@@ -122,7 +122,7 @@ public class AtmosphereAccessorNode extends SmartParameterNode<IAtmosphereAccess
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.geocraft.atmosphereAccessor";
     }
 }

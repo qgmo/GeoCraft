@@ -97,7 +97,7 @@ public class BlockPosNode extends SmartParameterNode<BlockPos> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.blockPos";
     }
 }

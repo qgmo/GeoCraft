@@ -33,6 +33,7 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -63,6 +64,11 @@ public final class ExecuteContext extends CommandContext{
 
     @SuppressWarnings("unchecked")
     public <T> T get(@Nonnull String key){
+        return (T) contexts.computeIfAbsent(key, OnNoContextFound);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(@Nonnull String key, @Nonnull Class<ParameterNode<T>> paraType){
         return (T) contexts.computeIfAbsent(key, OnNoContextFound);
     }
 

@@ -53,7 +53,7 @@ public class LongNode extends NumberNode<Long> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.long";
     }
 

@@ -35,16 +35,72 @@ import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * @author QiguaiAAAA
  */
 public class StringNode extends SmartParameterNode<String> {
+    public static final ValidChecker CHECK_WHITELIST = (self, args, context) -> {
+        final StringNode node = (StringNode) self;
+        if(node.whitelist !=null && !node.whitelist.isEmpty()){
+            if(node.whitelist.contains(args.get(0))) return true;
+            throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.white",args.get(0),self.getLocalizedParameter(),String.join(" ", node.whitelist));
+        }
+        return true;
+    };
+    public static final ValidChecker CHECK_BLACKLIST = (self, args, context) -> {
+        final StringNode node = (StringNode) self;
+        if(node.blacklist != null && !node.blacklist.isEmpty()){
+            if(node.blacklist.contains(args.get(0)))
+                throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.black",args.get(0),self.getLocalizedParameter(),String.join(" ",node.blacklist));
+        }
+        return true;
+    };
+    public static final ValidChecker CHECK_PATTERN = (self, args, context) -> {
+        final StringNode node = (StringNode) self;
+        if(node.pattern != null) {
+            if (!node.pattern.matcher(args.get(0)).matches()) {
+                throw new SyntaxErrorException("api.geo.command.parameter.string.nonMatch", args.get(0), self.getLocalizedParameter(), node.pattern.toString());
+            }
+        }
+        return true;
+    };
+    protected Set<String> whitelist = null;
+    protected Set<String> blacklist = null;
+    protected Pattern pattern = null;
+    protected ValidChecker checker = ValidChecker.MATCH_ONE_PARAMETER;
     public StringNode(@Nonnull String name) {
         super(name);
+    }
+
+    public void addAllowValue(@Nonnull final String content){
+        if(whitelist == null) whitelist = new HashSet<>();
+        whitelist.add(content);
+    }
+
+    public void addDisallowedValue(@Nonnull final String content){
+        if(blacklist == null) blacklist = new HashSet<>();
+        blacklist.add(content);
+    }
+
+    public void setPattern(@Nullable final Pattern pattern){
+        this.pattern = pattern;
+    }
+
+    @Nonnull
+    public StringNode refresh(){
+        checker = ValidChecker.MATCH_ONE_PARAMETER;
+        if(whitelist != null && !whitelist.isEmpty()) checker = checker.and(CHECK_WHITELIST);
+        if(blacklist != null && !blacklist.isEmpty()) checker = checker.and(CHECK_BLACKLIST);
+        if(pattern != null) checker = checker.and(CHECK_PATTERN);
+        return this;
     }
 
     @Override
@@ -60,13 +116,13 @@ public class StringNode extends SmartParameterNode<String> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.string";
     }
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+        return checker.check(this,args,context);
     }
 
     @Override

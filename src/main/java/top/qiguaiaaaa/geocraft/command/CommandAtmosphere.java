@@ -54,7 +54,9 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.InformationLoggingTracker;
 import top.qiguaiaaaa.geocraft.api.command.NumberType;
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
@@ -87,6 +89,9 @@ public final class CommandAtmosphere {
     }
 
     public static ICommand create(){
+        smart().literal("aaa").then(
+                string("aaa").matchIf(Matchers.ANY)
+        );
         return new CommandBuilder().setCommandName(ATMOSPHERE_COMMAND_NAME)
                 .requirePermissionLevel(2)
                 .then(smart()
@@ -169,10 +174,9 @@ public final class CommandAtmosphere {
                                 )
                         )).done()
                         .literal("util").then(
-                                string("util_name").suggest(
-                                        (strings, context) -> Arrays.asList("sun","property","block_info","storage")
-                                ).then(
-                                        blockPos("pos").asOptional().then(
+                                string("util_name")
+                                        .allow("sun","property","block_info","storage")
+                                        .then(blockPos("pos").asOptional().then(
                                                 relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
                                                         execute(CommandAtmosphere::util)
                                                 )

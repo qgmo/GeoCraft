@@ -29,14 +29,18 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * 参数节点构建器
@@ -49,6 +53,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     public static final BiFunction<List<String>,SuggestContext,List<String>> USE_DEFAULT_SUGGESTOR = (strings, context) -> null;
     public static final ParameterNode.DefaultParser<?> USE_DEFAULT_PARSER = (node,context) -> null;
     protected final String name;
+    protected String langKey;
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
     protected SmartSplitNodeBuilder.Inner<SELF> smartNode;
@@ -98,6 +103,13 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
 
     @Nonnull
     @SuppressWarnings("unchecked")
+    public SELF translate(@Nonnull final String key){
+        this.langKey = key;
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
     public SmartSplitNodeBuilder.Inner<SELF> smart(){
         return smartNode = new SmartSplitNodeBuilder.Inner<>((SELF) this);
     }
@@ -114,6 +126,9 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
         instance.setOptional(optional);
         if(suggestProvider != USE_DEFAULT_SUGGESTOR){
             instance.setSuggestProvider(suggestProvider);
+        }
+        if(langKey != null){
+            instance.setTranslationKey(langKey);
         }
         return instance;
     }

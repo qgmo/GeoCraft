@@ -17,6 +17,9 @@ api.geo.command.parameter.geocraft.atmosphereAccessor=AtmosphereAccessor
 
 api.geo.command.parameter.smart.checker1=Parameter %s is required to accepted one argument.
 api.geo.command.parameter.smart.checkers=Parameter %s is required to accepted at least %s arguments.
+api.geo.command.parameter.string.nonMatch=Invalid input %s for parameter %s, which requires input to match %s
+api.geo.command.parameter.string.invalid.white=Invalid input %s for parameter %s, which only allows the following values: %s
+api.geo.command.parameter.string.invalid.black=Invalid input %s for parameter %s, which disallows the following values: %s
 api.geo.command.parameter.fluid.invalid=Invalid fluid %s for parameter %s
 api.geo.command.parameter.oreDirectory.invalid=Invalid Ore Directory %s for parameter %s
 api.geo.command.parameter.entityEntry.invalid=Invalid Entity Entry %s for parameter %s

@@ -29,6 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
@@ -39,26 +40,8 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class PermitNodeBuilder implements INodeBuilder<PermitNode> {
+public class PermitNodeBuilder extends NoSplitNodeBuilder<PermitNode,PermitNodeBuilder> {
     private Function<CommandContext, Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
-
-    private INodeBuilder<?> childNode;
-    private ICommandNode bakedChildNode;
-
-    public PermitNodeBuilder() {
-    }
-
-    @Nonnull
-    public PermitNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
-        this.childNode = childNode;
-        return this;
-    }
-
-    @Nonnull
-    public PermitNodeBuilder then(@Nonnull ICommandNode childNode) {
-        this.bakedChildNode = childNode;
-        return this;
-    }
 
     @Nonnull
     public PermitNodeBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
@@ -71,7 +54,7 @@ public class PermitNodeBuilder implements INodeBuilder<PermitNode> {
     public PermitNode build() {
         final PermitNode node = new PermitNode();
         node.setChecker(funcCheckPermission);
-        node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
+        node.setChildNode(buildChildNode());
         return node;
     }
 }

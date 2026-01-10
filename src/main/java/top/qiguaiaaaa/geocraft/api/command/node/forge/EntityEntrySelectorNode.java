@@ -60,7 +60,7 @@ public class EntityEntrySelectorNode extends ForgeRegistryEntryNode<EntityEntry>
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.forge.entityEntry";
     }
 

@@ -107,7 +107,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.entitySelector";
     }
 

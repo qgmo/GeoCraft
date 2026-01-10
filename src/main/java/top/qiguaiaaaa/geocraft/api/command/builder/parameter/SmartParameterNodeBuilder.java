@@ -27,25 +27,39 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
 
 import javax.annotation.Nonnull;
-import java.util.function.Function;
+import java.util.List;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
+public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode,SELF extends ParameterNodeBuilder<P,T,SELF>> extends ParameterNodeBuilder<P,T,SELF>{
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
-        super(name, builder);
+    protected BiPredicate<List<String>, CommandContext> matcher;
+
+    public SmartParameterNodeBuilder(@Nonnull String name) {
+        super(name);
     }
 
-    public final static class Smart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmartParameterNodeBuilder<P,T,Smart<P,T>>{
-
-        public Smart(@Nonnull String name, @Nonnull Function<String, T> builder) {
-            super(name, builder);
+    @Nonnull
+    @Override
+    public T build() {
+        final T instance = super.build();
+        if(matcher != null){
+            instance.setMatcher(matcher);
         }
+        return instance;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF matchIf(@Nonnull final BiPredicate<List<String>,CommandContext> matcher){
+        this.matcher = matcher;
+        return (SELF) this;
     }
 }

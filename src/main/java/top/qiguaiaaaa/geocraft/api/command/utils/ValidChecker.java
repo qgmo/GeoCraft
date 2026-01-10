@@ -71,7 +71,7 @@ public interface ValidChecker {
         return ((self, args, context) -> {
             if (args.size() >= paraNum && !args.get(paraNum - 1).isEmpty()) return true;
             else if (args.size() >= 1 && !args.get(0).isEmpty())
-                throw new WrongUsageException("api.geo.command.parameter.smart.checkers", I18n.format(self.getLocalizedName()), paraNum); //只有一到三个参数，填了一半，不能用默认值
+                throw new WrongUsageException("api.geo.command.parameter.smart.checkers", I18n.format(self.getTranslationKey()), paraNum); //只有一到三个参数，填了一半，不能用默认值
             else if (self.isOptional()) return false; //可以用默认值
             else
                 throw new WrongUsageException("api.geo.command.parameter.smart.checkers", self.getLocalizedParameter(), paraNum);

@@ -36,16 +36,19 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
+public class FunctionalSmartParameterNodeBuilder<P, T extends ParameterNode<P> & ISmartNode,SELF extends FunctionalSmartParameterNodeBuilder<P,T,SELF>>
+        extends SmartParameterNodeBuilder<P, T,SELF> {
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
-        super(name, builder);
+    protected final Function<String, T> builder;
+
+    public FunctionalSmartParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        super(name);
+        this.builder = builder;
     }
 
-    public final static class Smart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmartParameterNodeBuilder<P,T,Smart<P,T>>{
-
-        public Smart(@Nonnull String name, @Nonnull Function<String, T> builder) {
-            super(name, builder);
-        }
+    @Nonnull
+    @Override
+    protected T buildInstance() {
+        return builder.apply(name);
     }
 }

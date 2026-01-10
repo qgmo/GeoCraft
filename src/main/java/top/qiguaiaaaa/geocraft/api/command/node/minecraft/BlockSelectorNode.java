@@ -65,7 +65,7 @@ public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.block";
     }
 

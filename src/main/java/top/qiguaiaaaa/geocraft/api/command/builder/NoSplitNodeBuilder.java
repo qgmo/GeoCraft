@@ -25,27 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
+package top.qiguaiaaaa.geocraft.api.command.builder;
 
-import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
-import java.util.function.Function;
+import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
+public abstract class NoSplitNodeBuilder<NODE extends NoSplitNode,SELF extends NoSplitNodeBuilder<NODE,SELF>> implements INodeBuilder<NODE> {
+    protected INodeBuilder<?> childNode;
+    protected ICommandNode bakedChildNode;
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
-        super(name, builder);
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF then(@Nonnull INodeBuilder<?> childNode) {
+        this.childNode = childNode;
+        return (SELF) this;
     }
 
-    public final static class Smart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmartParameterNodeBuilder<P,T,Smart<P,T>>{
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF then(@Nonnull ICommandNode childNode) {
+        this.bakedChildNode = childNode;
+        return (SELF) this;
+    }
 
-        public Smart(@Nonnull String name, @Nonnull Function<String, T> builder) {
-            super(name, builder);
-        }
+    @Nullable
+    protected final ICommandNode buildChildNode(){
+        if(childNode == null) return null;
+        return bakedChildNode != null ? bakedChildNode : childNode.build();
     }
 }

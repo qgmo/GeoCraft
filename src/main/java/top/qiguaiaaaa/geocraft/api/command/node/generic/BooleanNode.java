@@ -73,7 +73,7 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.boolean";
     }
 

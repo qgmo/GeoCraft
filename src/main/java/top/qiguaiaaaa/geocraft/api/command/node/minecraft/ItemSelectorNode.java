@@ -67,7 +67,7 @@ public class ItemSelectorNode extends ForgeRegistryEntryNode<Item> {
 
     @Nonnull
     @Override
-    public String getLocalizedType() {
+    public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.item";
     }
 }

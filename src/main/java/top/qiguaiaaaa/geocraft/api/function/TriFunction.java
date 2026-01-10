@@ -25,27 +25,23 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
-
-import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+package top.qiguaiaaaa.geocraft.api.function;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
+@FunctionalInterface
+public interface TriFunction<A,B,C,R> {
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
-        super(name, builder);
-    }
+    R apply(A a,B b,C c);
 
-    public final static class Smart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmartParameterNodeBuilder<P,T,Smart<P,T>>{
-
-        public Smart(@Nonnull String name, @Nonnull Function<String, T> builder) {
-            super(name, builder);
-        }
+    @Nonnull
+    default <V> TriFunction<A, B, C, V> andThen(@Nonnull final Function<? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (A a, B b, C c) -> after.apply(apply(a,b,c));
     }
 }
