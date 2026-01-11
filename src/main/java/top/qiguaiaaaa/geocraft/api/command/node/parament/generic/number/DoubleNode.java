@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;

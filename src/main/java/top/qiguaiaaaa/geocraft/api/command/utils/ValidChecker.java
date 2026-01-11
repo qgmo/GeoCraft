@@ -33,7 +33,7 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.List;

@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.geocraft;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.geocraft;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
@@ -37,8 +37,8 @@ import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.Vec3dNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.Vec3dNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;

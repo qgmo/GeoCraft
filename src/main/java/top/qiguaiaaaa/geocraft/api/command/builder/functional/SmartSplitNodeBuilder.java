@@ -35,7 +35,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.*;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.literal.LiteralNode;
+import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

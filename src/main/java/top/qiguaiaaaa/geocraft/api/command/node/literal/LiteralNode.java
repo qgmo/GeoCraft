@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.literal;
+package top.qiguaiaaaa.geocraft.api.command.node.literal;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;

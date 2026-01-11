@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.ComparableNumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.number.*;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.*;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;

@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.List;

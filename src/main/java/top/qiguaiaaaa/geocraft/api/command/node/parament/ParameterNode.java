@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.parament;
 
 import net.minecraft.command.*;
 import net.minecraft.util.text.translation.I18n;
@@ -34,6 +34,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
 import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockPosNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -200,7 +201,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      * @return 返回 true 表示参数合法，可以解析。返回 false 表示参数非法，但可以使用默认值，仅当 {@link #isOptional()} 为 true 时使用。
      * @param <T> 未解析参数的列表与队列共同类型
      * @throws SyntaxErrorException 当参数非法，且 {@link #isOptional()} 为 false 时，抛出该错误，以说明命令语法错误。此时命令解析会中断。
-     * 当然如果{@link #isOptional()} 为 true 时也可以使用，例如对于多参数节点，比如对于 {@link top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockPosNode}
+     * 当然如果{@link #isOptional()} 为 true 时也可以使用，例如对于多参数节点，比如对于 {@link BlockPosNode}
      * 如果玩家输入 3 4 却没有输入 Z 坐标，这时候用默认值就不太合适了，应当告诉玩家输错了。
      * @throws NumberInvalidException 同上
      * @throws InvalidBlockStateException 同上

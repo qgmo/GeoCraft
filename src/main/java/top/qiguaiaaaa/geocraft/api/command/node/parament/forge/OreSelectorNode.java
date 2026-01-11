@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.forge;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.forge;
 
 import com.google.common.reflect.TypeToken;
 import net.minecraft.command.CommandException;
@@ -38,7 +38,7 @@ import net.minecraftforge.oredict.OreDictionary;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;

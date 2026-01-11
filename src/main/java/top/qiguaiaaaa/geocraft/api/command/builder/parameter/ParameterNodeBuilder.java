@@ -29,18 +29,14 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 
 /**
  * 参数节点构建器

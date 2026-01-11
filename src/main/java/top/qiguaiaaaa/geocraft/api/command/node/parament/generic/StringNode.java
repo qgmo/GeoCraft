@@ -25,13 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic;
 
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;

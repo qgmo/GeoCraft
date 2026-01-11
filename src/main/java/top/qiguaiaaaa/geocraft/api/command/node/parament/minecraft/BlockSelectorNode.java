@@ -25,40 +25,47 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.block.Block;
+import net.minecraft.command.*;
+import net.minecraft.init.Blocks;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.ForgeRegistryEntryNode;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
+import java.util.Deque;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
-public class LongNode extends NumberNode<Long> {
-    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
-    public LongNode(@Nonnull String name) {
+public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
+    public static final DefaultParser<Block> DEFAULT_PARSER = (node, context) -> Blocks.AIR;
+    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Block.REGISTRY);
+
+    public BlockSelectorNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Long.MIN_VALUE);
-        setMaxValue(Long.MAX_VALUE);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Nonnull
     @Override
-    public Type getType() {
-        return Long.class;
+    public Class<Block> getType() {
+        return Block.class;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.long";
+        return "api.geo.command.parameter.minecraft.block";
     }
 
     @Override
-    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseLong(arg,minValue,maxValue);
+    public <T extends List<String> & Deque<String>> Block parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return CommandBase.getBlockByText(context.getSender(), args.getFirst());
     }
 }

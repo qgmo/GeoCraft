@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import net.minecraft.entity.Entity;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.EntitySelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.EntitySelectorNode;
 
 import javax.annotation.Nonnull;
 import java.util.List;

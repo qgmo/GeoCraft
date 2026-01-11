@@ -25,8 +25,9 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic;
 
+import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
@@ -34,33 +35,30 @@ import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class NumberNode<T extends Number> extends SmartParameterNode<T> {
-    public NumberNode(@Nonnull String name) {
+public class BooleanNode extends SmartParameterNode<Boolean> {
+    public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
+    public static final BiPredicate<List<String>,CommandContext> DEFAULT_MATCHER = (args,context) -> args.size()>0
+            && ("true".equals(args.get(0))) || "false".equals(args.get(0)) || "1".equals(args.get(0)) || "0".equals(args.get(0));
+
+    public static final BiFunction<List<String>,SuggestContext,List<String>> DEFAULT_SUGGESTOR = (args, context) -> Lists.newArrayList(Boolean.TRUE.toString(),Boolean.FALSE.toString());
+    public BooleanNode(@Nonnull String name) {
         super(name);
-        setSuggestProvider(new NumberSuggestProvider());
-    }
-
-    protected T minValue;
-    protected T maxValue;
-
-    public void setMinValue(@Nonnull T minValue) {
-        this.minValue = minValue;
-    }
-
-    public void setMaxValue(@Nonnull T maxValue) {
-        this.maxValue = maxValue;
+        setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
+        setMatcher(DEFAULT_MATCHER);
     }
 
     @Override
@@ -68,29 +66,39 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
         return 1;
     }
 
-    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
+    @Nonnull
+    @Override
+    public Class<Boolean> getType() {
+        return Boolean.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "api.geo.command.parameter.generic.boolean";
+    }
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
+        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){
             return false;
         }
-
-        final String arg = args.get(0);
-        parseNumber(arg); //如果失败这里会炸
-
+        parseBoolean(args.get(0));
         return true;
     }
 
     @Override
-    public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseNumber(args.get(0));
+    public <T extends List<String> & Deque<String>> Boolean parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        return parseBoolean(args.getFirst());
     }
 
-    protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
-        @Override
-        public List<String> apply(List<String> strings, SuggestContext context) {
-            return Collections.singletonList(String.valueOf(0));
+    public static boolean parseBoolean(final @Nullable String input) throws SyntaxErrorException{
+        if("true".equals(input) || "1".equals(input)){
+            return true;
         }
+        if("false".equals(input) || "0".equals(input)){
+            return false;
+        }
+        throw new SyntaxErrorException("commands.generic.boolean.invalid",input==null?"":input);
     }
 }

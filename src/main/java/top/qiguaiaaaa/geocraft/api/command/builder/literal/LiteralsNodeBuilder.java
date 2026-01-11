@@ -31,7 +31,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.literal.LiteralsNode;
+import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralsNode;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;

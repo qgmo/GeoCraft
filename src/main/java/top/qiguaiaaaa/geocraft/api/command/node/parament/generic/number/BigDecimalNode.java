@@ -25,9 +25,10 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
 
 import net.minecraft.command.NumberInvalidException;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ import java.math.BigDecimal;
  * @author QiguaiAAAA
  */
 public class BigDecimalNode extends NumberNode<BigDecimal> {
-    public static final DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> new BigDecimal("0");
+    public static final ParameterNode.DefaultParser<BigDecimal> DEFAULT_PARSER = (node, context) -> new BigDecimal("0");
 
     public BigDecimalNode(@Nonnull String name) {
         super(name);

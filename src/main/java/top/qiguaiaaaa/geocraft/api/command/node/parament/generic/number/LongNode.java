@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
@@ -36,30 +36,29 @@ import java.lang.reflect.Type;
 /**
  * @author QiguaiAAAA
  */
-public class IntegerNode extends NumberNode<Integer> {
-    public static final DefaultParser<Integer> DEFAULT_PARSER = (node, context) -> 0;
-
-    public IntegerNode(@Nonnull String name) {
+public class LongNode extends NumberNode<Long> {
+    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
+    public LongNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Integer.MIN_VALUE);
-        setMaxValue(Integer.MAX_VALUE);
+        setMinValue(Long.MIN_VALUE);
+        setMaxValue(Long.MAX_VALUE);
     }
 
     @Nonnull
     @Override
     public Type getType() {
-        return Integer.class;
+        return Long.class;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.integer";
+        return "api.geo.command.parameter.generic.long";
     }
 
     @Override
-    protected Integer parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseInt(arg,minValue,maxValue);
+    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        return CommandBase.parseLong(arg,minValue,maxValue);
     }
 }

@@ -33,7 +33,7 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;

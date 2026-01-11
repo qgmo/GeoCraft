@@ -25,52 +25,41 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.minecraft;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
 
-import net.minecraft.block.Block;
-import net.minecraft.command.*;
-import net.minecraft.init.Blocks;
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.forge.ForgeRegistryEntryNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.SmartParameterNode;
-import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.NumberInvalidException;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import java.lang.reflect.Type;
 
 /**
  * @author QiguaiAAAA
  */
-public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
-    public static final DefaultParser<Block> DEFAULT_PARSER = (node, context) -> Blocks.AIR;
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = createSuggestProviderFromRegistry(Block.REGISTRY);
+public class IntegerNode extends NumberNode<Integer> {
+    public static final DefaultParser<Integer> DEFAULT_PARSER = (node, context) -> 0;
 
-    public BlockSelectorNode(@Nonnull String name) {
+    public IntegerNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setSuggestProvider(DEFAULT_SUGGESTOR);
+        setMinValue(Integer.MIN_VALUE);
+        setMaxValue(Integer.MAX_VALUE);
     }
 
     @Nonnull
     @Override
-    public Class<Block> getType() {
-        return Block.class;
+    public Type getType() {
+        return Integer.class;
     }
 
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.block";
+        return "api.geo.command.parameter.generic.integer";
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> Block parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        return CommandBase.getBlockByText(context.getSender(), args.getFirst());
+    protected Integer parseNumber(@Nonnull String arg) throws NumberInvalidException {
+        return CommandBase.parseInt(arg,minValue,maxValue);
     }
 }
