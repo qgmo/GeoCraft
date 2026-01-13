@@ -27,10 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.literal;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralsNode;
 
 import javax.annotation.Nonnull;
@@ -38,7 +38,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author QiguaiAAAA
@@ -48,7 +48,7 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     private ICommandNode bakedDefaultChild = null;
     private INodeBuilder<?> defaultChild = null;
     private boolean optional = false;
-    private Function<CommandContext, Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+    private Predicate<CommandContext> funcCheckPermission = PermitNode.PERMIT_ALL;
 
     public LiteralsNodeBuilder() {
     }
@@ -98,7 +98,7 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
-    public LiteralsNodeBuilder permitIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
+    public LiteralsNodeBuilder permitIf(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
         this.funcCheckPermission = funcCheckPermission;
         return this;
     }

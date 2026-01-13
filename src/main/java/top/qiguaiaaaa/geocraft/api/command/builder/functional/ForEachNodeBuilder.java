@@ -33,7 +33,10 @@ import top.qiguaiaaaa.geocraft.api.command.node.functional.ForEachNode;
 import top.qiguaiaaaa.geocraft.api.function.TriFunction;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

@@ -51,6 +51,12 @@ public interface ValidChecker {
     ValidChecker MATCH_TWO_PARAMETER = matchMultiParas(2);
     ValidChecker MATCH_THREE_PARAMETER = matchMultiParas(3);
     ValidChecker MATCH_FOUR_PARAMETER = matchMultiParas(4);
+    ValidChecker MATCH_RESOURCE_LOCATION = MATCH_ONE_PARAMETER.and((self, args, context) -> {
+        final String[] split = args.get(0).split(":");
+        if(split.length>2) throw new SyntaxErrorException("api.geo.command.parameter.checker.resource_location.invalid.repeat",self.getLocalizedParameter());
+        else if(split.length==2&&split[0].contains("/")) throw new SyntaxErrorException("api.geo.command.parameter.checker.resource_location.invalid.slash",self.getLocalizedParameter());
+        return true;
+    });
 
     boolean check(@Nonnull SmartParameterNode<?> self, @Nonnull List<String> args, @Nonnull CommandContext context)
             throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
@@ -73,8 +79,7 @@ public interface ValidChecker {
             else if (args.size() >= 1 && !args.get(0).isEmpty())
                 throw new WrongUsageException("api.geo.command.parameter.smart.checkers", I18n.format(self.getTranslationKey()), paraNum); //只有一到三个参数，填了一半，不能用默认值
             else if (self.isOptional()) return false; //可以用默认值
-            else
-                throw new WrongUsageException("api.geo.command.parameter.smart.checkers", self.getLocalizedParameter(), paraNum);
+            else throw new WrongUsageException("api.geo.command.parameter.smart.checkers", self.getLocalizedParameter(), paraNum);
         });
     }
 }

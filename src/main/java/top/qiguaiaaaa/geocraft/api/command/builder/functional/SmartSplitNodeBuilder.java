@@ -33,7 +33,8 @@ import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.*;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
 import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralNode;
 
@@ -41,8 +42,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
+import java.util.function.*;
 
 /**
  * {@link SmartSplitNode}的构建器
@@ -64,7 +64,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      * 向{@link SmartSplitNode}添加下一个智能节点
      * @param builder 智能节点的构建器
      * @return 一个 {@link SmartNodeInnerBuilder}。
-     * 该构建器没有实现 {@link INodeBuilder< LiteralNode >}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
+     * 该构建器没有实现 {@link INodeBuilder<LiteralNode>}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
      * <blockquote><pre> then(smart().then(一个构建器)) </pre></blockquote>
      * 请在构建完这个子节点后调用 {@link SmartNodeInnerBuilder#done()} 方法以返回 {@link SmartSplitNodeBuilder}。即：
      * <blockquote><pre> then(smart().then(一个构建器).done()) </pre></blockquote>
@@ -206,24 +206,24 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
         }
 
         @Nonnull
-        public LiteralNodeInnerBuilder then(@Nonnull INodeBuilder<?> childNode) {
+        public LiteralNodeInnerBuilder then(@Nonnull final INodeBuilder<?> childNode) {
             literalBuilder.then(childNode);
             return this;
         }
 
         @Nonnull
-        public LiteralNodeInnerBuilder then(@Nonnull ICommandNode childNode) {
+        public LiteralNodeInnerBuilder then(@Nonnull final ICommandNode childNode) {
             literalBuilder.then(childNode);
             return this;
         }
 
         /**
-         * @see LiteralNodeBuilder#passIf(Function)
+         * @see LiteralNodeBuilder#passIf(Predicate) )
          * @param funcCheckPermission 权限检查函数
          * @return {@link LiteralNodeInnerBuilder} 自身
          */
         @Nonnull
-        public LiteralNodeInnerBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
+        public LiteralNodeInnerBuilder passIf(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
             literalBuilder.passIf(funcCheckPermission);
             return this;
         }
@@ -235,7 +235,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
          */
         @Nonnull
         @Override
-        public LiteralNodeInnerBuilder matchIf(@Nonnull BiPredicate<List<String>, CommandContext> checker) {
+        public LiteralNodeInnerBuilder matchIf(@Nonnull final BiPredicate<List<String>, CommandContext> checker) {
             return (LiteralNodeInnerBuilder) super.matchIf(checker);
         }
     }
@@ -244,17 +244,32 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
         public Outer(){}
     }
 
-    public static class Inner<Parent extends INodeBuilder<?>> extends SmartSplitNodeBuilder<Inner<Parent>>{
+    public static class Inner<Parent> extends SmartSplitNodeBuilder<Inner<Parent>>{
 
         protected final Parent parentBuilder;
+        protected final BiConsumer<Parent,SmartSplitNodeBuilder.Inner<Parent>> onDone;
 
         public Inner(@Nonnull final Parent parentBuilder) {
             this.parentBuilder = parentBuilder;
+            onDone=null;
+        }
+
+        public Inner(@Nonnull final Parent parentBuilder,@Nonnull final BiConsumer<Parent,SmartSplitNodeBuilder.Inner<Parent>> onDoneFunc){
+            this.parentBuilder = parentBuilder;
+            this.onDone = onDoneFunc;
         }
 
         @Nonnull
         public Parent done(){
+            if(onDone != null) this.onDone.accept(parentBuilder,this);
             return parentBuilder;
+        }
+
+        @Deprecated
+        @Nonnull
+        @Override
+        public SmartSplitNode build() {
+            return super.build();
         }
     }
 }

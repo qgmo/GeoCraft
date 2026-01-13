@@ -54,7 +54,7 @@ public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> e
 
     @Override
     public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
-        return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
+        return ValidChecker.MATCH_RESOURCE_LOCATION.check(this,args,context);
     }
 
     @Override

@@ -17,12 +17,16 @@ api.geo.command.parameter.geocraft.atmosphereAccessor=AtmosphereAccessor
 
 api.geo.command.parameter.smart.checker1=Parameter %s is required to accepted one argument.
 api.geo.command.parameter.smart.checkers=Parameter %s is required to accepted at least %s arguments.
+api.geo.command.parameter.checker.resource_location.invalid.repeat=Resource Location Parameter %s must not contain more than two ':' characters.
+api.geo.command.parameter.checker.resource_location.invalid.slash=Namespace of Resource Location Parameter %s must not contain character '/'.
 api.geo.command.parameter.string.nonMatch=Invalid input %s for parameter %s, which requires input to match %s
 api.geo.command.parameter.string.invalid.white=Invalid input %s for parameter %s, which only allows the following values: %s
 api.geo.command.parameter.string.invalid.black=Invalid input %s for parameter %s, which disallows the following values: %s
 api.geo.command.parameter.fluid.invalid=Invalid fluid %s for parameter %s
 api.geo.command.parameter.oreDirectory.invalid=Invalid Ore Directory %s for parameter %s
 api.geo.command.parameter.entityEntry.invalid=Invalid Entity Entry %s for parameter %s
+
+api.geo.command.functional.permit.denied=Permission denied.
 
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded

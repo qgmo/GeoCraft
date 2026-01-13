@@ -28,7 +28,6 @@
 package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -38,25 +37,28 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * @author QiguaiAAAA
  */
 public class PermitNode extends NoSplitNode {
-    protected Function<CommandContext,Boolean> checker;
+    public static final Predicate<CommandContext> PERMIT_ALL = context -> true;
+    public static final Predicate<CommandContext> REJECT_ALL = context -> false;
+    protected @Nonnull Predicate<CommandContext> checker = REJECT_ALL;
 
-    public void setChecker(@Nonnull Function<CommandContext, Boolean> checker) {
-        this.checker = checker;
+    public void setChecker(@Nonnull final Predicate<CommandContext> predicate) {
+        this.checker = Objects.requireNonNull(predicate);
     }
 
     public boolean checkPermission(@Nonnull CommandContext context) {
-        return checker != null && checker.apply(context);
+        return checker.test(context);
     }
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!"); //TO DO
+        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
         if(childNode != null) childNode.execute(args,context);
     }
 

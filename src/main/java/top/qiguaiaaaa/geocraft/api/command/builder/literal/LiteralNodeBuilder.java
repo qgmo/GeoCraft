@@ -27,35 +27,31 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.literal;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
-
-    private Function<CommandContext, Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
-
-    private INodeBuilder<?> childNode;
-    private ICommandNode bakedChildNode;
-    private SmartSplitNodeBuilder.Inner<LiteralNodeBuilder> smartNode;
+public class LiteralNodeBuilder extends PermitNodeBuilder<LiteralNode,LiteralNodeBuilder> {
+    @SuppressWarnings("deprecation")
+    protected static final BiConsumer<LiteralNodeBuilder,SmartSplitNodeBuilder.Inner<LiteralNodeBuilder>> ON_SMART_DONE =
+            (self, smart) -> self.bakedChildNode = smart.build();
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
     private final @Nonnull String name;
 
-    public LiteralNodeBuilder(@Nonnull String name) {
-        this.name = name;
+    public LiteralNodeBuilder(@Nonnull final String name) {
+        this.name = name.trim();
+        if(this.name.contains(" ") || this.name.isEmpty()) throw new IllegalArgumentException();
     }
 
     /**
@@ -71,32 +67,9 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
     }
 
     @Nonnull
-    public LiteralNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
-        this.childNode = childNode;
-        return this;
-    }
-
-    @Nonnull
-    public LiteralNodeBuilder then(@Nonnull ICommandNode childNode) {
-        this.bakedChildNode = childNode;
-        return this;
-    }
-
-    /**
-     * 配置当前字面量节点能够被使用的权限条件
-     * @see LiteralNode#setChecker(Function)
-     * @param funcCheckPermission 权限检查函数
-     * @return {@link LiteralNodeBuilder} 自身
-     */
-    @Nonnull
-    public LiteralNodeBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
-        this.funcCheckPermission = funcCheckPermission;
-        return this;
-    }
-
-    @Nonnull
     public SmartSplitNodeBuilder.Inner<LiteralNodeBuilder> smart(){
-        return smartNode = new SmartSplitNodeBuilder.Inner<>(this);
+        ensureFirstChild();
+        return new SmartSplitNodeBuilder.Inner<>(this,ON_SMART_DONE);
     }
 
     @Nonnull
@@ -104,8 +77,7 @@ public class LiteralNodeBuilder implements INodeBuilder<LiteralNode> {
     public LiteralNode build() {
         final LiteralNode node = new LiteralNode(name);
         node.setChecker(funcCheckPermission);
-        if(smartNode == null) node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
-        else node.setChildNode(smartNode.build());
+        node.setChildNode(buildChildNode());
         node.setMatcher(matchChecker);
         return node;
     }

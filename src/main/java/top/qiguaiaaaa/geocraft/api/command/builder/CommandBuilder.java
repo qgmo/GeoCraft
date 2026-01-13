@@ -27,85 +27,133 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder;
 
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import net.minecraftforge.server.permission.PermissionAPI;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.node.CommandNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 /**
  * @since 0.2.0
  * @author QiguaiAAAA
  */
-public class CommandBuilder {
-    public static final Function<CommandContext,Boolean> PERMIT_ALL = context -> Boolean.TRUE,
-    REJECT_ALL = context -> Boolean.FALSE;
+public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilder> {
+    public static final BiPredicate<MinecraftServer,ICommandSender> PERMIT_ALL = (server, sender) -> true;
+    public static final BiPredicate<MinecraftServer,ICommandSender> REJECT_ALL = (server, sender) -> false;
+    public static final BiPredicate<MinecraftServer,ICommandSender> PASS_IF_NOT_PLAYER = (server, sender) -> !(sender instanceof EntityPlayer);
+    public static final BiPredicate<MinecraftServer,ICommandSender> PASS_IF_PLAYER = (server, sender) -> sender instanceof EntityPlayer;
+    @SuppressWarnings("deprecation")
+    protected static final BiConsumer<CommandBuilder,SmartSplitNodeBuilder.Inner<CommandBuilder>> ON_SMART_DONE =
+            (self,smart) -> self.bakedChildNode = smart.build();
 
-    public CommandBuilder(@Nonnull String name){
+    protected final String name;
+    protected final @Nonnull List<String> aliases = new ArrayList<>();
+    protected @Nonnull BiPredicate<MinecraftServer,ICommandSender> funcPermissionCheck = PERMIT_ALL;
+    protected int requiredPermissionLevel = 0;
+    protected Set<String> requiredPermissions = null;
+    protected boolean passIfNotPlayer = true;
+
+    public CommandBuilder(@Nonnull final String name){
+        if(name.contains(" ")) throw new IllegalArgumentException("Command name couldn't contain any whitespaces!");
         this.name = name;
     }
-    public CommandBuilder(){}
-
-    protected String name;
-    protected final List<String> aliases = new ArrayList<>();
-    protected ICommandNode rootNode;
-    protected INodeBuilder<?> rootNodeBuilder;
-    protected BiFunction<MinecraftServer, ICommandSender,Boolean> funcPermissionCheck;
-    protected int requiredPermissionLevel = 0;
-
 
     @Nonnull
-    public CommandBuilder setCommandName(@Nonnull String name){
-        this.name = name.trim();
-        return this;
+    public SmartSplitNodeBuilder.Inner<CommandBuilder> smart(){
+        ensureFirstChild();
+        return new SmartSplitNodeBuilder.Inner<>(this,ON_SMART_DONE);
     }
 
     @Nonnull
-    public CommandBuilder then(@Nonnull ICommandNode rootNode) {
-        this.rootNode = rootNode;
-        return this;
-    }
-
-    @Nonnull
-    public CommandBuilder then(@Nonnull INodeBuilder<?> rootNodeBuilder){
-        this.rootNodeBuilder = rootNodeBuilder;
-        return this;
-    }
-
-    @Nonnull
-    public CommandBuilder requirePermissionLevel(int requiredPermissionLevel) {
+    public CommandBuilder requirePermissionLevel(final int requiredPermissionLevel) {
         this.requiredPermissionLevel = requiredPermissionLevel;
         return this;
     }
 
     @Nonnull
-    public CommandBuilder permitIf(@Nullable BiFunction<MinecraftServer, ICommandSender, Boolean> funcPermissionCheck) {
-        this.funcPermissionCheck = funcPermissionCheck;
+    public CommandBuilder permitIf(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> funcPermissionCheck) {
+        if(funcPermissionCheck == REJECT_ALL) this.funcPermissionCheck = REJECT_ALL;
+        this.funcPermissionCheck = combinePredicates(this.funcPermissionCheck,funcPermissionCheck);
         return this;
     }
 
     @Nonnull
-    public CommandBuilder addAlias(@Nonnull String alias){
+    public CommandBuilder requirePermission(@Nonnull final String permissionNode){
+        if(this.requiredPermissions == null) this.requiredPermissions = new HashSet<>();
+        this.requiredPermissions.add(permissionNode);
+        return this;
+    }
+
+    @Nonnull
+    public CommandBuilder passIfNotPlayer(final boolean doPass){
+        this.passIfNotPlayer = doPass;
+        return this;
+    }
+
+    @Nonnull
+    public CommandBuilder addAlias(@Nonnull final String alias){
         if(alias.trim().isEmpty()) throw new IllegalArgumentException(alias);
         aliases.add(alias);
         return this;
     }
 
     @Nonnull
-    public ICommand build(){
-        final BuiltCommand command = new BuiltCommand();
-        command.name = name;
-        command.aliases = aliases;
-        command.node = rootNode==null?rootNodeBuilder.build():rootNode;
-        command.permissionLevel = requiredPermissionLevel;
-        command.funcCheckPermission = funcPermissionCheck == null?((server, sender) -> sender.canUseCommand(requiredPermissionLevel,name)):funcPermissionCheck;
+    public CommandBuilder addAlias(@Nonnull final String... aliases){
+        for (String alias : aliases) {
+            addAlias(alias);
+        }
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public CommandNode build(){
+        final CommandNode command = new CommandNode(name);
+        command.setAliases(aliases.stream().distinct().sorted().collect(Collectors.toList()));
+        command.setChildNode(buildChildNode());
+        command.setCheckPermissionFunction(buildPermitPredicate());
         return command;
+    }
+
+    @Nonnull
+    protected BiPredicate<MinecraftServer,ICommandSender> buildPermitPredicate(){
+        if(funcPermissionCheck == REJECT_ALL) return REJECT_ALL;
+        BiPredicate<MinecraftServer,ICommandSender> permitFunc = funcPermissionCheck;
+        if(requiredPermissionLevel>=0){
+            permitFunc = combinePredicates(permitFunc,buildPermitByLevel());
+        }
+        if(requiredPermissions != null){
+            final BiPredicate<MinecraftServer,ICommandSender> checkNodePermissions = (server, sender) -> {
+                for(String node:requiredPermissions){
+                    if(!PermissionAPI.hasPermission((EntityPlayer) sender,node)) return false;
+                }
+                return true;
+            };
+            final BiPredicate<MinecraftServer,ICommandSender> bakedChecker = passIfNotPlayer?
+                    PASS_IF_NOT_PLAYER.or(checkNodePermissions):PASS_IF_PLAYER.and(checkNodePermissions);
+            permitFunc = combinePredicates(permitFunc,bakedChecker);
+        }
+        return permitFunc;
+    }
+
+    @Nonnull
+    protected BiPredicate<MinecraftServer,ICommandSender> buildPermitByLevel(){
+        return (server, sender) -> sender.canUseCommand(requiredPermissionLevel,name);
+    }
+
+    @Nonnull
+    protected static BiPredicate<MinecraftServer,ICommandSender> combinePredicates(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> current,
+                                                                                   @Nonnull final BiPredicate<MinecraftServer,ICommandSender> toBeCombined){
+        return current == PERMIT_ALL?toBeCombined:current.and(toBeCombined);
     }
 }

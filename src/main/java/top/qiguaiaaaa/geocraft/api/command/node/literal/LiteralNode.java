@@ -72,7 +72,7 @@ public class LiteralNode extends PermitNode implements ISmartNode {
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new WrongUsageException("Permission not enough!");
+        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
         if(!match(args,context)) throw new WrongUsageException("Wrong");
         final String first = args.getFirst();
         try {

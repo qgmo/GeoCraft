@@ -90,8 +90,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static PermitNodeBuilder permit(){
-        return new PermitNodeBuilder();
+    public static PermitNodeBuilder.Impl permit(){
+        return new PermitNodeBuilder.Impl();
     }
 
     @Nonnull

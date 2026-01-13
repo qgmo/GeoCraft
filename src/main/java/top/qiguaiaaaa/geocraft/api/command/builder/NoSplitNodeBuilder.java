@@ -36,27 +36,33 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public abstract class NoSplitNodeBuilder<NODE extends NoSplitNode,SELF extends NoSplitNodeBuilder<NODE,SELF>> implements INodeBuilder<NODE> {
+public abstract class NoSplitNodeBuilder<N extends NoSplitNode, S extends NoSplitNodeBuilder<N, S>> implements INodeBuilder<N> {
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF then(@Nonnull INodeBuilder<?> childNode) {
+    public S then(@Nonnull final INodeBuilder<?> childNode) {
+        ensureFirstChild();
         this.childNode = childNode;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF then(@Nonnull ICommandNode childNode) {
+    public S then(@Nonnull final ICommandNode childNode) {
+        ensureFirstChild();
         this.bakedChildNode = childNode;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nullable
     protected final ICommandNode buildChildNode(){
         if(childNode == null) return null;
         return bakedChildNode != null ? bakedChildNode : childNode.build();
+    }
+
+    protected void ensureFirstChild(){
+        if(this.childNode != null || bakedChildNode != null) throw new IllegalStateException("This node has a child node installed already!");
     }
 }

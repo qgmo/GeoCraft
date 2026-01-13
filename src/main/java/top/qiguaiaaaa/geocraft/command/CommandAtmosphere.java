@@ -89,145 +89,132 @@ public final class CommandAtmosphere {
     }
 
     public static ICommand create(){
-        smart().literal("aaa").then(
-                string("aaa").matchIf(Matchers.ANY)
-        );
-        return new CommandBuilder().setCommandName(ATMOSPHERE_COMMAND_NAME)
+        return new CommandBuilder(ATMOSPHERE_COMMAND_NAME)
                 .requirePermissionLevel(2)
-                .then(smart()
-                        .literal("set").then(
-                                string("property").suggest(
-                                        (args, context) -> {
-                                            List<String> res = getPropertyList();
-                                            res.addAll(Arrays.asList("water","temp","ground_temp"));
-                                            return res;
-                                        }
-                                ).then(
-                                        number("value", NumberType.DOUBLE).then(
-                                                blockPos("pos").asOptional().then(
-                                                        relay(CommandAtmosphere::processAtmosphereInfo).then(
-                                                                execute(CommandAtmosphere::set)
-                                                        ).after(CommandAtmosphere::afterProcessAtmosphereInfo)
-                                                )
-                                        ))).done()
-                        .literal("stop").then(
-                                execute(((args, context) -> {
-                                    final World world = context.getWorld();
-                                    final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
-                                    if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
-                                    system.setStop(!system.isStopped());
-                                    notifyCommandListener(context, "geocraft.command.atmosphere.reset.temp",system.isStopped() , 0, 0);
-                                }))
-                        ).done()
-                        .literal("reset").then(
-                                string("property").suggest(
-                                        (args, context) -> Collections.singletonList("temp")
-                                ).then(
-                                        blockPos("pos").asOptional().then(
-                                                relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                        execute((args, context) -> {
-                                                            final World world = context.getWorld();
-                                                            final Atmosphere atmosphere = context.get("atm");
-                                                            final BlockPos pos = context.getBlockPos("pos");
-                                                            final int x = pos.getX(),z = pos.getZ();
-                                                            final String property = context.get("property");
-
-                                                            if("temp".equalsIgnoreCase(property)){
-                                                                if(!world.isAreaLoaded(pos,1)){
-                                                                    throw new CommandException("geocraft.command.chunk_error.unloaded",x,z);
-                                                                }
-                                                                final Chunk chunk = world.getChunk(pos);
-                                                                if(atmosphere instanceof SurfaceAtmosphere){
-                                                                    ((SurfaceAtmosphere)atmosphere).重置温度(chunk);
-                                                                }else throw new CommandException("geocraft.command.atmosphere.unknown");
-                                                                notifyCommandListener(context,"geocraft.command.atmosphere.reset.temp",x,z, atmosphere.getAtmosphereTemperature(pos));
-                                                                return;
-                                                            }
-                                                            throw new WrongUsageException("geocraft.command.atmosphere.reset.usage");
-                                                        })
-                                                )
-                                        )
-                                )
-                        ).done()
-                        .literal("add").then(string("property").suggest(
-                                (args,context)->{
+                .smart()
+                .literal("set").then(
+                        string("property").suggest(
+                                (args, context) -> {
                                     List<String> res = getPropertyList();
-                                    res.addAll(Arrays.asList("steam","water","temp","heat"));
+                                    res.addAll(Arrays.asList("water","temp","ground_temp"));
                                     return res;
-                                }
-                        ).then(
-                                number("value",NumberType.DOUBLE).then(
+                                }).then(number("value", NumberType.DOUBLE).then(
                                         blockPos("pos").asOptional().then(
-                                                relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                        execute(CommandAtmosphere::add)
-                                                )
+                                                relay(CommandAtmosphere::processAtmosphereInfo).then(
+                                                        execute(CommandAtmosphere::set)
+                                                ).after(CommandAtmosphere::afterProcessAtmosphereInfo)
                                         )
-                                )
-                        )).done()
-                        .literal("query").then(string("property").suggest(
-                                (strings, context) -> Arrays.asList("water","steam","temp","water_pressure","pressure","ground_temp","block_temp","wind","underlying","heat_volume")
-                        ).then(
+                        ))).done()
+                .literal("stop").then(
+                        execute(((args, context) -> {
+                            final World world = context.getWorld();
+                            final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
+                            if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
+                            system.setStop(!system.isStopped());
+                            notifyCommandListener(context, "geocraft.command.atmosphere.reset.temp",system.isStopped() , 0, 0);
+                        }))
+                ).done()
+                .literal("reset").then(
+                        string("property").allow("temp").then(
                                 blockPos("pos").asOptional().then(
                                         relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                execute(CommandAtmosphere::query)
+                                                execute((args, context) -> {
+                                                    final World world = context.getWorld();
+                                                    final Atmosphere atmosphere = context.get("atm");
+                                                    final BlockPos pos = context.getBlockPos("pos");
+                                                    final int x = pos.getX(),z = pos.getZ();
+                                                    final String property = context.get("property");
+
+                                                    if("temp".equalsIgnoreCase(property)){
+                                                        if(!world.isAreaLoaded(pos,1)){
+                                                            throw new CommandException("geocraft.command.chunk_error.unloaded",x,z);
+                                                        }
+                                                        final Chunk chunk = world.getChunk(pos);
+                                                        if(atmosphere instanceof SurfaceAtmosphere){
+                                                            ((SurfaceAtmosphere)atmosphere).重置温度(chunk);
+                                                        }else throw new CommandException("geocraft.command.atmosphere.unknown");
+                                                        notifyCommandListener(context,"geocraft.command.atmosphere.reset.temp",x,z, atmosphere.getAtmosphereTemperature(pos));
+                                                        return;
+                                                    }
+                                                    throw new WrongUsageException("geocraft.command.atmosphere.reset.usage");
+                                                })
                                         )
                                 )
-                        )).done()
-                        .literal("util").then(
-                                string("util_name")
-                                        .allow("sun","property","block_info","storage")
-                                        .then(blockPos("pos").asOptional().then(
-                                                relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                        execute(CommandAtmosphere::util)
-                                                )
+                        )
+                ).done()
+                .literal("add").then(string("property").suggest(
+                        (args,context)->{
+                            List<String> res = getPropertyList();
+                            res.addAll(Arrays.asList("steam","water","temp","heat"));
+                            return res;
+                        }).then(number("value",NumberType.DOUBLE).then(
+                                blockPos("pos").asOptional().then(
+                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
+                                                execute(CommandAtmosphere::add)
                                         )
                                 )
-                        ).done()
-                        .literal("track").then(
-                                string("property").suggest(
-                                        (args, context) -> {
-                                            List<String> res = getPropertyList();
-                                            res.addAll(Arrays.asList("temp","water","steam"));
-                                            return res;
-                                        }
-                                ).then(
-                                        integer("time").min(1).then(
-                                                string("file_name").suggest(
-                                                        (strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv")
-                                                ).then(
-                                                        blockPos("pos").then(
-                                                                relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                                        execute(CommandAtmosphere::track)
-                                                                )
+                        )
+                )).done()
+                .literal("query").then(string("property").suggest(
+                        (strings, context) -> Arrays.asList("water","steam","temp","water_pressure","pressure","ground_temp","block_temp","wind","underlying","heat_volume")
+                ).then(
+                        blockPos("pos").asOptional().then(
+                                relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
+                                        execute(CommandAtmosphere::query)
+                                )
+                        )
+                )).done()
+                .literal("util").then(
+                        string("util_name")
+                                .allow("sun","property","block_info","storage")
+                                .then(blockPos("pos").asOptional().then(
+                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
+                                                execute(CommandAtmosphere::util)
+                                        )))
+                ).done()
+                .literal("track").then(
+                        string("property").suggest(
+                                (args, context) -> {
+                                    List<String> res = getPropertyList();
+                                    res.addAll(Arrays.asList("temp","water","steam"));
+                                    return res;
+                                }).then(integer("time").min(1).then(
+                                        string("file_name").suggest(
+                                                (strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv")
+                                        ).then(
+                                                blockPos("pos").then(
+                                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
+                                                                execute(CommandAtmosphere::track)
                                                         )
                                                 )
                                         )
                                 )
-                        ).done()
-                        .execute(((args, context) -> {
-                            final ICommandSender sender = context.getSender();
-                            final World world = sender.getEntityWorld();
-                            final BlockPos pos = sender.getPosition();
-                            final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos.getX(),pos.getY(),pos.getZ());
-                            final Atmosphere atmosphere = getAtmosphere(accessor);
-                            notifyCommandListener(context, "geocraft.command.atmosphere.query.basic", TextFormatting.AQUA,pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
-                            notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.1",
-                                    accessor.getPressure(),
-                                    accessor.getWaterPressure(),
-                                    accessor.getTemperature()
-                            );
-                            notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.2",accessor.getWind());
-                            for(Layer layer = atmosphere.getBottomLayer(); layer != null; layer = layer.getUpperLayer()){
-                                notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.3",
-                                        layer.getTagName(),layer.getBeginY(),layer.getBeginY()+layer.getDepth());
-                                notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.4",layer.getTemperature());
-                                final FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
-                                final FluidState water = layer.getWater();
-                                notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.5",
-                                        steam==null?"NULL":steam,water==null?"NULL":water);
-                            }
-                        }))
-                ).build();
+                        )
+                ).done()
+                .execute(((args, context) -> {
+                    final ICommandSender sender = context.getSender();
+                    final World world = sender.getEntityWorld();
+                    final BlockPos pos = sender.getPosition();
+                    final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos.getX(),pos.getY(),pos.getZ());
+                    final Atmosphere atmosphere = getAtmosphere(accessor);
+                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic", TextFormatting.AQUA,pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
+                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.1",
+                            accessor.getPressure(),
+                            accessor.getWaterPressure(),
+                            accessor.getTemperature()
+                    );
+                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.2",accessor.getWind());
+                    for(Layer layer = atmosphere.getBottomLayer(); layer != null; layer = layer.getUpperLayer()){
+                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.3",
+                                layer.getTagName(),layer.getBeginY(),layer.getBeginY()+layer.getDepth());
+                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.4",layer.getTemperature());
+                        final FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
+                        final FluidState water = layer.getWater();
+                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.5",
+                                steam==null?"NULL":steam,water==null?"NULL":water);
+                    }
+                })).done()
+                .build();
     }
 
     static void processAtmosphereInfo(@Nonnull final List<String> args, @Nonnull final ExecuteContext context) throws CommandException {

@@ -70,7 +70,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new WrongUsageException("Not enough permission!");
+        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
         final ICommandNode node;
         if(args.size()>0){
             node = literal2Node.get(args.getFirst());
@@ -90,6 +90,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context) {
+        if(!checkPermission(context)) return null;
         if(args.size()>1){
             String first = null;
             try {

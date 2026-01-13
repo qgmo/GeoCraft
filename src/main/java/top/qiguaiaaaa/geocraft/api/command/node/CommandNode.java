@@ -25,33 +25,45 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder;
+package top.qiguaiaaaa.geocraft.api.command.node;
 
-import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class BuiltCommand extends CommandBase {
-    String name;
-    List<String> aliases;
-    ICommandNode node;
-    int permissionLevel;
-    BiFunction<MinecraftServer,ICommandSender,Boolean> funcCheckPermission;
+public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
+    protected final String name;
+    protected List<String> aliases = Collections.emptyList();
+    protected BiPredicate<MinecraftServer,ICommandSender> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+
+    public CommandNode(final @Nonnull String name){
+        this.name = name;
+    }
+
+    public void setAliases(@Nonnull final List<String> aliases){
+        this.aliases = aliases;
+    }
+
+    public void setCheckPermissionFunction(@Nonnull final BiPredicate<MinecraftServer,ICommandSender> function){
+        this.funcCheckPermission = function;
+    }
 
     @Nonnull
     @Override
@@ -65,11 +77,6 @@ public class BuiltCommand extends CommandBase {
         return "example usage";
     }
 
-    @Override
-    public int getRequiredPermissionLevel() {
-        return permissionLevel;
-    }
-
     @Nonnull
     @Override
     public List<String> getAliases() {
@@ -78,24 +85,49 @@ public class BuiltCommand extends CommandBase {
 
     @Override
     public boolean checkPermission(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
-        return funcCheckPermission.apply(server,sender);
+        return funcCheckPermission.test(server,sender);
     }
 
     @Nonnull
     @Override
     public List<String> getTabCompletions(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args, @Nullable BlockPos targetPos) {
-        if(node == null) return super.getTabCompletions(server, sender, args, targetPos);
+        if(childNode == null) return Collections.emptyList();
         final SuggestContext context = new SuggestContext(this,server,sender);
         context.setTargetPos(targetPos);
-        final List<String> suggests = node.suggest(new LinkedList<>(Arrays.asList(args)),context);
-        if(suggests == null) return super.getTabCompletions(server, sender, args, targetPos);
+        final List<String> suggests = childNode.suggest(new LinkedList<>(Arrays.asList(args)),context);
+        if(suggests == null) return Collections.emptyList();
         return suggests;
     }
 
     @Override
-    public void execute(@Nonnull MinecraftServer server, @Nonnull ICommandSender sender, @Nonnull String[] args) throws CommandException {
-        if(node != null){
-            node.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
-        }
+    public boolean isUsernameIndex(@Nonnull String[] args, int index) {
+        return false;
+    }
+
+    @Override
+    public void execute(@Nonnull final MinecraftServer server, @Nonnull final ICommandSender sender, @Nonnull final String[] args) throws CommandException {
+        if(childNode == null) return;
+        childNode.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
+    }
+
+    @Override
+    public int compareTo(@Nonnull final ICommand o) {
+        return getName().compareTo(o.getName());
+    }
+
+    // ----------
+    //   Node
+    // ----------
+
+    @Override
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(childNode == null) return;
+        childNode.execute(args,context);
+    }
+
+    @Nullable
+    @Override
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+        return childNode == null?null:childNode.suggest(args,context);
     }
 }

@@ -43,6 +43,10 @@ public final class Matchers {
     public static final BiPredicate<List<String>, CommandContext> INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
     public static final BiPredicate<List<String>, CommandContext> LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
     public static final BiPredicate<List<String>, CommandContext> DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
+    public static final BiPredicate<List<String>, CommandContext> RESOURCE_LOCATION = (args,context) ->{
+        final String[] split = args.get(0).split(":");
+        return split.length==1 || split.length==2 && !split[0].contains("/");
+    };
 
     @Nonnull
     public static BiPredicate<List<String>,CommandContext> matchOnlyFirstArg(@Nonnull final BiPredicate<String,CommandContext> simpleMatcher){
@@ -63,30 +67,26 @@ public final class Matchers {
 
     @Nonnull
     public static BiPredicate<List<String>,CommandContext> matchLong(final long min,final long max){
-        return (args,context)->{
-            if(args.isEmpty()) return false;
-            final @Nonnull String firstArg = args.get(0);
+        return matchOnlyFirstArg((arg,context)->{
             try {
-                CommandBase.parseLong(firstArg,min,max);
+                CommandBase.parseLong(arg,min,max);
             } catch (NumberInvalidException e) {
                 return false;
             }
             return true;
-        };
+        });
     }
 
     @Nonnull
     public static BiPredicate<List<String>,CommandContext> matchDouble(final double min, final double max){
-        return (args,context)->{
-            if(args.isEmpty()) return false;
-            final @Nonnull String firstArg = args.get(0);
+        return matchOnlyFirstArg((arg,context)->{
             try {
-                CommandBase.parseDouble(firstArg,min,max);
+                CommandBase.parseDouble(arg,min,max);
             } catch (NumberInvalidException e) {
                 return false;
             }
             return true;
-        };
+        });
     }
 
 
