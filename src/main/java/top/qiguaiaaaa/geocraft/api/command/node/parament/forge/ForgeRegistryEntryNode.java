@@ -36,6 +36,7 @@ import net.minecraftforge.registries.IForgeRegistryEntry;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends SmartParameterNode<E> {
     public ForgeRegistryEntryNode(@Nonnull String name) {
         super(name);
+        setMatcher(Matchers.RESOURCE_LOCATION);
     }
 
     @Override

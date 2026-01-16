@@ -98,25 +98,25 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(childNode == null) return;
         final boolean parsed = checkAndParse(args,context);
         final Stack<String> paras = parsed?ParasStack.get():null;
-        if(childNode != null){
-            if(parsed){
-                for(int i=0;i<getParametersLength();i++){
-                    paras.push(args.pollFirst());
-                }
-            }
-            try {
-                childNode.execute(args,context);
-            }finally {
-                if(parsed){
-                    for(int i=0;i<getParametersLength();i++){
-                        args.addFirst(paras.pop());
-                    }
-                }
+
+        if(parsed){
+            for(int i=0;i<getParametersLength();i++){
+                paras.push(args.pollFirst());
             }
         }
-        context.remove(name);
+        try {
+            childNode.execute(args,context);
+        }finally {
+            if(parsed){
+                for(int i=0;i<getParametersLength();i++){
+                    args.addFirst(paras.pop());
+                }
+            }
+            context.remove(name);
+        }
     }
 
     @Nullable

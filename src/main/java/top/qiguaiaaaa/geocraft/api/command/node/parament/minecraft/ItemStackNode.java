@@ -31,22 +31,28 @@ import net.minecraft.command.*;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Stack;
 import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
  */
 public class ItemStackNode extends SmartParameterNode<ItemStack> {
+    private static final ThreadLocal<Stack<String>> SelfParasStack = ThreadLocal.withInitial(Stack::new);
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
 
     public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
@@ -62,15 +68,54 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
         }
     });
 
+    protected boolean allowNBT = true;
+
     public ItemStackNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
+        setMatcher(Matchers.RESOURCE_LOCATION);
+    }
+
+    @Override
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(childNode == null) return;
+        if(!allowNBT){
+            super.execute(args,context);
+            return;
+        }
+        int usedParas = 0;
+        if(checkValid(args,context)){
+            if(!args.get(0).contains("\\{")){
+                usedParas = 3;
+                context.put(name,parseParameter(args,context));
+            } else usedParas = parseStackWithNBT(args,context);
+        }else if(defaultParser!=null){
+            context.put(name,defaultParser.parser(this,context));
+        }
+
+        final Stack<String> paras = usedParas>0?SelfParasStack.get():null;
+        if(paras != null){
+            for(int i=0;i<usedParas;i++){
+                paras.push(args.pollFirst());
+            }
+        }
+
+        try {
+            childNode.execute(args,context);
+        }finally {
+            if(paras != null){
+                for(int i=0;i<usedParas;i++){
+                    args.addFirst(paras.pop());
+                }
+            }
+            context.remove(name);
+        }
     }
 
     @Override
     public int getParametersLength() {
-        return 3;
+        return allowNBT?-1:3; //NBT会包含空格，所以是动态的
     }
 
     @Nonnull
@@ -85,6 +130,39 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
         final int meta = CommandBase.parseInt(args.get(2),-1,Integer.MAX_VALUE);
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),args.getFirst());
         return new ItemStack(item,count,meta);
+    }
+
+    public <T extends List<String> & Deque<String>> int parseStackWithNBT(@Nonnull T args,@Nonnull ExecuteContext context) throws CommandException {
+        final String[] split = args.getFirst().split("\\{",2);
+        if(split.length <= 1) throw new IllegalArgumentException();
+        final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),split[0]);
+
+        final int[] prefix = new int[args.size()]; //长度前缀和
+        prefix[0] = split[1].length() + 1;
+        final StringBuilder builder = new StringBuilder("{").append(split[1]);
+        for(int i=1;i<args.size();i++){
+            prefix[i] = prefix[i-1] + 1 + args.get(i).length();
+            builder.append(" ").append(args.get(i));
+        }
+        NBTTagCompound compound = null;
+        int nbtEndIndex = args.size()-1;
+        for(;nbtEndIndex>=0;nbtEndIndex--){
+            try {
+                compound = JsonToNBT.getTagFromJson(builder.substring(0,prefix[nbtEndIndex]));
+                break;
+            }catch (NBTException e) {
+                if(nbtEndIndex>0) continue;
+                throw new CommandException("commands.give.tagError", e.getMessage());
+            }
+        }
+        assert compound != null;
+        final int countIndex = nbtEndIndex+1;
+        final int count = CommandBase.parseInt(args.get(countIndex),0,Integer.MAX_VALUE);
+        final int meta = CommandBase.parseInt(args.get(countIndex+1),-1,Integer.MAX_VALUE);
+        final ItemStack stack = new ItemStack(item,count,meta);
+        stack.setTagCompound(compound);
+        context.put(name,stack);
+        return countIndex+2;
     }
 
     @Override
