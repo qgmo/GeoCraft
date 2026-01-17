@@ -59,15 +59,11 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
     protected BigInteger parseNumber(@Nonnull String arg) throws NumberInvalidException {
         try {
             final BigInteger integer = new BigInteger(arg);
-            if(minValue != null){
-                if(minValue.compareTo(integer)>0){
-                    throw new NumberInvalidException("commands.generic.num.tooSmall", integer, minValue);
-                }
+            if(minValue != null && minValue.compareTo(integer)>0){
+                throw new NumberInvalidException("commands.generic.num.tooSmall", integer, minValue);
             }
-            if(maxValue != null){
-                if(maxValue.compareTo(integer)<0){
-                    throw new NumberInvalidException("commands.generic.num.tooBig", integer, maxValue);
-                }
+            if(maxValue != null && maxValue.compareTo(integer)<0){
+                throw new NumberInvalidException("commands.generic.num.tooBig", integer, maxValue);
             }
             return integer;
         }catch (NumberFormatException e){
@@ -75,11 +71,11 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
         }
     }
 
-    @Nonnull
-    protected static BigInteger clamp(@Nonnull BigInteger value,@Nonnull BigInteger min,@Nonnull BigInteger max){
-        if(value.compareTo(min)>0){
-            if(value.compareTo(max)<0) return value;
-            else return max;
-        }else return min;
-    }
+//    @Nonnull
+//    protected static BigInteger clamp(@Nonnull BigInteger value,@Nonnull BigInteger min,@Nonnull BigInteger max){
+//        if(value.compareTo(min)>0){
+//            if(value.compareTo(max)<0) return value;
+//            else return max;
+//        }else return min;
+//    }
 }

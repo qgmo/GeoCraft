@@ -38,14 +38,22 @@ import java.util.function.Function;
  */
 public final class FastParameterNodeBuilder<P, T extends ParameterNode<P>> extends FunctionalParameterNodeBuilder<P,T,FastParameterNodeBuilder<P,T>>{
 
-    public FastParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public FastParameterNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name, builder);
+    }
+
+    public FastParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
+        super(parentName,childName,builder);
     }
 
     public final static class FastSmart<P, T extends ParameterNode<P> & ISmartNode> extends FunctionalSmart<P,T, FastSmart<P,T>> {
 
-        public FastSmart(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        public FastSmart(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
             super(name, builder);
+        }
+
+        public FastSmart(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
+            super(parentName, childName, builder);
         }
     }
 }

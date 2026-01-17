@@ -116,6 +116,14 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     }
 
     @Nonnull
+    public CommandBuilder addAlias(@Nonnull final List<String> aliases){
+        for (String alias : aliases) {
+            addAlias(alias);
+        }
+        return this;
+    }
+
+    @Nonnull
     @Override
     public CommandNode build(){
         final CommandNode command = new CommandNode(name);

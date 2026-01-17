@@ -25,12 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -38,29 +41,24 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class NumberNode<T extends Number> extends SmartParameterNode<T> {
-    protected T minValue;
-    protected T maxValue;
+public class DimensionNode extends SmartParameterNode<World> {
+    public static final DefaultParser<World> DEFAULT_PARSER = (node, context) -> context.getWorld();
+    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
+            (args,context) -> Arrays.stream(DimensionManager.getWorlds()).map(world -> String.valueOf(world.provider.getDimension())).collect(Collectors.toList());
 
-    public NumberNode(@Nonnull String name) {
+    public DimensionNode(@Nonnull final String name) {
         super(name);
-        setSuggestProvider(new NumberSuggestProvider());
-    }
-
-    public void setMinValue(@Nonnull T minValue) {
-        this.minValue = minValue;
-    }
-
-    public void setMaxValue(@Nonnull T maxValue) {
-        this.maxValue = maxValue;
+        setDefaultParser(DEFAULT_PARSER);
+        setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 
     @Override
@@ -68,29 +66,24 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
         return 1;
     }
 
-    protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
+    @Nonnull
+    @Override
+    public Class<World> getType() {
+        return World.class;
+    }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
-        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
-            return false;
-        }
+    public <T extends List<String> & Deque<String>> World parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        final int dimension = CommandBase.parseInt(args.get(0));
+        final World world = DimensionManager.getWorld(dimension);
+        if(world == null) throw new CommandException("api.geo.command.parameter.dimension.not_found",dimension);
+        return world;
+    }
 
-        final String arg = args.get(0);
-        parseNumber(arg); //如果失败这里会炸
-
+    @Override
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
+        CommandBase.parseInt(args.get(0));
         return true;
-    }
-
-    @Override
-    public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
-        return parseNumber(args.get(0));
-    }
-
-    protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
-        @Override
-        public List<String> apply(List<String> strings, SuggestContext context) {
-            return Collections.singletonList(String.valueOf(0));
-        }
     }
 }

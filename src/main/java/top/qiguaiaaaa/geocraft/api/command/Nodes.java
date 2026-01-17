@@ -31,6 +31,8 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.registry.EntityEntry;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
@@ -45,6 +47,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralsNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.StringNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.EntitySelectorNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.ItemStackNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
@@ -55,7 +58,9 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.BooleanNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.UUIDNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemStackNode;
 import top.qiguaiaaaa.geocraft.api.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
@@ -186,6 +191,8 @@ public final class Nodes {
         return new FastParameterNodeBuilder.FastSmart<>(name,UUIDNode::new);
     }
 
+    // Minecraft
+
     @Nonnull
     public static MinecraftVec3NodeBuilder.BlockPos blockPos(@Nonnull final String name){
         return new MinecraftVec3NodeBuilder.BlockPos(name);
@@ -204,6 +211,32 @@ public final class Nodes {
     @Nonnull
     public static FastParameterNodeBuilder.FastSmart<Item, ItemSelectorNode> item(@Nonnull final String name){
         return new FastParameterNodeBuilder.FastSmart<>(name,ItemSelectorNode::new);
+    }
+
+    @Nonnull
+    public static ItemStackNodeBuilder itemStack(@Nonnull final String name){
+        return new ItemStackNodeBuilder(name);
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$count(@Nonnull final String itemStackNodeName){
+        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"count"))
+                .min(1)
+                .decorate((count,context) ->{
+                    context.get(itemStackNodeName,ItemStackNode.class).setCount(count);
+                    return count;
+                });
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$meta(@Nonnull final String itemStackNodeName){
+        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"meta"))
+                .min(0)
+                .max((int) Short.MAX_VALUE)
+                .decorate((meta,context)->{
+                    context.get(itemStackNodeName,ItemStackNode.class).setItemDamage(meta);
+                    return meta;
+                });
     }
 
     @Nonnull
@@ -239,6 +272,11 @@ public final class Nodes {
     @Nonnull
     public static EntitySelectorNodeBuilder players(@Nonnull final String name){
         return entities(name,EntityPlayer.class);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> dimension(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,DimensionNode::new);
     }
 
     // Forge

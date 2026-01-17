@@ -25,46 +25,53 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
+package top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
+import net.minecraft.item.ItemStack;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.SmartParameterNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemStackNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 
 import javax.annotation.Nonnull;
-import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
-public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder.FunctionalSmart<N, T,NumberNodeBuilder<N,T>> {
-    protected N minValue, maxValue;
+public class ItemStackNodeBuilder extends SmartParameterNodeBuilder<ItemStack,ItemStackNode,ItemStackNodeBuilder> {
+    protected boolean allowNBT = true;
+    protected int count = 1;
+    protected short meta = 0;
 
-    public NumberNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
-        super(name, builder);
-    }
-
-    public NumberNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
-        super(parentName,childName,builder);
+    public ItemStackNodeBuilder(@Nonnull String name) {
+        super(name);
     }
 
     @Nonnull
-    public NumberNodeBuilder<N, T> min(final N minValue) {
-        this.minValue = minValue;
+    public ItemStackNodeBuilder allowNBT(final boolean doAllow){
+        this.allowNBT = doAllow;
         return this;
     }
 
     @Nonnull
-    public NumberNodeBuilder<N, T> max(final N maxValue) {
-        this.maxValue = maxValue;
+    public ItemStackNodeBuilder count(final int count){
+        this.count = count;
+        return this;
+    }
+
+    @Nonnull
+    public ItemStackNodeBuilder meta(final short meta){
+        this.meta = meta;
         return this;
     }
 
     @Nonnull
     @Override
-    public T build() {
-        final T instance = super.build();
-        if (maxValue != null) instance.setMaxValue(maxValue);
-        if (minValue != null) instance.setMinValue(minValue);
-        return instance;
+    protected ItemStackNode buildInstance() {
+        final ItemStackNode node = new ItemStackNode(name);
+        if(!allowNBT) node.setMatcher(Matchers.RESOURCE_LOCATION); //Smart 的 build() 可以覆盖
+        node.setAllowNBT(allowNBT);
+        node.setCount(count);
+        node.setMeta(meta);
+        return node;
     }
 }

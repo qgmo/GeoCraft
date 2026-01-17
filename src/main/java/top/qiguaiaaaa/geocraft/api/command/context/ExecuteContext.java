@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.context;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
@@ -63,12 +64,12 @@ public final class ExecuteContext extends CommandContext{
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull String key){
+    public <T> T get(@Nonnull final String key){
         return (T) contexts.computeIfAbsent(key, OnNoContextFound);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull String key, @Nonnull Class<ParameterNode<T>> paraType){
+    public <T> T get(@Nonnull final String key, @Nonnull Class<? extends ParameterNode<T>> paraType){
         return (T) contexts.computeIfAbsent(key, OnNoContextFound);
     }
 
@@ -95,5 +96,13 @@ public final class ExecuteContext extends CommandContext{
         } else {
             throw new PlayerNotFoundException("commands.generic.player.unspecified");
         }
+    }
+
+    public void notifyCommandListener(@Nonnull final String translationKey,final Object... translationArgs){
+        CommandBase.notifyCommandListener(sender,command,translationKey,translationArgs);
+    }
+
+    public void notifyCommandListener(final int flags,@Nonnull final String translationKey,final Object... translationArgs){
+        CommandBase.notifyCommandListener(sender,command,flags,translationKey,translationArgs);
     }
 }

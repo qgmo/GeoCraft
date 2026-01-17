@@ -42,8 +42,12 @@ public abstract class SmartParameterNodeBuilder<P, T extends ParameterNode<P> & 
 
     protected BiPredicate<List<String>, CommandContext> matcher;
 
-    public SmartParameterNodeBuilder(@Nonnull String name) {
+    public SmartParameterNodeBuilder(@Nonnull final String name) {
         super(name);
+    }
+
+    public SmartParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        super(parentName,childName);
     }
 
     @Nonnull

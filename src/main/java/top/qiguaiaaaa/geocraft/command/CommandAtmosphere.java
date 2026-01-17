@@ -29,7 +29,14 @@ package top.qiguaiaaaa.geocraft.command;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.command.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandResultStats;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.WrongUsageException;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -38,6 +45,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.storage.WorldInfo;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.GeoCraft;
@@ -52,13 +61,14 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereData;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.atmosphere.tracker.InformationLoggingTracker;
-import top.qiguaiaaaa.geocraft.api.command.Nodes;
 import top.qiguaiaaaa.geocraft.api.command.NumberType;
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.RelayExecuteNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.EntitySelectorNode;
-import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
 import top.qiguaiaaaa.geocraft.api.property.FluidProperty;
 import top.qiguaiaaaa.geocraft.api.property.GeographyProperty;
@@ -77,146 +87,348 @@ import top.qiguaiaaaa.geocraft.geography.atmosphere.tracker.TemperatureTracker;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static top.qiguaiaaaa.geocraft.api.command.Nodes.*;
-import static top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction.notifyCommandListener;
 
 public final class CommandAtmosphere {
     public static final String ATMOSPHERE_COMMAND_NAME = "atmosphere";
+    public static final String PERMISSION_NODE = "qg.geocraft.command.atmosphere";
     public static final List<String> ALIASES = new ArrayList<>(Collections.singleton("大气"));
 
     public String getUsage(ICommandSender sender) {
         return "geocraft.command.atmosphere.usage";
     }
 
-    public static ICommand create(){
+    static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> SetConsumer = new HashMap<>();
+    static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> AddConsumer = new HashMap<>();
+    static final Map<String, Consumer<AtmosphereCommandContext>> QueryConsumer = new HashMap<>();
+    static boolean inited = false;
+
+    public static void init(){
+        if(inited) return;
+        initSet();
+        initAdd();
+        initQuery();
+        inited = true;
+    }
+
+    private static void initSet(){
+        SetConsumer.put("steam",(context,value)->{
+            final FluidState steam = (context.layer instanceof AtmosphereLayer)?((AtmosphereLayer)context.layer).getSteam():null;
+            if(steam == null){
+                context.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            steam.setAmount(value.intValue());
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.set.steam", context.x, context.y, context.z, value.intValue());
+        });
+        SetConsumer.put("water",(context,value)->{
+            final FluidState water = context.layer.getWater();
+            if(water == null){
+                context.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            water.setAmount(value.intValue());
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.set.water", context.x,context.y,context.z,value.intValue());
+        });
+        SetConsumer.put("temp",(context,value)->{
+            context.layer.getTemperature().set(value.floatValue());
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.set.temp",context.x,context.y,context.z, value.floatValue());
+        });
+        SetConsumer.put("debug",(context,value)->{
+            if(!(context.atmosphere instanceof SurfaceAtmosphere)){
+                context.exception = new CommandException("geocraft.command.atmosphere.unknown");
+                return;
+            }
+            final SurfaceAtmosphere a = (SurfaceAtmosphere) context.atmosphere;
+            a.setDebug(value>0);
+            if(value>0) context.execute.notifyCommandListener("geocraft.command.atmosphere.set.debug",context.x,context.z,a.isDebug());
+        });
+    }
+
+    private static void initAdd(){
+        AddConsumer.put("steam",(context,value)->{
+            final FluidState steam = (context.layer instanceof AtmosphereLayer)?((AtmosphereLayer)context.layer).getSteam():null;
+            if(steam == null){
+                context.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            if(steam.fill(value.intValue(),true) == 0){
+                context.exception = new NumberInvalidException("commands.generic.num.tooSmall", value, -steam.getFluidAmount());
+                return;
+            }
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.water",context.x,context.y,context.z,steam);
+        });
+        AddConsumer.put("water",(context,value)->{
+            final FluidState water = context.layer.getWater();
+            if(water == null){
+                context.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            if(water.fill(value.intValue(),true) == 0){
+                context.exception = new NumberInvalidException("commands.generic.num.tooSmall", value, -water.getFluidAmount());
+                return;
+            }
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.water",context.x,context.y,context.z,water);
+        });
+        AddConsumer.put("temp",(context,value)->{
+            context.layer.getTemperature().add(value);
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.temp",context.x,context.y,context.z, context.layer.getTemperature());
+        });
+        AddConsumer.put("heat",(context,value)->{
+            context.layer.putHeat(value,context.pos);
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.temp",context.x,context.y,context.z, context.layer.getTemperature());
+        });
+    }
+
+    private static void initQuery(){
+        QueryConsumer.put("block_temp",context->{
+            context.accessor.setNotAir(context.execute.getWorld().getBlockState(context.pos).getMaterial() != Material.AIR);
+            final double temp = context.accessor.getTemperature();
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.query.block_temp",context.x,context.y,context.z,temp);
+            context.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)temp);
+        });
+        QueryConsumer.put("steam",ctx->{
+            final FluidState steam = (ctx.layer instanceof AtmosphereLayer)?((AtmosphereLayer)ctx.layer).getSteam():null;
+            if(steam == null){
+                ctx.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.steam",ctx.x,ctx.y,ctx.z,steam);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,steam.getFluidAmount());
+        });
+        QueryConsumer.put("water",ctx->{
+            final FluidState water = ctx.layer.getWater();
+            if(water == null){
+                ctx.exception = new CommandException("geocraft.command.atmosphere.property.null");
+                return;
+            }
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.water",ctx.x,ctx.y,ctx.z,water);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,water.getFluidAmount());
+        });
+        QueryConsumer.put("temp",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.temp",ctx.x,ctx.y,ctx.z,ctx.layer.getTemperature()));
+        QueryConsumer.put("ground_temp",ctx->{
+            final TemperatureState state = ctx.atmosphere.getUnderlying(ctx.pos).getTemperature();
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.ground_temp", ctx.x, ctx.z, state);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) state.get());
+        });
+        QueryConsumer.put("wind",ctx->{
+            final Vec3d wind = ctx.accessor.getWind();
+            for(EnumFacing facing:EnumFacing.VALUES){
+                ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.wind."+facing.getName(), ctx.x,ctx.y, ctx.z, wind.dotProduct(new Vec3d(facing.getDirectionVec())));
+            }
+        });
+        QueryConsumer.put("underlying",ctx->{
+            final UnderlyingLayer underlying1 = ctx.atmosphere.getUnderlying(ctx.pos);
+            final SurfaceUnderlying underlying;
+            if(underlying1 instanceof SurfaceUnderlying){
+                underlying = (SurfaceUnderlying) underlying1;
+            }else{
+                ctx.exception = new CommandException("geocraft.command.atmosphere.unknown_underlying");
+                return;
+            }
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.underlying",
+                    ctx.x,
+                    underlying.getAltitude(),
+                    ctx.z,
+                    underlying.getHeatCapacity(),
+                    underlying.平均返照率);
+        });
+        QueryConsumer.put("heat_volume",ctx->{
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.heat_volume",ctx.x,ctx.y,ctx.z,ctx.layer.getHeatCapacity());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) ctx.layer.getHeatCapacity());
+        });
+        QueryConsumer.put("water_pressure",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.water_pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getWaterPressure()*0.01));
+        QueryConsumer.put("pressure",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getPressure()*0.01));
+    }
+
+    @Nonnull
+    public static ICommand create(@Nonnull final MinecraftServer server){
+        init();
         return new CommandBuilder(ATMOSPHERE_COMMAND_NAME)
                 .requirePermissionLevel(2)
+                .passIfNotPlayer(true)
+                .requirePermission(PERMISSION_NODE)
+                .addAlias(server.isSinglePlayer() && FMLCommonHandler.instance().getSide() == Side.CLIENT? "zh_cn".equals(
+                        Minecraft.getMinecraft().getLanguageManager().getCurrentLanguage().getLanguageCode()
+                )?ALIASES:Collections.emptyList():Collections.emptyList())
                 .smart()
-                .literal("set").then(
-                        string("property").suggest(
-                                (args, context) -> {
-                                    List<String> res = getPropertyList();
-                                    res.addAll(Arrays.asList("water","temp","ground_temp"));
-                                    return res;
-                                }).then(number("value", NumberType.DOUBLE).then(
-                                        blockPos("pos").asOptional().then(
-                                                relay(CommandAtmosphere::processAtmosphereInfo).then(
-                                                        execute(CommandAtmosphere::set)
-                                                ).after(CommandAtmosphere::afterProcessAtmosphereInfo)
-                                        )
-                        ))).done()
-                .literal("stop").then(
+                .append(buildSetCommand()).done()
+                .append(buildStopCommand()).done()
+                .append(buildResetCommand()).done()
+                .append(buildAddCommand()).done()
+                .append(buildQueryCommand()).done()
+                .append(buildUtilCommand()).done()
+                .append(buildTrackCommand()).done()
+                .execute(buildDefaultExecutor()).done()
+                .build();
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildSetCommand(){
+        return literal("set").then(string("property").suggest(
+                (args,context) -> {
+                    List<String> res = getPropertyList();
+                    res.addAll(SetConsumer.keySet());
+                    return res;
+                }).then(number("value", NumberType.DOUBLE).then(
+                        blockPos("pos").asOptional().then(
+                                process(CommandAtmosphere::set)
+                        )
+                )
+        ));
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildStopCommand(){
+        return literal("stop").then(
+                dimension("world").asOptional().then(
                         execute(((args, context) -> {
-                            final World world = context.getWorld();
+                            final World world = context.get("world", DimensionNode.class);
                             final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
                             if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
                             system.setStop(!system.isStopped());
-                            notifyCommandListener(context, "geocraft.command.atmosphere.reset.temp",system.isStopped() , 0, 0);
+                            if(system.isStopped()) context.notifyCommandListener("geocraft.command.atmosphere.stop.stopped",world.provider.getDimension());
+                            else context.notifyCommandListener("geocraft.command.atmosphere.stop.running",world.provider.getDimension());
                         }))
-                ).done()
-                .literal("reset").then(
-                        string("property").allow("temp").then(
-                                blockPos("pos").asOptional().then(
-                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                execute((args, context) -> {
-                                                    final World world = context.getWorld();
-                                                    final Atmosphere atmosphere = context.get("atm");
-                                                    final BlockPos pos = context.getBlockPos("pos");
-                                                    final int x = pos.getX(),z = pos.getZ();
-                                                    final String property = context.get("property");
+                )
+        );
+    }
 
-                                                    if("temp".equalsIgnoreCase(property)){
-                                                        if(!world.isAreaLoaded(pos,1)){
-                                                            throw new CommandException("geocraft.command.chunk_error.unloaded",x,z);
-                                                        }
-                                                        final Chunk chunk = world.getChunk(pos);
-                                                        if(atmosphere instanceof SurfaceAtmosphere){
-                                                            ((SurfaceAtmosphere)atmosphere).重置温度(chunk);
-                                                        }else throw new CommandException("geocraft.command.atmosphere.unknown");
-                                                        notifyCommandListener(context,"geocraft.command.atmosphere.reset.temp",x,z, atmosphere.getAtmosphereTemperature(pos));
-                                                        return;
-                                                    }
-                                                    throw new WrongUsageException("geocraft.command.atmosphere.reset.usage");
-                                                })
-                                        )
-                                )
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildResetCommand(){
+        return literal("reset").then(
+                string("property").allow("temp").then(
+                        blockPos("pos").asOptional().then(
+                                process((args, context) -> {
+                                    final World world = context.getWorld();
+                                    final Atmosphere atmosphere = context.get("atm");
+                                    final BlockPos pos = context.getBlockPos("pos");
+                                    final int x = pos.getX(),z = pos.getZ();
+                                    final String property = context.get("property");
+
+                                    if("temp".equalsIgnoreCase(property)){
+                                        if(!world.isAreaLoaded(pos,1)){
+                                            throw new CommandException("geocraft.command.chunk_error.unloaded",x,z);
+                                        }
+                                        final Chunk chunk = world.getChunk(pos);
+                                        if(atmosphere instanceof SurfaceAtmosphere){
+                                            ((SurfaceAtmosphere)atmosphere).重置温度(chunk);
+                                        }else throw new CommandException("geocraft.command.atmosphere.unknown");
+                                        context.notifyCommandListener("geocraft.command.atmosphere.reset.temp",x,z, atmosphere.getAtmosphereTemperature(pos));
+                                        return;
+                                    }
+                                    throw new WrongUsageException("geocraft.command.atmosphere.reset.usage");
+                                })
                         )
-                ).done()
-                .literal("add").then(string("property").suggest(
-                        (args,context)->{
-                            List<String> res = getPropertyList();
-                            res.addAll(Arrays.asList("steam","water","temp","heat"));
-                            return res;
-                        }).then(number("value",NumberType.DOUBLE).then(
-                                blockPos("pos").asOptional().then(
-                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                execute(CommandAtmosphere::add)
-                                        )
-                                )
-                        )
-                )).done()
-                .literal("query").then(string("property").suggest(
-                        (strings, context) -> Arrays.asList("water","steam","temp","water_pressure","pressure","ground_temp","block_temp","wind","underlying","heat_volume")
-                ).then(
+                )
+        );
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildAddCommand(){
+        return literal("add").then(string("property").suggest(
+                (args,context)->{
+                    List<String> res = getPropertyList();
+                    res.addAll(AddConsumer.keySet());
+                    return res;
+                }).then(number("value",NumberType.DOUBLE).then(
                         blockPos("pos").asOptional().then(
                                 relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                        execute(CommandAtmosphere::query)
+                                        execute(CommandAtmosphere::add)
                                 )
                         )
-                )).done()
-                .literal("util").then(
-                        string("util_name")
-                                .allow("sun","property","block_info","storage")
-                                .then(blockPos("pos").asOptional().then(
-                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                execute(CommandAtmosphere::util)
-                                        )))
-                ).done()
-                .literal("track").then(
-                        string("property").suggest(
-                                (args, context) -> {
-                                    List<String> res = getPropertyList();
-                                    res.addAll(Arrays.asList("temp","water","steam"));
-                                    return res;
-                                }).then(integer("time").min(1).then(
-                                        string("file_name").suggest(
-                                                (strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv")
-                                        ).then(
-                                                blockPos("pos").then(
-                                                        relay(CommandAtmosphere::processAtmosphereInfo,CommandAtmosphere::afterProcessAtmosphereInfo).then(
-                                                                execute(CommandAtmosphere::track)
-                                                        )
-                                                )
+                )
+        ));
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
+        return literal("query").then(string("property").suggest(
+                new ArrayList<>(QueryConsumer.keySet())
+        ).then(
+                blockPos("pos").asOptional().then(
+                        process(CommandAtmosphere::query)
+                )
+        ));
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildUtilCommand(){
+        return literal("util").then(
+                string("util_name")
+                        .allow("sun","property","block_info","storage")
+                        .then(blockPos("pos").asOptional().then(
+                                process(CommandAtmosphere::util)
+                                )
+                        )
+        );
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildTrackCommand(){
+        return literal("track").then(
+                string("property").suggest(
+                        (args, context) -> {
+                            List<String> res = getPropertyList();
+                            res.addAll(Arrays.asList("temp","water","steam"));
+                            return res;
+                        }).then(integer("time").min(1).then(
+                                string("file_name").suggest(
+                                        (strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv")
+                                ).then(
+                                        blockPos("pos").then(
+                                                process(CommandAtmosphere::track)
                                         )
                                 )
                         )
-                ).done()
-                .execute(((args, context) -> {
-                    final ICommandSender sender = context.getSender();
-                    final World world = sender.getEntityWorld();
-                    final BlockPos pos = sender.getPosition();
-                    final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos.getX(),pos.getY(),pos.getZ());
-                    final Atmosphere atmosphere = getAtmosphere(accessor);
-                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic", TextFormatting.AQUA,pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
-                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.1",
-                            accessor.getPressure(),
-                            accessor.getWaterPressure(),
-                            accessor.getTemperature()
-                    );
-                    notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.2",accessor.getWind());
-                    for(Layer layer = atmosphere.getBottomLayer(); layer != null; layer = layer.getUpperLayer()){
-                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.3",
-                                layer.getTagName(),layer.getBeginY(),layer.getBeginY()+layer.getDepth());
-                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.4",layer.getTemperature());
-                        final FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
-                        final FluidState water = layer.getWater();
-                        notifyCommandListener(context, "geocraft.command.atmosphere.query.basic.5",
-                                steam==null?"NULL":steam,water==null?"NULL":water);
-                    }
-                })).done()
-                .build();
+                )
+        );
+    }
+
+    @Nonnull
+    public static CommandRunFunction buildDefaultExecutor(){
+        return ((args, context) -> {
+            final ICommandSender sender = context.getSender();
+            final World world = sender.getEntityWorld();
+            final BlockPos pos = sender.getPosition();
+            final IAtmosphereAccessor accessor = getAtmosphereAccessor(world,pos.getX(),pos.getY(),pos.getZ());
+            final Atmosphere atmosphere = getAtmosphere(accessor);
+            context.notifyCommandListener("geocraft.command.atmosphere.query.basic", TextFormatting.AQUA,pos.getX(), Altitude.get物理海拔(pos.getY()),pos.getZ());
+            context.notifyCommandListener("geocraft.command.atmosphere.query.basic.1",
+                    accessor.getPressure(),
+                    accessor.getWaterPressure(),
+                    accessor.getTemperature());
+            context.notifyCommandListener("geocraft.command.atmosphere.query.basic.2",accessor.getWind());
+            for(Layer layer = atmosphere.getBottomLayer(); layer != null; layer = layer.getUpperLayer()){
+                context.notifyCommandListener("geocraft.command.atmosphere.query.basic.3",
+                        layer.getTagName(),layer.getBeginY(),layer.getBeginY()+layer.getDepth());
+                context.notifyCommandListener("geocraft.command.atmosphere.query.basic.4",layer.getTemperature());
+                final FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
+                final FluidState water = layer.getWater();
+                context.notifyCommandListener("geocraft.command.atmosphere.query.basic.5",
+                        steam==null?"NULL":steam,water==null?"NULL":water);
+            }
+        });
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder process(@Nonnull final CommandRunFunction func){
+        return relay(CommandAtmosphere::processAtmosphereInfo).then(
+                execute(func)
+        ).after(CommandAtmosphere::afterProcessAtmosphereInfo);
     }
 
     static void processAtmosphereInfo(@Nonnull final List<String> args, @Nonnull final ExecuteContext context) throws CommandException {
@@ -229,6 +441,8 @@ public final class CommandAtmosphere {
         context.put("accessor",accessor);
         context.put("atm",atmosphere);
         context.put("layer",layer);
+        context.notifyCommandListener("geocraft.command.atmosphere.query.layer_inf",layer.getTagName(),
+                layer.getBeginY(),layer.getBeginY()+layer.getDepth());
     }
 
     static void afterProcessAtmosphereInfo(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) {
@@ -238,60 +452,29 @@ public final class CommandAtmosphere {
     }
 
     static void set(@Nonnull final List<String> args, @Nonnull final ExecuteContext context) throws CommandException{
-        double value = context.getDouble("value");
-        final BlockPos pos = context.getBlockPos("pos");
-        final int x = pos.getX(),y = pos.getY(),z = pos.getZ();
-        final IAtmosphereAccessor accessor = context.get("accessor");
-        final Atmosphere atmosphere = context.get("atm");
-        final Layer layer = context.get("layer");
+        final double value = context.getDouble("value");
         final String name = context.get("property");
-        notifyCommandListener(context,"geocraft.command.atmosphere.query.layer_inf",layer.getTagName(),
-                layer.getBeginY(),layer.getBeginY()+layer.getDepth());
-        if("steam".equalsIgnoreCase(name)){
-            final FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
-            if(steam == null){
-                throw new CommandException("geocraft.command.atmosphere.property.null");
-            }
-            steam.setAmount((int)value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.set.steam",x,pos.getY(),z,(int) value);
+        final BiConsumer<AtmosphereCommandContext,Double> consumer = SetConsumer.get(name.toLowerCase(Locale.ROOT));
+        if(consumer != null){
+            final AtmosphereCommandContext atmosphereCommandContext = new AtmosphereCommandContext(context);
+            consumer.accept(atmosphereCommandContext,value);
+            if(atmosphereCommandContext.exception != null) throw atmosphereCommandContext.exception;
             return;
         }
-        if("water".equalsIgnoreCase(name)){
-            FluidState water = layer.getWater();
-            if(water == null){
-                throw new CommandException("geocraft.command.atmosphere.property.null");
-            }
-            water.setAmount((int)value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.set.water",x,pos.getY(),z,(int) value);
-            return;
-        }
-        if("temp".equalsIgnoreCase(name)){
-            layer.getTemperature().set((float) value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.set.temp",x,pos.getY(),z, (float) value);
-            return;
-        }
-        if("debug".equalsIgnoreCase(name)){
-            if(!(atmosphere instanceof SurfaceAtmosphere)){
-                throw new CommandException("geocraft.command.atmosphere.unknown");
-            }
-            SurfaceAtmosphere a = (SurfaceAtmosphere) atmosphere;
-            a.setDebug(value>0);
-            if(value>0) notifyCommandListener(context,"geocraft.command.atmosphere.set.debug",x,z,a.isDebug());
-            return;
-        }
-        ResourceLocation location = new ResourceLocation(name);
-        IGeographyProperty property= getProperty(location);
-        GeographyState state = getState(property,layer);
+
+        final BlockPos pos = context.getBlockPos("pos");
+        final Layer layer = context.get("layer");
+        final GeographyState state = getState(getProperty(new ResourceLocation(name)),layer);
         if(state instanceof FluidState){
-            FluidState gas = (FluidState) state;
+            final FluidState gas = (FluidState) state;
             gas.setAmount((int) value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.set.gas",x,pos.getY(),z,gas.getFluidAmount());
+            context.notifyCommandListener("geocraft.command.atmosphere.set.gas",pos.getX(),pos.getY(),pos.getZ(),gas.getFluidAmount());
             return;
         }
         if(state instanceof TemperatureState){
-            TemperatureState temperature = (TemperatureState) state;
+            final TemperatureState temperature = (TemperatureState) state;
             temperature.set((float) value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.set.temp2",x,pos.getY(),z,temperature.get());
+            context.notifyCommandListener("geocraft.command.atmosphere.set.temp2",pos.getX(),pos.getY(),pos.getZ(),temperature.get());
             return;
         }
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
@@ -299,132 +482,42 @@ public final class CommandAtmosphere {
 
     static void add(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException {
         final double value = context.getDouble("value");
-        final BlockPos pos = context.getBlockPos("pos");
-        final int x = pos.getX(),y = pos.getY(),z = pos.getZ();
-        final Layer layer = context.get("layer");
-        notifyCommandListener(context,"geocraft.command.atmosphere.query.layer_inf",layer.getTagName(),
-                layer.getBeginY(),layer.getBeginY()+layer.getDepth());
-
         final String name = context.get("property");
-        if("steam".equalsIgnoreCase(name)){
-            FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
-            if(steam == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-            if(steam.fill((int) value,true) == 0){
-                throw new NumberInvalidException("commands.generic.num.tooSmall", value, -steam.getFluidAmount());
-            }
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.water",x,pos.getY(),z,steam);
+        final BiConsumer<AtmosphereCommandContext,Double> consumer = AddConsumer.get(name.toLowerCase(Locale.ROOT));
+        if(consumer != null){
+            final AtmosphereCommandContext atmosphereCommandContext = new AtmosphereCommandContext(context);
+            consumer.accept(atmosphereCommandContext,value);
+            if(atmosphereCommandContext.exception != null) throw atmosphereCommandContext.exception;
             return;
         }
-        if("water".equalsIgnoreCase(name)){
-            FluidState water = layer.getWater();
-            if(water == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-            if(water.fill((int) value,true) == 0){
-                throw new NumberInvalidException("commands.generic.num.tooSmall", value, -water.getFluidAmount());
-            }
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.water",x,pos.getY(),z,water);
-            return;
-        }
-        if("temp".equalsIgnoreCase(name)){
-            layer.getTemperature().add(value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.temp",x,pos.getY(),z, layer.getTemperature());
-            return;
-        }
-        if("heat".equalsIgnoreCase(name)){
-            layer.putHeat(value,new BlockPos(x,pos.getY(),z));
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.temp",x,pos.getY(),z, layer.getTemperature());
-            return;
-        }
-        final ResourceLocation location = new ResourceLocation(name);
-        final IGeographyProperty property= getProperty(location);
-        final GeographyState state = getState(property,layer);
+
+        final BlockPos pos = context.getBlockPos("pos");
+        final int x = pos.getX();
+        final int z = pos.getZ();
+        final Layer layer = context.get("layer");
+        final GeographyState state = getState(getProperty(new ResourceLocation(name)),layer);
         if(state instanceof FluidState){
             FluidState gas = (FluidState) state;
             gas.fill((int) value,true);
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.gas",x,pos.getY(),z,gas.getFluidAmount());
+            context.notifyCommandListener("geocraft.command.atmosphere.add.gas",x,pos.getY(),z,gas.getFluidAmount());
             return;
         }
         if(state instanceof TemperatureState){
             TemperatureState temperature = (TemperatureState) state;
             temperature.add(value);
-            notifyCommandListener(context,"geocraft.command.atmosphere.add.temp2",x,pos.getY(),z,temperature.get());
+            context.notifyCommandListener("geocraft.command.atmosphere.add.temp2",x,pos.getY(),z,temperature.get());
             return;
         }
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
     }
 
     static void query(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) throws CommandException{
-        final BlockPos pos = context.getBlockPos("pos");
-        final int x = pos.getX(),y=pos.getY(),z = pos.getZ();
-        final IAtmosphereAccessor accessor = context.get("accessor");
         final String name = context.get("property");
-        final World world = context.getWorld();
-        final ICommandSender sender = context.getSender();
-        final Layer layer = context.get("layer");
-        final Atmosphere atmosphere = context.get("atm");
-
-        if("block_temp".equalsIgnoreCase(name)){
-            accessor.setNotAir(world.getBlockState(new BlockPos(x,y,z)).getMaterial() != Material.AIR);
-            final double temp = accessor.getTemperature();
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.block_temp",x,y,z,temp);
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)temp);
-            return;
-        }
-
-        notifyCommandListener(context,"geocraft.command.atmosphere.query.layer_inf",layer.getTagName(),
-                layer.getBeginY(),layer.getBeginY()+layer.getDepth());
-        if("steam".equalsIgnoreCase(name)){
-            FluidState steam = (layer instanceof AtmosphereLayer)?((AtmosphereLayer)layer).getSteam():null;
-            if(steam == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.steam",x,y,z,steam);
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,steam.getFluidAmount());
-            return;
-        }
-        if("water".equalsIgnoreCase(name)){
-            FluidState water = layer.getWater();
-            if(water == null) throw new CommandException("geocraft.command.atmosphere.property.null");
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.water",x,y,z,water);
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,water.getFluidAmount());
-            return;
-        }
-        if("temp".equalsIgnoreCase(name)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.temp",x,y,z,layer.getTemperature() );
-            return;
-        }
-        if("ground_temp".equalsIgnoreCase(name)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.ground_temp",x,z,atmosphere.getUnderlying(pos).getTemperature());
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) atmosphere.getUnderlying(pos).getTemperature().get());
-            return;
-        }
-        if("wind".equalsIgnoreCase(name)){
-            Vec3d wind = accessor.getWind();
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.north",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.NORTH.getDirectionVec())));
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.east",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.EAST.getDirectionVec())));
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.south",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.SOUTH.getDirectionVec())));
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.west",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.WEST.getDirectionVec())));
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.west",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.UP.getDirectionVec())));
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.wind.west",x,y,z,wind.dotProduct(new Vec3d(EnumFacing.DOWN.getDirectionVec())));
-            return;
-        }
-        if("underlying".equalsIgnoreCase(name)){
-            UnderlyingLayer underlying1 = atmosphere.getUnderlying(pos);
-            SurfaceUnderlying underlying;
-            if(underlying1 instanceof SurfaceUnderlying){
-                underlying = (SurfaceUnderlying) underlying1;
-            }else throw new CommandException("geocraft.command.atmosphere.unknown_underlying");
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.underlying",x,underlying.getAltitude(),z,underlying.getHeatCapacity(),underlying.平均返照率);
-            return;
-        }
-        if("heat_volume".equalsIgnoreCase(name)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.heat_volume",x,y,z,layer.getHeatCapacity());
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) layer.getHeatCapacity());
-            return;
-        }
-        if("water_pressure".equalsIgnoreCase(name)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.water_pressure",x,y,z,accessor.getWaterPressure()*0.01);
-            return;
-        }
-        if("pressure".equalsIgnoreCase(name)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.query.pressure",x,y,z,accessor.getPressure()*0.01);
+        final Consumer<AtmosphereCommandContext> consumer = QueryConsumer.get(name.toLowerCase(Locale.ROOT));
+        if(consumer != null){
+            final AtmosphereCommandContext atmosphereCommandContext = new AtmosphereCommandContext(context);
+            consumer.accept(atmosphereCommandContext);
+            if(atmosphereCommandContext.exception != null) throw atmosphereCommandContext.exception;
             return;
         }
         throw new WrongUsageException("geocraft.command.atmosphere.query.usage");
@@ -438,17 +531,17 @@ public final class CommandAtmosphere {
         final IAtmosphereAccessor accessor = context.get("accessor");
 
         if("sun".equalsIgnoreCase(util)){
-            notifyCommandListener(context,"geocraft.command.atmosphere.util.sun");
-            notifyCommandListener(context,"geocraft.command.atmosphere.util.sun.1",
+            context.notifyCommandListener("geocraft.command.atmosphere.util.sun");
+            context.notifyCommandListener("geocraft.command.atmosphere.util.sun.1",
                     AtmosphereUtil.getSunHeight(info).getDegree());
-            notifyCommandListener(context,"geocraft.command.atmosphere.util.sun.2",
+            context.notifyCommandListener("geocraft.command.atmosphere.util.sun.2",
                     AtmosphereUtil.getSunEnergyPerChunk(info));
             return;
         }
         if("property".equalsIgnoreCase(util)){
             IForgeRegistry<IGeographyProperty> registry = GeographyProperty.MANAGER.getProperties();
             for(IGeographyProperty property:registry){
-                notifyCommandListener(context,"geocraft.command.atmosphere.util.property",property.getRegistryName());
+                context.notifyCommandListener("geocraft.command.atmosphere.util.property",property.getRegistryName());
             }
             return;
         }
@@ -458,14 +551,14 @@ public final class CommandAtmosphere {
             ConfigurableBlockState cState = new ConfigurableBlockState(state);
             int heatCapacity = GeoBlockSetting.getBlockHeatCapacity(state);
             double reflectivity= GeoBlockSetting.getBlockReflectivity(state);
-            notifyCommandListener(context,"geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
+            context.notifyCommandListener("geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
             return;
         }
         if("storage".equalsIgnoreCase(util)){
             IAtmosphereSystem system = accessor.getSystem();
             IAtmosphereDataProvider provider = system.getDataProvider();
             Collection<AtmosphereData> data = provider.getLoadedAtmosphereDataCollection();
-            notifyCommandListener(context,"geocraft.command.atmosphere.util.storage",data.size());
+            context.notifyCommandListener("geocraft.command.atmosphere.util.storage",data.size());
             return;
         }
         throw new WrongUsageException("geocraft.command.atmosphere.util.usage");
@@ -481,24 +574,24 @@ public final class CommandAtmosphere {
         final Atmosphere atmosphere = context.get("atm");
         if("temp".equalsIgnoreCase(name)){
             InformationLoggingTracker tracker = createInformationTracker(atmosphere, TemperatureTracker::new,fileName, GeoCraft.getLogger(),new BlockPos(x,y,z),time);
-            notifyCommandListener(context,"geocraft.command.atmosphere.track.temp",x,y,z,tracker.getId());
+            context.notifyCommandListener("geocraft.command.atmosphere.track.temp",x,y,z,tracker.getId());
             return;
         }
         if("water".equalsIgnoreCase(name)){
             InformationLoggingTracker tracker = createFluidTracker(atmosphere,fileName, GeoCraft.getLogger(), GeoCraftProperties.WATER,new BlockPos(x,y,z),time);
-            notifyCommandListener(context,"geocraft.command.atmosphere.track.water",x,y,z,tracker.getId());
+            context.notifyCommandListener("geocraft.command.atmosphere.track.water",x,y,z,tracker.getId());
             return;
         }
         if("steam".equalsIgnoreCase(name)){
             InformationLoggingTracker tracker = createFluidTracker(atmosphere,fileName, GeoCraft.getLogger(), GeoCraftProperties.STEAM,new BlockPos(x,y,z),time);
-            notifyCommandListener(context,"geocraft.command.atmosphere.track.water",x,y,z,tracker.getId());
+            context.notifyCommandListener("geocraft.command.atmosphere.track.water",x,y,z,tracker.getId());
             return;
         }
         final ResourceLocation location = new ResourceLocation(name);
         final IGeographyProperty property= getProperty(location);
         if(property instanceof FluidProperty){
             InformationLoggingTracker tracker = createFluidTracker(atmosphere,fileName, GeoCraft.getLogger(),(FluidProperty) property,new BlockPos(x,y,z),time);
-            notifyCommandListener(context,"geocraft.command.atmosphere.track.gas",x,y,z,tracker.getId(),property.getRegistryName());
+            context.notifyCommandListener("geocraft.command.atmosphere.track.gas",x,y,z,tracker.getId(),property.getRegistryName());
         }
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
     }
@@ -568,7 +661,46 @@ public final class CommandAtmosphere {
         return tracker;
     }
 
+    @FunctionalInterface
     public interface InformationLoggingTrackerFactory {
         InformationLoggingTracker getInstance(FileLogger logger,BlockPos pos,int time);
+    }
+
+    static class AtmosphereCommandContext{
+        public final IAtmosphereAccessor accessor;
+        public final Atmosphere atmosphere;
+        public final Layer layer;
+        public final BlockPos pos;
+        public final int x;
+        public final int y;
+        public final int z;
+        public final ExecuteContext execute;
+        public CommandException exception;
+
+        AtmosphereCommandContext(final @Nonnull IAtmosphereAccessor accessor,
+                                 final @Nonnull Atmosphere atmosphere,
+                                 final @Nonnull Layer layer,
+                                 final @Nonnull BlockPos pos,
+                                 final @Nonnull ExecuteContext execute) {
+            this.accessor = accessor;
+            this.atmosphere = atmosphere;
+            this.layer = layer;
+            this.pos = pos;
+            this.x = pos.getX();
+            this.y = pos.getY();
+            this.z = pos.getZ();
+            this.execute = execute;
+        }
+
+        AtmosphereCommandContext(final @Nonnull ExecuteContext execute) {
+            this.accessor = execute.get("accessor");
+            this.atmosphere = execute.get("atm");
+            this.layer = execute.get("layer");
+            this.pos = execute.getBlockPos("pos");
+            this.x = pos.getX();
+            this.y = pos.getY();
+            this.z = pos.getZ();
+            this.execute = execute;
+        }
     }
 }

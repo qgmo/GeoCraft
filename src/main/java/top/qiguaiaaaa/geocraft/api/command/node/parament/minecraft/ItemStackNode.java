@@ -27,7 +27,11 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
-import net.minecraft.command.*;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,17 +40,15 @@ import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Stack;
-import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 
 /**
  * @author QiguaiAAAA
@@ -54,68 +56,58 @@ import java.util.function.BiFunction;
 public class ItemStackNode extends SmartParameterNode<ItemStack> {
     private static final ThreadLocal<Stack<String>> SelfParasStack = ThreadLocal.withInitial(Stack::new);
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
-
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
-        switch (args.size()){
-            case 0:
-            case 1:
-                return ItemSelectorNode.DEFAULT_SUGGESTOR.apply(args,context);
-            case 2:
-                return Collections.singletonList("1");
-            case 3:
-                return Collections.singletonList("0");
-            default: return null;
-        }
+    public static final BiPredicate<List<String>, CommandContext> MATCHER_WITH_NBT = Matchers.matchOnlyFirstArg((arg,context)->{
+        final String[] split = arg.split("\\{",2);
+        return split.length == 1 && Matchers.isResourceLocation(arg,context) || split.length == 2 && Matchers.isResourceLocation(split[0],context);
     });
 
     protected boolean allowNBT = true;
+    protected int count = 1;
+    protected int meta = 0;
 
-    public ItemStackNode(@Nonnull String name) {
+    public ItemStackNode(@Nonnull final String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(Matchers.RESOURCE_LOCATION);
+        setSuggestProvider(ItemSelectorNode.DEFAULT_SUGGESTOR);
+        setMatcher(MATCHER_WITH_NBT);
+    }
+
+    public void setAllowNBT(final boolean allowNBT) {
+        this.allowNBT = allowNBT;
+    }
+
+    public void setCount(final int count) {
+        this.count = count;
+    }
+
+    public void setMeta(final int meta) {
+        this.meta = meta;
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
         if(childNode == null) return;
         if(!allowNBT){
             super.execute(args,context);
             return;
         }
+
         int usedParas = 0;
         if(checkValid(args,context)){
             if(!args.get(0).contains("\\{")){
-                usedParas = 3;
-                context.put(name,parseParameter(args,context));
+                usedParas = 1;
+                putParsedArgument(parseParameter(args,context),context);
             } else usedParas = parseStackWithNBT(args,context);
         }else if(defaultParser!=null){
-            context.put(name,defaultParser.parser(this,context));
-        }
+            putParsedArgument(defaultParser.parser(this,context),context);
+        }else throw new CommandException("api.geo.command.parameter.base.default_not_found",this.getLocalizedParameter());
 
-        final Stack<String> paras = usedParas>0?SelfParasStack.get():null;
-        if(paras != null){
-            for(int i=0;i<usedParas;i++){
-                paras.push(args.pollFirst());
-            }
-        }
-
-        try {
-            childNode.execute(args,context);
-        }finally {
-            if(paras != null){
-                for(int i=0;i<usedParas;i++){
-                    args.addFirst(paras.pop());
-                }
-            }
-            context.remove(name);
-        }
+        this.executeChild(args,context,usedParas);
     }
 
     @Override
     public int getParametersLength() {
-        return allowNBT?-1:3; //NBT会包含空格，所以是动态的
+        return allowNBT?-1:1; //NBT会包含空格，所以是动态的
     }
 
     @Nonnull
@@ -125,23 +117,21 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> ItemStack parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        final int count = CommandBase.parseInt(args.get(1),0,Integer.MAX_VALUE);
-        final int meta = CommandBase.parseInt(args.get(2),-1,Integer.MAX_VALUE);
+    public <T extends List<String> & Deque<String>> ItemStack parseParameter(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),args.getFirst());
         return new ItemStack(item,count,meta);
     }
 
-    public <T extends List<String> & Deque<String>> int parseStackWithNBT(@Nonnull T args,@Nonnull ExecuteContext context) throws CommandException {
+    public <T extends List<String> & Deque<String>> int parseStackWithNBT(@Nonnull final T args,@Nonnull final ExecuteContext context) throws CommandException {
         final String[] split = args.getFirst().split("\\{",2);
         if(split.length <= 1) throw new IllegalArgumentException();
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),split[0]);
 
         final int[] prefix = new int[args.size()]; //长度前缀和
-        prefix[0] = split[1].length() + 1;
+        prefix[0] = split[1].length() + 1; // + 1 表示左大括号
         final StringBuilder builder = new StringBuilder("{").append(split[1]);
         for(int i=1;i<args.size();i++){
-            prefix[i] = prefix[i-1] + 1 + args.get(i).length();
+            prefix[i] = prefix[i-1] + 1 + args.get(i).length(); // +1 表示空格
             builder.append(" ").append(args.get(i));
         }
         NBTTagCompound compound = null;
@@ -155,19 +145,15 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
                 throw new CommandException("commands.give.tagError", e.getMessage());
             }
         }
-        assert compound != null;
-        final int countIndex = nbtEndIndex+1;
-        final int count = CommandBase.parseInt(args.get(countIndex),0,Integer.MAX_VALUE);
-        final int meta = CommandBase.parseInt(args.get(countIndex+1),-1,Integer.MAX_VALUE);
+        if(compound == null) throw new CommandException("commands.give.tagError","NULL");
         final ItemStack stack = new ItemStack(item,count,meta);
         stack.setTagCompound(compound);
-        context.put(name,stack);
-        return countIndex+2;
+        putParsedArgument(stack,context);
+        return nbtEndIndex+1;
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
-        if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
-        return ValidChecker.MATCH_RESOURCE_LOCATION.check(this, args, context); //数字是否正确就在运行时检查
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+        return ValidChecker.MATCH_ONE_PARAMETER.check(this, args, context); //由于具体检查比较复杂，这里就简单检查一下
     }
 }

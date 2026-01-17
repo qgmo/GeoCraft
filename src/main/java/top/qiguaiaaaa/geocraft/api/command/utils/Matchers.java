@@ -32,6 +32,7 @@ import net.minecraft.command.NumberInvalidException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiPredicate;
 
@@ -43,10 +44,7 @@ public final class Matchers {
     public static final BiPredicate<List<String>, CommandContext> INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
     public static final BiPredicate<List<String>, CommandContext> LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
     public static final BiPredicate<List<String>, CommandContext> DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
-    public static final BiPredicate<List<String>, CommandContext> RESOURCE_LOCATION = (args,context) ->{
-        final String[] split = args.get(0).split(":");
-        return split.length==1 || split.length==2 && !split[0].contains("/");
-    };
+    public static final BiPredicate<List<String>, CommandContext> RESOURCE_LOCATION = matchOnlyFirstArg(Matchers::isResourceLocation);
 
     @Nonnull
     public static BiPredicate<List<String>,CommandContext> matchOnlyFirstArg(@Nonnull final BiPredicate<String,CommandContext> simpleMatcher){
@@ -87,6 +85,11 @@ public final class Matchers {
             }
             return true;
         });
+    }
+
+    public static boolean isResourceLocation(@Nonnull final String arg, @Nullable final CommandContext context){
+        final String[] split = arg.split(":");
+        return split.length==1 || split.length==2 && !split[0].contains("/");
     }
 
 

@@ -58,18 +58,15 @@ public class StringNode extends SmartParameterNode<String> {
     };
     public static final ValidChecker CHECK_BLACKLIST = (self, args, context) -> {
         final StringNode node = (StringNode) self;
-        if(node.blacklist != null && !node.blacklist.isEmpty()){
-            if(node.blacklist.contains(args.get(0)))
-                throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.black",args.get(0),self.getLocalizedParameter(),String.join(" ",node.blacklist));
+        if(node.blacklist != null && !node.blacklist.isEmpty() && node.blacklist.contains(args.get(0))){
+            throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.black",args.get(0),self.getLocalizedParameter(),String.join(" ",node.blacklist));
         }
         return true;
     };
     public static final ValidChecker CHECK_PATTERN = (self, args, context) -> {
         final StringNode node = (StringNode) self;
-        if(node.pattern != null) {
-            if (!node.pattern.matcher(args.get(0)).matches()) {
-                throw new SyntaxErrorException("api.geo.command.parameter.string.nonMatch", args.get(0), self.getLocalizedParameter(), node.pattern.toString());
-            }
+        if(node.pattern != null && !node.pattern.matcher(args.get(0)).matches()) {
+            throw new SyntaxErrorException("api.geo.command.parameter.string.nonMatch", args.get(0), self.getLocalizedParameter(), node.pattern.toString());
         }
         return true;
     };

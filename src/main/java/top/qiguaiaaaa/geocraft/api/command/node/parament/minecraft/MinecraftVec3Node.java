@@ -35,11 +35,10 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public abstract class MinecraftVec3Node<T> extends SmartParameterNode<T> {
+    protected boolean doCenterBlock = false;
     public MinecraftVec3Node(@Nonnull String name) {
         super(name);
     }
-
-    protected boolean doCenterBlock = false;
 
     public void setDoCenterBlock(final boolean doCenterBlock) {
         this.doCenterBlock = doCenterBlock;

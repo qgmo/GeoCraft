@@ -37,8 +37,12 @@ import java.util.function.Function;
  */
 public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T extends NumberNode<N>> extends NumberNodeBuilder<N,T> {
 
-    public ComparableNumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public ComparableNumberNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name, builder);
+    }
+
+    public ComparableNumberNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+        super(parentName,childName, builder);
     }
 
     @Nonnull

@@ -47,8 +47,12 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
     protected Set<String> whitelist;
     protected Set<String> blacklist;
 
-    public StringNodeBuilder(@Nonnull String name) {
+    public StringNodeBuilder(@Nonnull final String name) {
         super(name);
+    }
+
+    public StringNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        super(parentName, childName);
     }
 
     @Nonnull

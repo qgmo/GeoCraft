@@ -42,8 +42,12 @@ import javax.annotation.Nonnull;
 public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>> extends SmartParameterNodeBuilder<T,N, MinecraftVec3NodeBuilder<T,N>> {
     protected boolean doCenter = false;
 
-    public MinecraftVec3NodeBuilder(@Nonnull String name) {
+    public MinecraftVec3NodeBuilder(@Nonnull final String name) {
         super(name);
+    }
+
+    public MinecraftVec3NodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        super(parentName,childName);
     }
 
     @Nonnull
@@ -62,8 +66,12 @@ public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>>
 
     public static class BlockPos extends MinecraftVec3NodeBuilder<net.minecraft.util.math.BlockPos, BlockPosNode>{
 
-        public BlockPos(@Nonnull String name) {
+        public BlockPos(@Nonnull final String name) {
             super(name);
+        }
+
+        public BlockPos(@Nonnull final String parentName,@Nonnull final String childName){
+            super(parentName, childName);
         }
 
         @Nonnull
@@ -75,8 +83,12 @@ public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>>
 
     public static class Vec3d extends MinecraftVec3NodeBuilder<net.minecraft.util.math.Vec3d, Vec3dNode>{
 
-        public Vec3d(@Nonnull String name) {
+        public Vec3d(@Nonnull final String name) {
             super(name);
+        }
+
+        public Vec3d(@Nonnull final String parentName,@Nonnull final String childName){
+            super(parentName,childName);
         }
 
         @Nonnull
@@ -88,8 +100,12 @@ public abstract class MinecraftVec3NodeBuilder<T,N extends MinecraftVec3Node<T>>
 
     public static class AtmosphereAccessor extends MinecraftVec3NodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode>{
 
-        public AtmosphereAccessor(@Nonnull String name) {
+        public AtmosphereAccessor(@Nonnull final String name) {
             super(name);
+        }
+
+        public AtmosphereAccessor(@Nonnull final String parentName,@Nonnull final String childName){
+            super(parentName, childName);
         }
 
         @Nonnull

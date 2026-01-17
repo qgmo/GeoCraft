@@ -60,15 +60,11 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
     protected BigDecimal parseNumber(@Nonnull String arg) throws NumberInvalidException {
         try {
             final BigDecimal decimal = new BigDecimal(arg);
-            if(minValue != null){
-                if(minValue.compareTo(decimal)>0){
-                    throw new NumberInvalidException("commands.generic.num.tooSmall", decimal, minValue);
-                }
+            if(minValue != null && minValue.compareTo(decimal)>0){
+                throw new NumberInvalidException("commands.generic.num.tooSmall", decimal, minValue);
             }
-            if(maxValue != null){
-                if(maxValue.compareTo(decimal)<0){
-                    throw new NumberInvalidException("commands.generic.num.tooBig", decimal, maxValue);
-                }
+            if(maxValue != null && maxValue.compareTo(decimal)<0){
+                throw new NumberInvalidException("commands.generic.num.tooBig", decimal, maxValue);
             }
             return decimal;
         }catch (NumberFormatException e){
@@ -76,11 +72,11 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
         }
     }
 
-    @Nonnull
-    private static BigDecimal clamp(@Nonnull BigDecimal value,@Nonnull BigDecimal min,@Nonnull BigDecimal max){
-        if(value.compareTo(min)>0){
-            if(value.compareTo(max)<0) return value;
-            else return max;
-        }else return min;
-    }
+//    @Nonnull
+//    private static BigDecimal clamp(@Nonnull BigDecimal value,@Nonnull BigDecimal min,@Nonnull BigDecimal max){
+//        if(value.compareTo(min)>0){
+//            if(value.compareTo(max)<0) return value;
+//            else return max;
+//        }else return min;
+//    }
 }

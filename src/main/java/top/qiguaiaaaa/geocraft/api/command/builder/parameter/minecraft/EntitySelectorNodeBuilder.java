@@ -38,14 +38,19 @@ import java.util.List;
  * @author QiguaiAAAA
  */
 public class EntitySelectorNodeBuilder extends SmartParameterNodeBuilder<List<Entity>,EntitySelectorNode,EntitySelectorNodeBuilder> {
-    public EntitySelectorNodeBuilder(@Nonnull String name) {
-        super(name);
-    }
 
     protected boolean single = false;
     protected boolean allowPlayerName = true;
     protected boolean allowUUID = true;
     protected Class<? extends Entity> target = Entity.class;
+
+    public EntitySelectorNodeBuilder(@Nonnull final String name) {
+        super(name);
+    }
+
+    public EntitySelectorNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        super(parentName,childName);
+    }
 
     @Nonnull
     public EntitySelectorNodeBuilder target(final @Nonnull Class<? extends Entity> targetClass){

@@ -40,8 +40,13 @@ public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF e
 
     protected final Function<String, T> builder;
 
-    public FunctionalParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public FunctionalParameterNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name);
+        this.builder = builder;
+    }
+
+    public FunctionalParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+        super(parentName,childName);
         this.builder = builder;
     }
 
@@ -59,8 +64,13 @@ public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF e
 
         protected final Function<String, T> builder;
 
-        public FunctionalSmart(@Nonnull String name, @Nonnull Function<String, T> builder) {
+        public FunctionalSmart(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
             super(name);
+            this.builder = builder;
+        }
+
+        public FunctionalSmart(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+            super(parentName,childName);
             this.builder = builder;
         }
 

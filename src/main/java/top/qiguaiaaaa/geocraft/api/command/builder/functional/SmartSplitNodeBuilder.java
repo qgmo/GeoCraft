@@ -71,14 +71,14 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      * @param <T> 添加个节点类型，必须是 {@link ISmartNode} 的实现类
      */
     @Nonnull
-    public <T extends ISmartNode> SmartNodeInnerBuilder<T> then(@Nonnull final INodeBuilder<T> builder){
+    public <T extends ISmartNode> SmartNodeInnerBuilder<T> append(@Nonnull final INodeBuilder<T> builder){
         final SmartNodeInnerBuilder<T> b = new SmartNodeInnerBuilder<>(Objects.requireNonNull(builder));
         smarts.add(b);
         return b;
     }
 
     @Nonnull
-    public <T extends ISmartNode> SmartNodeInnerBuilder<T> then(@Nonnull final T node){
+    public <T extends ISmartNode> SmartNodeInnerBuilder<T> append(@Nonnull final T node){
         final SmartNodeInnerBuilder<T> b = new SmartNodeInnerBuilder<>(node);
         smarts.add(b);
         return b;

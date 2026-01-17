@@ -27,7 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament;
 
-import net.minecraft.command.*;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.InvalidBlockStateException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.text.translation.I18n;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -43,6 +46,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -55,23 +59,33 @@ import java.util.stream.Collectors;
  * @author QiguaiAAAA
  */
 public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalNode {
+    public static final String PARAMETER_INNER_NAME_SPLIT = "￥";
     private static final ThreadLocal<Stack<String>> ParasStack = ThreadLocal.withInitial(Stack::new);
     protected final String name;
     protected String localizedName = null;
     protected boolean optional;
     protected DefaultParser<P> defaultParser;
     protected BiFunction<List<String>,SuggestContext,List<String>> suggestProvider;
+    protected BiFunction<P,ExecuteContext,P> decorator;
 
-    public ParameterNode(@Nonnull String name) {
+    public ParameterNode(@Nonnull final String name) {
         this.name = name;
     }
 
-    public void setDefaultParser(DefaultParser<P> defaultParser) {
+    public static String getInnerParameterName(@Nonnull final String parent,@Nonnull final String child){
+        return parent+PARAMETER_INNER_NAME_SPLIT+child;
+    }
+
+    public void setDefaultParser(final DefaultParser<P> defaultParser) {
         this.defaultParser = defaultParser;
     }
 
-    public void setSuggestProvider(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+    public void setSuggestProvider(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
         this.suggestProvider = suggestProvider;
+    }
+
+    public void setDecorator(final BiFunction<P,ExecuteContext,P> decorator) {
+        this.decorator = decorator;
     }
 
     public String getName() {
@@ -97,13 +111,17 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
         if(childNode == null) return;
         final boolean parsed = checkAndParse(args,context);
-        final Stack<String> paras = parsed?ParasStack.get():null;
+        this.executeChild(args,context,parsed?getParametersLength():0);
+    }
 
+    protected <T extends List<String> & Deque<String>> void executeChild(@Nonnull final T args,@Nonnull final ExecuteContext context,final int usedElements) throws CommandException{
+        final boolean parsed = usedElements>0;
+        final Stack<String> paras = parsed?ParasStack.get():null;
         if(parsed){
-            for(int i=0;i<getParametersLength();i++){
+            for(int i=0;i<usedElements;i++){
                 paras.push(args.pollFirst());
             }
         }
@@ -111,7 +129,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
             childNode.execute(args,context);
         }finally {
             if(parsed){
-                for(int i=0;i<getParametersLength();i++){
+                for(int i=0;i<usedElements;i++){
                     args.addFirst(paras.pop());
                 }
             }
@@ -145,13 +163,18 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         final P parsedArg;
         if(checkValid(args,context)){
             parsedArg = parseParameter(args,context);
-            context.put(name,parsedArg);
+            putParsedArgument(parsedArg,context);
             return true;
         }else if(defaultParser!=null){
             parsedArg = defaultParser.parser(this,context);
-            context.put(name,parsedArg);
+            putParsedArgument(parsedArg,context);
+            return false;
         }
-        return false;
+        throw new CommandException("api.geo.command.parameter.base.default_not_found",this.getLocalizedParameter());
+    }
+
+    protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context){
+        context.put(name,decorator==null?parsedArgument:decorator.apply(parsedArgument,context));
     }
 
     /**
@@ -181,6 +204,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     }
 
     @Nonnull
+    @SuppressWarnings("deprecation")
     public final String getLocalizedParameter(){
         final StringBuilder builder = new StringBuilder();
         if(isOptional()) builder.append('[');

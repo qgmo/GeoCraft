@@ -29,14 +29,16 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 参数节点构建器
@@ -57,9 +59,14 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     @SuppressWarnings("unchecked")
     protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
     protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider = USE_DEFAULT_SUGGESTOR;
+    protected BiFunction<P, ExecuteContext,P> decorator;
 
-    public ParameterNodeBuilder(@Nonnull String name) {
+    public ParameterNodeBuilder(@Nonnull final String name) {
         this.name = name;
+    }
+
+    public ParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        this(ParameterNode.getInnerParameterName(parentName, childName));
     }
 
     @SuppressWarnings("unchecked")
@@ -71,15 +78,36 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF defaultAs(@Nullable final ParameterNode.DefaultParser<P> parser) {
+    public SELF defaultAs(@Nonnull final ParameterNode.DefaultParser<P> parser) {
         this.parser = parser;
         return (SELF) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+    public SELF suggest(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
         this.suggestProvider = suggestProvider;
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public SELF suggest(final Function<SuggestContext, List<String>> suggestProvider) {
+        this.suggestProvider = (args,context) -> suggestProvider.apply(context);
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public SELF suggest(final Supplier<List<String>> suggestProvider) {
+        this.suggestProvider = (args,context) -> suggestProvider.get();
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public SELF suggest(final List<String> suggests) {
+        this.suggestProvider = (args,context) -> suggests;
         return (SELF) this;
     }
 
@@ -87,6 +115,20 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     @SuppressWarnings("unchecked")
     public SELF translate(@Nonnull final String key){
         this.langKey = key;
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF decorate(@Nonnull final BiFunction<P,ExecuteContext,P> decorator){
+        this.decorator = decorator;
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF decorate(@Nonnull final Function<P,P> decorator){
+        this.decorator = (arg,context) -> decorator.apply(arg);
         return (SELF) this;
     }
 
@@ -105,6 +147,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
         if(parser != USE_DEFAULT_PARSER){
             instance.setDefaultParser(parser);
         }
+        instance.setDecorator(decorator);
         instance.setOptional(optional);
         if(suggestProvider != USE_DEFAULT_SUGGESTOR){
             instance.setSuggestProvider(suggestProvider);

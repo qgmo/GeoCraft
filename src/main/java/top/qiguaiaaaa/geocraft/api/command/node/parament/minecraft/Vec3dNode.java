@@ -61,6 +61,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     });
 
     public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR = ((args, context) -> {
+        if(args.size()>3) return null;
         final List<String> suggests = Lists.newArrayList("~");
         if(context.getTargetPos() == null){
             final Vec3d pos = context.getSender().getPositionVector();
@@ -75,6 +76,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                 case 3:
                     suggests.add(String.valueOf(pos.z));
                     break;
+                default:return null;
             }
         }else {
             final Vec3i pos = context.getTargetPos();
@@ -89,6 +91,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                 case 3:
                     suggests.add(String.valueOf(pos.getZ()));
                     break;
+                default:return null;
             }
         }
 
