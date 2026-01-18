@@ -108,8 +108,14 @@ public class StringNode extends SmartParameterNode<String> {
 
     @Nonnull
     @Override
-    public Type getType() {
+    public Class<String> getType() {
         return String.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<String> getTypeClass() {
+        return getType();
     }
 
     @Nonnull

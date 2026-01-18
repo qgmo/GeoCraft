@@ -25,45 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommand;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.Deque;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class DoubleNode extends NumberNode<Double> {
-    public static final DefaultParser<Double> DEFAULT_PARSER = (node, context) -> 0d;
-    public DoubleNode(@Nonnull String name) {
-        super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Double.MIN_VALUE);
-        setMaxValue(Double.MAX_VALUE);
-    }
+public class RedirectCommandNode extends RunCommandNode{
 
-    @Nonnull
-    @Override
-    public Class<Double> getType() {
-        return Double.class;
-    }
+    protected final String targetCommandName;
 
-    @Nonnull
-    @Override
-    public Class<Double> getTypeClass() {
-        return getType();
-    }
-
-    @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.double";
+    public RedirectCommandNode(@Nonnull final String targetCommandName) {
+        this.targetCommandName = targetCommandName;
     }
 
     @Override
-    protected Double parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseDouble(arg,minValue,maxValue);
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        final ICommand icommand = getCommand(targetCommandName,context);
+        runCommand(icommand,args,context);
+    }
+
+    @Nullable
+    @Override
+    public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
+        final ICommand icommand = context.getServer().getCommandManager().getCommands().get(targetCommandName);
+        if(icommand == null) return null;
+        return getCommandSuggest(icommand,args,context);
     }
 }

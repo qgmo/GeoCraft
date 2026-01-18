@@ -27,38 +27,37 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.world.World;
-import net.minecraftforge.common.DimensionManager;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 /**
  * @author QiguaiAAAA
  */
-public class DimensionNode extends SmartParameterNode<World> {
-    public static final DefaultParser<World> DEFAULT_PARSER = (node, context) -> context.getWorld();
-    public static final BiFunction<List<String>, SuggestContext,List<String>> DEFAULT_SUGGESTOR =
-            (args,context) -> Arrays.stream(DimensionManager.getWorlds()).map(world -> String.valueOf(world.provider.getDimension())).collect(Collectors.toList());
+public class BlockStateNode extends SmartParameterNode<IBlockState> {
+    protected final @Nullable String blockNodeName;
 
-    public DimensionNode(@Nonnull final String name) {
+    public BlockStateNode(@Nullable final String blockNodeName,@Nonnull final String name) {
         super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setSuggestProvider(DEFAULT_SUGGESTOR);
+        this.blockNodeName = Objects.requireNonNull(blockNodeName);
+    }
+
+    public BlockStateNode(@Nonnull final String name) {
+        this(null,name);
     }
 
     @Override
@@ -68,28 +67,45 @@ public class DimensionNode extends SmartParameterNode<World> {
 
     @Nonnull
     @Override
-    public Class<World> getType() {
-        return World.class;
+    public Class<IBlockState> getType() {
+        return IBlockState.class;
     }
 
     @Nonnull
     @Override
-    public Class<World> getTypeClass() {
+    public Class<IBlockState> getTypeClass() {
         return getType();
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> World parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        final int dimension = CommandBase.parseInt(args.get(0));
-        final World world = DimensionManager.getWorld(dimension);
-        if(world == null) throw new CommandException("api.geo.command.parameter.dimension.not_found",dimension);
-        return world;
+    public <T extends List<String> & Deque<String>> IBlockState parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        if(blockNodeName != null){
+            final Block block = context.get(blockNodeName);
+            String arg = args.get(0);
+            if(arg.startsWith("[")) {
+                if(arg.endsWith("]")) arg = arg.substring(1,arg.length()-1);
+                else throw new SyntaxErrorException();
+            }
+            return CommandBase.convertArgToBlockState(block,arg);
+        }else {
+            final String arg = args.get(0);
+            final String[] split = arg.split("\\[");
+            if(split.length == 0) throw new SyntaxErrorException();
+            if(split.length == 1) return CommandBase.getBlockByText(context.getSender(),arg).getDefaultState();
+            if(!split[1].endsWith("]")) throw new SyntaxErrorException();
+            return CommandBase.convertArgToBlockState(CommandBase.getBlockByText(context.getSender(),split[0]),split[1].substring(0,split[1].length()-1));
+        }
     }
 
     @Override
     public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        CommandBase.parseInt(args.get(0));
+        if(blockNodeName == null) return true;
+        try {
+            CommandBase.parseInt(args.get(0));
+        }catch (NumberInvalidException e){
+            return "default".equals(args.get(0)) || args.get(0).startsWith("[");
+        }
         return true;
     }
 }

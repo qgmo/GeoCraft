@@ -107,14 +107,14 @@ public final class CommandAtmosphere {
     public static final String PERMISSION_NODE = "qg.geocraft.command.atmosphere";
     public static final List<String> ALIASES = new ArrayList<>(Collections.singleton("大气"));
 
-    public String getUsage(ICommandSender sender) {
-        return "geocraft.command.atmosphere.usage";
-    }
-
     static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> SetConsumer = new HashMap<>();
     static final Map<String, BiConsumer<AtmosphereCommandContext,Double>> AddConsumer = new HashMap<>();
     static final Map<String, Consumer<AtmosphereCommandContext>> QueryConsumer = new HashMap<>();
     static boolean inited = false;
+
+    public String getUsage(ICommandSender sender) {
+        return "geocraft.command.atmosphere.usage";
+    }
 
     public static void init(){
         if(inited) return;

@@ -64,8 +64,14 @@ public class UUIDNode extends SmartParameterNode<UUID> {
 
     @Nonnull
     @Override
-    public Type getType() {
+    public Class<UUID> getType() {
         return UUID.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<UUID> getTypeClass() {
+        return getType();
     }
 
     @Nonnull

@@ -29,8 +29,8 @@ package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.Decorator;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
@@ -59,7 +59,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     @SuppressWarnings("unchecked")
     protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
     protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider = USE_DEFAULT_SUGGESTOR;
-    protected BiFunction<P, ExecuteContext,P> decorator;
+    protected Decorator<P> decorator;
 
     public ParameterNodeBuilder(@Nonnull final String name) {
         this.name = name;
@@ -80,6 +80,13 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     @Nonnull
     public SELF defaultAs(@Nonnull final ParameterNode.DefaultParser<P> parser) {
         this.parser = parser;
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF defaultAs(@Nonnull final P defaultValue){
+        this.parser = (node, context) -> defaultValue;
         return (SELF) this;
     }
 
@@ -120,15 +127,24 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF decorate(@Nonnull final BiFunction<P,ExecuteContext,P> decorator){
-        this.decorator = decorator;
+    public SELF clearDecorators(){
+        this.decorator = null;
         return (SELF) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF decorate(@Nonnull final Function<P,P> decorator){
-        this.decorator = (arg,context) -> decorator.apply(arg);
+    public SELF decorate(@Nonnull final Decorator<P> decorator){
+        if(this.decorator == null) this.decorator = decorator;
+        else this.decorator = this.decorator.andThen(decorator);
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SELF decorate(@Nonnull final Decorator.Simple<P> decorator){
+        if(this.decorator == null) this.decorator = decorator.toFull();
+        else this.decorator = this.decorator.andThen(decorator);
         return (SELF) this;
     }
 

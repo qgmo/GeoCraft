@@ -74,6 +74,12 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
 
     @Nonnull
     @Override
+    public Class<Boolean> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.boolean";
     }

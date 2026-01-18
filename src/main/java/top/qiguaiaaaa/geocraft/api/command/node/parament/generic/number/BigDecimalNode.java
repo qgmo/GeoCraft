@@ -52,6 +52,12 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
 
     @Nonnull
     @Override
+    public Class<BigDecimal> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.generic.bigDecimal";
     }

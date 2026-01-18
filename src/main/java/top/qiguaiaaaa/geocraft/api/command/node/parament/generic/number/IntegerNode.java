@@ -48,8 +48,14 @@ public class IntegerNode extends NumberNode<Integer> {
 
     @Nonnull
     @Override
-    public Type getType() {
+    public Class<Integer> getType() {
         return Integer.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<Integer> getTypeClass() {
+        return getType();
     }
 
     @Nonnull

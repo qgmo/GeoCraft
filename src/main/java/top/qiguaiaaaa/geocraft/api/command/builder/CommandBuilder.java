@@ -32,6 +32,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.server.permission.PermissionAPI;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.CommandNode;
 
 import javax.annotation.Nonnull;
@@ -62,6 +63,7 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     protected int requiredPermissionLevel = 0;
     protected Set<String> requiredPermissions = null;
     protected boolean passIfNotPlayer = true;
+    protected String usage;
 
     public CommandBuilder(@Nonnull final String name){
         if(name.contains(" ")) throw new IllegalArgumentException("Command name couldn't contain any whitespaces!");
@@ -124,12 +126,19 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
     }
 
     @Nonnull
+    public CommandBuilder usage(@Nonnull final String usage){
+        this.usage = usage;
+        return this;
+    }
+
+    @Nonnull
     @Override
     public CommandNode build(){
         final CommandNode command = new CommandNode(name);
         command.setAliases(aliases.stream().distinct().sorted().collect(Collectors.toList()));
         command.setChildNode(buildChildNode());
         command.setCheckPermissionFunction(buildPermitPredicate());
+        if(usage != null) command.setUsage(usage);
         return command;
     }
 

@@ -107,6 +107,13 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
 
     @Nonnull
     @Override
+    @SuppressWarnings("unchecked")
+    public Class<List<Entity>> getTypeClass() {
+        return (Class<List<Entity>>) (Class<?>) List.class;
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.entitySelector";
     }

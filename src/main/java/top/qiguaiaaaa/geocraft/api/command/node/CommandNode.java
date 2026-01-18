@@ -49,9 +49,11 @@ import java.util.function.BiPredicate;
  * @author QiguaiAAAA
  */
 public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
+    protected static final String EXAMPLE_USAGE = "example usage";
     protected final String name;
     protected List<String> aliases = Collections.emptyList();
     protected BiPredicate<MinecraftServer,ICommandSender> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+    protected String usage = EXAMPLE_USAGE;
 
     public CommandNode(final @Nonnull String name){
         this.name = name;
@@ -65,6 +67,10 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
         this.funcCheckPermission = function;
     }
 
+    public void setUsage(final @Nonnull String usage) {
+        this.usage = usage;
+    }
+
     @Nonnull
     @Override
     public String getName() {
@@ -74,7 +80,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     @Nonnull
     @Override
     public String getUsage(@Nonnull ICommandSender sender) {
-        return "example usage";
+        return usage;
     }
 
     @Nonnull

@@ -116,6 +116,12 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
         return Vec3d.class;
     }
 
+    @Nonnull
+    @Override
+    public Class<Vec3d> getTypeClass() {
+        return getType();
+    }
+
     @Override
     public <T extends List<String> & Deque<String>> Vec3d parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         return parseVec3d(args,context);

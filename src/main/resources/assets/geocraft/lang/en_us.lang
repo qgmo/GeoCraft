@@ -31,6 +31,10 @@ api.geo.command.parameter.entityEntry.invalid=Invalid Entity Entry %s for parame
 api.geo.command.functional.permit.denied=Permission denied.
 api.geo.command.functional.literal.non_match=Expect literal %s, but found %s
 
+api.geo.command.context.get.non_entity=No Matched Entity Found
+api.geo.command.context.get.unknown_argument.entity=An error occurred when trying getting a entity from context: unknown argument class type %s
+api.geo.command.context.get.unknown_argument.entities=An error occurred when trying getting a entity from context: unknown argument class type %s
+
 geocraft.command.io_error=An IO Exception Occurred (%s), command couldn't be processed.
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is unloaded
 geocraft.command.atmosphere_system.null=Current world doesn't exist an Atmosphere System.

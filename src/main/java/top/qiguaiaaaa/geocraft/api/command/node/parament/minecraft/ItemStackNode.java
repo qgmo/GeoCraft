@@ -54,7 +54,6 @@ import java.util.function.BiPredicate;
  * @author QiguaiAAAA
  */
 public class ItemStackNode extends SmartParameterNode<ItemStack> {
-    private static final ThreadLocal<Stack<String>> SelfParasStack = ThreadLocal.withInitial(Stack::new);
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
     public static final BiPredicate<List<String>, CommandContext> MATCHER_WITH_NBT = Matchers.matchOnlyFirstArg((arg,context)->{
         final String[] split = arg.split("\\{",2);
@@ -114,6 +113,12 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     @Override
     public Class<ItemStack> getType() {
         return ItemStack.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<ItemStack> getTypeClass() {
+        return getType();
     }
 
     @Override

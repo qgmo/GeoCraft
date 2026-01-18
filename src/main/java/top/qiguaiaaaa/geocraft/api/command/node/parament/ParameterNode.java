@@ -46,7 +46,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Stack;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +65,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     protected boolean optional;
     protected DefaultParser<P> defaultParser;
     protected BiFunction<List<String>,SuggestContext,List<String>> suggestProvider;
-    protected BiFunction<P,ExecuteContext,P> decorator;
+    protected Decorator<P> decorator;
 
     public ParameterNode(@Nonnull final String name) {
         this.name = name;
@@ -84,7 +83,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         this.suggestProvider = suggestProvider;
     }
 
-    public void setDecorator(final BiFunction<P,ExecuteContext,P> decorator) {
+    public void setDecorator(final Decorator<P> decorator) {
         this.decorator = decorator;
     }
 
@@ -173,8 +172,8 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         throw new CommandException("api.geo.command.parameter.base.default_not_found",this.getLocalizedParameter());
     }
 
-    protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context){
-        context.put(name,decorator==null?parsedArgument:decorator.apply(parsedArgument,context));
+    protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context) throws CommandException {
+        context.put(name,decorator==null?parsedArgument:decorator.decorate(parsedArgument,context));
     }
 
     /**
@@ -190,6 +189,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      */
     @Nonnull
     public abstract Type getType();
+
+    @Nonnull
+    public abstract Class<P> getTypeClass();
 
     /**
      * 获取参数的类型的本地化键名，用于聊天框信息展示

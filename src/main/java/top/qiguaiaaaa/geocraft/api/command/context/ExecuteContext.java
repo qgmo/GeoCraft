@@ -28,17 +28,26 @@
 package top.qiguaiaaaa.geocraft.api.command.context;
 
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.function.Function;
 
 /**
@@ -55,11 +64,11 @@ public final class ExecuteContext extends CommandContext{
         super(command, server, sender);
     }
 
-    public void remove(@Nonnull String key){
+    public void remove(@Nonnull final String key){
         contexts.remove(key);
     }
 
-    public void put(@Nonnull String key, @Nonnull Object content){
+    public void put(@Nonnull final String key, @Nonnull final Object content){
         contexts.put(key,content);
     }
 
@@ -69,7 +78,7 @@ public final class ExecuteContext extends CommandContext{
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(@Nonnull final String key, @Nonnull Class<? extends ParameterNode<T>> paraType){
+    public <T> T get(@Nonnull final String key, @Nonnull final Class<? extends ParameterNode<T>> paraType){
         return (T) contexts.computeIfAbsent(key, OnNoContextFound);
     }
 
@@ -85,8 +94,81 @@ public final class ExecuteContext extends CommandContext{
         return (int) contexts.get(key);
     }
 
+    @Nonnull
+    public Entity getEntity(@Nonnull final String key) throws CommandException {
+        final Object context = contexts.get(key);
+        if(context == null) throw new CommandException("api.geo.command.context.get.non_entity");
+        if(context instanceof Collection<?>){
+            final Collection<?> collection = (Collection<?>) context;
+            if(collection.isEmpty()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(context instanceof List<?>){
+                final List<?> list = (List<?>) context;
+                throwIfInvalidEntityClass(list.get(0));
+                return (Entity) list.get(0);
+            }else if(context instanceof Queue<?>){
+                final Queue<?> queue = (Queue<?>) context;
+                final Object ele = queue.peek();
+                if(ele == null) throw new CommandException("api.geo.command.context.get.non_entity");
+                throwIfInvalidEntityClass(ele);
+                return (Entity) ele;
+            }
+            final Object ele = collection.iterator().next();
+            throwIfInvalidEntityClass(ele);
+            return (Entity) ele;
+        }else if(context instanceof Entity){
+            return (Entity) context;
+        }else if(context instanceof Optional<?>){
+            final Optional<?> optional = (Optional<?>) context;
+            if(!optional.isPresent()) throw new CommandException("api.geo.command.context.get.non_entity");
+            throwIfInvalidEntityClass(optional.get());
+            return (Entity) optional.get();
+        }else throw new CommandException("api.geo.command.context.get.unknown_argument.entity",context.getClass());
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public List<Entity> getEntities(@Nonnull final String key) throws CommandException{
+        final Object context = contexts.get(key);
+        if(context == null) throw new CommandException("api.geo.command.context.get.non_entity");
+        if(context instanceof Collection<?>){
+            final Collection<?> collection = (Collection<?>) context;
+            if(collection.isEmpty()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(context instanceof List<?>){
+                final List<?> list = (List<?>) context;
+                throwIfInvalidEntitiesClass(list.get(0));
+                return (List<Entity>) list;
+            }else if(context instanceof Queue<?>){
+                final Queue<?> queue = (Queue<?>) context;
+                throwIfInvalidEntitiesClass(queue.peek());
+                return new ArrayList<>((Queue<? extends Entity>)queue);
+            }
+            throwIfInvalidEntitiesClass(collection.iterator().next());
+            return new ArrayList<>((Collection<? extends Entity>) collection);
+        }else if(context instanceof Entity){
+            return Collections.singletonList((Entity) context);
+        }else if(context instanceof Optional<?>){
+            final Optional<?> optional = (Optional<?>) context;
+            if(!optional.isPresent()) throw new CommandException("api.geo.command.context.get.non_entity");
+            throwIfInvalidEntitiesClass(optional.get());
+            return Collections.singletonList((Entity) optional.get());
+        }else throw new CommandException("api.geo.command.context.get.unknown_argument.entities", context.getClass());
+    }
+
+    private void throwIfInvalidEntityClass(@Nullable final Object ele) throws CommandException {
+        if(!(ele instanceof Entity)) throw new CommandException("api.geo.command.context.get.unknown_argument.entity",ele==null?"NULL":ele.getClass());
+    }
+
+    private void throwIfInvalidEntitiesClass(@Nullable final Object ele) throws CommandException {
+        if(!(ele instanceof Entity)) throw new CommandException("api.geo.command.context.get.unknown_argument.entities",ele==null?"NULL":ele.getClass());
+    }
+
     public BlockPos getBlockPos(@Nonnull String key){
         return (BlockPos) contexts.get(key);
+    }
+
+    @Nonnull
+    public Map<String, Object> getContexts() {
+        return contexts;
     }
 
     @Nonnull

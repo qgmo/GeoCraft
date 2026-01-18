@@ -73,6 +73,12 @@ public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
 
     @Nonnull
     @Override
+    public Class<OreDictionaryEntry> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.forge.oreDirectory";
     }

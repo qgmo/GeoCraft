@@ -99,6 +99,12 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
 
     @Nonnull
     @Override
+    public Class<BlockPos> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.minecraft.blockPos";
     }

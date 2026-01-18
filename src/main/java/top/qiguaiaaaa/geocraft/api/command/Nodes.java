@@ -28,10 +28,10 @@
 package top.qiguaiaaaa.geocraft.api.command;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.registry.EntityEntry;
@@ -41,6 +41,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.execute.RelayExecuteNodeBuild
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.ConditionalSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.ForEachNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.RunCommandNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralsNodeBuilder;
@@ -50,6 +51,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.EntitySel
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.ItemStackNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.RunCommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.EntityEntrySelectorNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.FluidSelectorNode;
@@ -58,6 +60,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.BooleanNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.UUIDNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockStateNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemSelectorNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemStackNode;
@@ -124,6 +127,16 @@ public final class Nodes {
     @Nonnull
     public static ExecuteNodeBuilder execute(@Nonnull final CommandRunFunction func){
         return execute().run(func);
+    }
+
+    @Nonnull
+    public static RunCommandNodeBuilder.Redirect runCommand(@Nonnull final String commandName){
+        return new RunCommandNodeBuilder.Redirect(commandName);
+    }
+
+    @Nonnull
+    public static RunCommandNodeBuilder runCommands(){
+        return new RunCommandNodeBuilder();
     }
 
     @Nonnull
@@ -242,6 +255,16 @@ public final class Nodes {
     @Nonnull
     public static FastParameterNodeBuilder.FastSmart<Block, BlockSelectorNode> block(@Nonnull final String name){
         return new FastParameterNodeBuilder.FastSmart<>(name,BlockSelectorNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> blockState(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name, BlockStateNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> block$blockState(@Nonnull final String blockNodeName,@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name, s -> new BlockStateNode(blockNodeName,s));
     }
 
     @Nonnull

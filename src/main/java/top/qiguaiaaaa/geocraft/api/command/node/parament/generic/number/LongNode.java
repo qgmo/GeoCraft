@@ -47,8 +47,14 @@ public class LongNode extends NumberNode<Long> {
 
     @Nonnull
     @Override
-    public Type getType() {
+    public Class<Long> getType() {
         return Long.class;
+    }
+
+    @Nonnull
+    @Override
+    public Class<Long> getTypeClass() {
+        return getType();
     }
 
     @Nonnull

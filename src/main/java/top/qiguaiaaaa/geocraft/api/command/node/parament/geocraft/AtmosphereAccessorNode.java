@@ -124,6 +124,12 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
 
     @Nonnull
     @Override
+    public Class<IAtmosphereAccessor> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.geocraft.atmosphereAccessor";
     }

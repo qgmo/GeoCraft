@@ -25,45 +25,27 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
+package top.qiguaiaaaa.geocraft.api.event;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.ICommand;
+import net.minecraftforge.event.CommandEvent;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public class DoubleNode extends NumberNode<Double> {
-    public static final DefaultParser<Double> DEFAULT_PARSER = (node, context) -> 0d;
-    public DoubleNode(@Nonnull String name) {
-        super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Double.MIN_VALUE);
-        setMaxValue(Double.MAX_VALUE);
+public class GeoCommandEvent extends CommandEvent {
+    private final ExecuteContext context;
+
+    public GeoCommandEvent(final @Nonnull ICommand command, final @Nonnull ExecuteContext context,final @Nonnull String[] parameters) {
+        super(command, context.getSender(), parameters);
+        this.context = context;
     }
 
     @Nonnull
-    @Override
-    public Class<Double> getType() {
-        return Double.class;
-    }
-
-    @Nonnull
-    @Override
-    public Class<Double> getTypeClass() {
-        return getType();
-    }
-
-    @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.double";
-    }
-
-    @Override
-    protected Double parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseDouble(arg,minValue,maxValue);
+    public ExecuteContext getContext() {
+        return context;
     }
 }

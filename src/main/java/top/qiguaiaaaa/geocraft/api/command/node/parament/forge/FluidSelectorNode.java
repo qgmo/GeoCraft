@@ -72,6 +72,12 @@ public class FluidSelectorNode extends SmartParameterNode<Fluid> {
 
     @Nonnull
     @Override
+    public Class<Fluid> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
+    @Override
     public String getTypeTranslationKey() {
         return "api.geo.command.parameter.forge.fluid";
     }

@@ -69,6 +69,12 @@ public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> e
     public abstract Class<E> getType();
 
     @Nonnull
+    @Override
+    public Class<E> getTypeClass() {
+        return getType();
+    }
+
+    @Nonnull
     public static <E extends IForgeRegistryEntry<E>> BiFunction<List<String>, SuggestContext,List<String>> createSuggestProviderFromRegistry(@Nonnull final IForgeRegistry<E> registry){
         final List<String> entries = registry.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
         return (args,context)-> entries;
