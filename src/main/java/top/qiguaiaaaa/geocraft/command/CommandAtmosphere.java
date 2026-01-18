@@ -74,9 +74,9 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.*;
 
+@Deprecated
 public class CommandAtmosphere extends ExtendedCommand {
     public static final String ATMOSPHERE_COMMAND_NAME = "atmosphere";
-    public static final List<String> ALIASES = new ArrayList<>(Collections.singleton("大气"));
     public CommandAtmosphere(){
         this.registerSubCommand(new AddCommand(this));
         this.registerSubCommand(new SetCommand(this));
@@ -86,11 +86,13 @@ public class CommandAtmosphere extends ExtendedCommand {
         this.registerSubCommand(new UtilCommand(this));
         this.registerSubCommand(new TrackCommand(this));
     }
+    @Nonnull
     @Override
     public String getName() {
         return ATMOSPHERE_COMMAND_NAME;
     }
 
+    @Nonnull
     @Override
     public String getUsage(ICommandSender sender) {
         return "geocraft.command.atmosphere.usage";
@@ -100,11 +102,6 @@ public class CommandAtmosphere extends ExtendedCommand {
     public int getRequiredPermissionLevel() {
         return 2;
     }
-
-//    @Override
-//    public List<String> getAliases() {
-//        return ALIASES;
-//    }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException  {
