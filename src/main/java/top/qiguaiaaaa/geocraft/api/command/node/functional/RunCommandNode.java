@@ -36,6 +36,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
@@ -43,6 +44,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 import top.qiguaiaaaa.geocraft.api.event.GeoCommandEvent;
 
 import javax.annotation.Nonnull;
@@ -98,6 +100,14 @@ public class RunCommandNode implements ICommandNode{
                 args.addFirst(commandName);
             }
         }
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        final CommandBranch branch = new CommandBranch();
+        branch.appendDocument(new TextComponentString("<command>"));
+        return branch;
     }
 
     protected <T extends List<String> & Deque<String>> void runCommand(@Nonnull final ICommand command,@Nonnull final T args,@Nonnull final ExecuteContext context) throws CommandException {

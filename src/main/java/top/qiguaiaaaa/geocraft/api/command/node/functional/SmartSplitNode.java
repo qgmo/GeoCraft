@@ -28,6 +28,8 @@
 package top.qiguaiaaaa.geocraft.api.command.node.functional;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -35,6 +37,8 @@ import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+import top.qiguaiaaaa.geocraft.api.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,5 +103,24 @@ public class SmartSplitNode extends NoSplitNode {
                 .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        final ITextComponent document = new TextComponentString(childNode == null?"<":"[");
+        final List<ITextComponent> choices = new ArrayList<>();
+        final SplitCommandBranch splitBranch = new SplitCommandBranch((childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
+                .map(ICommandNode::branch)
+                .filter(branch -> !branch.isEmpty())
+                .peek(branch -> choices.add(branch.getDocuments().get(0)))
+                .collect(Collectors.toSet()));
+        for(int i=0;i<choices.size();i++){
+            if(i>0) document.appendText("|");
+            document.appendSibling(choices.get(i).createCopy());
+        }
+        document.appendText(childNode==null?">":"]");
+        splitBranch.setEndDocument(document);
+        return splitBranch;
     }
 }

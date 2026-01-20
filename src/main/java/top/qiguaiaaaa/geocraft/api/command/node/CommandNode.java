@@ -35,6 +35,8 @@ import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+import top.qiguaiaaaa.geocraft.api.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,6 +56,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     protected List<String> aliases = Collections.emptyList();
     protected BiPredicate<MinecraftServer,ICommandSender> funcCheckPermission = CommandBuilder.PERMIT_ALL;
     protected String usage = EXAMPLE_USAGE;
+    protected CommandBranch branch;
 
     public CommandNode(final @Nonnull String name){
         this.name = name;
@@ -71,6 +74,12 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
         this.usage = usage;
     }
 
+    public void init(){
+        if(this.childNode == null) return;
+        this.branch = this.childNode.branch();
+        this.branch.finish(this);
+    }
+
     @Nonnull
     @Override
     public String getName() {
@@ -79,7 +88,8 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
 
     @Nonnull
     @Override
-    public String getUsage(@Nonnull ICommandSender sender) {
+    public String getUsage(@Nonnull final ICommandSender sender) {
+        branch.print(sender);
         return usage;
     }
 

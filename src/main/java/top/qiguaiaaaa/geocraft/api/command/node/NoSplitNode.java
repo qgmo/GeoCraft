@@ -27,6 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node;
 
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+
+import javax.annotation.Nonnull;
+
 /**
  * @author QiguaiAAAA
  */
@@ -35,5 +39,12 @@ public abstract class NoSplitNode implements ICommandNode {
 
     public void setChildNode(ICommandNode child){
         childNode = child;
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        if(childNode == null) return new CommandBranch();
+        return childNode.branch();
     }
 }

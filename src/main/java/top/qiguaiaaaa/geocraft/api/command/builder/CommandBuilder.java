@@ -149,6 +149,7 @@ public class CommandBuilder extends NoSplitNodeBuilder<CommandNode,CommandBuilde
         command.setChildNode(buildChildNode());
         command.setCheckPermissionFunction(buildPermitPredicate());
         if(usage != null) command.setUsage(usage);
+        command.init();
         return command;
     }
 

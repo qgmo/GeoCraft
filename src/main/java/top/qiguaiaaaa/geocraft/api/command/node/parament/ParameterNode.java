@@ -31,6 +31,9 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.translation.I18n;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -38,6 +41,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
 import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockPosNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,7 +57,7 @@ import java.util.stream.Collectors;
  * 当参数为可选的时候，情况就比较复杂。对于例如：<br/>
  * /give [数量] <玩家> <br/>
  * 我们希望 /give 111 @p 和 /give @p 能够同时工作。数量会发现 @p 不匹配，于是采用默认值，走 /give <玩家>。而 111 会被认为是一个合理的数值，走 /give [数量] <玩家>。
- * 但更多情况下，例如 /give [玩家] <物品> 就不能很好的工作，因为对于 apple，其可能被认为是叫做 apple 的玩家，也有可能是 {@link net.minecraft.init.Items.APPLE}
+ * 但更多情况下，例如 /give [玩家] <物品> 就不能很好的工作，因为对于 apple，其可能被认为是叫做 apple 的玩家，也有可能是 {@link net.minecraft.init.Items#APPLE}
  * 所以非必要，应确保可选参数之后都是可选的参数，以避免混淆。
  * @author QiguaiAAAA
  */
@@ -66,6 +70,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     protected DefaultParser<P> defaultParser;
     protected BiFunction<List<String>,SuggestContext,List<String>> suggestProvider;
     protected Decorator<P> decorator;
+    protected CommandBranch currentBranch;
 
     public ParameterNode(@Nonnull final String name) {
         this.name = name;
@@ -223,6 +228,15 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         return builder.toString();
     }
 
+    @Nonnull
+    public final ITextComponent getDocument(){
+        return new TextComponentString(isOptional()?"[":"<")
+                .appendSibling(new TextComponentTranslation(getTranslationKey()))
+                .appendText(":")
+                .appendSibling(new TextComponentTranslation(getTypeTranslationKey()))
+                .appendText(isOptional()?"]":">");
+    }
+
     /**
      * 检查当前的命令参数是否符合当前参数的语法格式。
      * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parseParameter(List, ExecuteContext)} 中检查。
@@ -240,6 +254,14 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
             throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
 
     public abstract <T extends List<String> & Deque<String>> P parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException;
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        this.currentBranch = super.branch();
+        currentBranch.appendDocument(getDocument());
+        return currentBranch;
+    }
 
     @FunctionalInterface
     public interface DefaultParser<T>{

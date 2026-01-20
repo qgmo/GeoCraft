@@ -31,6 +31,7 @@ import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,6 +52,12 @@ public interface ExecuteNode extends ICommandNode {
     @Override
     default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context){
         return null;
+    }
+
+    @Nonnull
+    @Override
+    default CommandBranch branch(){
+        return new CommandBranch();
     }
 
     void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;

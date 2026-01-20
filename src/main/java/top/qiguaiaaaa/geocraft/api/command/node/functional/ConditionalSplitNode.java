@@ -33,10 +33,17 @@ import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+import top.qiguaiaaaa.geocraft.api.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -44,7 +51,7 @@ import java.util.stream.Collectors;
  * @author QiguaiAAAA
  */
 public class ConditionalSplitNode implements ICommandNode {
-    protected final Map<BiPredicate<CommandContext,List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
+    protected final Map<BiPredicate<CommandContext, List<String>>,ICommandNode> nodeList = new LinkedHashMap<>();
 
     public void addCondition(@Nonnull final BiPredicate<CommandContext,List<String>> condition,@Nonnull final ICommandNode node){
         nodeList.put(Objects.requireNonNull(condition),Objects.requireNonNull(node));
@@ -85,5 +92,14 @@ public class ConditionalSplitNode implements ICommandNode {
                 .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        return new SplitCommandBranch(nodeList.values().stream()
+                .map(ICommandNode::branch)
+                .filter(branch -> !branch.isEmpty())
+                .collect(Collectors.toSet()));
     }
 }

@@ -25,28 +25,53 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node;
+package top.qiguaiaaaa.geocraft.api.command.utils;
 
-import net.minecraft.command.CommandException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author QiguaiAAAA
  */
-public interface ICommandNode {
+public class CommandBranch {
 
-    <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException;
+    protected final LinkedList<ITextComponent> documents = new LinkedList<>();
 
-    @Nullable
-    <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context);
+    protected ITextComponent document;
+
+    public void appendDocument(@Nonnull final ITextComponent document){
+        documents.addFirst(document);
+    }
 
     @Nonnull
-    CommandBranch branch();
+    public List<ITextComponent> getDocuments(){
+        return documents;
+    }
+
+    @Nonnull
+    public ITextComponent getDocument() {
+        return document;
+    }
+
+    public boolean isEmpty(){
+        return documents.isEmpty();
+    }
+
+    public void finish(@Nonnull final ICommand command){
+        document = new TextComponentString("/"+ Objects.requireNonNull(command).getName());
+        for(final @Nonnull ITextComponent node:documents){
+            document.appendText(" ").appendSibling(node);
+        }
+    }
+
+    public void print(@Nonnull final ICommandSender sender){
+        sender.sendMessage(document);
+    }
 }

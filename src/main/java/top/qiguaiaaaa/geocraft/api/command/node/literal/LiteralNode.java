@@ -29,11 +29,13 @@ package top.qiguaiaaaa.geocraft.api.command.node.literal;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.text.TextComponentString;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -99,5 +101,13 @@ public class LiteralNode extends PermitNode implements ISmartNode {
             return literal.startsWith(args.getFirst())?Collections.singletonList(literal):null;
         }
         return Collections.singletonList(literal);
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        final CommandBranch branch = super.branch();
+        branch.appendDocument(new TextComponentString(literal));
+        return branch;
     }
 }

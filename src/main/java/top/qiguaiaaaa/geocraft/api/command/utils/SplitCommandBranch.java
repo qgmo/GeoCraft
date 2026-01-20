@@ -25,34 +25,55 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.builder.execute;
+package top.qiguaiaaaa.geocraft.api.command.utils;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.execute.ExecuteNode;
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author QiguaiAAAA
  */
-public class ExecuteNodeBuilder implements INodeBuilder<ExecuteNode> {
-    public static final CommandRunFunction DO_NOTHING = (args, serializedArgs) -> {};
-    protected CommandRunFunction funcExecute = DO_NOTHING;
+public class SplitCommandBranch extends CommandBranch{
 
-    public ExecuteNodeBuilder() {
+    protected final Set<CommandBranch> branches;
+
+    public SplitCommandBranch(final @Nonnull Collection<CommandBranch> subBranches){
+        branches = new HashSet<>(Objects.requireNonNull(subBranches));
     }
 
-    @Nonnull
-    public ExecuteNodeBuilder run(@Nonnull final CommandRunFunction runFunc) {
-        this.funcExecute = runFunc;
-        return this;
+    public void setEndDocument(@Nonnull final ITextComponent document){
+        super.appendDocument(document);
     }
 
-    @Nonnull
     @Override
-    public ExecuteNode build() {
-        final ExecuteNode node = (context, args) -> funcExecute.run(args, context);
-        return node;
+    public void appendDocument(@Nonnull final ITextComponent document) {
+        super.appendDocument(document);
+        for(final CommandBranch branch:branches){
+            branch.appendDocument(document.createCopy());
+        }
     }
 
+    @Override
+    public void finish(@Nonnull final ICommand command) {
+        super.finish(command);
+        document.appendText(" ...");
+        for (final CommandBranch branch : branches) {
+            branch.finish(command);
+        }
+    }
+
+    @Override
+    public void print(@Nonnull final ICommandSender sender){
+        super.print(sender);
+        for(final CommandBranch branch:branches){
+            branch.print(sender);
+        }
+    }
 }

@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.api.command.node.literal;
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.util.text.TextComponentString;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -37,10 +38,15 @@ import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
+import top.qiguaiaaaa.geocraft.api.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -136,5 +142,19 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     @Override
     public void setMatcher(@Nullable BiPredicate<List<String>, CommandContext> checker) {
         throw new UnsupportedOperationException();
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        final SplitCommandBranch splitBranch = new SplitCommandBranch(literal2Node.values().stream()
+                .map(ICommandNode::branch)
+                .filter(branch -> !branch.isEmpty())
+                .collect(Collectors.toSet()));
+        splitBranch.setEndDocument(new TextComponentString(
+                (isOptional() ? "[" : "<") +
+                        String.join("|", literal2Node.keySet()) +
+                        (isOptional() ? "]" : ">")));
+        return splitBranch;
     }
 }
