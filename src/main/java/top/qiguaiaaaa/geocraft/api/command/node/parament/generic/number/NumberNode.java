@@ -32,15 +32,12 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.BiFunction;
 
 /**
  * @author QiguaiAAAA
@@ -51,7 +48,6 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
 
     public NumberNode(@Nonnull String name) {
         super(name);
-        setSuggestProvider(new NumberSuggestProvider());
     }
 
     public void setMinValue(@Nonnull T minValue) {
@@ -84,12 +80,5 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
     @Override
     public <T1 extends List<String> & Deque<String>> T parseParameter(@Nonnull T1 args, @Nonnull ExecuteContext context) throws CommandException {
         return parseNumber(args.get(0));
-    }
-
-    protected class NumberSuggestProvider implements BiFunction<List<String>, SuggestContext,List<String>>{
-        @Override
-        public List<String> apply(List<String> strings, SuggestContext context) {
-            return Collections.singletonList(String.valueOf(0));
-        }
     }
 }

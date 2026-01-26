@@ -40,8 +40,8 @@ public class DoubleNode extends NumberNode<Double> {
     public DoubleNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Double.MIN_VALUE);
-        setMaxValue(Double.MAX_VALUE);
+        setMinValue(Double.NEGATIVE_INFINITY);
+        setMaxValue(Double.POSITIVE_INFINITY);
     }
 
     @Nonnull
@@ -63,7 +63,7 @@ public class DoubleNode extends NumberNode<Double> {
     }
 
     @Override
-    protected Double parseNumber(@Nonnull String arg) throws NumberInvalidException {
+    protected Double parseNumber(@Nonnull final String arg) throws NumberInvalidException {
         return CommandBase.parseDouble(arg,minValue,maxValue);
     }
 }

@@ -51,8 +51,6 @@ public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T ext
         final T instance = super.build();
         if (maxValue != null && minValue != null && maxValue.compareTo(minValue) < 0)
             throw new IllegalArgumentException(String.valueOf(maxValue.compareTo(minValue)));
-        if (maxValue != null) instance.setMaxValue(maxValue);
-        if (minValue != null) instance.setMinValue(minValue);
         return instance;
     }
 }
