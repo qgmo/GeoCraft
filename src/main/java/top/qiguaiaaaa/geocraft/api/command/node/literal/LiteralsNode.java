@@ -29,12 +29,16 @@ package top.qiguaiaaaa.geocraft.api.command.node.literal;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.WrongUsageException;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelCommandException;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
@@ -49,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 多字面量节点，可以通过不同的字面量做到不同的分支。<br/>
@@ -64,10 +69,11 @@ import java.util.stream.Collectors;
  * @since GeoCraft API-0.2.0
  * @author QiguaiAAAA
  */
-public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNode {
+public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNode, IDocumentaryNode {
     protected final Map<String, ICommandNode> literal2Node = new LinkedHashMap<>();
 
     protected boolean optional;
+    protected SplitCommandBranch curBranch;
 
     public void addLiteral(@Nonnull String literal,@Nonnull ICommandNode node){
         literal2Node.put(literal,node);
@@ -76,11 +82,11 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
+        if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         final ICommandNode node;
         if(args.size()>0){
             node = literal2Node.get(args.getFirst());
-        }else if(!isOptional()) throw new WrongUsageException("wrong!");
+        }else if(!isOptional()) throw new NickelSyntaxException(curBranch,this);
         else node = childNode;
         if(node != null){
             String first = null;
@@ -90,7 +96,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
             }finally {
                 if(first != null) args.addFirst(first);
             }
-        }else throw new WrongUsageException("Wrong!");
+        }else throw new NickelCommandException(curBranch,this,new TextComponentTranslation("nickel.command.literals.exception.default"));
     }
 
     @Nullable
@@ -147,14 +153,19 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     @Nonnull
     @Override
     public CommandBranch branch() {
-        final SplitCommandBranch splitBranch = new SplitCommandBranch(literal2Node.values().stream()
+        this.curBranch = new SplitCommandBranch((childNode == null?literal2Node.values().stream():Stream.concat(literal2Node.values().stream(),Stream.of(childNode)))
                 .map(ICommandNode::branch)
                 .filter(branch -> !branch.isEmpty())
                 .collect(Collectors.toSet()));
-        splitBranch.setEndDocument(new TextComponentString(
-                (isOptional() ? "[" : "<") +
-                        String.join("|", literal2Node.keySet()) +
-                        (isOptional() ? "]" : ">")));
-        return splitBranch;
+        curBranch.setEndDocument(getDocument());
+        return curBranch;
+    }
+
+    @Nonnull
+    @Override
+    public ITextComponent getDocument() {
+        return new TextComponentString(IDocumentaryNode.getFormatBegin(isOptional()) +
+                        String.join(SPLIT_NODE_SPLIT, literal2Node.keySet()) +
+                        IDocumentaryNode.getFormatEnd(isOptional()));
     }
 }

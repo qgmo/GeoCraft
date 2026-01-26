@@ -25,46 +25,61 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.execute;
+package top.qiguaiaaaa.geocraft.api.command.exception;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.SyntaxErrorException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import net.minecraft.util.text.ITextComponent;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-@FunctionalInterface
-public interface ExecuteNode extends ICommandNode {
-    @Override
-    default <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException{
-        if(!keepArguments() && !args.isEmpty() && !args.get(0).trim().isEmpty()) throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",String.join(" ",args));
-        run(context,args);
+public class NickelCommandException extends CommandException {
+    protected final CommandBranch fromBranch;
+    protected final IDocumentaryNode fromNode;
+    protected final ITextComponent appendix;
+
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch) {
+        this(fromBranch,null,null);
     }
 
-    @Nullable
-    @Override
-    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context){
-        return null;
+    public NickelCommandException(@Nonnull final ITextComponent appendix,@Nonnull final CommandBranch fromBranch) {
+        this(fromBranch, null,appendix);
+    }
+
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode) {
+        this(fromBranch,fromNode,null);
+    }
+
+    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final ITextComponent appendix) {
+        super("nickel.command.exception.base.message");
+        this.fromBranch = fromBranch;
+        this.fromNode = fromNode;
+        this.appendix = appendix;
     }
 
     @Nonnull
-    @Override
-    default CommandBranch branch(){
-        return new CommandBranch();
+    public CommandBranch getSourceBranch() {
+        return fromBranch;
     }
 
-    default boolean keepArguments(){
-        return false;
+    @Nullable
+    public ICommandNode getSourceNode() {
+        return fromNode;
     }
 
-    void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
+    @Nullable
+    public ITextComponent getNodeDocument(){
+        return fromNode == null?null:fromNode.getDocument();
+    }
+
+    @Nullable
+    public ITextComponent getDetails() {
+        return appendix;
+    }
 }

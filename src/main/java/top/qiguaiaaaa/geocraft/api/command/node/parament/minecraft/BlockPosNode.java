@@ -28,7 +28,9 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import com.google.common.collect.Lists;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -75,7 +77,7 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
         CommandBase.parseBlockPos(context.getSender(),args.toArray(EmptyStringArr), 0,doCenterBlock);
         return true;
@@ -106,6 +108,6 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.blockPos";
+        return "nickel.command.parameter.minecraft.block_pos";
     }
 }

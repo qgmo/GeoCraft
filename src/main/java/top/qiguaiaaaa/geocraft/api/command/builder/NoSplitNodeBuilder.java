@@ -43,7 +43,6 @@ public abstract class NoSplitNodeBuilder<N extends NoSplitNode, S extends NoSpli
     @Nonnull
     @SuppressWarnings("unchecked")
     public S then(@Nonnull final INodeBuilder<?> childNode) {
-        ensureFirstChild();
         this.childNode = childNode;
         return (S) this;
     }
@@ -51,7 +50,6 @@ public abstract class NoSplitNodeBuilder<N extends NoSplitNode, S extends NoSpli
     @Nonnull
     @SuppressWarnings("unchecked")
     public S then(@Nonnull final ICommandNode childNode) {
-        ensureFirstChild();
         this.bakedChildNode = childNode;
         return (S) this;
     }

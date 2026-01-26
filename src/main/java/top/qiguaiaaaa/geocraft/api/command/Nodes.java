@@ -35,9 +35,10 @@ import net.minecraft.item.Item;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.registry.EntityEntry;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.ExecuteNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.RelayExecuteNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.SimpleCommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.ConditionalSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.ForEachNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
@@ -51,7 +52,6 @@ import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.EntitySel
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.ItemStackNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.functional.RunCommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.EntityEntrySelectorNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.FluidSelectorNode;
@@ -125,7 +125,12 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(@Nonnull final CommandRunFunction func){
+    public static ExecuteNodeBuilder execute(@Nonnull final CommandExecutor func){
+        return execute().run(func);
+    }
+
+    @Nonnull
+    public static ExecuteNodeBuilder execute(@Nonnull final SimpleCommandExecutor func){
         return execute().run(func);
     }
 
@@ -145,12 +150,12 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandRunFunction func){
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func){
         return relay().run(func);
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandRunFunction func,@Nonnull final CommandRunFunction funcAfter){
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func, @Nonnull final CommandExecutor funcAfter){
         return relay().run(func).after(funcAfter);
     }
 

@@ -59,7 +59,7 @@ public class DoubleNode extends NumberNode<Double> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.double";
+        return "nickel.command.parameter.generic.double";
     }
 
     @Override

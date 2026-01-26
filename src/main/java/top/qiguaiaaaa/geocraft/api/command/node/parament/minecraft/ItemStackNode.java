@@ -29,7 +29,6 @@ package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.init.Items;
@@ -38,8 +37,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextComponentTranslation;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.Matchers;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
@@ -47,7 +48,6 @@ import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 import javax.annotation.Nonnull;
 import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.BiPredicate;
 
 /**
@@ -99,7 +99,7 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
             } else usedParas = parseStackWithNBT(args,context);
         }else if(defaultParser!=null){
             putParsedArgument(defaultParser.parser(this,context),context);
-        }else throw new CommandException("api.geo.command.parameter.base.default_not_found",this.getLocalizedParameter());
+        }else throw new NickelSyntaxException(currentBranch,this,new TextComponentTranslation("nickel.command.parameter.base.default_not_found"));
 
         this.executeChild(args,context,usedParas);
     }
@@ -119,6 +119,12 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     @Override
     public Class<ItemStack> getTypeClass() {
         return getType();
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.minecraft.item_stack";
     }
 
     @Override
@@ -158,7 +164,7 @@ public class ItemStackNode extends SmartParameterNode<ItemStack> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return ValidChecker.MATCH_ONE_PARAMETER.check(this, args, context); //由于具体检查比较复杂，这里就简单检查一下
     }
 }

@@ -25,34 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.execute;
+package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode {
+@FunctionalInterface
+public interface SimpleCommandExecutor extends CommandExecutor{
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        try {
-            ExecuteNode.super.execute(args,context);
-            if(childNode != null) childNode.execute(args,context);
-        }finally {
-            onFinal(context,args);
-        }
+    default void run(@Nonnull List<String> args, @Nonnull ExecuteContext context) throws CommandException{
+        this.simplyRun(context);
     }
 
-    @Override
-    public boolean keepArguments() {
-        return true;
+    void simplyRun(@Nonnull ExecuteContext ctx) throws CommandException;
+
+    @Nonnull
+    default SimpleCommandExecutor thenSimple(@Nonnull final SimpleCommandExecutor runFunc){
+        return ctx ->{
+            simplyRun(ctx);
+            runFunc.simplyRun(ctx);
+        };
     }
 
-    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{}
+    @Nonnull
+    default SimpleCommandExecutor thenSimple(@Nonnull final Consumer<ExecuteContext> func){
+        return ctx -> {
+            simplyRun(ctx);
+            func.accept(ctx);
+        };
+    }
 }

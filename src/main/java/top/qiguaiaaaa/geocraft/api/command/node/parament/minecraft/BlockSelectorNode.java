@@ -61,7 +61,7 @@ public class BlockSelectorNode extends ForgeRegistryEntryNode<Block> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.block";
+        return "nickel.command.parameter.minecraft.block";
     }
 
     @Override

@@ -27,17 +27,17 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.generic;
 
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.text.TextComponentTranslation;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Type;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -52,21 +52,24 @@ public class StringNode extends SmartParameterNode<String> {
         final StringNode node = (StringNode) self;
         if(node.whitelist !=null && !node.whitelist.isEmpty()){
             if(node.whitelist.contains(args.get(0))) return true;
-            throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.white",args.get(0),self.getLocalizedParameter(),String.join(" ", node.whitelist));
+            throw new NickelSyntaxException(node.currentBranch, node,
+                    new TextComponentTranslation("nickel.command.parameter.string.invalid.white",args.get(0),String.join(" ", node.whitelist)));
         }
         return true;
     };
     public static final ValidChecker CHECK_BLACKLIST = (self, args, context) -> {
         final StringNode node = (StringNode) self;
         if(node.blacklist != null && !node.blacklist.isEmpty() && node.blacklist.contains(args.get(0))){
-            throw new SyntaxErrorException("api.geo.command.parameter.string.invalid.black",args.get(0),self.getLocalizedParameter(),String.join(" ",node.blacklist));
+            throw new NickelSyntaxException(node.currentBranch, node,
+                    new TextComponentTranslation("nickel.command.parameter.string.invalid.black",args.get(0),String.join(" ",node.blacklist)));
         }
         return true;
     };
     public static final ValidChecker CHECK_PATTERN = (self, args, context) -> {
         final StringNode node = (StringNode) self;
         if(node.pattern != null && !node.pattern.matcher(args.get(0)).matches()) {
-            throw new SyntaxErrorException("api.geo.command.parameter.string.nonMatch", args.get(0), self.getLocalizedParameter(), node.pattern.toString());
+            throw new NickelSyntaxException(node.currentBranch, node,
+                    new TextComponentTranslation("nickel.command.parameter.string.nonMatch", args.get(0), node.pattern.toString()));
         }
         return true;
     };
@@ -121,11 +124,11 @@ public class StringNode extends SmartParameterNode<String> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.string";
+        return "nickel.command.parameter.generic.string";
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return checker.check(this,args,context);
     }
 

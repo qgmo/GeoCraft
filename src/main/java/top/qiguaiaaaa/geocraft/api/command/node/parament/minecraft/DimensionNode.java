@@ -29,7 +29,6 @@ package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.world.World;
@@ -78,16 +77,22 @@ public class DimensionNode extends SmartParameterNode<World> {
         return getType();
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.minecraft.dimension";
+    }
+
     @Override
     public <T extends List<String> & Deque<String>> World parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         final int dimension = CommandBase.parseInt(args.get(0));
         final World world = DimensionManager.getWorld(dimension);
-        if(world == null) throw new CommandException("api.geo.command.parameter.dimension.not_found",dimension);
+        if(world == null) throw new CommandException("nickel.command.parameter.dimension.not_found",dimension);
         return world;
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         CommandBase.parseInt(args.get(0));
         return true;

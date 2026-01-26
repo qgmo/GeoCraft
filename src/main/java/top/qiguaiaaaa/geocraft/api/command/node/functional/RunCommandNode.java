@@ -44,6 +44,7 @@ import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 import top.qiguaiaaaa.geocraft.api.event.GeoCommandEvent;
 
@@ -106,7 +107,7 @@ public class RunCommandNode implements ICommandNode{
     @Override
     public CommandBranch branch() {
         final CommandBranch branch = new CommandBranch();
-        branch.appendDocument(new TextComponentString("<command>"));
+        branch.appendDocument(new TextComponentString(String.format(IDocumentaryNode.REQUIRED_FORMAT, "command")));
         return branch;
     }
 

@@ -61,7 +61,7 @@ public class EntityEntrySelectorNode extends ForgeRegistryEntryNode<EntityEntry>
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.forge.entityEntry";
+        return "nickel.command.parameter.forge.entity_entry";
     }
 
     @Override
@@ -70,25 +70,14 @@ public class EntityEntrySelectorNode extends ForgeRegistryEntryNode<EntityEntry>
     }
 
     @Nonnull
-    public EntityEntry getEntityEntryByText(@Nonnull final CommandContext context,@Nonnull final String text) throws InvalidEntityEntryException{
+    public EntityEntry getEntityEntryByText(@Nonnull final CommandContext context,@Nonnull final String text) throws CommandException {
         final ResourceLocation loc = new ResourceLocation(text);
         @Nullable final EntityEntry entry  = ForgeRegistries.ENTITIES.getValue(loc);
 
         if (entry == null) {
-            throw new InvalidEntityEntryException(text);
+            throw new CommandException("nickel.command.parameter.entity_entry.invalid",loc);
         } else {
             return entry;
-        }
-    }
-
-    public class InvalidEntityEntryException extends CommandException{
-
-        public InvalidEntityEntryException(@Nullable final String id){
-            super("api.geo.command.parameter.entityEntry.invalid",id,EntityEntrySelectorNode.this.getLocalizedParameter());
-        }
-
-        public InvalidEntityEntryException(String message, Object... objects) {
-            super(message, objects);
         }
     }
 }

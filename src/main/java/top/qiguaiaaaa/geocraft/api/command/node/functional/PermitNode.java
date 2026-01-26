@@ -55,13 +55,13 @@ public class PermitNode extends NoSplitNode {
         this.checker = Objects.requireNonNull(predicate);
     }
 
-    public boolean checkPermission(@Nonnull CommandContext context) {
+    public boolean checkPermission(@Nonnull final CommandContext context) {
         return checker.test(context);
     }
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
+        if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         if(childNode != null) childNode.execute(args,context);
     }
 

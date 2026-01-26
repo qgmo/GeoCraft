@@ -29,7 +29,6 @@ package top.qiguaiaaaa.geocraft.api.command.node.parament.generic;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
@@ -81,11 +80,11 @@ public class BooleanNode extends SmartParameterNode<Boolean> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.boolean";
+        return "nickel.command.parameter.generic.boolean";
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){
             return false;
         }

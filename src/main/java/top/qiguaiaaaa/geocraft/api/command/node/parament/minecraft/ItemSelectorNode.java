@@ -66,6 +66,6 @@ public class ItemSelectorNode extends ForgeRegistryEntryNode<Item> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.item";
+        return "nickel.command.parameter.minecraft.item";
     }
 }

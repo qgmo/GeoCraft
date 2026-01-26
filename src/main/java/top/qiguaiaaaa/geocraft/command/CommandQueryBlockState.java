@@ -32,7 +32,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.NextTickListEntry;
 import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
@@ -45,11 +44,13 @@ import java.util.Set;
  * @author QiguaiAAAA
  */
 public class CommandQueryBlockState extends CommandBase {
+    @Nonnull
     @Override
     public String getName() {
         return "queryBlockState";
     }
 
+    @Nonnull
     @Override
     public String getUsage(@Nonnull ICommandSender sender) {
         return "";

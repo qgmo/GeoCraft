@@ -25,45 +25,54 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
+package top.qiguaiaaaa.geocraft.api.command.exception;
 
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.text.ITextComponent;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public class LongNode extends NumberNode<Long> {
-    public static final DefaultParser<Long> DEFAULT_PARSER = (node, context) -> 0L;
-    public LongNode(@Nonnull String name) {
-        super(name);
-        setDefaultParser(DEFAULT_PARSER);
-        setMinValue(Long.MIN_VALUE);
-        setMaxValue(Long.MAX_VALUE);
+public class NickelSyntaxException extends SyntaxErrorException {
+    protected final CommandBranch fromBranch;
+    protected final IDocumentaryNode fromNode;
+    protected final ITextComponent appendix;
+
+    public NickelSyntaxException(@Nonnull final CommandBranch fromBranch,@Nonnull final IDocumentaryNode fromNode) {
+        this.fromBranch = fromBranch;
+        this.fromNode = fromNode;
+        this.appendix = null;
+    }
+
+    public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final ITextComponent appendix) {
+        this.fromBranch = fromBranch;
+        this.fromNode = fromNode;
+        this.appendix = appendix;
     }
 
     @Nonnull
-    @Override
-    public Class<Long> getType() {
-        return Long.class;
+    public CommandBranch getSourceBranch() {
+        return fromBranch;
     }
 
     @Nonnull
-    @Override
-    public Class<Long> getTypeClass() {
-        return getType();
+    public ICommandNode getSourceNode() {
+        return fromNode;
     }
 
     @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return "nickel.command.parameter.generic.long";
+    public ITextComponent getNodeDocument(){
+        return fromNode.getDocument();
     }
 
-    @Override
-    protected Long parseNumber(@Nonnull String arg) throws NumberInvalidException {
-        return CommandBase.parseLong(arg,minValue,maxValue);
+    @Nullable
+    public ITextComponent getDetails() {
+        return appendix;
     }
 }

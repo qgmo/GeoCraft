@@ -1,8 +1,77 @@
+nickel.command.parameter.generic.big_decimal=高精度十进制数
+nickel.command.parameter.generic.big_integer=高精度整数
+nickel.command.parameter.generic.boolean=布尔值
+nickel.command.parameter.generic.double=双精度浮点数
+nickel.command.parameter.generic.integer=整型
+nickel.command.parameter.generic.long=长整型
+nickel.command.parameter.generic.string=字符串
+nickel.command.parameter.generic.uuid=UUID
+nickel.command.parameter.minecraft.block_pos=方块坐标
+nickel.command.parameter.minecraft.block=方块
+nickel.command.parameter.minecraft.block_state=方块状态
+nickel.command.parameter.minecraft.dimension=维度
+nickel.command.parameter.minecraft.entity_selector=目标选择器
+nickel.command.parameter.minecraft.item=物品
+nickel.command.parameter.minecraft.item_stack=物品堆
+nickel.command.parameter.minecraft.vector3d=三维向量
+nickel.command.parameter.forge.fluid=流体
+nickel.command.parameter.forge.ore_directory=矿物词典
+nickel.command.parameter.forge.entity_entry=实体类型
+nickel.command.parameter.geocraft.atmosphere_accessor=大气访问器
+
+nickel.command.parameter.base.default_not_found=该可选参数未正确配置默认值解析器
+nickel.command.parameter.smart.checker1=该参数至少需要一个输入
+nickel.command.parameter.smart.checkers=该参数至少需要 %s 个输入
+nickel.command.parameter.checker.resource_location.invalid.repeat=命名空间 ID 不能存在两个及以上的分号『:』
+nickel.command.parameter.checker.resource_location.invalid.slash=命名空间不能存在正斜杠『/』
+nickel.command.parameter.string.nonMatch=无效的输入 %s ，该字符串参数的输入必须匹配正则表达式 %s
+nickel.command.parameter.string.invalid.white=无效的输入 %s ，该字符串参数仅允许以下输入：%s
+nickel.command.parameter.string.invalid.black=无效的输入 %s ，该字符串参数不接受以下输入： %s
+nickel.command.parameter.dimension.not_found=无法根据 ID %s 找到对应的维度，该维度可能不存在或已被卸载
+nickel.command.parameter.block_state.invalid_end=%s 缺少右方括号『[』
+nickel.command.parameter.fluid.invalid=无效的流体 %s
+nickel.command.parameter.ore_directory.invalid=无效的矿物词典 %s
+nickel.command.parameter.entity_entry.invalid=无效的实体类型 %s
+
+nickel.command.functional.permit.denied=因您的权限不足，该命令无法执行
+nickel.command.functional.literal.non_match=命令期望的字面量是 %s ，但是您输入了 %s
+
+nickel.command.execute.argument_not_empty=多余的输入：%s
+
+nickel.command.context.get.non_entity=没有匹配到任何符合条件的实体
+nickel.command.context.get.unknown_argument.entity=尝试从执行上下文获取一个实体时出现了一个意外的错误：未知的对象类型 %s
+nickel.command.context.get.unknown_argument.entities=尝试从执行上下文获取实体们时出现了一个意外的错误：未知的对象类型 %s
+
+nickel.command.literals.exception.default=该字面量节点被设置为可选，但意外地没有配置任何的默认逻辑
+
+#注意这里有些值末尾的空格是必需的
+nickel.command.exception.syntax.node.pre=命令节点 
+nickel.command.exception.syntax.node.sub= 出现语法错误
+nickel.command.exception.syntax.details=详细信息：
+nickel.command.exception.syntax.usage=用法：
+nickel.command.exception.base.message=命令运行时出现了一些错误
+nickel.command.exception.base.node.pre=命令节点 
+nickel.command.exception.base.node.sub= 
+nickel.command.exception.base.details=详细信息：
+nickel.command.exception.base.branch=分支：
+
 geocraft.command.io_error=发生了一个IO异常 (%s)，命令无法继续执行
 geocraft.command.chunk_error.unloaded=(%s,%s) 所在位置并未加载
 geocraft.command.atmosphere_system.null=该世界不存在大气系统
-geocraft.command.atmosphere.nonexistent=该区块不存在大气或大气尚未初始化
-geocraft.command.atmosphere.nonexistent.there=那里不存在大气或大气尚未初始化
+
+geocraft.command.atmosphere.arg.pos=位置
+geocraft.command.atmosphere.arg.value=值
+geocraft.command.atmosphere.arg.property=属性
+geocraft.command.atmosphere.arg.world=维度
+geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
+geocraft.command.atmosphere.arg.util_name=工具名称
+geocraft.command.atmosphere.arg.time=追踪时长
+geocraft.command.atmosphere.arg.file_name=文件名
+
+geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
+geocraft.command.atmosphere.comment.file_name=指示需要将追踪的数据存储到的文件名，不能为空或包含特殊字符，推荐在末尾带上 .csv 后缀
+
+geocraft.command.atmosphere.nonexistent=那里不存在大气或大气尚未初始化
 geocraft.command.atmosphere.unknown=未知大气种类，无法操作。您可能安装了提供其他大气系统实现的第三方模组或插件
 geocraft.command.atmosphere.unknown_underlying=未知下垫面层类，无法操作。您可能安装了提供其他大气系统实现的第三方模组或插件
 geocraft.command.atmosphere.layer.null=该高度不存在大气层级
@@ -11,28 +80,25 @@ geocraft.command.atmosphere.property.null=该属性不存在于此层级
 geocraft.command.atmosphere.property.null2=属性 %s 不存在于此层级
 geocraft.command.atmosphere.property.unknown=指定属性对应状态非FluidState或TemperatureState，无法操作
 geocraft.command.atmosphere.usage=/atmosphere [set|reset|add|query|util|track] ...
-geocraft.command.atmosphere.set.usage=/atmosphere set <属性:water|temp> <数值> [<x> <z>]
 geocraft.command.atmosphere.set.gas=(%s,%s,%s) 所在大气的属性 %s 已被设置为 %s mB
-geocraft.command.atmosphere.set.steam=(%s,%s,%s) 所在的水气已被设置为 %s mB
+geocraft.command.atmosphere.set.steam=(%s,%s,%s) 所在的水汽已被设置为 %s mB
 geocraft.command.atmosphere.set.water=(%s,%s,%s) 所在的水量已被设置为 %s mB
 geocraft.command.atmosphere.set.temp=(%s,%s,%s) 所在温度已被设置为 %s 开尔文(K)
 geocraft.command.atmosphere.set.temp2=(%s,%s,%s) 所在大气温度 %s 已被设置为 %s 开尔文(K)
-geocraft.command.atmosphere.set.debug= (%s,%s) 处的大气调试模式状态现在为 %s.详细调试信息可在日志文件中查看.
-geocraft.command.atmosphere.add.usage=/atmosphere add <water|temp> <数值> [<x> <z>]
+geocraft.command.atmosphere.set.debug= (%s,%s) 处的大气调试模式状态现在为 %s，详细调试信息可在日志文件中查看
+geocraft.command.atmosphere.stop.stopped=维度 %s 的大气系统已停止运行
+geocraft.command.atmosphere.stop.running=维度 %s 的大气系统已重新开始运行
 geocraft.command.atmosphere.add.gas=(%s,%s,%s) 所在大气的属性 %s 已被添加至 %s mB
 geocraft.command.atmosphere.add.steam=(%s,%s,%s) 所在大气的水汽已被添加至 %s mB
 geocraft.command.atmosphere.add.water=(%s,%s,%s) 所在大气的水量已被添加至 %s mB
 geocraft.command.atmosphere.add.temp=(%s,%s,%s) 所在大气温度已被添加至 %s 开尔文(K)
 geocraft.command.atmosphere.add.temp2=(%s,%s,%s) 所在大气温度 %s 已被添加至 %s 开尔文(K)
-geocraft.command.atmosphere.query.usage=/atmosphere query <water|temp|basic_temp|block_temp|underlying|wind|heat_volume> ...
-geocraft.command.atmosphere.query.usage.xz=/atmosphere query <water|temp|basic_temp|underlying|wind|heat_volume> [<x> <z>]
-geocraft.command.atmosphere.query.usage.xyz=/atmosphere query <block_temp> [<x> <y> <z>]
 geocraft.command.atmosphere.query.steam=(%s,%s,%s) 所在大气的水量是 %s mB
 geocraft.command.atmosphere.query.water=(%s,%s,%s) 所在大气的水量是 %s mB
 geocraft.command.atmosphere.query.pressure=(%s,%s,%s) 所在位置的气压是 %s 百帕(hPa)
 geocraft.command.atmosphere.query.water_pressure=(%s,%s,%s) 所在位置的水蒸汽分压是 %s 百帕(hPa)
 geocraft.command.atmosphere.query.temp=(%s,%s,%s) 所在大气的温度是 %s 开尔文(K)
-geocraft.command.atmosphere.query.ground_temp=(%s,%s) 所在大气下垫面的温度是 %s 开尔文(K)
+geocraft.command.atmosphere.query.ground_temp=(%s,%s,%s) 所在大气下垫面的温度是 %s 开尔文(K)
 geocraft.command.atmosphere.query.block_temp=(%s,%s,%s) 的温度为 %s 开尔文(K)
 geocraft.command.atmosphere.query.underlying=(%s,%s,%s) 所在区块下垫面的总比热容是 %s FE/(区块·℃)，平均反射率为 %s，平均发射率为 %s
 geocraft.command.atmosphere.query.wind.north=(%s,%s,%s) 所在大气朝向北的风速为 %s m/s
@@ -49,17 +115,14 @@ geocraft.command.atmosphere.query.basic.2=风: %s
 geocraft.command.atmosphere.query.basic.3=[层 %s %s->%s]
 geocraft.command.atmosphere.query.basic.4=温度: %s K
 geocraft.command.atmosphere.query.basic.5=水汽: %s mB 液态水: %s mB
-geocraft.command.atmosphere.reset.usage=/atmosphere reset <temp|basic_temp> [<x> <z>]
 geocraft.command.atmosphere.reset.temp=(%s,%s) 所在大气温度已被重设为 %s 开尔文(K)
 geocraft.command.atmosphere.reset.basic_temp=(%s,%s) 所在大气的基础温度已被重新计算为 %s 开尔文(K)
-geocraft.command.atmosphere.util.usage=/atmosphere util <sun|radiation|energy_got>
 geocraft.command.atmosphere.util.sun=太阳信息
 geocraft.command.atmosphere.util.sun.1=太阳高度角: %s
-geocraft.command.atmosphere.util.sun.2=每60刻获得的太阳辐射: %s FE
+geocraft.command.atmosphere.util.sun.2=每大气刻获得的太阳辐射: %s FE
 geocraft.command.atmosphere.util.property=%s
-geocraft.command.atmosphere.util.block_info=脚下方块 %s 的比热容为 %s FE/块，返照率为 %s
+geocraft.command.atmosphere.util.block_info=方块 %s 的比热容为 %s FE/块，返照率为 %s
 geocraft.command.atmosphere.util.storage=当前正在加载状态的大气数量 %s
-geocraft.command.atmosphere.track.usage=/atmosphere track <temp> <时间> <文件名> [<x> <z>]
 geocraft.command.atmosphere.track.water=正在追踪 (%s,%s,%s) 处的大气水量，任务ID = %s
 geocraft.command.atmosphere.track.temp=正在追踪 (%s,%s,%s) 处的大气温度，任务ID = %s
 geocraft.command.atmosphere.track.gas=正在追踪 (%s,%s,%s) 处的大气属性，任务ID = %s, 属性ID %s

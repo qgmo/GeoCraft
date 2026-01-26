@@ -32,7 +32,7 @@ import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
 import top.qiguaiaaaa.geocraft.api.command.Nodes;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
@@ -54,7 +54,7 @@ import java.util.function.Predicate;
  */
 public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<SELF>> {
 
-    public static final CommandRunFunction DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
+    public static final CommandExecutor DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
         if(!args.isEmpty()) throw new SyntaxErrorException();
     };
 
@@ -112,14 +112,14 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF execute(@Nonnull final CommandRunFunction func){
+    public SELF execute(@Nonnull final CommandExecutor func){
         defaultBuilder = Nodes.execute(DEFAULT_EXECUTE_FUNC_CHECKER.then(func));
         return (SELF) this;
     }
 
     /**
      * 定义当{@link SmartSplitNode} 的所有智能节点匹配失败时，默认的子节点，可以是任意 {@link ICommandNode}。
-     * 该方法会覆盖 {@link #defaultAs(INodeBuilder)} 和 {@link #execute(CommandRunFunction)}
+     * 该方法会覆盖 {@link #defaultAs(INodeBuilder)} 和 {@link #execute(CommandExecutor)}
      * @param node 默认子节点
      * @return {@link SmartSplitNodeBuilder}自身
      */
@@ -132,7 +132,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
 
     /**
      * 定义当{@link SmartSplitNode} 的所有智能节点匹配失败时，默认的子节点，可以是任意 {@link ICommandNode} 的构建器 {@link INodeBuilder}。
-     * 该方法会覆盖在此之前执行的 {@link #execute(CommandRunFunction)}
+     * 该方法会覆盖在此之前执行的 {@link #execute(CommandExecutor)}
      * @param node 默认子节点的构建器
      * @return {@link SmartSplitNodeBuilder}自身
      */

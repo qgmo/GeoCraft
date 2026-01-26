@@ -58,7 +58,7 @@ public class BigIntegerNode extends NumberNode<BigInteger> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.bigInteger";
+        return "nickel.command.parameter.generic.big_integer";
     }
 
     @Override

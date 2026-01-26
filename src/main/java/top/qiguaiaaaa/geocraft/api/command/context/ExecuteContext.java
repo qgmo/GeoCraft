@@ -97,10 +97,10 @@ public final class ExecuteContext extends CommandContext{
     @Nonnull
     public Entity getEntity(@Nonnull final String key) throws CommandException {
         final Object context = contexts.get(key);
-        if(context == null) throw new CommandException("api.geo.command.context.get.non_entity");
+        if(context == null) throw new CommandException("nickel.command.context.get.non_entity");
         if(context instanceof Collection<?>){
             final Collection<?> collection = (Collection<?>) context;
-            if(collection.isEmpty()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
             if(context instanceof List<?>){
                 final List<?> list = (List<?>) context;
                 throwIfInvalidEntityClass(list.get(0));
@@ -108,7 +108,7 @@ public final class ExecuteContext extends CommandContext{
             }else if(context instanceof Queue<?>){
                 final Queue<?> queue = (Queue<?>) context;
                 final Object ele = queue.peek();
-                if(ele == null) throw new CommandException("api.geo.command.context.get.non_entity");
+                if(ele == null) throw new CommandException("nickel.command.context.get.non_entity");
                 throwIfInvalidEntityClass(ele);
                 return (Entity) ele;
             }
@@ -119,20 +119,20 @@ public final class ExecuteContext extends CommandContext{
             return (Entity) context;
         }else if(context instanceof Optional<?>){
             final Optional<?> optional = (Optional<?>) context;
-            if(!optional.isPresent()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(!optional.isPresent()) throw new CommandException("nickel.command.context.get.non_entity");
             throwIfInvalidEntityClass(optional.get());
             return (Entity) optional.get();
-        }else throw new CommandException("api.geo.command.context.get.unknown_argument.entity",context.getClass());
+        }else throw new CommandException("nickel.command.context.get.unknown_argument.entity",context.getClass());
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
     public List<Entity> getEntities(@Nonnull final String key) throws CommandException{
         final Object context = contexts.get(key);
-        if(context == null) throw new CommandException("api.geo.command.context.get.non_entity");
+        if(context == null) throw new CommandException("nickel.command.context.get.non_entity");
         if(context instanceof Collection<?>){
             final Collection<?> collection = (Collection<?>) context;
-            if(collection.isEmpty()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
             if(context instanceof List<?>){
                 final List<?> list = (List<?>) context;
                 throwIfInvalidEntitiesClass(list.get(0));
@@ -148,18 +148,18 @@ public final class ExecuteContext extends CommandContext{
             return Collections.singletonList((Entity) context);
         }else if(context instanceof Optional<?>){
             final Optional<?> optional = (Optional<?>) context;
-            if(!optional.isPresent()) throw new CommandException("api.geo.command.context.get.non_entity");
+            if(!optional.isPresent()) throw new CommandException("nickel.command.context.get.non_entity");
             throwIfInvalidEntitiesClass(optional.get());
             return Collections.singletonList((Entity) optional.get());
-        }else throw new CommandException("api.geo.command.context.get.unknown_argument.entities", context.getClass());
+        }else throw new CommandException("nickel.command.context.get.unknown_argument.entities", context.getClass());
     }
 
     private void throwIfInvalidEntityClass(@Nullable final Object ele) throws CommandException {
-        if(!(ele instanceof Entity)) throw new CommandException("api.geo.command.context.get.unknown_argument.entity",ele==null?"NULL":ele.getClass());
+        if(!(ele instanceof Entity)) throw new CommandException("nickel.command.context.get.unknown_argument.entity",ele==null?"NULL":ele.getClass());
     }
 
     private void throwIfInvalidEntitiesClass(@Nullable final Object ele) throws CommandException {
-        if(!(ele instanceof Entity)) throw new CommandException("api.geo.command.context.get.unknown_argument.entities",ele==null?"NULL":ele.getClass());
+        if(!(ele instanceof Entity)) throw new CommandException("nickel.command.context.get.unknown_argument.entities",ele==null?"NULL":ele.getClass());
     }
 
     public BlockPos getBlockPos(@Nonnull String key){

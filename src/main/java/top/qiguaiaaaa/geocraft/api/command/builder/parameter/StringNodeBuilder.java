@@ -31,6 +31,7 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.StringNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -82,6 +83,13 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
     }
 
     @Nonnull
+    public StringNodeBuilder allow(@Nonnull final Collection<String> values){
+        if(whitelist == null) whitelist = new HashSet<>();
+        whitelist.addAll(Objects.requireNonNull(values));
+        return this;
+    }
+
+    @Nonnull
     public StringNodeBuilder deny(@Nonnull final String value){
         if(blacklist == null) blacklist = new HashSet<>();
         blacklist.add(Objects.requireNonNull(value));
@@ -93,6 +101,13 @@ public class StringNodeBuilder extends SmartParameterNodeBuilder<String, StringN
         for (@Nullable String value : values) {
             deny(Objects.requireNonNull(value));
         }
+        return this;
+    }
+
+    @Nonnull
+    public StringNodeBuilder deny(@Nonnull final Collection<String> value){
+        if(blacklist == null) blacklist = new HashSet<>();
+        blacklist.addAll(Objects.requireNonNull(value));
         return this;
     }
 

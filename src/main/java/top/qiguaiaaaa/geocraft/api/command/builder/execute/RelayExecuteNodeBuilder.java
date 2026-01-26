@@ -46,7 +46,7 @@ public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder {
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
 
-    protected CommandRunFunction funcOnFinal = DO_NOTHING;
+    protected CommandExecutor funcOnFinal = DO_NOTHING;
 
     @Nonnull
     public RelayExecuteNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
@@ -62,12 +62,12 @@ public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder {
 
     @Nonnull
     @Override
-    public RelayExecuteNodeBuilder run(@Nonnull CommandRunFunction runFunc) {
+    public RelayExecuteNodeBuilder run(@Nonnull final CommandExecutor runFunc) {
         return (RelayExecuteNodeBuilder) super.run(runFunc);
     }
 
     @Nonnull
-    public RelayExecuteNodeBuilder after(@Nonnull CommandRunFunction runFunc) {
+    public RelayExecuteNodeBuilder after(@Nonnull final CommandExecutor runFunc) {
         this.funcOnFinal = runFunc;
         return this;
     }

@@ -28,7 +28,10 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import com.google.common.collect.Lists;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
@@ -122,13 +125,19 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
         return getType();
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.minecraft.vector3d";
+    }
+
     @Override
     public <T extends List<String> & Deque<String>> Vec3d parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         return parseVec3d(args,context);
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_THREE_PARAMETER.check(this,args,context)) return false;
         parseVec3d(args,context);
         return true;

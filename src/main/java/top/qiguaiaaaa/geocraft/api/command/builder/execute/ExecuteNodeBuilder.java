@@ -27,32 +27,52 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
+import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.execute.ExecuteNode;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
 public class ExecuteNodeBuilder implements INodeBuilder<ExecuteNode> {
-    public static final CommandRunFunction DO_NOTHING = (args, serializedArgs) -> {};
-    protected CommandRunFunction funcExecute = DO_NOTHING;
+    public static final CommandExecutor DO_NOTHING = (args, serializedArgs) -> {};
+    protected CommandExecutor funcExecute = DO_NOTHING;
+
+    protected boolean doKeepArguments = false;
 
     public ExecuteNodeBuilder() {
     }
 
     @Nonnull
-    public ExecuteNodeBuilder run(@Nonnull final CommandRunFunction runFunc) {
+    public ExecuteNodeBuilder run(@Nonnull final CommandExecutor runFunc) {
         this.funcExecute = runFunc;
+        return this;
+    }
+
+    @Nonnull
+    public ExecuteNodeBuilder keepArguments(final boolean doKeep){
+        this.doKeepArguments = doKeep;
         return this;
     }
 
     @Nonnull
     @Override
     public ExecuteNode build() {
-        final ExecuteNode node = (context, args) -> funcExecute.run(args, context);
-        return node;
+        return new ExecuteNode() {
+            @Override
+            public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
+                funcExecute.run(args,context);
+            }
+
+            @Override
+            public boolean keepArguments() {
+                return doKeepArguments;
+            }
+        };
     }
 
 }

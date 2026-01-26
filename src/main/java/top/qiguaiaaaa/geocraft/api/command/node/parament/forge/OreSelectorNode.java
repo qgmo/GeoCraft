@@ -28,20 +28,20 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.forge;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraftforge.oredict.OreDictionary;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 import top.qiguaiaaaa.geocraft.api.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
@@ -80,13 +80,14 @@ public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.forge.oreDirectory";
+        return "nickel.command.parameter.forge.ore_directory";
     }
 
     @Override
     public <T extends List<String> & Deque<String>> OreDictionaryEntry parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         final OreDictionaryEntry entry = OreDictionaryEntry.get(args.getFirst());
-        if(entry == null) throw new InvalidOreDirectoryException(args.getFirst());
+        if(entry == null) throw new NickelSyntaxException(currentBranch,this,
+                new TextComponentTranslation("nickel.command.parameter.ore_directory.invalid",args.getFirst()));
         return entry;
     }
 
@@ -94,26 +95,10 @@ public class OreSelectorNode extends SmartParameterNode<OreDictionaryEntry> {
      * @see OreDictionary#registerOreImpl(String, ItemStack)
      */
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
-        if("Unknown".equals(args.get(0))) throw new SyntaxErrorException("api.geo.command.parameter.oreDirectory.invalid",args.get(0));
+        if("Unknown".equals(args.get(0))) throw new NickelSyntaxException(currentBranch,this,
+                new TextComponentTranslation("nickel.command.parameter.ore_directory.invalid",args.get(0)));
         return true;
-    }
-
-    public class InvalidOreDirectoryException extends CommandException{
-
-        public InvalidOreDirectoryException(@Nullable final String invalidOre){
-            super("api.geo.command.parameter.oreDirectory.invalid",invalidOre,OreSelectorNode.this.getLocalizedParameter());
-        }
-
-        public InvalidOreDirectoryException(String message, Object... objects) {
-            super(message, objects);
-        }
-
-        @Nonnull
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
     }
 }

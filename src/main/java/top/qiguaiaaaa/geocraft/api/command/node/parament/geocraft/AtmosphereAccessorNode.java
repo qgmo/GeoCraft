@@ -29,15 +29,17 @@ package top.qiguaiaaaa.geocraft.api.command.node.parament.geocraft;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
+import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.MinecraftVec3Node;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.Vec3dNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
@@ -59,7 +61,7 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
         final IBlockState state = world.getBlockState(pos);
         notAir = !state.getBlock().isAir(state,world,pos);
         IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
-        if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent.there");
+        if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent",pos);
         return accessor;
     };
 
@@ -76,7 +78,8 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
             case 3:
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
-            default: return null;
+            case 4:break;
+            default:return null;
         }
         return suggests;
     };
@@ -89,7 +92,7 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return ValidChecker.MATCH_FOUR_PARAMETER.check(this,args,context);
     }
 
@@ -106,7 +109,7 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
 
         final IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(context.getWorld(),pos,notAir);
 
-        if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent.there");
+        if(accessor == null) throw new CommandException("geocraft.command.atmosphere.nonexistent",pos);
 
         return accessor;
     }
@@ -131,6 +134,6 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.geocraft.atmosphereAccessor";
+        return "nickel.command.parameter.geocraft.atmosphere_accessor";
     }
 }

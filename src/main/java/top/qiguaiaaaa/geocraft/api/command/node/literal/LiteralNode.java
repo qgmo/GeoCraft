@@ -28,11 +28,14 @@
 package top.qiguaiaaaa.geocraft.api.command.node.literal;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
@@ -51,14 +54,21 @@ import java.util.function.BiPredicate;
  * @see LiteralsNode
  * @author QiguaiAAAA
  */
-public class LiteralNode extends PermitNode implements ISmartNode {
+public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryNode {
 
     protected final @Nonnull String literal;
 
     protected @Nullable BiPredicate<List<String>, CommandContext> matchChecker;
 
+    protected CommandBranch currentBranch;
+
     public LiteralNode(@Nonnull final String literal){
         this.literal= Objects.requireNonNull(literal);
+    }
+
+    @Nonnull
+    public String getLiteral() {
+        return literal;
     }
 
     @Override
@@ -74,9 +84,12 @@ public class LiteralNode extends PermitNode implements ISmartNode {
 
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        if(!checkPermission(context)) throw new CommandException("api.geo.command.functional.permit.denied");
-        if(!match(args,context)) throw new SyntaxErrorException("api.geo.command.functional.literal.non_match",this.literal,args.getFirst());
+        if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         final String first = args.getFirst();
+        if(!literal.equals(first)){
+            throw new NickelSyntaxException(currentBranch,this,
+                    new TextComponentTranslation("nickel.command.functional.literal.non_match",this.literal,args.getFirst()));
+        }
         try {
             args.pop();
             if(childNode != null) childNode.execute(args,context);
@@ -106,8 +119,14 @@ public class LiteralNode extends PermitNode implements ISmartNode {
     @Nonnull
     @Override
     public CommandBranch branch() {
-        final CommandBranch branch = super.branch();
-        branch.appendDocument(new TextComponentString(literal));
-        return branch;
+        this.currentBranch = super.branch();
+        currentBranch.appendDocument(getDocument());
+        return currentBranch;
+    }
+
+    @Nonnull
+    @Override
+    public ITextComponent getDocument() {
+        return new TextComponentString(literal);
     }
 }

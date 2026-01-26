@@ -28,7 +28,6 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
@@ -71,7 +70,7 @@ public abstract class NumberNode<T extends Number> extends SmartParameterNode<T>
     protected abstract T parseNumber(@Nonnull String arg) throws NumberInvalidException;
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)){ //前提条件：需要满足有一个参数，没有提供参数则返回 false 使用默认值，或抛出错误
             return false;
         }

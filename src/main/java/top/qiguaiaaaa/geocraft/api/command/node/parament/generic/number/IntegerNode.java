@@ -31,7 +31,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.NumberInvalidException;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
 
 /**
  * @author QiguaiAAAA
@@ -61,7 +60,7 @@ public class IntegerNode extends NumberNode<Integer> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.integer";
+        return "nickel.command.parameter.generic.integer";
     }
 
     @Override

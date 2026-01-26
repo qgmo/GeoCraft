@@ -32,8 +32,11 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -55,7 +58,7 @@ public class SplitCommandBranch extends CommandBranch{
     @Override
     public void appendDocument(@Nonnull final ITextComponent document) {
         super.appendDocument(document);
-        for(final CommandBranch branch:branches){
+        for(final @Nonnull CommandBranch branch:branches){
             branch.appendDocument(document.createCopy());
         }
     }
@@ -63,8 +66,28 @@ public class SplitCommandBranch extends CommandBranch{
     @Override
     public void finish(@Nonnull final ICommand command) {
         super.finish(command);
-        document.appendText(" ...");
-        for (final CommandBranch branch : branches) {
+        List<ITextComponent> subNodes = null;
+        int lengthMax = 0;
+        for(final @Nonnull CommandBranch branch:branches){
+            final List<ITextComponent> subDocument = branch.getDocuments();
+            lengthMax = Math.max(subDocument.size(),lengthMax);
+            if(subNodes == null){
+                if(branch.getDocuments().size() <=1 ) continue; //第一个会放在分支里
+                subNodes = new ArrayList<>(subDocument.subList(1,subDocument.size()));
+                continue;
+            }
+            if(subNodes.isEmpty()) break;
+            for(int i=0;i<subNodes.size();i++){
+                if(i+1<subDocument.size() && subNodes.get(i).equals(subDocument.get(i+1))) continue; //相同，可以保留
+                subNodes = subNodes.subList(0,i); //不相同，或者超过该分支最大长度，截取相同部分
+            }
+        }
+        if(subNodes == null) subNodes = Collections.emptyList();
+        for(final ITextComponent component:subNodes){
+            this.document.appendText(" ").appendSibling(component.createCopy());
+        }
+        if(subNodes.size()+1 < lengthMax) document.appendText(" ..."); //存在省略部分
+        for (final @Nonnull CommandBranch branch : branches) {
             branch.finish(command);
         }
     }
@@ -72,7 +95,7 @@ public class SplitCommandBranch extends CommandBranch{
     @Override
     public void print(@Nonnull final ICommandSender sender){
         super.print(sender);
-        for(final CommandBranch branch:branches){
+        for(final @Nonnull CommandBranch branch:branches){
             branch.print(sender);
         }
     }

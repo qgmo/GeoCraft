@@ -56,6 +56,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
             (self,smart) -> self.bakedChildNode = smart.build();
     protected final String name;
     protected String langKey;
+    protected String commentKey;
     protected boolean optional;
     @SuppressWarnings("unchecked")
     protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
@@ -133,6 +134,13 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
 
     @Nonnull
     @SuppressWarnings("unchecked")
+    public SELF comment(@Nonnull final String key){
+        this.commentKey = key;
+        return (SELF) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
     public SELF clearDecorators(){
         this.decorator = null;
         return (SELF) this;
@@ -157,7 +165,6 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
     @Nonnull
     @SuppressWarnings("unchecked")
     public SmartSplitNodeBuilder.Inner<SELF> smart(){
-        ensureFirstChild();
         return new SmartSplitNodeBuilder.Inner<>((SELF) this,(BiConsumer<SELF, SmartSplitNodeBuilder.Inner<SELF>>) (BiConsumer<?,?>) ON_SMART_DONE);
     }
 
@@ -176,6 +183,9 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF ex
         }
         if(langKey != null){
             instance.setTranslationKey(langKey);
+        }
+        if(commentKey != null){
+            instance.setComment(commentKey);
         }
         return instance;
     }

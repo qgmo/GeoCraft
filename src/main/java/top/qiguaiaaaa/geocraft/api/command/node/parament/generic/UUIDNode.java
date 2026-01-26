@@ -27,7 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.generic;
 
-import net.minecraft.command.*;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.command.WrongUsageException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -35,7 +38,6 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -77,7 +79,7 @@ public class UUIDNode extends SmartParameterNode<UUID> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.uuid";
+        return "nickel.command.parameter.generic.uuid";
     }
 
     @Override
@@ -86,7 +88,7 @@ public class UUIDNode extends SmartParameterNode<UUID> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         parseUUID(args);
         return true;

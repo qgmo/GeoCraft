@@ -29,7 +29,6 @@ package top.qiguaiaaaa.geocraft.api.command.node.parament.forge;
 
 import com.google.common.collect.Lists;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.fluids.Fluid;
@@ -41,7 +40,6 @@ import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -79,35 +77,18 @@ public class FluidSelectorNode extends SmartParameterNode<Fluid> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.forge.fluid";
+        return "nickel.command.parameter.forge.fluid";
     }
 
     @Override
     public <T extends List<String> & Deque<String>> Fluid parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         final Fluid fluid = FluidRegistry.getFluid(args.getFirst());
-        if(fluid == null) throw new InvalidFluidException(args.getFirst());
+        if(fluid == null) throw new CommandException("nickel.command.parameter.fluid.invalid",args.getFirst());
         return fluid;
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context);
-    }
-
-    public class InvalidFluidException extends CommandException{
-
-        public InvalidFluidException(@Nullable final String fluidName){
-            super("api.geo.command.parameter.fluid.invalid",fluidName,FluidSelectorNode.this.getLocalizedParameter());
-        }
-
-        public InvalidFluidException(String message, Object... objects) {
-            super(message, objects);
-        }
-
-        @Nonnull
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
-        }
     }
 }

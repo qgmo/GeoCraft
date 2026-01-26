@@ -59,7 +59,7 @@ public class BigDecimalNode extends NumberNode<BigDecimal> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.generic.bigDecimal";
+        return "nickel.command.parameter.generic.big_decimal";
     }
 
     @Override

@@ -27,7 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament.forge;
 
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.registry.IRegistry;
@@ -55,7 +54,7 @@ public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> e
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return ValidChecker.MATCH_RESOURCE_LOCATION.check(this,args,context);
     }
 

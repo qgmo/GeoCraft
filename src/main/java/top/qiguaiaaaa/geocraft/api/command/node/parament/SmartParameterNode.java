@@ -27,7 +27,6 @@
 
 package top.qiguaiaaaa.geocraft.api.command.node.parament;
 
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
@@ -54,7 +53,7 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
     }
 
     @Override
-    public final <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public final <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context) throws SyntaxErrorException, NumberInvalidException{
         return checkValid(args,(CommandContext) context);
     }
 
@@ -68,7 +67,7 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
         if(matchChecker==null){
             try {
                 return checkValid(args,context);
-            }catch (SyntaxErrorException | NumberInvalidException | InvalidBlockStateException ignore){
+            }catch (SyntaxErrorException | NumberInvalidException ignore){
                 return false;
             }
         }else return matchChecker.test(args,context);
@@ -81,10 +80,8 @@ public abstract class SmartParameterNode<P> extends ParameterNode<P> implements 
      * @return 为 true 表示可以解析，为 false 表示不能解析，但可以用默认值，仅当 {@link #isOptional()} 为 true 时使用。
      * @throws SyntaxErrorException 当{@link #isOptional()} 为 false 时，且语法错误，则抛出该错误表示无法解析。
      * @throws NumberInvalidException 同上
-     * @throws InvalidBlockStateException 同上
      * 请注意，当在 {@link #match(List, CommandContext)} 时，抛出错误不会终止命令执行，而是会返回匹配失败，继续匹配下一个智能节点。
      */
-    public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context)
-            throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
+    public abstract boolean checkValid(@Nonnull List<String> args,@Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException;
 
 }

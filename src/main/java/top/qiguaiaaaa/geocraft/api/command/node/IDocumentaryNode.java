@@ -25,34 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.command.node.execute;
+package top.qiguaiaaaa.geocraft.api.command.node;
 
-import net.minecraft.command.CommandException;
-import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
-import java.util.Deque;
-import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode {
-    @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
-        try {
-            ExecuteNode.super.execute(args,context);
-            if(childNode != null) childNode.execute(args,context);
-        }finally {
-            onFinal(context,args);
-        }
+public interface IDocumentaryNode extends ICommandNode{
+    String FORMAT_SPLIT = ":";
+    String SPLIT_NODE_SPLIT = "|";
+    String OPTIONAL_FORMAT = "[%s]";
+    String OPTIONAL_FORMAT_BEGIN = "[";
+    String OPTIONAL_FORMAT_END = "]";
+    String REQUIRED_FORMAT = "<%s>";
+    String REQUIRED_FORMAT_BEGIN = "<";
+    String REQUIRED_FORMAT_END = ">";
+    @Nonnull
+    ITextComponent getDocument();
+
+    @Nonnull
+    static String getFormatBegin(final boolean optional){
+        return optional?OPTIONAL_FORMAT_BEGIN:REQUIRED_FORMAT_BEGIN;
     }
 
-    @Override
-    public boolean keepArguments() {
-        return true;
+    @Nonnull
+    static String getFormatEnd(final boolean optional){
+        return optional?OPTIONAL_FORMAT_END:REQUIRED_FORMAT_END;
     }
-
-    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{}
 }

@@ -120,7 +120,6 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
 
     @Nonnull
     public SmartSplitNodeBuilder.Inner<LiteralNodeBuilder> smart(){
-        ensureFirstChild();
         return new SmartSplitNodeBuilder.Inner<>(this,ON_SMART_DONE);
     }
 

@@ -28,16 +28,17 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament;
 
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.util.text.translation.I18n;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelCommandException;
+import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.node.IOptionalNode;
 import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockPosNode;
@@ -61,11 +62,12 @@ import java.util.stream.Collectors;
  * 所以非必要，应确保可选参数之后都是可选的参数，以避免混淆。
  * @author QiguaiAAAA
  */
-public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalNode {
+public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalNode, IDocumentaryNode {
     public static final String PARAMETER_INNER_NAME_SPLIT = "￥";
     private static final ThreadLocal<Stack<String>> ParasStack = ThreadLocal.withInitial(Stack::new);
     protected final String name;
     protected String localizedName = null;
+    protected String comment = null;
     protected boolean optional;
     protected DefaultParser<P> defaultParser;
     protected BiFunction<List<String>,SuggestContext,List<String>> suggestProvider;
@@ -92,16 +94,27 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         this.decorator = decorator;
     }
 
+    @Nonnull
     public String getName() {
         return name;
     }
 
+    @Nonnull
     public String getTranslationKey(){
         return localizedName==null?name:localizedName;
     }
 
+    @Nonnull
+    public CommandBranch getCurrentBranch() {
+        return currentBranch;
+    }
+
     public void setTranslationKey(@Nonnull final String localizedName) {
         this.localizedName = localizedName;
+    }
+
+    public void setComment(@Nullable final String comment) {
+        this.comment = comment;
     }
 
     @Override
@@ -144,7 +157,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     @Nullable
     @Override
     public <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context) {
-        GeoCraft.getLogger().info("[{}] Provide Suggest For [len={}] : {}",getLocalizedParameter(),args.size(),String.join(" ",args));
+        //GeoCraft.getLogger().info("[{}] Provide Suggest For [len={}] : {}",getLocalizedParameter(),args.size(),String.join(" ",args));
         if(args.size()>getParametersLength()){
             final Stack<String> paras = ParasStack.get();
             try {
@@ -178,7 +191,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
             putParsedArgument(parsedArg,context);
             return false;
         }
-        throw new CommandException("api.geo.command.parameter.base.default_not_found",this.getLocalizedParameter());
+        throw new NickelCommandException(currentBranch,this,new TextComponentTranslation("nickel.command.parameter.base.default_not_found"));
     }
 
     protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context) throws CommandException {
@@ -197,7 +210,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      * @return 参数的类型
      */
     @Nonnull
-    public abstract Type getType();
+    public Type getType(){
+        return getTypeClass();
+    }
 
     @Nonnull
     public abstract Class<P> getTypeClass();
@@ -217,24 +232,23 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     @Nonnull
     @SuppressWarnings("deprecation")
     public final String getLocalizedParameter(){
-        final StringBuilder builder = new StringBuilder();
-        if(isOptional()) builder.append('[');
-        else builder.append('<');
-        builder.append(I18n.translateToLocal(getTranslationKey()))
-                .append(':')
-                .append(I18n.translateToLocal(getTypeTranslationKey()));
-        if(isOptional()) builder.append(']');
-        else builder.append('>');
-        return builder.toString();
+        return IDocumentaryNode.getFormatBegin(isOptional()) +
+                I18n.translateToLocal(getTranslationKey()) +
+                IDocumentaryNode.FORMAT_SPLIT +
+                I18n.translateToLocal(getTypeTranslationKey()) +
+                IDocumentaryNode.getFormatEnd(isOptional());
     }
 
     @Nonnull
+    @Override
     public final ITextComponent getDocument(){
-        return new TextComponentString(isOptional()?"[":"<")
+        final ITextComponent component = new TextComponentString(IDocumentaryNode.getFormatBegin(isOptional()))
                 .appendSibling(new TextComponentTranslation(getTranslationKey()))
-                .appendText(":")
+                .appendText(FORMAT_SPLIT)
                 .appendSibling(new TextComponentTranslation(getTypeTranslationKey()))
-                .appendText(isOptional()?"]":">");
+                .appendText(IDocumentaryNode.getFormatEnd(isOptional()));
+        if(comment != null) component.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new TextComponentTranslation(comment)));
+        return component;
     }
 
     /**
@@ -248,10 +262,9 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
      * 当然如果{@link #isOptional()} 为 true 时也可以使用，例如对于多参数节点，比如对于 {@link BlockPosNode}
      * 如果玩家输入 3 4 却没有输入 Z 坐标，这时候用默认值就不太合适了，应当告诉玩家输错了。
      * @throws NumberInvalidException 同上
-     * @throws InvalidBlockStateException 同上
      */
     public abstract <T extends List<String> & Deque<String>> boolean checkValid(@Nonnull T args, @Nonnull ExecuteContext context)
-            throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException;
+            throws SyntaxErrorException, NumberInvalidException;
 
     public abstract <T extends List<String> & Deque<String>> P parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException;
 

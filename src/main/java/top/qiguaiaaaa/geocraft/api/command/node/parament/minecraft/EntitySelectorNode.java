@@ -28,7 +28,10 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import com.google.common.reflect.TypeToken;
-import net.minecraft.command.*;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.EntitySelector;
+import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.entity.Entity;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
@@ -54,7 +57,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     protected boolean allowPlayerName = true;
     protected boolean allowUUID = true;
     protected boolean requireSingleEntity = false;
-    protected Class<? extends Entity> matchTarget = Entity.class;
+    protected @Nonnull Class<? extends Entity> matchTarget = Entity.class;
 
     public EntitySelectorNode(@Nonnull String name) {
         super(name);
@@ -90,6 +93,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
         return requireSingleEntity;
     }
 
+    @Nonnull
     public Class<? extends Entity> getMatchTarget() {
         return matchTarget;
     }
@@ -115,7 +119,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "api.geo.command.parameter.minecraft.entitySelector";
+        return "nickel.command.parameter.minecraft.entity_selector";
     }
 
     @Override
@@ -125,7 +129,7 @@ public class EntitySelectorNode extends SmartParameterNode<List<Entity>> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, InvalidBlockStateException, NumberInvalidException {
+    public boolean checkValid(@Nonnull List<String> args, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         if(isPlayerNameAllowed()) return true;
 

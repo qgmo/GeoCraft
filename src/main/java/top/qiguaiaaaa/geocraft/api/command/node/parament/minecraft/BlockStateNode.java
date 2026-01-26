@@ -28,35 +28,120 @@
 package top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.InvalidBlockStateException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentTranslation;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
+import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.exception.NickelSyntaxException;
 import top.qiguaiaaaa.geocraft.api.command.node.parament.SmartParameterNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.ValidChecker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * @author QiguaiAAAA
  */
 public class BlockStateNode extends SmartParameterNode<IBlockState> {
+    public static final BiFunction<List<String>, SuggestContext,List<String>> FULL_SUGGESTOR = (args,context) -> {
+        if(args.isEmpty()) return BlockSelectorNode.DEFAULT_SUGGESTOR.apply(args,context);
+        final String input = args.get(0);
+        if(input.endsWith("[")){
+            final String blockName = input.substring(0,input.length()-1);
+            final Block block = Block.REGISTRY.getObject(new ResourceLocation(blockName));
+            if(block == Blocks.AIR) return null;
+            final List<String> suggests = block.getBlockState().getProperties().stream().map(property -> input+property.getName()+"=").collect(Collectors.toList());
+            suggests.add(input+"default]");
+            return suggests;
+        }else if(input.endsWith("]")){
+            return null;
+        }else if(input.endsWith("[default")){
+            return Collections.singletonList(input+"]");
+        }else if(input.contains("[")){
+            final String[] split = input.split("\\[",2);
+            final Block block = Block.REGISTRY.getObject(new ResourceLocation(split[0]));
+            if(block == Blocks.AIR) return null;
+            final String[] states = split[1].split(",");
+            if(input.endsWith(",")){
+                final Set<String> inputProperties = new HashSet<>();
+                for(final String s:states){
+                    final String[] propertyPair = s.split("=",2);
+                    inputProperties.add(propertyPair[0]);
+                }
+                return block.getBlockState().getProperties().stream()
+                        .filter(property -> !inputProperties.contains(property.getName()))
+                        .map(property -> input+property.getName()+"=")
+                        .collect(Collectors.toList());
+            }else if(!states[states.length-1].contains("=")){
+                final Set<String> inputProperties = new HashSet<>();
+                for(int i=0;i<states.length-1;i++){
+                    final String[] propertyPair = states[i].split("=",2);
+                    inputProperties.add(propertyPair[0]);
+                }
+                final int curPropertyBegin = input.contains(",")?input.lastIndexOf(",")+1:input.lastIndexOf("[");
+                final String baseInput = input.substring(0,curPropertyBegin);
+                final String curInputProperty = input.substring(curPropertyBegin);
+                final List<String> suggests = block.getBlockState().getProperties().stream()
+                        .filter(property -> !inputProperties.contains(property.getName()))
+                        .map(property -> baseInput+property.getName()+"=")
+                        .collect(Collectors.toList());
+                if(block.getBlockState().getProperty(curInputProperty) != null){
+                    suggests.add(input+"=");
+                }
+                return suggests;
+            }else {
+                final String[] propertyPair = states[states.length-1].split("=",2);
+                final IProperty<?> property = block.getBlockState().getProperty(propertyPair[0]);
+                if(property==null) return null;
+                final String baseInput = propertyPair.length>1?input.substring(0,input.length()-propertyPair[1].length()):input;
+                final List<String> suggests = property.getAllowedValues().stream()
+                        .sorted()
+                        .map(value -> baseInput+value.toString())
+                        .collect(Collectors.toList());
+                if(propertyPair.length>1 && property.getAllowedValues().stream().map(Objects::toString).collect(Collectors.toSet()).contains(propertyPair[1])){
+                    suggests.add(input+"]");
+                    suggests.add(input+",");
+                }
+                return suggests;
+            }
+        }else if(Block.REGISTRY.containsKey(new ResourceLocation(input))){
+            final List<String> suggests = Block.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
+            suggests.add(input+"[");
+            return suggests;
+        }
+        return BlockSelectorNode.DEFAULT_SUGGESTOR.apply(args,context);
+    };
+
+    public static final BiFunction<List<String>, SuggestContext,List<String>> PARENTED_SUGGESTOR = (args,context) -> Arrays.asList("[","default");
+
     protected final @Nullable String blockNodeName;
 
     public BlockStateNode(@Nullable final String blockNodeName,@Nonnull final String name) {
         super(name);
+        setSuggestProvider(PARENTED_SUGGESTOR);
         this.blockNodeName = blockNodeName;
     }
 
     public BlockStateNode(@Nonnull final String name) {
         this(null,name);
+        setSuggestProvider(FULL_SUGGESTOR);
     }
 
     @Override
@@ -76,6 +161,12 @@ public class BlockStateNode extends SmartParameterNode<IBlockState> {
         return getType();
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.minecraft.block_state";
+    }
+
     @Override
     public <T extends List<String> & Deque<String>> IBlockState parseParameter(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
         if(blockNodeName != null){
@@ -87,17 +178,20 @@ public class BlockStateNode extends SmartParameterNode<IBlockState> {
             }
             return CommandBase.convertArgToBlockState(block,arg);
         }else {
-            final String arg = args.get(0);
-            final String[] split = arg.split("\\[");
-            if(split.length == 0) throw new SyntaxErrorException();
-            if(split.length == 1) return CommandBase.getBlockByText(context.getSender(),arg).getDefaultState();
-            if(!split[1].endsWith("]")) throw new SyntaxErrorException();
+            final String input = args.get(0);
+            if(input.endsWith("[")) throw new NickelSyntaxException(currentBranch,this,
+                    new TextComponentTranslation("nickel.command.parameter.block_state.invalid_end",input));
+            final String[] split = input.split("\\[",2);
+            if(split.length == 0) throw new NickelSyntaxException(currentBranch,this);
+            if(split.length == 1) return CommandBase.getBlockByText(context.getSender(),input).getDefaultState();
+            if(!split[1].endsWith("]")) throw new NickelSyntaxException(currentBranch,this,
+                    new TextComponentTranslation("nickel.command.parameter.block_state.invalid_end",input));
             return CommandBase.convertArgToBlockState(CommandBase.getBlockByText(context.getSender(),split[0]),split[1].substring(0,split[1].length()-1));
         }
     }
 
     @Override
-    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException, InvalidBlockStateException {
+    public boolean checkValid(@Nonnull final List<String> args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(!ValidChecker.MATCH_ONE_PARAMETER.check(this,args,context)) return false;
         if(blockNodeName == null) return true;
         try {
