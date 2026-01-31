@@ -263,7 +263,7 @@ public final class CommandFluidPhysics {
             }
 
             final int getEstimatedEvaporateAmount(@Nonnull final IBlockState state, @Nonnull final IAtmosphereAccessor accessor){
-                final int meta = state.getValue(BlockLiquid.LEVEL);
+                final int meta = state.getValue(LEVEL);
                 if(accessor.getTemperature()> TemperatureProperty.BOILED_POINT){
                     if(meta == 0){
                         return accessor.fillFluidToAtmosphere(FluidRegistry.WATER, Fluid.BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),false);
@@ -278,7 +278,7 @@ public final class CommandFluidPhysics {
             final int getRealEvaporateAmount(@Nonnull final IBlockState state, @Nonnull final IAtmosphereAccessor accessor){
                 final World world = accessor.getWorld();
                 final BlockPos pos = accessor.getPos();
-                final int meta = state.getValue(BlockLiquid.LEVEL);
+                final int meta = state.getValue(LEVEL);
                 if(accessor.getTemperature()> TemperatureProperty.BOILED_POINT){
                     FluidRegistry.WATER.vaporize(null,world,pos,null);
                     world.setBlockToAir(pos);
