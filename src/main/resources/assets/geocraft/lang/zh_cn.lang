@@ -140,8 +140,10 @@ geocraft.command.fluidphysics.evapration.reasons.saturated=饱和
 geocraft.command.fluidphysics.evapration.reasons.exposure=暴露在空气中
 geocraft.command.fluidphysics.evapration.title=位置 (%s,%s,%s) 的蒸发状态
 #下面的存在段末空格
-geocraft.command.fluidphysics.evapration.possibility.pre=概率： 
+geocraft.command.fluidphysics.evapration.possibility.pre=概率：
+geocraft.command.fluidphysics.evapration.amount=预计蒸发量：  
 #段末空格存在结束
 geocraft.command.fluidphysics.evapration.evaporated=%s mB（%s 层）的水成功被蒸发
+geocraft.command.fluidphysics.evapration.vanilla.evaporated=%s mB 的水成功被蒸发
 
 geocraft.fluid.carbon_dioxide=二氧化碳

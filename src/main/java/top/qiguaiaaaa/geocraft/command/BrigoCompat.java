@@ -131,7 +131,7 @@ public final class BrigoCompat {
     public static void registerFluidPhysics(){
         register(literal(FLUID_PHYSICS_COMMAND_NAME)
                 .then(literal("query").then(literal("mode")))
-                .then(literal("util").then(literal("evaporate")
+                .then(literal("operation").then(literal("evaporate")
                         .then(compatArgs("x","y","z",DOIT))
                         .executes(DO_NOTHING))));
     }

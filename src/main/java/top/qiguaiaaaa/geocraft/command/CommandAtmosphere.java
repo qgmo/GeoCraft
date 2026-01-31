@@ -85,6 +85,7 @@ import top.qiguaiaaaa.geocraft.geography.atmosphere.tracker.FluidTracker;
 import top.qiguaiaaaa.geocraft.geography.atmosphere.tracker.TemperatureTracker;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -445,7 +446,8 @@ public final class CommandAtmosphere {
     }
 
     static void afterProcessAtmosphereInfo(@Nonnull final List<String> args,@Nonnull final ExecuteContext context) {
-        context.<IAtmosphereAccessor>remove(ACCESSOR).close();
+        final @Nullable IAtmosphereAccessor accessor = context.remove(ACCESSOR);
+        if(accessor != null) accessor.close();
         context.remove(ATMOSPHERE);
         context.remove(LAYER);
     }

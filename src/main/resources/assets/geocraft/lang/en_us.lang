@@ -141,7 +141,9 @@ geocraft.command.fluidphysics.evapration.reasons.exposure=Exposure
 geocraft.command.fluidphysics.evapration.title=Evaporation Status at (%s,%s,%s)
 #下面的可能存在段末空格
 geocraft.command.fluidphysics.evapration.possibility.pre=Possibility: 
+geocraft.command.fluidphysics.evapration.amount=Estimated Amount: 
 #段末空格可能性结束
 geocraft.command.fluidphysics.evapration.evaporated=%s mB Water (%s Quanta) is evaporated
+geocraft.command.fluidphysics.evapration.vanilla.evaporated=%s mB Water is evaporated
 
 geocraft.fluid.carbon_dioxide=Carbon Dioxide
