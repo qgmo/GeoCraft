@@ -358,8 +358,11 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     }
 
     @Override
-    default boolean setLayer(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid, int newLayer, @Nullable NBTTagCompound nbt, final int disabledBlockFlags, final int enabledBlockFlags){
+    default boolean setLayer(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state,
+                             @Nonnull final Fluid fluid,final int newLayer, @Nullable final NBTTagCompound nbt,
+                             final int disabledBlockFlags, final int enabledBlockFlags){
         if(fluid != FluidRegistry.WATER) return false;
+        if(newLayer<0 || newLayer>4) return false;
         return world.setBlockState(pos,state.withProperty(HUMIDITY, newLayer), APIMathUtil.getModifiedFlag(BlockFlags.SEND_TO_CLIENTS,disabledBlockFlags,enabledBlockFlags));
     }
 

@@ -116,6 +116,8 @@ public final class MoreRealityFluidPhysicsCore {
         if(meta == 7) return Blocks.AIR.getDefaultState();
         return state.withProperty(LEVEL,meta+1);
     }
+
+    @Nonnull
     public static IBlockState freezeWater(@Nonnull final IBlockState state,
                                           @Nonnull final Random rand,
                                           @Nonnull final IAtmosphereAccessor accessor){
@@ -124,6 +126,7 @@ public final class MoreRealityFluidPhysicsCore {
         if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze()) return state;
 
         double possibility  = WaterUtil.getFreezePossibility(accessor);
+        if(possibility <= 0) return state;
         if(meta >= 5) possibility = Math.min(possibility*(1<<(meta-4)),1);
         if(!BaseUtil.getRandomResult(rand,possibility*0.85+0.15)){
             return state;
