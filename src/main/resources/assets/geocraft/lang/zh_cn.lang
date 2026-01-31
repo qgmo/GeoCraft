@@ -50,8 +50,8 @@ nickel.command.exception.syntax.node.sub= 出现语法错误
 nickel.command.exception.syntax.details=详细信息：
 nickel.command.exception.syntax.usage=用法：
 nickel.command.exception.base.message=命令运行时出现了一些错误
-nickel.command.exception.base.node.pre=命令节点 
-nickel.command.exception.base.node.sub= 
+nickel.command.exception.base.node.pre=命令运行到命令节点 
+nickel.command.exception.base.node.sub= 时发生错误
 nickel.command.exception.base.details=详细信息：
 nickel.command.exception.base.branch=分支：
 

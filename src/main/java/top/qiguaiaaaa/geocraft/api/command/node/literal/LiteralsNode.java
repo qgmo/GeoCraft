@@ -48,9 +48,11 @@ import top.qiguaiaaaa.geocraft.api.command.utils.SplitCommandBranch;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,7 +98,8 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
             }finally {
                 if(first != null) args.addFirst(first);
             }
-        }else throw new NickelCommandException(curBranch,this,new TextComponentTranslation("nickel.command.literals.exception.default"));
+        }else if(isOptional()) throw new NickelCommandException(curBranch,this,new TextComponentTranslation("nickel.command.literals.exception.default"));
+        else throw new NickelSyntaxException(curBranch,this);
     }
 
     @Nullable
@@ -153,10 +156,17 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     @Nonnull
     @Override
     public CommandBranch branch() {
-        this.curBranch = new SplitCommandBranch((childNode == null?literal2Node.values().stream():Stream.concat(literal2Node.values().stream(),Stream.of(childNode)))
-                .map(ICommandNode::branch)
+        final Set<CommandBranch> subBranches = literal2Node.entrySet().stream()
+                .map(entry -> {
+                    final CommandBranch branch = entry.getValue().branch();
+                    branch.appendDocument(new TextComponentString(entry.getKey()));
+                    return branch;
+                })
+                .collect(Collectors.toSet());
+        if(childNode != null) Stream.of(childNode).map(ICommandNode::branch)
                 .filter(branch -> !branch.isEmpty())
-                .collect(Collectors.toSet()));
+                .forEach(subBranches::add);
+        this.curBranch = new SplitCommandBranch(subBranches);
         curBranch.setEndDocument(getDocument());
         return curBranch;
     }

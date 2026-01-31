@@ -35,8 +35,10 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -46,9 +48,13 @@ import java.util.Set;
 public class SplitCommandBranch extends CommandBranch{
 
     protected final Set<CommandBranch> branches;
+    protected final Map<CommandBranch,ITextComponent> splitLocations = new HashMap<>();
 
     public SplitCommandBranch(final @Nonnull Collection<CommandBranch> subBranches){
         branches = new HashSet<>(Objects.requireNonNull(subBranches));
+        for(@Nonnull final CommandBranch branch:branches){
+            splitLocations.put(branch,branch.getDocuments().get(0));
+        }
     }
 
     public void setEndDocument(@Nonnull final ITextComponent document){
@@ -70,15 +76,16 @@ public class SplitCommandBranch extends CommandBranch{
         int lengthMax = 0;
         for(final @Nonnull CommandBranch branch:branches){
             final List<ITextComponent> subDocument = branch.getDocuments();
-            lengthMax = Math.max(subDocument.size(),lengthMax);
+            final int splitIndex = getSplitIndexOf(branch);
+            final int splitSize = subDocument.size()-splitIndex;// 相当于从分支点开始（包含）到末尾的长度
+            lengthMax = Math.max(splitSize,lengthMax);
             if(subNodes == null){
-                if(branch.getDocuments().size() <=1 ) continue; //第一个会放在分支里
-                subNodes = new ArrayList<>(subDocument.subList(1,subDocument.size()));
+                subNodes = subDocument.subList(splitIndex+1,subDocument.size());
                 continue;
             }
-            if(subNodes.isEmpty()) break;
+            if(subNodes.isEmpty()) break;  //这意味着一定与其他节点不存在共有节点
             for(int i=0;i<subNodes.size();i++){
-                if(i+1<subDocument.size() && subNodes.get(i).equals(subDocument.get(i+1))) continue; //相同，可以保留
+                if(i+1<splitSize && subNodes.get(i).equals(subDocument.get(splitIndex+i+1))) continue; //相同，可以保留
                 subNodes = subNodes.subList(0,i); //不相同，或者超过该分支最大长度，截取相同部分
             }
         }
@@ -98,5 +105,10 @@ public class SplitCommandBranch extends CommandBranch{
         for(final @Nonnull CommandBranch branch:branches){
             branch.print(sender);
         }
+    }
+
+    protected int getSplitIndexOf(@Nonnull final CommandBranch branch){
+        if(!splitLocations.containsKey(branch)) throw new IllegalArgumentException();
+        return branch.getDocuments().indexOf(splitLocations.get(branch));
     }
 }
