@@ -113,7 +113,7 @@ public class CommandFluidPhysics {
     }
 
     /**
-     * @see top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.MoreRealityFluidPhysicsCore#evaporateWater(World, BlockPos, IBlockState, Random, IAtmosphereAccessor)
+     * @see top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.MoreRealityFluidPhysicsCore#evaporateWater(IBlockState, Random, IAtmosphereAccessor) 
      */
     public static void evaporate(@Nonnull final ExecuteContext ctx,@Nonnull final IAtmosphereAccessor accessor) throws CommandException {
         final @Nonnull BlockPos pos = ctx.getBlockPos(POS);
@@ -124,9 +124,8 @@ public class CommandFluidPhysics {
             return;
         }
         final @Nonnull IBlockState state = getWaterState(worldIn,pos);
-        final double possibility;
         final Object2DoubleArrayMap<String> reasons = new Object2DoubleArrayMap<>();
-        possibility = gatherEvaporationStatus(state,reasons,accessor);
+        final double possibility = gatherEvaporationStatus(state,reasons,accessor);
 
         final ITextComponent title = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.title",pos.getX(),pos.getY(),pos.getZ());
         title.getStyle().setColor(TextFormatting.YELLOW).setBold(true);
@@ -144,14 +143,7 @@ public class CommandFluidPhysics {
             reasonDisplay.appendSibling(deltaDisplay);
             ctx.getSender().sendMessage(reasonDisplay);
         });
-        if(doEvaporate){
-            final @Nullable IBlockState newState = MoreRealityFluidPhysicsCore.evaporateWater(worldIn,pos,state,worldIn.rand,accessor);
-            worldIn.setBlockState(pos,newState==null?Blocks.AIR.getDefaultState():newState);
-            final int quanta = newState == null?Math.max(8-state.getValue(LEVEL),0):(newState.getValue(LEVEL)-state.getValue(LEVEL));
-            final ITextComponent evaporatedInfo = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.evaporated",quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta);
-            evaporatedInfo.getStyle().setColor(quanta <= 0?TextFormatting.GRAY:TextFormatting.GREEN);
-            ctx.getSender().sendMessage(evaporatedInfo);
-        }
+        if(doEvaporate) doEvaporate(state,accessor,ctx);
     }
 
     static double gatherEvaporationStatus(@Nonnull final IBlockState state, @Nonnull final Object2DoubleArrayMap<String> reasons,@Nonnull final IAtmosphereAccessor accessor){
@@ -169,20 +161,36 @@ public class CommandFluidPhysics {
         if(raw >= 0.9999d){
             reasons.put("geocraft.command.fluidphysics.evapration.reasons.saturated",1d-raw);
             return 1;
-        }else if(state.getValue(LEVEL) <5 || !world.isAreaLoaded(pos,1) || pos.getY() <= 0 || FluidUtil.getFluid(world.getBlockState(pos.down())) == FluidRegistry.WATER){
+        }else if(useRawEvaporationPossibility(world,pos,state)){
             return raw;
         }
 
+        final double possibility = adjustEvaporationPossibilityByNeighborsAir(world,pos,raw);
+        reasons.put("geocraft.command.fluidphysics.evapration.reasons.exposure",possibility-raw);
+        return possibility;
+    }
+
+    static boolean useRawEvaporationPossibility(@Nonnull final World world,@Nonnull final BlockPos pos,@Nonnull final IBlockState state){
+        return state.getValue(LEVEL) <5 || !world.isAreaLoaded(pos,1) || pos.getY() <= 0 || FluidUtil.getFluid(world.getBlockState(pos.down())) == FluidRegistry.WATER;
+    }
+
+    static double adjustEvaporationPossibilityByNeighborsAir(@Nonnull final World world,@Nonnull final BlockPos pos,final double possibility){
         byte neighborsAir = 0;
         for(final @Nonnull EnumFacing facing:EnumFacing.HORIZONTALS){
             final @Nonnull BlockPos facingPos = pos.offset(facing);
             if(world.isAirBlock(facingPos)) neighborsAir++;
         }
-        if(neighborsAir <= 1) return raw;
+        if(neighborsAir <= 1) return possibility;
+        return Math.min(possibility*(1<<(neighborsAir-1)),1);
+    }
 
-        final double possibility = Math.min(raw*(1<<(neighborsAir-1)),1);
-        reasons.put("geocraft.command.fluidphysics.evapration.reasons.exposure",possibility-raw);
-        return possibility;
+    static void doEvaporate(@Nonnull final IBlockState state,@Nonnull final IAtmosphereAccessor accessor,@Nonnull final ExecuteContext ctx){
+        final @Nonnull IBlockState newState = MoreRealityFluidPhysicsCore.evaporateWater(state,accessor.getWorld().rand,accessor);
+        accessor.getWorld().setBlockState(accessor.getPos(),newState);
+        final int quanta = newState == Blocks.AIR.getDefaultState()?Math.max(8-state.getValue(LEVEL),0):(newState.getValue(LEVEL)-state.getValue(LEVEL));
+        final ITextComponent evaporatedInfo = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.evaporated",quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta);
+        evaporatedInfo.getStyle().setColor(quanta <= 0?TextFormatting.GRAY:TextFormatting.GREEN);
+        ctx.getSender().sendMessage(evaporatedInfo);
     }
 
     @Nonnull

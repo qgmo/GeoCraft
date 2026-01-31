@@ -97,17 +97,15 @@ public final class MoreRealityFluidPhysicsCore {
 
     private MoreRealityFluidPhysicsCore(){}
 
-    @Nullable
-    public static IBlockState evaporateWater(@Nonnull final World world,
-                                             @Nonnull final BlockPos pos,
-                                             @Nonnull final IBlockState state,
+    @Nonnull
+    public static IBlockState evaporateWater(@Nonnull final IBlockState state,
                                              @Nonnull final Random rand,
                                              @Nonnull final IAtmosphereAccessor accessor){
-        if(!world.isAirBlock(pos.up())) return state;
+        if(!accessor.getWorld().isAirBlock(accessor.getPos().up())) return state;
 
         final int meta = state.getValue(LEVEL);
-        if(meta >=8) return null;
-        final double possibility = getWaterEvaporatePossibility(world,pos,state,accessor);
+        if(meta >=8) return Blocks.AIR.getDefaultState();
+        final double possibility = getWaterEvaporatePossibility(accessor.getWorld(),accessor.getPos(),state,accessor);
 
         if(!BaseUtil.getRandomResult(rand,possibility)){
             return state;
@@ -115,12 +113,10 @@ public final class MoreRealityFluidPhysicsCore {
         if(accessor.fillFluidToAtmosphere(FluidRegistry.WATER,FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME, StateOfMatter.GAS,accessor.getTemperature(true),true) <= 0)
             return state;
         accessor.drainHeatFromUnderlying(AtmosphereUtil.Constants.WATER_EVAPORATE_LATENT_HEAT_PER_QUANTA);
-        if(meta == 7) return null;
+        if(meta == 7) return Blocks.AIR.getDefaultState();
         return state.withProperty(LEVEL,meta+1);
     }
-    public static IBlockState freezeWater(@Nonnull final World world,
-                                          @Nonnull final BlockPos pos,
-                                          @Nonnull final IBlockState state,
+    public static IBlockState freezeWater(@Nonnull final IBlockState state,
                                           @Nonnull final Random rand,
                                           @Nonnull final IAtmosphereAccessor accessor){
         final int meta = state.getValue(LEVEL);
@@ -128,18 +124,15 @@ public final class MoreRealityFluidPhysicsCore {
         if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze()) return state;
 
         double possibility  = WaterUtil.getFreezePossibility(accessor);
-        if(possibility <= 0) return state;
-        if(meta == 7) possibility = Math.min(possibility*8,1);
-        else if(meta == 6) possibility = Math.min(possibility*4,1);
-        else if(meta == 5) possibility = Math.min(possibility*2,1);
+        if(meta >= 5) possibility = Math.min(possibility*(1<<(meta-4)),1);
         if(!BaseUtil.getRandomResult(rand,possibility*0.85+0.15)){
             return state;
         }
         if(meta == 0){
-            if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze(pos,true)) return state;
+            if(!accessor.getSystem().getAtmosphereInfo().canWaterFreeze(accessor.getPos(),true)) return state;
             return Blocks.ICE.getDefaultState();
         }
-        if(!WaterUtil.canPlaceSnow(world,pos)) return state;
+        if(!WaterUtil.canPlaceSnow(accessor.getWorld(),accessor.getPos())) return state;
         final int quanta = 8-meta;
         accessor.putHeatToUnderlying(AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA*quanta);
         return Blocks.SNOW_LAYER.getDefaultState().withProperty(BlockSnow.LAYERS,quanta);

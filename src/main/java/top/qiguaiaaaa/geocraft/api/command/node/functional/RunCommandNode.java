@@ -121,17 +121,7 @@ public class RunCommandNode implements ICommandNode{
             return;
         }
 
-        @Nonnull String[] rawArgs = args.toArray(EmptyStringArr);
-
-        final @Nonnull GeoCommandEvent event = new GeoCommandEvent(command,context, rawArgs);
-        if (MinecraftForge.EVENT_BUS.post(event)) {
-            if (event.getException() != null) {
-                Throwables.throwIfUnchecked(event.getException());
-            }
-            return;
-        }
-
-        if (event.getParameters() != null) rawArgs = event.getParameters();
+        @Nonnull final String[] rawArgs = postGeoCommandEvent(command,context,args.toArray(EmptyStringArr));
 
         final int usernameIndex = getUsernameIndex(command, rawArgs);
 
@@ -152,6 +142,18 @@ public class RunCommandNode implements ICommandNode{
         } else {
             command.execute(context.getServer(),sender,rawArgs);
         }
+    }
+
+    @Nonnull
+    protected static String[] postGeoCommandEvent(@Nonnull final ICommand command,@Nonnull final ExecuteContext context,@Nonnull final String[] rawArgs){
+        final @Nonnull GeoCommandEvent event = new GeoCommandEvent(command,context, rawArgs);
+        if (MinecraftForge.EVENT_BUS.post(event)) {
+            if (event.getException() != null) {
+                Throwables.throwIfUnchecked(event.getException());
+            }
+        }
+        if (event.getParameters() != null) return event.getParameters();
+        return rawArgs;
     }
 
     @Nullable

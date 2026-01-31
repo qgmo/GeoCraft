@@ -52,7 +52,11 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.event.entity.player.FillBucketEvent;
 import net.minecraftforge.event.world.BlockEvent;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -84,7 +88,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
-import static net.minecraft.block.BlockLiquid.LEVEL;
 import static net.minecraftforge.fluids.FluidUtil.tryPlaceFluid;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.*;
 
@@ -354,35 +357,29 @@ public final class MoreRealityEventHandler {
         final @Nonnull World worldIn = event.getWorld();
         final @Nonnull BlockPos pos = event.getPos();
 
-        IBlockState newState;
         try(@Nullable final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(worldIn,pos,true)){
             if(accessor == null) return;
             //先尝试结冰
-            newState = MoreRealityFluidPhysicsCore.freezeWater(worldIn,pos,state,worldIn.rand,accessor);
-            if(newState != state){
-                event.setResult(Event.Result.ALLOW);
-                event.setNewState(newState);
-                return;
-            }
+            if(setResultToAllowIfChanged(event,state,MoreRealityFluidPhysicsCore.freezeWater(state,worldIn.rand,accessor))) return;
 
             if(accessor.getTemperature() < TemperatureProperty.BOILED_POINT+20 && !event.isRandomTick()){
                 if(ServerStatusMonitor.isServerCloselyLagging()) return;
                 if(worldIn.rand.nextInt(200) >0) return; //因为压强计算频繁更新，需要降低概率
             }
 
-            if(!accessor.canAccessAtmosphere()) return;
-            if(!accessor.getAtmosphereInfo().canWaterEvaporate(pos)) return;
+            if(!accessor.canAccessAtmosphere() || !accessor.getAtmosphereInfo().canWaterEvaporate(pos)) return;
 
-            final int oldMeta = state.getValue(LEVEL);
-            newState = MoreRealityFluidPhysicsCore.evaporateWater(worldIn,pos,state,worldIn.rand,accessor);
-            if(newState == null){
-                event.setResult(Event.Result.ALLOW);
-                event.setNewState(Blocks.AIR.getDefaultState());
-            } else if(newState.getValue(LEVEL) != oldMeta){
-                event.setResult(Event.Result.ALLOW);
-                event.setNewState(newState);
-            }
+            setResultToAllowIfChanged(event,state,MoreRealityFluidPhysicsCore.evaporateWater(state,worldIn.rand,accessor));
         }
+    }
+
+    private static boolean setResultToAllowIfChanged(@Nonnull final StaticLiquidUpdateEvent.After event,@Nonnull final IBlockState old,@Nonnull final IBlockState newer){
+        if(old != newer){
+            event.setResult(Event.Result.ALLOW);
+            event.setNewState(newer);
+            return true;
+        }
+        return false;
     }
 
     @SubscribeEvent

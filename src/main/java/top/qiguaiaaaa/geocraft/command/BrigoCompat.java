@@ -63,10 +63,10 @@ import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
  */
 @SuppressWarnings("unused")
 public final class BrigoCompat {
-    private BrigoCompat(){}
-
     private static final Command<CommandSource> DO_NOTHING = ctx -> 0;
     private static CommandDispatcher<CommandSource> dispatcher;
+
+    private BrigoCompat(){}
 
     public static CommandDispatcher<CommandSource> getDispatcher(final @Nonnull ICommandManager manager){
         if(manager instanceof CommandHandlerExtras){

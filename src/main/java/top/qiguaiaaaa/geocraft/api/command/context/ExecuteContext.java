@@ -100,22 +100,7 @@ public final class ExecuteContext extends CommandContext{
         final Object context = contexts.get(key);
         if(context == null) throw new CommandException("nickel.command.context.get.non_entity");
         if(context instanceof Collection<?>){
-            final Collection<?> collection = (Collection<?>) context;
-            if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
-            if(context instanceof List<?>){
-                final List<?> list = (List<?>) context;
-                throwIfInvalidEntityClass(list.get(0));
-                return (Entity) list.get(0);
-            }else if(context instanceof Queue<?>){
-                final Queue<?> queue = (Queue<?>) context;
-                final Object ele = queue.peek();
-                if(ele == null) throw new CommandException("nickel.command.context.get.non_entity");
-                throwIfInvalidEntityClass(ele);
-                return (Entity) ele;
-            }
-            final Object ele = collection.iterator().next();
-            throwIfInvalidEntityClass(ele);
-            return (Entity) ele;
+            return getEntityInCollection((Collection<?>) context);
         }else if(context instanceof Entity){
             return (Entity) context;
         }else if(context instanceof Optional<?>){
@@ -127,24 +112,30 @@ public final class ExecuteContext extends CommandContext{
     }
 
     @Nonnull
-    @SuppressWarnings("unchecked")
+    private Entity getEntityInCollection(@Nonnull final Collection<?> collection) throws CommandException {
+        if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
+        if(collection instanceof List<?>){
+            final List<?> list = (List<?>) collection;
+            throwIfInvalidEntityClass(list.get(0));
+            return (Entity) list.get(0);
+        }else if(collection instanceof Queue<?>){
+            final Queue<?> queue = (Queue<?>) collection;
+            final Object ele = queue.peek();
+            if(ele == null) throw new CommandException("nickel.command.context.get.non_entity");
+            throwIfInvalidEntityClass(ele);
+            return (Entity) ele;
+        }
+        final Object ele = collection.iterator().next();
+        throwIfInvalidEntityClass(ele);
+        return (Entity) ele;
+    }
+
+    @Nonnull
     public List<Entity> getEntities(@Nonnull final String key) throws CommandException{
         final Object context = contexts.get(key);
         if(context == null) throw new CommandException("nickel.command.context.get.non_entity");
         if(context instanceof Collection<?>){
-            final Collection<?> collection = (Collection<?>) context;
-            if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
-            if(context instanceof List<?>){
-                final List<?> list = (List<?>) context;
-                throwIfInvalidEntitiesClass(list.get(0));
-                return (List<Entity>) list;
-            }else if(context instanceof Queue<?>){
-                final Queue<?> queue = (Queue<?>) context;
-                throwIfInvalidEntitiesClass(queue.peek());
-                return new ArrayList<>((Queue<? extends Entity>)queue);
-            }
-            throwIfInvalidEntitiesClass(collection.iterator().next());
-            return new ArrayList<>((Collection<? extends Entity>) collection);
+            return getEntitiesInCollection((Collection<?>) context);
         }else if(context instanceof Entity){
             return Collections.singletonList((Entity) context);
         }else if(context instanceof Optional<?>){
@@ -153,6 +144,23 @@ public final class ExecuteContext extends CommandContext{
             throwIfInvalidEntitiesClass(optional.get());
             return Collections.singletonList((Entity) optional.get());
         }else throw new CommandException("nickel.command.context.get.unknown_argument.entities", context.getClass());
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    private List<Entity> getEntitiesInCollection(@Nonnull final Collection<?> collection) throws CommandException{
+        if(collection.isEmpty()) throw new CommandException("nickel.command.context.get.non_entity");
+        if(collection instanceof List<?>){
+            final List<?> list = (List<?>) collection;
+            throwIfInvalidEntitiesClass(list.get(0));
+            return (List<Entity>) list;
+        }else if(collection instanceof Queue<?>){
+            final Queue<?> queue = (Queue<?>) collection;
+            throwIfInvalidEntitiesClass(queue.peek());
+            return new ArrayList<>((Queue<? extends Entity>)queue);
+        }
+        throwIfInvalidEntitiesClass(collection.iterator().next());
+        return new ArrayList<>((Collection<? extends Entity>) collection);
     }
 
     private void throwIfInvalidEntityClass(@Nullable final Object ele) throws CommandException {

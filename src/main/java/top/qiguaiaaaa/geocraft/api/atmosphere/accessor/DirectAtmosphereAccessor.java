@@ -117,7 +117,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     public int drainFluidFromAtmosphere(@Nonnull final Fluid fluid, @Nonnull final StateOfMatter state,final int maxDrainedAmount,final boolean doDrain) {
         if(maxDrainedAmount <= 0) return 0;
         assert data.getAtmosphere() != null;
-        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
+        final AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
         if(event != null && event.hasResult()){
             switch (event.getResult()){
                 case DENY:return 0;
@@ -125,6 +125,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
                     if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
                     return Math.max(event.getDrainedAmount(), 0);
                 }
+                case DEFAULT:
             }
         }
         if(fluid == FluidRegistry.WATER){
@@ -138,7 +139,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     public FluidStack drainFluidStackFromAtmosphere(@Nonnull final Fluid fluid, @Nonnull final StateOfMatter state, final int maxDrainedAmount, final boolean doDrain) {
         if(maxDrainedAmount <= 0) return null;
         assert data.getAtmosphere() != null;
-        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
+        final AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
         if(event != null && event.hasResult()){
             switch (event.getResult()){
                 case DENY:return new FluidStack(fluid,0);
@@ -147,6 +148,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
                     if(event.getDrainedAmount()<=0) return null;
                     return new FluidStack(fluid,event.getDrainedAmount());
                 }
+                case DEFAULT:
             }
         }
         if(fluid == FluidRegistry.WATER){
