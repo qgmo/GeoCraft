@@ -147,10 +147,8 @@ public class RunCommandNode implements ICommandNode{
     @Nonnull
     protected static String[] postGeoCommandEvent(@Nonnull final ICommand command,@Nonnull final ExecuteContext context,@Nonnull final String[] rawArgs){
         final @Nonnull GeoCommandEvent event = new GeoCommandEvent(command,context, rawArgs);
-        if (MinecraftForge.EVENT_BUS.post(event)) {
-            if (event.getException() != null) {
-                Throwables.throwIfUnchecked(event.getException());
-            }
+        if (MinecraftForge.EVENT_BUS.post(event) && event.getException() != null) {
+            Throwables.throwIfUnchecked(event.getException());
         }
         if (event.getParameters() != null) return event.getParameters();
         return rawArgs;

@@ -158,7 +158,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
                     if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
                     return Math.max(event.getDrainedAmount(), 0);
                 }
-                case DEFAULT:
+                case DEFAULT:break;
             }
         }
         if(fluid == FluidRegistry.WATER){
@@ -181,7 +181,7 @@ public class AverageAtmosphereAccessor extends AbstractAtmosphereAccessor{
                     if(event.getDrainedAmount()<=0) return null;
                     return new FluidStack(fluid,event.getDrainedAmount());
                 }
-                case DEFAULT:
+                case DEFAULT:break;
             }
         }
         if(fluid == FluidRegistry.WATER){
