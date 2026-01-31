@@ -27,51 +27,40 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
 
 import javax.annotation.Nonnull;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author QiguaiAAAA
  */
-public class PermitNodeBuilder implements INodeBuilder<PermitNode> {
-    private Function<CommandContext, Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
+public abstract class PermitNodeBuilder<N extends PermitNode,S extends PermitNodeBuilder<N,S>> extends NoSplitNodeBuilder<N,S> {
+    protected Predicate<CommandContext> funcCheckPermission = PermitNode.REJECT_ALL;
 
-    private INodeBuilder<?> childNode;
-    private ICommandNode bakedChildNode;
-
-    public PermitNodeBuilder() {
-    }
-
+    /**
+     * 配置当前节点能够被使用的权限条件
+     * @see PermitNode#setChecker(Predicate)
+     * @param funcCheckPermission 权限检查函数
+     * @return 自身
+     */
     @Nonnull
-    public PermitNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
-        this.childNode = childNode;
-        return this;
-    }
-
-    @Nonnull
-    public PermitNodeBuilder then(@Nonnull ICommandNode childNode) {
-        this.bakedChildNode = childNode;
-        return this;
-    }
-
-    @Nonnull
-    public PermitNodeBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
+    @SuppressWarnings("unchecked")
+    public S passIf(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
         this.funcCheckPermission = funcCheckPermission;
-        return this;
+        return (S) this;
     }
 
-    @Nonnull
-    @Override
-    public PermitNode build() {
-        final PermitNode node = new PermitNode();
-        node.setChecker(funcCheckPermission);
-        node.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
-        return node;
+    public static class Impl extends PermitNodeBuilder<PermitNode,Impl>{
+        @Nonnull
+        @Override
+        public PermitNode build() {
+            final PermitNode node = new PermitNode();
+            node.setChecker(funcCheckPermission);
+            node.setChildNode(buildChildNode());
+            return node;
+        }
     }
 }

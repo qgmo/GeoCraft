@@ -34,6 +34,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.AtmosphereLayer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.Layer;
 import top.qiguaiaaaa.geocraft.api.atmosphere.layer.UnderlyingLayer;
@@ -91,7 +92,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     }
 
     @Override
-    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, int amount, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+    public int fillFluidToAtmosphere(@Nonnull final Fluid fluid,final int amount,final @Nonnull StateOfMatter state,final double temp,final boolean doFill) {
         assert data.getAtmosphere() != null;
         int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,amount,null,state,doFill);
         if(filled >=0) return filled;
@@ -102,7 +103,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     }
 
     @Override
-    public int fillFluidToAtmosphere(@Nonnull Fluid fluid, @Nonnull FluidStack stack, @Nonnull StateOfMatter state, double temp, boolean doFill) {
+    public int fillFluidToAtmosphere(@Nonnull final Fluid fluid, @Nonnull final FluidStack stack, @Nonnull final StateOfMatter state,final double temp,final boolean doFill) {
         assert data.getAtmosphere() != null;
         int filled = EventFactory.onFillFluidToAtmosphere(data.getAtmosphere(),this,fluid,temp,stack.amount,stack,state,doFill);
         if(filled >=0) return filled;
@@ -113,13 +114,19 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
     }
 
     @Override
-    public int drainFluidFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+    public int drainFluidFromAtmosphere(@Nonnull final Fluid fluid, @Nonnull final StateOfMatter state,final int maxDrainedAmount,final boolean doDrain) {
         if(maxDrainedAmount <= 0) return 0;
         assert data.getAtmosphere() != null;
-        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
+        final AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,false,state,doDrain);
         if(event != null && event.hasResult()){
-            if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
-            return Math.max(event.getDrainedAmount(), 0);
+            switch (event.getResult()){
+                case DENY:return 0;
+                case ALLOW:{
+                    if(event.getDrainedStack() != null) return event.getDrainedStack().amount;
+                    return Math.max(event.getDrainedAmount(), 0);
+                }
+                case DEFAULT:break;
+            }
         }
         if(fluid == FluidRegistry.WATER){
             return drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain);
@@ -129,14 +136,20 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
 
     @Nullable
     @Override
-    public FluidStack drainFluidStackFromAtmosphere(@Nonnull Fluid fluid, @Nonnull StateOfMatter state, int maxDrainedAmount, boolean doDrain) {
+    public FluidStack drainFluidStackFromAtmosphere(@Nonnull final Fluid fluid, @Nonnull final StateOfMatter state, final int maxDrainedAmount, final boolean doDrain) {
         if(maxDrainedAmount <= 0) return null;
         assert data.getAtmosphere() != null;
-        AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
+        final AtmosphereAccessEvent.FluidDrain event = EventFactory.onDrainedFluidToAtmosphere(data.getAtmosphere(), this,fluid,maxDrainedAmount,true,state,doDrain);
         if(event != null && event.hasResult()){
-            if(event.getDrainedStack() != null) return event.getDrainedStack();
-            if(event.getDrainedAmount()<=0) return null;
-            return new FluidStack(fluid,event.getDrainedAmount());
+            switch (event.getResult()){
+                case DENY:return new FluidStack(fluid,0);
+                case ALLOW:{
+                    if(event.getDrainedStack() != null) return event.getDrainedStack();
+                    if(event.getDrainedAmount()<=0) return null;
+                    return new FluidStack(fluid,event.getDrainedAmount());
+                }
+                case DEFAULT:break;
+            }
         }
         if(fluid == FluidRegistry.WATER){
             return new FluidStack(FluidRegistry.WATER,drainWaterFromAtmosphere(maxDrainedAmount,state,doDrain));
@@ -144,7 +157,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
         return null;
     }
 
-    protected int fillWaterToAtmosphere(int amount,@Nonnull StateOfMatter state,double temp,boolean doFill){
+    protected int fillWaterToAtmosphere(final int amount,@Nonnull final StateOfMatter state, final double temp,boolean doFill){
         assert data.getAtmosphere() != null;
         switch (state){
             case GAS: return data.getAtmosphere().addSteam(amount,pos,doFill);
@@ -153,7 +166,7 @@ public class DirectAtmosphereAccessor extends AbstractAtmosphereAccessor {
         return 0;
     }
 
-    protected int drainWaterFromAtmosphere(int amount,@Nonnull StateOfMatter state,final boolean doDrain){
+    protected int drainWaterFromAtmosphere(final int amount,@Nonnull final StateOfMatter state,final boolean doDrain){
         assert data.getAtmosphere() != null;
         switch (state){
             case GAS: return -data.getAtmosphere().addSteam(-amount,pos,doDrain);

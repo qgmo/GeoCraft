@@ -29,7 +29,7 @@ package top.qiguaiaaaa.geocraft.api.command.node.execute;
 
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NoSplitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import java.util.Deque;
@@ -41,14 +41,17 @@ import java.util.List;
 public abstract class RelayExecuteNode extends NoSplitNode implements ExecuteNode {
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+        ExecuteNode.throwIfShouldNotHaveArguments(args,keepArguments());
         try {
-            ExecuteNode.super.execute(args,context);
+            this.run(context,args);
             if(childNode != null) childNode.execute(args,context);
         }finally {
             onFinal(context,args);
         }
     }
 
-    public void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException{
-    }
+    /**
+     * 当命令退出当前节点时执行
+     */
+    public abstract void onFinal(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
 }

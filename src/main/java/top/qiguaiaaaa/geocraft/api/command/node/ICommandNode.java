@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.api.command.node;
 import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,4 +46,7 @@ public interface ICommandNode {
 
     @Nullable
     <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context);
+
+    @Nonnull
+    CommandBranch branch();
 }

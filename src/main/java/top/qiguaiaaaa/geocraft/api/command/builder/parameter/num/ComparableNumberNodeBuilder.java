@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;
@@ -37,8 +37,12 @@ import java.util.function.Function;
  */
 public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T extends NumberNode<N>> extends NumberNodeBuilder<N,T> {
 
-    public ComparableNumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public ComparableNumberNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name, builder);
+    }
+
+    public ComparableNumberNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+        super(parentName,childName, builder);
     }
 
     @Nonnull
@@ -47,8 +51,6 @@ public class ComparableNumberNodeBuilder<N extends Number & Comparable<N>, T ext
         final T instance = super.build();
         if (maxValue != null && minValue != null && maxValue.compareTo(minValue) < 0)
             throw new IllegalArgumentException(String.valueOf(maxValue.compareTo(minValue)));
-        if (maxValue != null) instance.setMaxValue(maxValue);
-        if (minValue != null) instance.setMinValue(minValue);
         return instance;
     }
 }

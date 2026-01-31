@@ -36,20 +36,29 @@ import javax.annotation.Nullable;
 
 /**
  * 配置项目
- * @param <ValueType> 配置的值类型,需要支持{@link Object#toString()}以写入配置文件
+ * @param <V> 配置的值类型,需要支持{@link Object#toString()}以写入配置文件
  */
-public abstract class ConfigItem<ValueType> {
+public abstract class ConfigItem<V> {
+    protected final ConfigCategory category;
+    protected final String key;
+    protected final V defaultValue;
+    protected final String comment;
+    protected final boolean isFinal; //配置初始化后是否不可更改
+    protected V value;
+    protected Property property;
+    protected boolean isDeprecated;
+
     /**
      * @see #ConfigItem(ConfigCategory, String, Object, String, boolean)
      */
-    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull ValueType defaultValue){
+    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull V defaultValue){
         this(category,configKey,defaultValue,null,false);
     }
 
     /**
      * @see #ConfigItem(ConfigCategory, String, Object,String,boolean)
      */
-    public ConfigItem(ConfigCategory category,String configKey,ValueType defaultValue,String comment){
+    public ConfigItem(ConfigCategory category, String configKey, V defaultValue, String comment){
         this(category,configKey,defaultValue,comment,false);
     }
 
@@ -61,7 +70,7 @@ public abstract class ConfigItem<ValueType> {
      * @param comment 配置的注释
      * @param isFinal 配置是否在初始化后不可更改
      */
-    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull ValueType defaultValue, @Nullable String comment, boolean isFinal){
+    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull V defaultValue, @Nullable String comment, boolean isFinal){
         this.category = category;
         this.key = configKey;
         this.defaultValue = defaultValue;
@@ -70,27 +79,18 @@ public abstract class ConfigItem<ValueType> {
         this.comment = comment;
     }
 
-    protected final ConfigCategory category;
-    protected final String key;
-    protected final ValueType defaultValue;
-    protected final String comment;
-    protected final boolean isFinal; //配置初始化后是否不可更改
-    protected ValueType value;
-    protected Property property;
-    protected boolean isDeprecated;
-
     @Nonnull
     public ConfigCategory getCategory() {
         return category;
     }
 
     @Nonnull
-    public ValueType getValue(){
+    public V getValue(){
         return value;
     }
 
     @Nonnull
-    public ValueType getDefaultValue(){
+    public V getDefaultValue(){
         return defaultValue;
     }
 
@@ -117,7 +117,7 @@ public abstract class ConfigItem<ValueType> {
      * 更新配置项的值
      * @param newValue 新值，注意不能为null
      */
-    public void setValue(@Nonnull ValueType newValue){
+    public void setValue(@Nonnull V newValue){
         if(isFinal) return;
         this.value = newValue;
     }

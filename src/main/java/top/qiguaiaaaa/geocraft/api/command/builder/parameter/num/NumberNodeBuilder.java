@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter.num;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FunctionalParameterNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;
@@ -36,21 +36,26 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder<N, T,NumberNodeBuilder<N,T>> {
-    protected N minValue, maxValue;
+public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder.FunctionalSmart<N, T,NumberNodeBuilder<N,T>> {
+    protected N minValue;
+    protected N maxValue;
 
-    public NumberNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public NumberNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name, builder);
     }
 
+    public NumberNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName,@Nonnull final Function<String, T> builder){
+        super(parentName,childName,builder);
+    }
+
     @Nonnull
-    public NumberNodeBuilder<N, T> min(N minValue) {
+    public NumberNodeBuilder<N, T> min(final N minValue) {
         this.minValue = minValue;
         return this;
     }
 
     @Nonnull
-    public NumberNodeBuilder<N, T> max(N maxValue) {
+    public NumberNodeBuilder<N, T> max(final N maxValue) {
         this.maxValue = maxValue;
         return this;
     }

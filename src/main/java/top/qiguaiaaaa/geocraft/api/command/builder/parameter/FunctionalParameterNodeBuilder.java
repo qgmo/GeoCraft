@@ -27,7 +27,8 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;
@@ -35,12 +36,17 @@ import java.util.function.Function;
 /**
  * @author QiguaiAAAA
  */
-public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends FunctionalParameterNodeBuilder<P,T,SELF>> extends ParameterNodeBuilder<P, T,SELF> {
+public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>, S extends FunctionalParameterNodeBuilder<P,T, S>> extends ParameterNodeBuilder<P, T, S> {
 
     protected final Function<String, T> builder;
 
-    public FunctionalParameterNodeBuilder(@Nonnull String name, @Nonnull Function<String, T> builder) {
+    public FunctionalParameterNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name);
+        this.builder = builder;
+    }
+
+    public FunctionalParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+        super(parentName,childName);
         this.builder = builder;
     }
 
@@ -48,5 +54,30 @@ public class FunctionalParameterNodeBuilder<P, T extends ParameterNode<P>,SELF e
     @Override
     protected T buildInstance() {
         return builder.apply(name);
+    }
+
+    /**
+     * @author QiguaiAAAA
+     */
+    public static class FunctionalSmart<P, T extends ParameterNode<P> & ISmartNode,SELF extends FunctionalSmart<P,T,SELF>>
+            extends SmartParameterNodeBuilder<P, T,SELF> {
+
+        protected final Function<String, T> builder;
+
+        public FunctionalSmart(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
+            super(name);
+            this.builder = builder;
+        }
+
+        public FunctionalSmart(@Nonnull final String parentName,@Nonnull final String childName, @Nonnull final Function<String, T> builder) {
+            super(parentName,childName);
+            this.builder = builder;
+        }
+
+        @Nonnull
+        @Override
+        protected T buildInstance() {
+            return builder.apply(name);
+        }
     }
 }

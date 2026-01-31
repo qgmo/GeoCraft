@@ -40,7 +40,8 @@ import javax.annotation.Nullable;
  * {@link Long}配置项
  */
 public class ConfigLong extends ConfigItem<Long> {
-    protected long minValue = Long.MIN_VALUE,maxValue = Long.MAX_VALUE;
+    protected long minValue = Long.MIN_VALUE;
+    protected long maxValue = Long.MAX_VALUE;
 
     /**
      * @see #ConfigLong(ConfigCategory, String, long, String, long, long, boolean)

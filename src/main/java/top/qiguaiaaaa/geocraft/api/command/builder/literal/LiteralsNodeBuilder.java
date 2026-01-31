@@ -27,16 +27,18 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.literal;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralsNode;
+import top.qiguaiaaaa.geocraft.api.command.node.functional.PermitNode;
+import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralsNode;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * @author QiguaiAAAA
@@ -46,10 +48,7 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     private ICommandNode bakedDefaultChild = null;
     private INodeBuilder<?> defaultChild = null;
     private boolean optional = false;
-    private Function<CommandContext, Boolean> funcCheckPermission = CommandBuilder.PERMIT_ALL;
-
-    public LiteralsNodeBuilder() {
-    }
+    private Predicate<CommandContext> funcCheckPermission = PermitNode.PERMIT_ALL;
 
     @Nonnull
     public LiteralsNodeBuilder asOptional() {
@@ -58,19 +57,19 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultThen(@Nonnull ICommandNode node) {
+    public LiteralsNodeBuilder defaultThen(@Nonnull final ICommandNode node) {
         bakedDefaultChild = node;
         return this;
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultThen(@Nonnull INodeBuilder<?> nodeBuilder) {
+    public LiteralsNodeBuilder defaultThen(@Nonnull final INodeBuilder<?> nodeBuilder) {
         defaultChild = nodeBuilder;
         return this;
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultAs(@Nonnull String name) {
+    public LiteralsNodeBuilder defaultAs(@Nonnull final String name) {
         final Object node = literal2NodeMap.get(name);
         if (node instanceof ICommandNode) bakedDefaultChild = (ICommandNode) node;
         else if (node instanceof INodeBuilder<?>) defaultChild = (INodeBuilder<?>) node;
@@ -79,19 +78,17 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
-    public LiteralsNodeBuilder ifThen(@Nonnull String name, @Nonnull ICommandNode node) {
-        literal2NodeMap.put(name, node);
-        return this;
+    public LiteralsChoiceInnerBuilder when(@Nonnull final String literal){
+        return new LiteralsChoiceInnerBuilder(literal);
     }
 
     @Nonnull
-    public LiteralsNodeBuilder ifThen(@Nonnull String name, @Nonnull INodeBuilder<?> nodeBuilder) {
-        literal2NodeMap.put(name, nodeBuilder);
-        return this;
+    public LiteralsChoiceInnerBuilder when(@Nonnull final String... literals){
+        return new LiteralsChoiceInnerBuilder(literals);
     }
 
     @Nonnull
-    public LiteralsNodeBuilder permitIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
+    public LiteralsNodeBuilder permitIf(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
         this.funcCheckPermission = funcCheckPermission;
         return this;
     }
@@ -106,8 +103,30 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
             else if (n instanceof INodeBuilder<?>) node.addLiteral(l, ((INodeBuilder<?>) n).build());
             else throw new IllegalArgumentException(l);
         });
-        node.setChildNode(bakedDefaultChild != null ? bakedDefaultChild : defaultChild.build());
         node.setOptional(optional);
+        if(optional){
+            node.setChildNode(bakedDefaultChild != null ? bakedDefaultChild : defaultChild.build());
+        }
         return node;
+    }
+
+    public class LiteralsChoiceInnerBuilder{
+        protected final String[] names;
+
+        LiteralsChoiceInnerBuilder(@Nonnull final String... literals){
+            this.names = Objects.requireNonNull(literals);
+        }
+
+        @Nonnull
+        public LiteralsNodeBuilder then(@Nonnull final INodeBuilder<?> nodeBuilder){
+            Arrays.stream(names).forEach(name -> literal2NodeMap.put(name,nodeBuilder));
+            return LiteralsNodeBuilder.this;
+        }
+
+        @Nonnull
+        public LiteralsNodeBuilder then(@Nonnull final ICommandNode node) {
+            Arrays.stream(names).forEach(name -> literal2NodeMap.put(name,node));
+            return LiteralsNodeBuilder.this;
+        }
     }
 }

@@ -34,6 +34,8 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author QiguaiAAAA
@@ -41,6 +43,8 @@ import javax.annotation.Nullable;
 public final class SuggestContext extends CommandContext{
     @Nullable
     private BlockPos targetPos;
+
+    private final Map<String,Object> contexts = new HashMap<>();
 
     public SuggestContext(@Nonnull ICommand command, @Nonnull MinecraftServer server, @Nonnull ICommandSender sender) {
         super(command, server, sender);
@@ -50,8 +54,26 @@ public final class SuggestContext extends CommandContext{
         this.targetPos = targetPos;
     }
 
+    public void put(@Nonnull final String key,@Nonnull final Object object){
+        this.contexts.put(key,object);
+    }
+
+    public void remove(@Nonnull final String key){
+        contexts.remove(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(@Nonnull final String key){
+        return (T) this.contexts.get(key);
+    }
+
     @Nullable
     public BlockPos getTargetPos() {
         return targetPos;
+    }
+
+    @Nonnull
+    public Map<String, Object> getContexts() {
+        return contexts;
     }
 }

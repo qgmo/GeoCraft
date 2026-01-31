@@ -27,32 +27,59 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.execute;
 
+import net.minecraft.command.CommandException;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.node.execute.ExecuteNode;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
  */
-public class ExecuteNodeBuilder implements INodeBuilder<ExecuteNode> {
-    public static final CommandRunFunction DO_NOTHING = (args, serializedArgs) -> {};
-    protected CommandRunFunction funcExecute = DO_NOTHING;
+public abstract class ExecuteNodeBuilder<N extends ExecuteNode,S extends ExecuteNodeBuilder<N,S>> implements INodeBuilder<N> {
+    public static final CommandExecutor DO_NOTHING = (args, serializedArgs) -> {};
+    protected CommandExecutor funcExecute = DO_NOTHING;
 
-    public ExecuteNodeBuilder() {
-    }
+    protected boolean doKeepArguments = false;
 
     @Nonnull
-    public ExecuteNodeBuilder run(@Nonnull CommandRunFunction runFunc) {
+    @SuppressWarnings("unchecked")
+    public S run(@Nonnull final CommandExecutor runFunc) {
         this.funcExecute = runFunc;
-        return this;
+        return (S) this;
     }
 
     @Nonnull
-    @Override
-    public ExecuteNode build() {
-        final ExecuteNode node = (context, args) -> funcExecute.run(args, context);
-        return node;
+    @SuppressWarnings("unchecked")
+    public S run(@Nonnull final SimpleCommandExecutor runFunc) {
+        this.funcExecute = runFunc;
+        return (S) this;
     }
 
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S keepArguments(final boolean doKeep){
+        this.doKeepArguments = doKeep;
+        return (S) this;
+    }
+
+    public static class Impl extends ExecuteNodeBuilder<ExecuteNode,Impl>{
+        @Nonnull
+        @Override
+        public ExecuteNode build() {
+            return new ExecuteNode() {
+                @Override
+                public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
+                    funcExecute.run(args,context);
+                }
+
+                @Override
+                public boolean keepArguments() {
+                    return doKeepArguments;
+                }
+            };
+        }
+    }
 }

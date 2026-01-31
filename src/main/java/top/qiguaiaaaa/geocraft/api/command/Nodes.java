@@ -28,29 +28,43 @@
 package top.qiguaiaaaa.geocraft.api.command;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.util.math.BlockPos;
-import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.ExecuteNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.execute.RelayExecuteNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.SimpleCommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.ConditionalSplitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.ForEachNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.PermitNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.functional.RunCommandNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralsNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.parameter.EntitySelectorNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.FastParameterNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.StringNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.EntitySelectorNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.ItemStackNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.parameter.minecraft.MinecraftVec3NodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.BooleanNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.NumberNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.StringNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.UUIDNode;
-import top.qiguaiaaaa.geocraft.api.command.node.geocraft.AtmosphereAccessorNode;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockPosNode;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.BlockSelectorNode;
-import top.qiguaiaaaa.geocraft.api.command.node.minecraft.ItemSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.EntityEntrySelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.FluidSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.forge.OreSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.BooleanNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.UUIDNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.BlockStateNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.DimensionNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemSelectorNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.minecraft.ItemStackNode;
+import top.qiguaiaaaa.geocraft.api.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -70,8 +84,34 @@ public final class Nodes {
     }
 
     @Nonnull
+    public static <FROM extends Iterable<TO>,TO> ForEachNodeBuilder<FROM,TO> forEach(@Nonnull final String contextToForEach){
+        return new ForEachNodeBuilder<>(contextToForEach);
+    }
+
+    @Nonnull
+    public static <FROM extends Iterable<TO>,TO> ForEachNodeBuilder<FROM,TO> forEach(@Nonnull final String contextToForEach,
+                                                                                     @Nonnull final Class<? extends ParameterNode<FROM>> nodeClass){
+        return new ForEachNodeBuilder<>(contextToForEach);
+    }
+
+    @Nonnull
+    public static SmartSplitNodeBuilder.Outer smart(){
+        return new SmartSplitNodeBuilder.Outer();
+    }
+
+    @Nonnull
+    public static PermitNodeBuilder.Impl permit(){
+        return new PermitNodeBuilder.Impl();
+    }
+
+    @Nonnull
     public static LiteralsNodeBuilder literals(){
         return new LiteralsNodeBuilder();
+    }
+
+    @Nonnull
+    public static LiteralsNodeBuilder.LiteralsChoiceInnerBuilder literals(@Nonnull final String... names){
+        return new LiteralsNodeBuilder().when(names);
     }
 
     @Nonnull
@@ -80,13 +120,28 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(){
-        return new ExecuteNodeBuilder();
+    public static ExecuteNodeBuilder.Impl execute(){
+        return new ExecuteNodeBuilder.Impl();
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(@Nonnull final CommandRunFunction func){
+    public static ExecuteNodeBuilder.Impl execute(@Nonnull final CommandExecutor func){
         return execute().run(func);
+    }
+
+    @Nonnull
+    public static ExecuteNodeBuilder.Impl execute(@Nonnull final SimpleCommandExecutor func){
+        return execute().run(func);
+    }
+
+    @Nonnull
+    public static RunCommandNodeBuilder.Redirect runCommand(@Nonnull final String commandName){
+        return new RunCommandNodeBuilder.Redirect(commandName);
+    }
+
+    @Nonnull
+    public static RunCommandNodeBuilder runCommands(){
+        return new RunCommandNodeBuilder();
     }
 
     @Nonnull
@@ -95,13 +150,33 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandRunFunction func){
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func){
         return relay().run(func);
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandRunFunction func,@Nonnull final CommandRunFunction funcAfter){
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func){
+        return relay((CommandExecutor) func);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func, @Nonnull final CommandExecutor funcAfter){
         return relay().run(func).after(funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final CommandExecutor funcAfter){
+        return relay((CommandExecutor) func,funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
+        return relay((CommandExecutor) func,(CommandExecutor) funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
+        return relay(func,(CommandExecutor) funcAfter);
     }
 
     @Nonnull
@@ -125,33 +200,96 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,BooleanNode::new);
+    public static NumberNodeBuilder<Double,NumberNode<Double>> doubleArg(@Nonnull final String name){
+        return NumberType.DOUBLE.create(name);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<String, StringNode> string(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,StringNode::new);
+    public static NumberNodeBuilder<Long,NumberNode<Long>> longArg(@Nonnull final String name){
+        return NumberType.LONG.create(name);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,UUIDNode::new);
+    public static NumberNodeBuilder<Long,NumberNode<Long>> longlong(@Nonnull final String name){
+        return longArg(name);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<BlockPos, BlockPosNode> blockPos(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,BlockPosNode::new);
+    public static FastParameterNodeBuilder.FastSmart<Boolean, BooleanNode> bool(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,BooleanNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
+    public static StringNodeBuilder string(@Nonnull final String name){
+        return new StringNodeBuilder(name);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name,BlockSelectorNode::new);
+    public static FastParameterNodeBuilder.FastSmart<UUID, UUIDNode> uuid(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,UUIDNode::new);
+    }
+
+    // Minecraft
+
+    @Nonnull
+    public static MinecraftVec3NodeBuilder.BlockPos blockPos(@Nonnull final String name){
+        return new MinecraftVec3NodeBuilder.BlockPos(name);
+    }
+
+    @Nonnull
+    public static MinecraftVec3NodeBuilder.BlockPos vec3i(@Nonnull final String name){
+        return blockPos(name);
+    }
+
+    @Nonnull
+    public static MinecraftVec3NodeBuilder.Vec3d vec3d(@Nonnull final String name){
+        return new MinecraftVec3NodeBuilder.Vec3d(name);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<Item, ItemSelectorNode> item(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,ItemSelectorNode::new);
+    }
+
+    @Nonnull
+    public static ItemStackNodeBuilder itemStack(@Nonnull final String name){
+        return new ItemStackNodeBuilder(name);
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$count(@Nonnull final String itemStackNodeName){
+        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"count"))
+                .min(1)
+                .decorate((count,context) ->{
+                    context.get(itemStackNodeName,ItemStackNode.class).setCount(count);
+                    return count;
+                });
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$meta(@Nonnull final String itemStackNodeName){
+        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"meta"))
+                .min(0)
+                .max((int) Short.MAX_VALUE)
+                .decorate((meta,context)->{
+                    context.get(itemStackNodeName,ItemStackNode.class).setItemDamage(meta);
+                    return meta;
+                });
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<Block, BlockSelectorNode> block(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,BlockSelectorNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> blockState(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name, BlockStateNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<IBlockState, BlockStateNode> block$blockState(@Nonnull final String blockNodeName,@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name, s -> new BlockStateNode(blockNodeName,s));
     }
 
     @Nonnull
@@ -175,18 +313,42 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<IAtmosphereAccessor, AtmosphereAccessorNode> atmosphere(@Nonnull final String name){
-        return new FastParameterNodeBuilder<>(name, AtmosphereAccessorNode::new);
+    public static EntitySelectorNodeBuilder player(@Nonnull final String name){
+        return entity(name,EntityPlayer.class);
     }
 
     @Nonnull
-    public static PermitNodeBuilder permit(){
-        return new PermitNodeBuilder();
+    public static EntitySelectorNodeBuilder players(@Nonnull final String name){
+        return entities(name,EntityPlayer.class);
     }
 
     @Nonnull
-    public static SmartSplitNodeBuilder.Outer smart(){
-        return new SmartSplitNodeBuilder.Outer();
+    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> dimension(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,DimensionNode::new);
+    }
+
+    // Forge
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<EntityEntry, EntityEntrySelectorNode> entityEntry(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,EntityEntrySelectorNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<Fluid, FluidSelectorNode> fluid(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,FluidSelectorNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder.FastSmart<OreDictionaryEntry, OreSelectorNode> ore(@Nonnull final String name){
+        return new FastParameterNodeBuilder.FastSmart<>(name,OreSelectorNode::new);
+    }
+
+    // GeoCraft
+
+    @Nonnull
+    public static MinecraftVec3NodeBuilder.AtmosphereAccessor atmosphere(@Nonnull final String name){
+        return new MinecraftVec3NodeBuilder.AtmosphereAccessor(name);
     }
 
 }

@@ -28,9 +28,11 @@
 package top.qiguaiaaaa.geocraft.api.command.node.execute;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.SyntaxErrorException;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,15 +45,31 @@ import java.util.List;
 @FunctionalInterface
 public interface ExecuteNode extends ICommandNode {
     @Override
-    default <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException{
+    default <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException{
+        throwIfShouldNotHaveArguments(args,keepArguments());
         run(context,args);
     }
 
     @Nullable
     @Override
-    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull T args, @Nonnull SuggestContext context){
+    default <T extends List<String> & Deque<String>> List<String> suggest(@Nonnull final T args, @Nonnull final SuggestContext context){
         return null;
     }
 
+    @Nonnull
+    @Override
+    default CommandBranch branch(){
+        return new CommandBranch();
+    }
+
+    default boolean keepArguments(){
+        return false;
+    }
+
     void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
+
+    static void throwIfShouldNotHaveArguments(final @Nonnull List<String> args,final boolean keepArg) throws SyntaxErrorException{
+        if(!keepArg && !args.isEmpty() && !args.get(0).trim().isEmpty())
+            throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",String.join(" ",args));
+    }
 }

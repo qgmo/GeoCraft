@@ -29,7 +29,12 @@ package top.qiguaiaaaa.geocraft.api.command;
 
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.ComparableNumberNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.parameter.num.NumberNodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.*;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.BigDecimalNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.BigIntegerNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.DoubleNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.IntegerNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.LongNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.generic.number.NumberNode;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -45,7 +50,7 @@ public final class NumberType<N extends Number> {
     public static final NumberType<Long> LONG = new NumberType<>(s -> new ComparableNumberNodeBuilder<>(s, LongNode::new));
     public static final NumberType<Integer> INTEGER = new NumberType<>(s -> new ComparableNumberNodeBuilder<>(s, IntegerNode::new));
     public static final NumberType<BigInteger> BIG_INTEGER = new NumberType<>(s -> new ComparableNumberNodeBuilder<>(s, BigIntegerNode::new));
-    public static final NumberType<BigDecimal> BIG_DECIMAL = new NumberType<>(s -> new ComparableNumberNodeBuilder<>(s,BigDecimalNode::new));
+    public static final NumberType<BigDecimal> BIG_DECIMAL = new NumberType<>(s -> new ComparableNumberNodeBuilder<>(s, BigDecimalNode::new));
 
     private final Function<String, NumberNodeBuilder<N, NumberNode<N>>> factory;
 

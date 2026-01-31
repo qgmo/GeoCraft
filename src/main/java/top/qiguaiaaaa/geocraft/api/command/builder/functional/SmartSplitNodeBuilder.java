@@ -27,47 +27,63 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.functional;
 
+import net.minecraft.command.SyntaxErrorException;
+import net.minecraftforge.server.permission.DefaultPermissionLevel;
+import net.minecraftforge.server.permission.PermissionAPI;
+import top.qiguaiaaaa.geocraft.api.command.Nodes;
 import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandRunFunction;
-import top.qiguaiaaaa.geocraft.api.command.builder.execute.ExecuteNodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.execute.CommandExecutor;
 import top.qiguaiaaaa.geocraft.api.command.builder.literal.LiteralNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.CommandContext;
-import top.qiguaiaaaa.geocraft.api.command.node.*;
+import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
+import top.qiguaiaaaa.geocraft.api.command.node.ISmartNode;
 import top.qiguaiaaaa.geocraft.api.command.node.functional.SmartSplitNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.LiteralNode;
+import top.qiguaiaaaa.geocraft.api.command.node.literal.LiteralNode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * {@link SmartSplitNode}的构建器
  * @author QiguaiAAAA
  */
-public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<SELF>> {
+public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> {
 
-    private SmartSplitNodeBuilder(){}
+    public static final CommandExecutor DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
+        if(!args.isEmpty()) throw new SyntaxErrorException();
+    };
 
     protected List<SmartNodeInnerBuilder<?>> smarts = new ArrayList<>();
     protected ICommandNode bakedDefault;
     protected INodeBuilder<?> defaultBuilder;
 
+    private SmartSplitNodeBuilder(){}
+
     /**
      * 向{@link SmartSplitNode}添加下一个智能节点
      * @param builder 智能节点的构建器
      * @return 一个 {@link SmartNodeInnerBuilder}。
-     * 该构建器没有实现 {@link INodeBuilder< LiteralNode >}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
+     * 该构建器没有实现 {@link INodeBuilder<LiteralNode>}，以防止不小心将该构建器直接连接到父构建器的下方。也就是说，下方的写法是不允许的：
      * <blockquote><pre> then(smart().then(一个构建器)) </pre></blockquote>
      * 请在构建完这个子节点后调用 {@link SmartNodeInnerBuilder#done()} 方法以返回 {@link SmartSplitNodeBuilder}。即：
      * <blockquote><pre> then(smart().then(一个构建器).done()) </pre></blockquote>
      * @param <T> 添加个节点类型，必须是 {@link ISmartNode} 的实现类
      */
     @Nonnull
-    public <T extends ISmartNode> SmartNodeInnerBuilder<T> then(@Nonnull final INodeBuilder<T> builder){
+    public <T extends ISmartNode> SmartNodeInnerBuilder<T> append(@Nonnull final INodeBuilder<T> builder){
         final SmartNodeInnerBuilder<T> b = new SmartNodeInnerBuilder<>(Objects.requireNonNull(builder));
+        smarts.add(b);
+        return b;
+    }
+
+    @Nonnull
+    public <T extends ISmartNode> SmartNodeInnerBuilder<T> append(@Nonnull final T node){
+        final SmartNodeInnerBuilder<T> b = new SmartNodeInnerBuilder<>(node);
         smarts.add(b);
         return b;
     }
@@ -96,37 +112,35 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF execute(@Nonnull final CommandRunFunction func){
-        final ExecuteNodeBuilder builder = new ExecuteNodeBuilder();
-        builder.run(Objects.requireNonNull(func));
-        defaultBuilder = builder;
-        return (SELF) this;
+    public S execute(@Nonnull final CommandExecutor func){
+        defaultBuilder = Nodes.execute(DEFAULT_EXECUTE_FUNC_CHECKER.then(func));
+        return (S) this;
     }
 
     /**
      * 定义当{@link SmartSplitNode} 的所有智能节点匹配失败时，默认的子节点，可以是任意 {@link ICommandNode}。
-     * 该方法会覆盖 {@link #defaultAs(INodeBuilder)} 和 {@link #execute(CommandRunFunction)}
+     * 该方法会覆盖 {@link #defaultAs(INodeBuilder)} 和 {@link #execute(CommandExecutor)}
      * @param node 默认子节点
      * @return {@link SmartSplitNodeBuilder}自身
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF defaultAs(@Nonnull final ICommandNode node){
+    public S defaultAs(@Nonnull final ICommandNode node){
         bakedDefault = node;
-        return (SELF) this;
+        return (S) this;
     }
 
     /**
      * 定义当{@link SmartSplitNode} 的所有智能节点匹配失败时，默认的子节点，可以是任意 {@link ICommandNode} 的构建器 {@link INodeBuilder}。
-     * 该方法会覆盖在此之前执行的 {@link #execute(CommandRunFunction)}
+     * 该方法会覆盖在此之前执行的 {@link #execute(CommandExecutor)}
      * @param node 默认子节点的构建器
      * @return {@link SmartSplitNodeBuilder}自身
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF defaultAs(@Nonnull final INodeBuilder<?> node){
+    public S defaultAs(@Nonnull final INodeBuilder<?> node){
         defaultBuilder = node;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
@@ -172,8 +186,8 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
          */
         @Nonnull
         @SuppressWarnings("unchecked")
-        public SELF done(){
-            return (SELF) SmartSplitNodeBuilder.this;
+        public S done(){
+            return (S) SmartSplitNodeBuilder.this;
         }
 
         @Nonnull
@@ -192,31 +206,59 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
 
         LiteralNodeInnerBuilder(@Nonnull final String name) {
             super(new LiteralNodeBuilder(name));
-            literalBuilder = (LiteralNodeBuilder) defaultBuilder;
+            literalBuilder = (LiteralNodeBuilder) super.child;
         }
 
         @Nonnull
-        public LiteralNodeInnerBuilder then(@Nonnull INodeBuilder<?> childNode) {
+        public LiteralNodeInnerBuilder then(@Nonnull final INodeBuilder<?> childNode) {
             literalBuilder.then(childNode);
             return this;
         }
 
         @Nonnull
-        public LiteralNodeInnerBuilder then(@Nonnull ICommandNode childNode) {
+        public LiteralNodeInnerBuilder then(@Nonnull final ICommandNode childNode) {
             literalBuilder.then(childNode);
             return this;
         }
 
         /**
-         * @see LiteralNodeBuilder#passIf(Function)
+         * @see LiteralNodeBuilder#require(Predicate) )
          * @param funcCheckPermission 权限检查函数
          * @return {@link LiteralNodeInnerBuilder} 自身
          */
         @Nonnull
-        public LiteralNodeInnerBuilder passIf(@Nonnull Function<CommandContext, Boolean> funcCheckPermission) {
-            literalBuilder.passIf(funcCheckPermission);
+        public LiteralNodeInnerBuilder require(@Nonnull final Predicate<CommandContext> funcCheckPermission) {
+            literalBuilder.require(funcCheckPermission);
             return this;
         }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder require(final int requiredPermissionLevel) {
+            literalBuilder.require(requiredPermissionLevel);
+            return this;
+        }
+
+        @Nonnull
+        public LiteralInnerPermissionAPINodeInnerBuilder require(@Nonnull final String permissionNode) {
+            return new LiteralInnerPermissionAPINodeInnerBuilder(permissionNode);
+        }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder requirePlayer(final boolean needPlayer){
+            literalBuilder.requirePlayer(needPlayer);
+            return this;
+        }
+
+        @Nonnull
+        public LiteralNodeInnerBuilder registerMissingPermissions(){
+            this.literalBuilder.registerMissingPermissions();
+            return this;
+        }
+
+//        @Nonnull
+//        public SmartSplitNodeBuilder.Inner<LiteralNodeInnerBuilder> smart(){
+//            return new SmartSplitNodeBuilder.Inner<>(this,(self,smart)->self.literalBuilder.then(smart.build()));
+//        }
 
         /**
          * {@inheritDoc}
@@ -225,26 +267,73 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
          */
         @Nonnull
         @Override
-        public LiteralNodeInnerBuilder matchIf(@Nonnull BiPredicate<List<String>, CommandContext> checker) {
+        public LiteralNodeInnerBuilder matchIf(@Nonnull final BiPredicate<List<String>, CommandContext> checker) {
             return (LiteralNodeInnerBuilder) super.matchIf(checker);
+        }
+
+        public class LiteralInnerPermissionAPINodeInnerBuilder {
+            protected final String node;
+            protected DefaultPermissionLevel level = DefaultPermissionLevel.NONE;
+            protected String comment = "";
+
+            public LiteralInnerPermissionAPINodeInnerBuilder(final @Nonnull String node) {
+                this.node = Objects.requireNonNull(node);
+            }
+
+            @Nonnull
+            public LiteralInnerPermissionAPINodeInnerBuilder comment(@Nonnull final String comment){
+                this.comment = comment;
+                return this;
+            }
+
+            @Nonnull
+            public LiteralInnerPermissionAPINodeInnerBuilder allow(@Nonnull final DefaultPermissionLevel level){
+                this.level = level;
+                return this;
+            }
+
+            @Nonnull
+            public LiteralNodeInnerBuilder register(){
+                PermissionAPI.registerNode(node,level,comment);
+                return done();
+            }
+
+            @Nonnull
+            public LiteralNodeInnerBuilder done(){
+                literalBuilder.require(this.node).allow(level).comment(comment).done();
+                return LiteralNodeInnerBuilder.this;
+            }
         }
     }
 
-    public static class Outer extends SmartSplitNodeBuilder<Outer> implements INodeBuilder<SmartSplitNode>{
-        public Outer(){}
-    }
+    public static class Outer extends SmartSplitNodeBuilder<Outer> implements INodeBuilder<SmartSplitNode>{}
 
-    public static class Inner<Parent extends INodeBuilder<?>> extends SmartSplitNodeBuilder<Inner<Parent>>{
+    public static class Inner<Parent> extends SmartSplitNodeBuilder<Inner<Parent>>{
 
         protected final Parent parentBuilder;
+        protected final BiConsumer<Parent, Inner<Parent>> onDone;
 
         public Inner(@Nonnull final Parent parentBuilder) {
             this.parentBuilder = parentBuilder;
+            onDone=null;
+        }
+
+        public Inner(@Nonnull final Parent parentBuilder,@Nonnull final BiConsumer<Parent,SmartSplitNodeBuilder.Inner<Parent>> onDoneFunc){
+            this.parentBuilder = parentBuilder;
+            this.onDone = onDoneFunc;
         }
 
         @Nonnull
         public Parent done(){
+            if(onDone != null) this.onDone.accept(parentBuilder,this);
             return parentBuilder;
+        }
+
+        @Deprecated
+        @Nonnull
+        @Override
+        public SmartSplitNode build() {
+            return super.build();
         }
     }
 }

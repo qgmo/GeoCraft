@@ -27,87 +27,173 @@
 
 package top.qiguaiaaaa.geocraft.api.command.builder.parameter;
 
-import top.qiguaiaaaa.geocraft.api.command.builder.INodeBuilder;
+import top.qiguaiaaaa.geocraft.api.command.builder.NoSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.builder.functional.SmartSplitNodeBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
-import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
-import top.qiguaiaaaa.geocraft.api.command.node.generic.ParameterNode;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.Decorator;
+import top.qiguaiaaaa.geocraft.api.command.node.parament.ParameterNode;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 参数节点构建器
  * @author QiguaiAAAA
  * @param <P> 参数类型
  * @param <T> 参数类型对应的参数节点类型
- * @param <SELF> 自身类型，用于 {@link #smart()}
+ * @param <S> 自身类型，用于 {@link #smart()}
  */
-public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>,SELF extends ParameterNodeBuilder<P,T,SELF>> implements INodeBuilder<T> {
+public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S extends ParameterNodeBuilder<P,T, S>> extends NoSplitNodeBuilder<T, S> {
+    public static final BiFunction<List<String>,SuggestContext,List<String>> USE_DEFAULT_SUGGESTOR = (strings, context) -> null;
+    public static final ParameterNode.DefaultParser<?> USE_DEFAULT_PARSER = (node,context) -> null;
+    @SuppressWarnings("deprecation")
+    protected static final BiConsumer<ParameterNodeBuilder<?,?,?>,SmartSplitNodeBuilder.Inner<ParameterNodeBuilder<?,?,?>>> ON_SMART_DONE =
+            (self,smart) -> self.bakedChildNode = smart.build();
     protected final String name;
-    protected INodeBuilder<?> childNode;
-    protected ICommandNode bakedChildNode;
-    protected SmartSplitNodeBuilder.Inner<SELF> smartNode;
+    protected String langKey;
+    protected String commentKey;
     protected boolean optional;
-    protected ParameterNode.DefaultParser<P> parser;
-    protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider;
+    @SuppressWarnings("unchecked")
+    protected ParameterNode.DefaultParser<P> parser = (ParameterNode.DefaultParser<P>) USE_DEFAULT_PARSER;
+    protected BiFunction<List<String>, SuggestContext, List<String>> suggestProvider = USE_DEFAULT_SUGGESTOR;
+    protected Decorator<P> decorator;
 
-    public ParameterNodeBuilder(@Nonnull String name) {
+    public ParameterNodeBuilder(@Nonnull final String name) {
         this.name = name;
     }
 
+    public ParameterNodeBuilder(@Nonnull final String parentName,@Nonnull final String childName){
+        this(ParameterNode.getInnerParameterName(parentName, childName));
+    }
+
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF asOptional() {
+    public S asOptional() {
         optional = true;
-        return (SELF) this;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S asNecessary(){
+        optional = false;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF defaultAs(@Nullable ParameterNode.DefaultParser<P> parser) {
+    public S defaultAs(@Nonnull final ParameterNode.DefaultParser<P> parser) {
         this.parser = parser;
-        return (SELF) this;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S defaultAs(@Nonnull final P defaultValue){
+        this.parser = (node, context) -> defaultValue;
+        return (S) this;
     }
 
     @SuppressWarnings("unchecked")
     @Nonnull
-    public SELF then(@Nonnull INodeBuilder<?> childNode) {
-        this.childNode = childNode;
-        return (SELF) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nonnull
-    public SELF then(@Nonnull ICommandNode childNode) {
-        this.bakedChildNode = childNode;
-        return (SELF) this;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nonnull
-    public SELF suggest(BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
+    public S suggest(final BiFunction<List<String>, SuggestContext, List<String>> suggestProvider) {
         this.suggestProvider = suggestProvider;
-        return (SELF) this;
+        return (S) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public S suggest(final Function<SuggestContext, List<String>> suggestProvider) {
+        this.suggestProvider = (args,context) -> suggestProvider.apply(context);
+        return (S) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public S suggest(final Supplier<List<String>> suggestProvider) {
+        this.suggestProvider = (args,context) -> suggestProvider.get();
+        return (S) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    public S suggest(final List<String> suggests) {
+        this.suggestProvider = (args,context) -> suggests;
+        return (S) this;
+    }
+
+    @Nonnull
+    public S suggest(final String... suggests){
+        return suggest(Arrays.asList(suggests));
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SmartSplitNodeBuilder.Inner<SELF> smart(){
-        return smartNode = new SmartSplitNodeBuilder.Inner<>((SELF) this);
+    public S translate(@Nonnull final String key){
+        this.langKey = key;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S comment(@Nonnull final String key){
+        this.commentKey = key;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S clearDecorators(){
+        this.decorator = null;
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S decorate(@Nonnull final Decorator<P> decorator){
+        if(this.decorator == null) this.decorator = decorator;
+        else this.decorator = this.decorator.andThen(decorator);
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public S decorate(@Nonnull final Decorator.Simple<P> decorator){
+        if(this.decorator == null) this.decorator = decorator.toFull();
+        else this.decorator = this.decorator.andThen(decorator);
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public SmartSplitNodeBuilder.Inner<S> smart(){
+        return new SmartSplitNodeBuilder.Inner<>((S) this,(BiConsumer<S, SmartSplitNodeBuilder.Inner<S>>) (BiConsumer<?,?>) ON_SMART_DONE);
     }
 
     @Nonnull
     @Override
     public T build() {
         final T instance = buildInstance();
-        if(smartNode == null) instance.setChildNode(bakedChildNode != null ? bakedChildNode : childNode.build());
-        else instance.setChildNode(smartNode.build());
-        instance.setDefaultParser(parser);
+        instance.setChildNode(buildChildNode());
+        if(parser != USE_DEFAULT_PARSER){
+            instance.setDefaultParser(parser);
+        }
+        instance.setDecorator(decorator);
         instance.setOptional(optional);
-        instance.setSuggestProvider(suggestProvider);
+        if(suggestProvider != USE_DEFAULT_SUGGESTOR){
+            instance.setSuggestProvider(suggestProvider);
+        }
+        if(langKey != null){
+            instance.setTranslationKey(langKey);
+        }
+        if(commentKey != null){
+            instance.setComment(commentKey);
+        }
         return instance;
     }
 

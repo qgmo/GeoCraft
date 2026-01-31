@@ -159,7 +159,12 @@ public final class EventFactory {
         AtmosphereAccessEvent.FluidFill event = new AtmosphereAccessEvent.FluidFill(atmosphere, accessor, fluid, stack, amount,temp, state, doFill);
         if(EVENT_BUS.post(event)) return -1;
         if(event.hasResult()){
-            return event.getFilledAmount();
+            switch (event.getResult()){
+                case ALLOW:return event.getFilledAmount();
+                case DENY:return 0;
+                case DEFAULT:
+                default:return -1;
+            }
         }else return -1;
     }
 

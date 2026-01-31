@@ -27,59 +27,76 @@
 
 package top.qiguaiaaaa.geocraft;
 
+import net.minecraftforge.fml.common.LoaderState;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.*;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
+import top.qiguaiaaaa.geocraft.command.CommandFluidPhysics;
+import top.qiguaiaaaa.geocraft.compat.GeoCompatLoader;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 
+import javax.annotation.Nonnull;
+
 @Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;",acceptableRemoteVersions = "*",useMetadata = true)
 public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
-    public static final String VERSION = "0.2.1";
+    public static final String VERSION = "0.2.2";
     @SidedProxy(clientSide = "top.qiguaiaaaa.geocraft.ClientProxy",serverSide = "top.qiguaiaaaa.geocraft.CommonProxy")
     private static CommonProxy proxy;
     private static Logger logger;
 
     @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
+    public void preInit(final @Nonnull FMLPreInitializationEvent event) {
         logger = event.getModLog();
         proxy.preInit(event);
         GameRegistry.registerWorldGenerator(new GeoCraftPostPopulatingGenerator(),100000);
+        GeoCompatLoader.loadCompats(LoaderState.PREINITIALIZATION);
     }
+
     @EventHandler
-    public void init(FMLInitializationEvent event){
+    public void init(final @Nonnull FMLInitializationEvent event){
         proxy.init(event);
+        GeoCompatLoader.loadCompats(LoaderState.INITIALIZATION);
     }
+
     @EventHandler
-    public void postInit(FMLPostInitializationEvent event){
+    public void postInit(final @Nonnull FMLPostInitializationEvent event){
         proxy.postInit(event);
         AtmosphereSystemRunner.onPostInit(event);
+        GeoCompatLoader.loadCompats(LoaderState.POSTINITIALIZATION);
     }
+
     @EventHandler
-    public void onServerStarting(FMLServerStartingEvent event){
-        event.registerServerCommand(new CommandAtmosphere());
+    public void onServerStarting(final @Nonnull FMLServerStartingEvent event){
+        event.registerServerCommand(CommandAtmosphere.create(event.getServer()));
+        event.registerServerCommand(CommandFluidPhysics.create());
 //        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();
         }else{
             FluidPressureSearchManager.syncRun();
         }
-
+        GeoCompatLoader.loadCompats(LoaderState.SERVER_STARTING);
     }
 
     @EventHandler
-    public void onServerStopping(FMLServerStoppingEvent event){
+    public void onServerStopping(final @Nonnull FMLServerStoppingEvent event){
         AtmosphereSystemRunner.onServerStopping(event);
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncStop();
@@ -88,13 +105,17 @@ public class GeoCraft {
         }
         FluidUpdateManager.onServerStop();
         BlockUpdater.onServerStop();
+        GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPING);
     }
 
     @EventHandler
-    public void onServerStop(FMLServerStoppedEvent event){
+    public void onServerStop(final @Nonnull FMLServerStoppedEvent event){
         AtmosphereRegionFileCache.clearRegionFileReferences();
         AtmosphereSystemRunner.onServerStopped(event);
+        GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPED);
     }
+
+    @Nonnull
     public static Logger getLogger(){
         return logger;
     }
