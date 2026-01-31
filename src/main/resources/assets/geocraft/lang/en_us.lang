@@ -63,11 +63,13 @@ geocraft.command.common.arg.pos=Position
 geocraft.command.common.arg.value=Value
 geocraft.command.common.arg.property=Property
 geocraft.command.common.arg.world=World
+geocraft.command.common.arg.doit=Do
 geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=Util Name
 geocraft.command.atmosphere.arg.time=Duration
 geocraft.command.atmosphere.arg.file_name=File Name
 
+geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
 geocraft.command.atmosphere.comment.file_name=指示需要将追踪的数据存储到的文件名，不能为空或包含特殊字符，推荐在末尾带上 .csv 后缀
 
@@ -126,5 +128,20 @@ geocraft.command.atmosphere.util.storage=Currently running atmospheres: %s
 geocraft.command.atmosphere.track.water=Water of atmosphere at (%s,%s,%s) is being tracked, Tracker id = %s
 geocraft.command.atmosphere.track.temp=Temperature of atmosphere at (%s,%s,%s) is being tracked, Tracker id = %s
 geocraft.command.atmosphere.track.gas=正在追踪 (%s,%s,%s) 处的大气属性，任务ID = %s, 属性ID %s
+
+geocraft.command.fluidphysics.usage=/fluidphysics <query|util> ...
+geocraft.command.fluidphysics.inaccessibility_to_atmosphere=(%s,%s,%s) can't access outer atmosphere.
+geocraft.command.fluidphysics.unable_to_evaporate=Evaporation at pos (%s,%s,%s) is disallowed.
+geocraft.command.fluidphysics.not_water=Block at pos (%s,%s,%s) is %s, but water is expected.
+geocraft.command.fluidphysics.evapration.reasons.upon_non_air=Block upon isn't air
+geocraft.command.fluidphysics.evapration.reasons.invalid_water=Invalid Water State
+geocraft.command.fluidphysics.evapration.reasons.rawPossibility=Raw
+geocraft.command.fluidphysics.evapration.reasons.saturated=Saturated
+geocraft.command.fluidphysics.evapration.reasons.exposure=Exposure
+geocraft.command.fluidphysics.evapration.title=Evaporation Status at (%s,%s,%s)
+#下面的可能存在段末空格
+geocraft.command.fluidphysics.evapration.possibility.pre=Possibility: 
+#段末空格可能性结束
+geocraft.command.fluidphysics.evapration.evaporated=%s mB Water (%s Quanta) is evaporated
 
 geocraft.fluid.carbon_dioxide=Carbon Dioxide

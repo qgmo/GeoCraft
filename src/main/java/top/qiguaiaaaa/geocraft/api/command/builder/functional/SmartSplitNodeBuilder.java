@@ -52,17 +52,17 @@ import java.util.function.Predicate;
  * {@link SmartSplitNode}的构建器
  * @author QiguaiAAAA
  */
-public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<SELF>> {
+public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> {
 
     public static final CommandExecutor DEFAULT_EXECUTE_FUNC_CHECKER = (args, context) -> {
         if(!args.isEmpty()) throw new SyntaxErrorException();
     };
 
-    private SmartSplitNodeBuilder(){}
-
     protected List<SmartNodeInnerBuilder<?>> smarts = new ArrayList<>();
     protected ICommandNode bakedDefault;
     protected INodeBuilder<?> defaultBuilder;
+
+    private SmartSplitNodeBuilder(){}
 
     /**
      * 向{@link SmartSplitNode}添加下一个智能节点
@@ -112,9 +112,9 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF execute(@Nonnull final CommandExecutor func){
+    public S execute(@Nonnull final CommandExecutor func){
         defaultBuilder = Nodes.execute(DEFAULT_EXECUTE_FUNC_CHECKER.then(func));
-        return (SELF) this;
+        return (S) this;
     }
 
     /**
@@ -125,9 +125,9 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF defaultAs(@Nonnull final ICommandNode node){
+    public S defaultAs(@Nonnull final ICommandNode node){
         bakedDefault = node;
-        return (SELF) this;
+        return (S) this;
     }
 
     /**
@@ -138,9 +138,9 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
      */
     @Nonnull
     @SuppressWarnings("unchecked")
-    public SELF defaultAs(@Nonnull final INodeBuilder<?> node){
+    public S defaultAs(@Nonnull final INodeBuilder<?> node){
         defaultBuilder = node;
-        return (SELF) this;
+        return (S) this;
     }
 
     @Nonnull
@@ -186,8 +186,8 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
          */
         @Nonnull
         @SuppressWarnings("unchecked")
-        public SELF done(){
-            return (SELF) SmartSplitNodeBuilder.this;
+        public S done(){
+            return (S) SmartSplitNodeBuilder.this;
         }
 
         @Nonnull
@@ -306,9 +306,7 @@ public abstract class SmartSplitNodeBuilder<SELF extends SmartSplitNodeBuilder<S
         }
     }
 
-    public static class Outer extends SmartSplitNodeBuilder<Outer> implements INodeBuilder<SmartSplitNode>{
-        public Outer(){}
-    }
+    public static class Outer extends SmartSplitNodeBuilder<Outer> implements INodeBuilder<SmartSplitNode>{}
 
     public static class Inner<Parent> extends SmartSplitNodeBuilder<Inner<Parent>>{
 

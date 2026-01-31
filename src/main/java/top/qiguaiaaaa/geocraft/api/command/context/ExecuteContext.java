@@ -64,8 +64,9 @@ public final class ExecuteContext extends CommandContext{
         super(command, server, sender);
     }
 
-    public void remove(@Nonnull final String key){
-        contexts.remove(key);
+    @SuppressWarnings("unchecked")
+    public <T> T remove(@Nonnull final String key){
+        return (T) contexts.remove(key);
     }
 
     public void put(@Nonnull final String key, @Nonnull final Object content){

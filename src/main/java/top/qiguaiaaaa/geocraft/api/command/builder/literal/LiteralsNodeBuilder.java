@@ -50,9 +50,6 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     private boolean optional = false;
     private Predicate<CommandContext> funcCheckPermission = PermitNode.PERMIT_ALL;
 
-    public LiteralsNodeBuilder() {
-    }
-
     @Nonnull
     public LiteralsNodeBuilder asOptional() {
         this.optional = true;
@@ -60,19 +57,19 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultThen(@Nonnull ICommandNode node) {
+    public LiteralsNodeBuilder defaultThen(@Nonnull final ICommandNode node) {
         bakedDefaultChild = node;
         return this;
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultThen(@Nonnull INodeBuilder<?> nodeBuilder) {
+    public LiteralsNodeBuilder defaultThen(@Nonnull final INodeBuilder<?> nodeBuilder) {
         defaultChild = nodeBuilder;
         return this;
     }
 
     @Nonnull
-    public LiteralsNodeBuilder defaultAs(@Nonnull String name) {
+    public LiteralsNodeBuilder defaultAs(@Nonnull final String name) {
         final Object node = literal2NodeMap.get(name);
         if (node instanceof ICommandNode) bakedDefaultChild = (ICommandNode) node;
         else if (node instanceof INodeBuilder<?>) defaultChild = (INodeBuilder<?>) node;
@@ -81,15 +78,8 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
     }
 
     @Nonnull
-    public LiteralsNodeBuilder ifThen(@Nonnull String name, @Nonnull ICommandNode node) {
-        literal2NodeMap.put(name, node);
-        return this;
-    }
-
-    @Nonnull
-    public LiteralsNodeBuilder ifThen(@Nonnull String name, @Nonnull INodeBuilder<?> nodeBuilder) {
-        literal2NodeMap.put(name, nodeBuilder);
-        return this;
+    public LiteralsChoiceInnerBuilder when(@Nonnull final String literal){
+        return new LiteralsChoiceInnerBuilder(literal);
     }
 
     @Nonnull
@@ -113,8 +103,10 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
             else if (n instanceof INodeBuilder<?>) node.addLiteral(l, ((INodeBuilder<?>) n).build());
             else throw new IllegalArgumentException(l);
         });
-        node.setChildNode(bakedDefaultChild != null ? bakedDefaultChild : defaultChild.build());
         node.setOptional(optional);
+        if(optional){
+            node.setChildNode(bakedDefaultChild != null ? bakedDefaultChild : defaultChild.build());
+        }
         return node;
     }
 
@@ -127,13 +119,13 @@ public class LiteralsNodeBuilder implements INodeBuilder<LiteralsNode> {
 
         @Nonnull
         public LiteralsNodeBuilder then(@Nonnull final INodeBuilder<?> nodeBuilder){
-            Arrays.stream(names).forEach(name -> ifThen(name,nodeBuilder));
+            Arrays.stream(names).forEach(name -> literal2NodeMap.put(name,nodeBuilder));
             return LiteralsNodeBuilder.this;
         }
 
         @Nonnull
         public LiteralsNodeBuilder then(@Nonnull final ICommandNode node) {
-            Arrays.stream(names).forEach(name -> ifThen(name,node));
+            Arrays.stream(names).forEach(name -> literal2NodeMap.put(name,node));
             return LiteralsNodeBuilder.this;
         }
     }

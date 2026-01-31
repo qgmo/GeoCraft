@@ -63,11 +63,13 @@ geocraft.command.common.arg.pos=位置
 geocraft.command.common.arg.value=值
 geocraft.command.common.arg.property=属性
 geocraft.command.common.arg.world=维度
+geocraft.command.common.arg.doit=执行
 geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=工具名称
 geocraft.command.atmosphere.arg.time=追踪时长
 geocraft.command.atmosphere.arg.file_name=文件名
 
+geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
 geocraft.command.atmosphere.comment.file_name=指示需要将追踪的数据存储到的文件名，不能为空或包含特殊字符，推荐在末尾带上 .csv 后缀
 
@@ -126,5 +128,20 @@ geocraft.command.atmosphere.util.storage=当前正在加载状态的大气数量
 geocraft.command.atmosphere.track.water=正在追踪 (%s,%s,%s) 处的大气水量，任务ID = %s
 geocraft.command.atmosphere.track.temp=正在追踪 (%s,%s,%s) 处的大气温度，任务ID = %s
 geocraft.command.atmosphere.track.gas=正在追踪 (%s,%s,%s) 处的大气属性，任务ID = %s, 属性ID %s
+
+geocraft.command.fluidphysics.usage=/fluidphysics <query|util> ...
+geocraft.command.fluidphysics.inaccessibility_to_atmosphere=位置 (%s,%s,%s) 无法访问到大气
+geocraft.command.fluidphysics.unable_to_evaporate=在位置 (%s,%s,%s) 的蒸发被禁用
+geocraft.command.fluidphysics.not_water=位置 (%s,%s,%s) 的方块状态是 %s，不是水方块
+geocraft.command.fluidphysics.evapration.reasons.upon_non_air=上方方块不是空气
+geocraft.command.fluidphysics.evapration.reasons.invalid_water=不应该出现的水方块状态（数据值大于7）
+geocraft.command.fluidphysics.evapration.reasons.rawPossibility=初始概率
+geocraft.command.fluidphysics.evapration.reasons.saturated=饱和
+geocraft.command.fluidphysics.evapration.reasons.exposure=暴露在空气中
+geocraft.command.fluidphysics.evapration.title=位置 (%s,%s,%s) 的蒸发状态
+#下面的存在段末空格
+geocraft.command.fluidphysics.evapration.possibility.pre=概率： 
+#段末空格存在结束
+geocraft.command.fluidphysics.evapration.evaporated=%s mB（%s 层）的水成功被蒸发
 
 geocraft.fluid.carbon_dioxide=二氧化碳

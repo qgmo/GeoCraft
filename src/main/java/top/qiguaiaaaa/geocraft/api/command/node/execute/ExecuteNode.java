@@ -46,7 +46,7 @@ import java.util.List;
 public interface ExecuteNode extends ICommandNode {
     @Override
     default <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException{
-        if(!keepArguments() && !args.isEmpty() && !args.get(0).trim().isEmpty()) throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",String.join(" ",args));
+        throwIfShouldNotHaveArguments(args,keepArguments());
         run(context,args);
     }
 
@@ -67,4 +67,9 @@ public interface ExecuteNode extends ICommandNode {
     }
 
     void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException;
+
+    static void throwIfShouldNotHaveArguments(final @Nonnull List<String> args,final boolean keepArg) throws SyntaxErrorException{
+        if(!keepArg && !args.isEmpty() && !args.get(0).trim().isEmpty())
+            throw new SyntaxErrorException("nickel.command.execute.argument_not_empty",String.join(" ",args));
+    }
 }

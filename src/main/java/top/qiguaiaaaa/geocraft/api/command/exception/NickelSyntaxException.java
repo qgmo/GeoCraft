@@ -27,8 +27,11 @@
 
 package top.qiguaiaaaa.geocraft.api.command.exception;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
@@ -74,5 +77,21 @@ public class NickelSyntaxException extends SyntaxErrorException {
     @Nullable
     public ITextComponent getDetails() {
         return appendix;
+    }
+
+    public void feedbackTo(@Nonnull final ICommandSender sender){
+        final ITextComponent node = new TextComponentTranslation("nickel.command.exception.syntax.node.pre")
+                .appendSibling(this.getNodeDocument())
+                .appendSibling(new TextComponentTranslation("nickel.command.exception.syntax.node.sub"));
+        node.getStyle().setColor(TextFormatting.RED);
+        final ITextComponent details = this.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.syntax.details")
+                .appendSibling(this.getDetails());
+        if(details != null) details.getStyle().setColor(TextFormatting.RED);
+        final ITextComponent document = new TextComponentTranslation("nickel.command.exception.syntax.usage")
+                .appendSibling(this.getSourceBranch().getDocument());
+        document.getStyle().setColor(TextFormatting.AQUA);
+        sender.sendMessage(node);
+        if(details != null) sender.sendMessage(details);
+        sender.sendMessage(document);
     }
 }

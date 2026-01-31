@@ -28,7 +28,10 @@
 package top.qiguaiaaaa.geocraft.api.command.exception;
 
 import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
 import top.qiguaiaaaa.geocraft.api.command.node.ICommandNode;
 import top.qiguaiaaaa.geocraft.api.command.node.IDocumentaryNode;
 import top.qiguaiaaaa.geocraft.api.command.utils.CommandBranch;
@@ -81,5 +84,23 @@ public class NickelCommandException extends CommandException {
     @Nullable
     public ITextComponent getDetails() {
         return appendix;
+    }
+
+    public void feedbackTo(@Nonnull final ICommandSender sender){
+        final ITextComponent node;
+        if(this.getNodeDocument() == null) node = new TextComponentTranslation("nickel.command.exception.base.message");
+        else node = new TextComponentTranslation("nickel.command.exception.base.node.pre")
+                .appendSibling(this.getNodeDocument()
+                        .appendSibling(new TextComponentTranslation("nickel.command.exception.base.node.sub")));
+        node.getStyle().setColor(TextFormatting.RED);
+        final ITextComponent details = this.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.base.details")
+                .appendSibling(this.getDetails());
+        if(details != null) details.getStyle().setColor(TextFormatting.RED);
+        final ITextComponent document = new TextComponentTranslation("nickel.command.exception.base.branch")
+                .appendSibling(this.getSourceBranch().getDocument());
+        document.getStyle().setColor(TextFormatting.AQUA);
+        sender.sendMessage(node);
+        if(details != null) sender.sendMessage(details);
+        sender.sendMessage(document);
     }
 }

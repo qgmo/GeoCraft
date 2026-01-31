@@ -64,6 +64,7 @@ public abstract class FluidState implements INumberState<Integer>, IFluidTank {
      */
     public int fill(int amount,final boolean doFill){
         if(this.amount + amount <0) return 0;
+        if(!doFill) return amount;
         this.amount += amount;
         return amount;
     }

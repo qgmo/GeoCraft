@@ -29,100 +29,153 @@ package top.qiguaiaaaa.geocraft.command;
 
 import dev.xhyrom.brigo.accessor.CommandHandlerExtras;
 import dev.xhyrom.brigo.command.CommandSource;
+import dev.xhyrom.brigo.shadow.brigadier.Command;
 import dev.xhyrom.brigo.shadow.brigadier.CommandDispatcher;
 import dev.xhyrom.brigo.shadow.brigadier.arguments.ArgumentType;
-import dev.xhyrom.brigo.shadow.brigadier.arguments.DoubleArgumentType;
-import dev.xhyrom.brigo.shadow.brigadier.arguments.IntegerArgumentType;
 import dev.xhyrom.brigo.shadow.brigadier.arguments.StringArgumentType;
 import dev.xhyrom.brigo.shadow.brigadier.builder.ArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.LiteralArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.RequiredArgumentBuilder;
-import net.minecraft.command.CommandHandler;
+import dev.xhyrom.brigo.shadow.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.ICommandManager;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.LoaderState;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.*;
+import static dev.xhyrom.brigo.shadow.brigadier.arguments.DoubleArgumentType.doubleArg;
+import static dev.xhyrom.brigo.shadow.brigadier.arguments.IntegerArgumentType.integer;
+import static dev.xhyrom.brigo.shadow.brigadier.arguments.StringArgumentType.greedyString;
+import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.ATMOSPHERE_COMMAND_NAME;
+import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.getPropertyList;
+import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FLUID_PHYSICS_COMMAND_NAME;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
 /**
  * @author QiguaiAAAA
  */
+@SuppressWarnings("unused")
 public final class BrigoCompat {
     private BrigoCompat(){}
 
-    public static CommandDispatcher<CommandSource> getDispatcher(final @Nonnull CommandHandler handler){
-        if(handler instanceof CommandHandlerExtras){
-            return ((CommandHandlerExtras)handler).brigo$dispatcher();
+    private static final Command<CommandSource> DO_NOTHING = ctx -> 0;
+    private static CommandDispatcher<CommandSource> dispatcher;
+
+    public static CommandDispatcher<CommandSource> getDispatcher(final @Nonnull ICommandManager manager){
+        if(manager instanceof CommandHandlerExtras){
+            return ((CommandHandlerExtras)manager).brigo$dispatcher();
         }
         return null;
     }
 
-    public static void registerAtmosphere(final @Nonnull CommandHandler handler){
-        final CommandDispatcher<CommandSource> dispatcher = getDispatcher(handler);
+    @SuppressWarnings("unused")
+    public static void init(final @Nonnull LoaderState state){
+        if(state != LoaderState.SERVER_STARTING) return;
+        final @Nonnull ICommandManager manager = FMLCommonHandler.instance().getMinecraftServerInstance().getCommandManager();
+        dispatcher = getDispatcher(manager);
         if(dispatcher == null) return;
-        dispatcher.register(literal(ATMOSPHERE_COMMAND_NAME)
-                .then(literal("set", Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()).collect(Collectors.toList()),
-                        builder -> builder.then(argument(VALUE, DoubleArgumentType.doubleArg())
-                                .then(blockPos())))
+        if(manager.getCommands().containsKey(ATMOSPHERE_COMMAND_NAME)){
+            final @Nonnull LiteralCommandNode<CommandSource> root = registerAtmosphere();
+            CommandAtmosphere.ALIASES.forEach(alias -> register(literal(alias)
+                    .redirect(root)));
+        }
+        if(manager.getCommands().containsKey(FLUID_PHYSICS_COMMAND_NAME)) registerFluidPhysics();
+        GeoCraft.getLogger().info("GeoCraft detected Brigo, Brigadier compat loaded.");
+    }
+
+    @Nonnull
+    public static LiteralCommandNode<CommandSource> registerAtmosphere(){
+        return register(literal(ATMOSPHERE_COMMAND_NAME)
+                .then(literal("set", Stream.concat(getPropertyList().stream(),CommandAtmosphere.SetConsumer.keySet().stream()).collect(Collectors.toList()),
+                        builder -> builder.then(argument(VALUE, doubleArg())
+                                .then(blockPos())
+                                .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("add", Stream.concat(getPropertyList().stream(),AddConsumer.keySet().stream()).collect(Collectors.toList()),
-                        builder -> builder.then(argument(VALUE,DoubleArgumentType.doubleArg())
-                                .then(blockPos())))
+                .then(literal("add", Stream.concat(getPropertyList().stream(),CommandAtmosphere.AddConsumer.keySet().stream()).collect(Collectors.toList()),
+                        builder -> builder.then(argument(VALUE, doubleArg())
+                                .then(blockPos())
+                                .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("query",Stream.concat(getPropertyList().stream(),QueryConsumer.keySet().stream()).collect(Collectors.toList()),
-                        builder -> builder.then(blockPos())))
+                .then(literal("query",new ArrayList<>(CommandAtmosphere.QueryConsumer.keySet()),
+                        builder -> builder.then(blockPos())
+                                .executes(DO_NOTHING)))
                 .then(literal("reset")
                         .then(literal("temp")
-                                .then(blockPos())))
+                                .then(blockPos())
+                                .executes(DO_NOTHING)))
                 .then(literal("util")
                         .then(literal("block_info")
-                                .then(argument("block state to query",StringArgumentType.greedyString())))
+                                .then(argument("block state to query",greedyString()))
+                                .executes(DO_NOTHING))
                         .then(literal("sun"))
                         .then(literal("property"))
                         .then(literal("storage")))
                 .then(literal("track", Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList()),
-                        builder -> builder.then(argument("duration",IntegerArgumentType.integer(1))
+                        builder -> builder.then(argument("duration",integer(1))
                                 .then(argument("file name",StringArgumentType.word())
-                                        .then(blockPos()))))
+                                        .then(blockPos())
+                                        .executes(DO_NOTHING))))
                         .then(compatArgs(PROPERTY,"duration","file name","x","y","z")))
                 .then(literal("stop")
-                        .then(argument(WORLD,IntegerArgumentType.integer())))
-        );
-        GeoCraft.getLogger().info("GeoCraft detected Brigo, Brigadier compat loaded.");
+                        .then(argument(WORLD, integer()))
+                        .executes(DO_NOTHING)));
     }
 
+    public static void registerFluidPhysics(){
+        register(literal(FLUID_PHYSICS_COMMAND_NAME)
+                .then(literal("query").then(literal("mode")))
+                .then(literal("util").then(literal("evaporate")
+                        .then(compatArgs("x","y","z",DOIT))
+                        .executes(DO_NOTHING))));
+    }
+
+    @Nonnull
+    public static LiteralCommandNode<CommandSource> register(@Nonnull final LiteralArgumentBuilder<CommandSource> builder){
+        final @Nonnull String literal = builder.getLiteral();
+        dispatcher.getRoot().getChildren().removeIf(node -> node instanceof LiteralCommandNode<?> && literal.equals(((LiteralCommandNode<CommandSource>) node).getLiteral()));
+        return dispatcher.register(builder);
+    }
+
+    @Nonnull
     public static RequiredArgumentBuilder<CommandSource,String> blockPos(){
-        return argument("x y z",StringArgumentType.greedyString());
+        return argument("x y z", greedyString());
     }
 
+    @Nonnull
     public static RequiredArgumentBuilder<CommandSource,String> compatArgs(@Nonnull final String... args){
-        return argument(String.join(" ",args),StringArgumentType.greedyString());
+        return argument(String.join(" ",args), greedyString());
     }
 
+    @Nonnull
     public static LiteralArgumentBuilder<CommandSource> literal(final @Nonnull String literal){
-        return LiteralArgumentBuilder.literal(literal);
+        return LiteralArgumentBuilder.literal(Objects.requireNonNull(literal));
     }
 
+    @Nonnull
     public static LiteralArgumentBuilder<CommandSource> literal(final @Nonnull String literal,
                                                                 final @Nonnull Collection<String> args,
                                                                 final @Nonnull Function<LiteralArgumentBuilder<CommandSource>,LiteralArgumentBuilder<CommandSource>> consumer){
-        return literals(LiteralArgumentBuilder.literal(literal),args,consumer);
+        return literals(literal(literal),args,consumer);
     }
 
+    @Nonnull
     public static <T extends ArgumentBuilder<CommandSource,T>> T literals(final @Nonnull T root,
                                                                           final @Nonnull Collection<String> args,
                                                                           final @Nonnull Function<LiteralArgumentBuilder<CommandSource>,LiteralArgumentBuilder<CommandSource>> consumer){
-        for (final String arg:args){
-            root.then(consumer.apply(literal(arg)));
+        for (final @Nonnull String arg:args){
+            root.then(consumer.apply(literal(Objects.requireNonNull(arg))));
         }
         return root;
     }
 
+    @Nonnull
     public static <T> RequiredArgumentBuilder<CommandSource,T> argument(final @Nonnull String name, final @Nonnull ArgumentType<T> type){
         return RequiredArgumentBuilder.argument(name,type);
     }

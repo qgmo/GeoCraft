@@ -35,6 +35,7 @@ import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -47,6 +48,7 @@ import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
  */
 public class CommandQueryBlockState{
 
+    @Nonnull
     public static ICommand create(){
         return new CommandBuilder("queryBlockState")
                 .require(2)

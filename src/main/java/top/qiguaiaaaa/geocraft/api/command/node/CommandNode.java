@@ -32,9 +32,6 @@ import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import top.qiguaiaaaa.geocraft.api.command.builder.CommandBuilder;
 import top.qiguaiaaaa.geocraft.api.command.context.ExecuteContext;
 import top.qiguaiaaaa.geocraft.api.command.context.SuggestContext;
@@ -129,35 +126,9 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
         try {
             childNode.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
         }catch (final @Nonnull NickelSyntaxException e){
-            final ITextComponent node = new TextComponentTranslation("nickel.command.exception.syntax.node.pre")
-                    .appendSibling(e.getNodeDocument())
-                    .appendSibling(new TextComponentTranslation("nickel.command.exception.syntax.node.sub"));
-            node.getStyle().setColor(TextFormatting.RED);
-            final ITextComponent details = e.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.syntax.details")
-                    .appendSibling(e.getDetails());
-            if(details != null) details.getStyle().setColor(TextFormatting.RED);
-            final ITextComponent document = new TextComponentTranslation("nickel.command.exception.syntax.usage")
-                    .appendSibling(e.getSourceBranch().getDocument());
-            document.getStyle().setColor(TextFormatting.AQUA);
-            sender.sendMessage(node);
-            if(details != null) sender.sendMessage(details);
-            sender.sendMessage(document);
+            e.feedbackTo(sender);
         }catch (final @Nonnull NickelCommandException e){
-            final ITextComponent node;
-            if(e.getNodeDocument() == null) node = new TextComponentTranslation("nickel.command.exception.base.message");
-            else node = new TextComponentTranslation("nickel.command.exception.base.node.pre")
-                    .appendSibling(e.getNodeDocument()
-                            .appendSibling(new TextComponentTranslation("nickel.command.exception.base.node.sub")));
-            node.getStyle().setColor(TextFormatting.RED);
-            final ITextComponent details = e.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.base.details")
-                    .appendSibling(e.getDetails());
-            if(details != null) details.getStyle().setColor(TextFormatting.RED);
-            final ITextComponent document = new TextComponentTranslation("nickel.command.exception.base.branch")
-                    .appendSibling(e.getSourceBranch().getDocument());
-            document.getStyle().setColor(TextFormatting.AQUA);
-            sender.sendMessage(node);
-            if(details != null) sender.sendMessage(details);
-            sender.sendMessage(document);
+            e.feedbackTo(sender);
         }
     }
 

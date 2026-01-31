@@ -110,7 +110,7 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static LiteralsNodeBuilder.LiteralsChoiceInnerBuilder literals(@Nonnull String... names){
+    public static LiteralsNodeBuilder.LiteralsChoiceInnerBuilder literals(@Nonnull final String... names){
         return new LiteralsNodeBuilder().when(names);
     }
 
@@ -120,17 +120,17 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(){
-        return new ExecuteNodeBuilder();
+    public static ExecuteNodeBuilder.Impl execute(){
+        return new ExecuteNodeBuilder.Impl();
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(@Nonnull final CommandExecutor func){
+    public static ExecuteNodeBuilder.Impl execute(@Nonnull final CommandExecutor func){
         return execute().run(func);
     }
 
     @Nonnull
-    public static ExecuteNodeBuilder execute(@Nonnull final SimpleCommandExecutor func){
+    public static ExecuteNodeBuilder.Impl execute(@Nonnull final SimpleCommandExecutor func){
         return execute().run(func);
     }
 
@@ -155,8 +155,28 @@ public final class Nodes {
     }
 
     @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func){
+        return relay((CommandExecutor) func);
+    }
+
+    @Nonnull
     public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func, @Nonnull final CommandExecutor funcAfter){
         return relay().run(func).after(funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final CommandExecutor funcAfter){
+        return relay((CommandExecutor) func,funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final SimpleCommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
+        return relay((CommandExecutor) func,(CommandExecutor) funcAfter);
+    }
+
+    @Nonnull
+    public static RelayExecuteNodeBuilder relay(@Nonnull final CommandExecutor func,@Nonnull final SimpleCommandExecutor funcAfter){
+        return relay(func,(CommandExecutor) funcAfter);
     }
 
     @Nonnull

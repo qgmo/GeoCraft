@@ -51,6 +51,8 @@ public final class GeoArguments {
     public static final String PROPERTY = "property";
     public static final String WORLD = "world";
 
+    public static final String DOIT = "doit";
+
     private GeoArguments(){}
 
     @Nonnull
@@ -77,5 +79,15 @@ public final class GeoArguments {
         return dimension(WORLD)
                 .asOptional()
                 .translate("geocraft.command.common.arg.world");
+    }
+
+    @Nonnull
+    public static StringNodeBuilder doit(){
+        return string(DOIT)
+                .asOptional()
+                .defaultAs("")
+                .translate("geocraft.command.common.arg.doit")
+                .comment("geocraft.command.common.comment.doit")
+                .allow("do");
     }
 }

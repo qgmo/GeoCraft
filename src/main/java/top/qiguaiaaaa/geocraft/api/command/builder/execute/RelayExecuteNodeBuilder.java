@@ -39,28 +39,26 @@ import java.util.List;
 /**
  * @author QiguaiAAAA
  */
-public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder {
+public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder<RelayExecuteNode,RelayExecuteNodeBuilder> {
     protected INodeBuilder<?> childNode;
     protected ICommandNode bakedChildNode;
 
     protected CommandExecutor funcOnFinal = DO_NOTHING;
 
+    public RelayExecuteNodeBuilder(){
+        this.doKeepArguments = true;
+    }
+
     @Nonnull
-    public RelayExecuteNodeBuilder then(@Nonnull INodeBuilder<?> childNode) {
+    public RelayExecuteNodeBuilder then(@Nonnull final INodeBuilder<?> childNode) {
         this.childNode = childNode;
         return this;
     }
 
     @Nonnull
-    public RelayExecuteNodeBuilder then(@Nonnull ICommandNode childNode) {
+    public RelayExecuteNodeBuilder then(@Nonnull final ICommandNode childNode) {
         this.bakedChildNode = childNode;
         return this;
-    }
-
-    @Nonnull
-    @Override
-    public RelayExecuteNodeBuilder run(@Nonnull final CommandExecutor runFunc) {
-        return (RelayExecuteNodeBuilder) super.run(runFunc);
     }
 
     @Nonnull
@@ -70,9 +68,20 @@ public class RelayExecuteNodeBuilder extends ExecuteNodeBuilder {
     }
 
     @Nonnull
+    public RelayExecuteNodeBuilder after(@Nonnull final SimpleCommandExecutor runFunc) {
+        this.funcOnFinal = runFunc;
+        return this;
+    }
+
+    @Nonnull
     @Override
     public RelayExecuteNode build() {
         final RelayExecuteNode node = new RelayExecuteNode() {
+            @Override
+            public boolean keepArguments() {
+                return doKeepArguments;
+            }
+
             @Override
             public void run(@Nonnull ExecuteContext context, @Nonnull List<String> args) throws CommandException {
                 funcExecute.run(args, context);

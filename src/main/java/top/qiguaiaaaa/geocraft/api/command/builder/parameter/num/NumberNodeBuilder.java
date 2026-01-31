@@ -37,7 +37,8 @@ import java.util.function.Function;
  * @author QiguaiAAAA
  */
 public class NumberNodeBuilder<N extends Number, T extends NumberNode<N>> extends FunctionalParameterNodeBuilder.FunctionalSmart<N, T,NumberNodeBuilder<N,T>> {
-    protected N minValue, maxValue;
+    protected N minValue;
+    protected N maxValue;
 
     public NumberNodeBuilder(@Nonnull final String name, @Nonnull final Function<String, T> builder) {
         super(name, builder);
