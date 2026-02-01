@@ -1,6 +1,6 @@
 {
     "pack": {
-        "description": "GeoCraft mod resources",
+        "description": "${mod_name} mod resources",
         "pack_format": 3
     }
 }
