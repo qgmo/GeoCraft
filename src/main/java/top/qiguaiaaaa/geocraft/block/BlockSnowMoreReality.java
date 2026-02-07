@@ -42,7 +42,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -51,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.util.APIMathUtil;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealitySnowUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealitySnowUpdater;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 

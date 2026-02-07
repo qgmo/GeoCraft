@@ -39,14 +39,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockIEConcreteUpdateTask;
-import top.qiguaiaaaa.geocraft.util.MiscUtil;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.RealityBlockIEConcreteUpdateTask;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockIEFluidConcrete.class,remap = false)
-public class BlockIEFluidConcreteMixin extends BlockIEFluid {
+public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFluidClassicFinite {
 
     public BlockIEFluidConcreteMixin(String name, Fluid fluid, Material material) {
         super(name, fluid, material);
@@ -57,6 +59,15 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdateManager.addTask(world,new RealityBlockIEConcreteUpdateTask(pos,quantaPerBlock,MiscUtil.modifyTickRateByGravity(world,this.tickRate),densityDir));
+        FluidUpdateManager.addTask(world,new RealityBlockIEConcreteUpdateTask(pos));
+    }
+
+    @Override
+    public void 天圆地方$FINITE$init() {}
+
+    @Nonnull
+    @Override
+    public FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler() {
+        return RealityBlockIEConcreteUpdateTask.IE_CONCRETE_FLOWING_UPDATER;
     }
 }

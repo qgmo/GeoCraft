@@ -56,7 +56,7 @@ import top.qiguaiaaaa.geocraft.api.fluid.StateOfMatter;
 import top.qiguaiaaaa.geocraft.api.property.TemperatureProperty;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.MoreRealityFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import javax.annotation.Nonnull;
@@ -232,7 +232,7 @@ public final class CommandFluidPhysics {
             }
 
             final void evaporateFor(@Nonnull final IBlockState state, @Nonnull final IAtmosphereAccessor accessor, @Nonnull final ExecuteContext ctx){
-                final @Nonnull IBlockState newState = MoreRealityFluidPhysicsCore.evaporateWater(state,accessor.getWorld().rand,accessor);
+                final @Nonnull IBlockState newState = FluidPhysicsCoreFinite.evaporateWater(state,accessor.getWorld().rand,accessor);
                 accessor.getWorld().setBlockState(accessor.getPos(),newState);
                 final int quanta = newState == Blocks.AIR.getDefaultState()?Math.max(8-state.getValue(LEVEL),0):(newState.getValue(LEVEL)-state.getValue(LEVEL));
                 final ITextComponent evaporatedInfo = new TextComponentTranslation("geocraft.command.fluidphysics.evapration.evaporated",quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta);

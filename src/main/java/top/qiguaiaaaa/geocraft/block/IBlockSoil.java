@@ -62,7 +62,7 @@ import top.qiguaiaaaa.geocraft.api.util.*;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealityBlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealityBlockLiquidUpdater;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.ChunkUtil;

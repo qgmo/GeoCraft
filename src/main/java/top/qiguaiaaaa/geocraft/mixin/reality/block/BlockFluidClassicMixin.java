@@ -40,14 +40,17 @@ import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.update.RealityBlockFluidClassicUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.RealityBlockFluidClassicUpdateTask;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 
 import javax.annotation.Nonnull;
@@ -57,14 +60,13 @@ import java.util.Random;
  * @author QiguaiAAAA
  */
 @Mixin(value = BlockFluidClassic.class)
-public abstract class BlockFluidClassicMixin extends BlockFluidBase {
+public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IBlockFluidClassicFinite {
+
+    @Unique
+    private FiniteFlowingClassic 天圆地方$flowingHandler;
 
     public BlockFluidClassicMixin(Fluid fluid, Material material, MapColor mapColor) {
         super(fluid, material, mapColor);
-    }
-
-    public BlockFluidClassicMixin(Fluid fluid, Material material) {
-        super(fluid, material);
     }
 
     /**
@@ -78,11 +80,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
         if(!GeoFluidSetting.hasGravity(world)){
             return;
         }
-        FluidUpdateManager.addTask(world,new RealityBlockFluidClassicUpdateTask(this.getFluid(),
-                pos,
-                (BlockFluidClassic)(Block) this,quantaPerBlock,
-                MiscUtil.modifyTickRateByGravity(world,this.tickRate),
-                densityDir));
+        FluidUpdateManager.addTask(world,new RealityBlockFluidClassicUpdateTask(pos,天圆地方$flowingHandler));
     }
 
     @Inject(method = "drain",at = @At("HEAD"),cancellable = true,remap = false)
@@ -150,5 +148,16 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase {
                                 @Nonnull final Block neighborBlock,
                                 @Nonnull final BlockPos neighbourPos) {
         MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
+    }
+
+    @Override
+    public void 天圆地方$FINITE$init() {
+        this.天圆地方$flowingHandler = new FiniteFlowingClassic((BlockFluidClassic) (Block)this);
+    }
+
+    @Nonnull
+    @Override
+    public FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler() {
+        return this.天圆地方$flowingHandler;
     }
 }

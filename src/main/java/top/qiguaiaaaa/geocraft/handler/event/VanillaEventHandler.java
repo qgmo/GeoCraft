@@ -49,7 +49,7 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.event.block.StaticLiquidUpdateEvent;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.FluidPhysicsCoreVanilla;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidMixinUtil;
@@ -64,7 +64,7 @@ public final class VanillaEventHandler {
         if(!event.isRandomTick()) return;
         World worldIn = event.getWorld();
         BlockPos pos = event.getPos();
-        IBlockState newState = VanillaFluidPhysicsCore.evaporateWater(worldIn,pos,event.getState(), worldIn.rand);
+        IBlockState newState = FluidPhysicsCoreVanilla.evaporateWater(worldIn,pos,event.getState(), worldIn.rand);
         if(newState != event.getState()){
             event.setNewState(newState);
             event.setResult(Event.Result.ALLOW);

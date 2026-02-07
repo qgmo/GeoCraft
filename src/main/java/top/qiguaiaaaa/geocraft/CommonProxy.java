@@ -35,7 +35,7 @@ import top.qiguaiaaaa.geocraft.capability.SavingScheduledTicksCapability;
 import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
 import top.qiguaiaaaa.geocraft.configs.ConfigInit;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.RealityFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealityFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.handler.FluidHandler;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;

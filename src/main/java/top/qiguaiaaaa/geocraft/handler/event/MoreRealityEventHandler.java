@@ -61,6 +61,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import top.qiguaiaaaa.geocraft.api.atmosphere.Atmosphere;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -74,7 +75,8 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.reality.MoreRealityFluidPhysicsCore;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
@@ -360,7 +362,7 @@ public final class MoreRealityEventHandler {
         try(@Nullable final IAtmosphereAccessor accessor = AtmosphereUtil.getLightedAtmosphereAccessor(worldIn,pos,true)){
             if(accessor == null) return;
             //先尝试结冰
-            if(setResultToAllowIfChanged(event,state,MoreRealityFluidPhysicsCore.freezeWater(state,worldIn.rand,accessor))) return;
+            if(setResultToAllowIfChanged(event,state, FluidPhysicsCoreFinite.freezeWater(state,worldIn.rand,accessor))) return;
 
             if(accessor.getTemperature() < TemperatureProperty.BOILED_POINT+20 && !event.isRandomTick()){
                 if(ServerStatusMonitor.isServerCloselyLagging()) return;
@@ -369,7 +371,7 @@ public final class MoreRealityEventHandler {
 
             if(!accessor.canAccessAtmosphere() || !accessor.getAtmosphereInfo().canWaterEvaporate(pos)) return;
 
-            setResultToAllowIfChanged(event,state,MoreRealityFluidPhysicsCore.evaporateWater(state,worldIn.rand,accessor));
+            setResultToAllowIfChanged(event,state, FluidPhysicsCoreFinite.evaporateWater(state,worldIn.rand,accessor));
         }
     }
 
@@ -392,13 +394,14 @@ public final class MoreRealityEventHandler {
             event.setResult(Event.Result.ALLOW);
             event.setSnowy(true);
             event.setState(Blocks.SNOW_LAYER.getDefaultState());
-        }else if(MoreRealityFluidPhysicsCore.canRainAt(world,randPos)){
+        }else if(FluidPhysicsCoreFinite.canRainAt(world,randPos)){
             atmosphere.drainWater(FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,randPos,true);
             event.setResult(Event.Result.ALLOW);
             event.setState(Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7));
         }
     }
-    public static void onPostInit(FMLPostInitializationEvent event){
+
+    public static void onPostInit(final @Nonnull FMLPostInitializationEvent event){
         for(ConfigurableFluid fluid:fluidsNotToSimulate){
             if(fluid == null) continue;
             GeoFluidSetting.setFluidToBePhysical(fluid.toString(),false);
@@ -413,5 +416,9 @@ public final class MoreRealityEventHandler {
         if(!GeoFluidSetting.isFluidToBePhysical(FluidRegistry.LAVA)){
             Blocks.LAVA.setTickRandomly(false);
         }
+        ForgeRegistries.BLOCKS.getValuesCollection().stream()
+                .filter(block -> block instanceof IBlockFluidClassicFinite)
+                .map(block -> (IBlockFluidClassicFinite) block)
+                .forEach(IBlockFluidClassicFinite::天圆地方$FINITE$init);
     }
 }
