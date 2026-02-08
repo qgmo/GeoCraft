@@ -35,7 +35,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.GeoFluids;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
 
 /**
  * @author QiguaiAAAA
@@ -43,7 +43,7 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater
 public final class RealitySnowUpdater {
 
     public static boolean isBlocked(World world, BlockPos downPos, IBlockState downState,IBlockState fromState){
-        if(BlockLiquidUpdater.isBlocked(downState)) return true;
+        if(VanillaFlowingVanilla.isBlocked(downState)) return true;
         if(downState.getBlock() == Blocks.SNOW_LAYER){
             return downState.getValue(BlockSnow.LAYERS) == 8;
         }else if(downState.getBlock() instanceof ILayeredFluidHost){

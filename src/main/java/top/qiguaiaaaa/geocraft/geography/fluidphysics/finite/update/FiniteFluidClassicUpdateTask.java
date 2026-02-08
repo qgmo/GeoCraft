@@ -62,16 +62,17 @@ import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.slopeModeForMod
  */
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
-public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask{
+public class FiniteFluidClassicUpdateTask extends FluidUpdateBaseTask{
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<OldFlowChoice> averageFlowChoices = new ArrayList<>(5);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] slopeFlowDirectionsArr = new EnumFacing[4];
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> bestFlowDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] bestFlowDirectionsArr = new EnumFacing[4];
     protected final @Nonnull FiniteFlowingClassic flowing;
     protected IBlockState state;
     protected int tickRate;
-    public RealityBlockFluidClassicUpdateTask(@Nonnull final BlockPos pos,
-                                              @Nonnull final FiniteFlowingClassic flowingHandler) {
+    public FiniteFluidClassicUpdateTask(@Nonnull final BlockPos pos,
+                                        @Nonnull final FiniteFlowingClassic flowingHandler) {
         super(flowingHandler.fluid, pos);
         this.flowing = flowingHandler;
     }
@@ -108,19 +109,23 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask{
         // *******************
 
         if(quanta == 1){
-            if(!slopeModeForModsWhenOnFluidsAndQuantaIs1.getValue() && flowing.isFluidEqual(stateBelow)){
+            if(!slopeModeForModsWhenOnFluidsAndQuantaIs1.getValue() && flowing.isEqualFluid(stateBelow)){
                 tryPressureFlow(world,rand);
                 return;
             }
-            final @Nonnull Set<EnumFacing> directions = EnumSet.noneOf(EnumFacing.class);
-            flowing.singleSlopeAlgorithm(world,pos,directions);
-            if(directions.isEmpty()){
+            slopeFlowableDirections.clear();
+            flowing.singleSlopeAlgorithm(world,pos,slopeFlowableDirections);
+            if(slopeFlowableDirections.isEmpty()){
                 tryPressureFlow(world,rand);
-                return;
+            }else{
+                int i = 0;
+                for(@Nonnull final EnumFacing dir:slopeFlowableDirections){
+                    slopeFlowDirectionsArr[i++] = dir;
+                }
+                final @Nonnull EnumFacing randomFacing = slopeFlowDirectionsArr[rand.nextInt(i)];
+                world.setBlockToAir(pos);
+                flowing.flowIntoBlockDirectly(world, pos.offset(randomFacing),state, meta);
             }
-            final @Nonnull EnumFacing randomFacing = (EnumFacing) directions.toArray()[rand.nextInt(directions.size())];
-            world.setBlockToAir(pos);
-            flowing.flowIntoBlockDirectly(world, pos.offset(randomFacing),state, meta);
             return;
         }
 
@@ -213,11 +218,11 @@ public class RealityBlockFluidClassicUpdateTask extends FluidUpdateBaseTask{
         while (res.hasNext()){
             final BlockPos toPos = res.next();
             assert toPos != null;
-            if(!flowing.isFluidEqual(nowState)) break;
+            if(!flowing.isEqualFluid(nowState)) break;
             if(flowing.tryTeleport(world,toPos,pos,nowState)) break;
             nowState = world.getBlockState(pos);
         }
-        if(nowState != state && flowing.isFluidEqual(nowState)){
+        if(nowState != state && flowing.isEqualFluid(nowState)){
             sendPressureQuery(world,rand,BaseUtil.getRandomPressureSearchRange(),true);
             return true;
         }else if(nowState == state){

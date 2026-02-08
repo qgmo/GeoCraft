@@ -43,7 +43,7 @@ public class VanillaFluidOperationChecker implements IFluidOperationChecker {
     @Override
     public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
         if(!FluidUtil.isFluid(state)){
-            return !BlockLiquidUpdater.isBlocked(state);
+            return !VanillaFlowingVanilla.isBlocked(state);
         }
         if(FluidUtil.getFluid(state) != fluid) return false;
         return !FluidUtil.isFullFluid(world,pos,state);

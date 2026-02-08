@@ -48,10 +48,10 @@ import static net.minecraftforge.fluids.BlockFluidBase.LEVEL;
 /**
  * @author QiguaiAAAA
  */
-public final class RealityBlockIEConcreteUpdateTask extends RealityBlockFluidClassicUpdateTask{
+public final class FiniteIEConcreteUpdateTask extends FiniteFluidClassicUpdateTask {
     public static final @Nonnull FiniteFlowingClassic IE_CONCRETE_FLOWING_UPDATER = new FiniteFlowingClassic(IEContent.blockFluidConcrete);
 
-    public RealityBlockIEConcreteUpdateTask(@Nonnull final BlockPos pos) {
+    public FiniteIEConcreteUpdateTask(@Nonnull final BlockPos pos) {
         super(pos, IE_CONCRETE_FLOWING_UPDATER);
     }
 

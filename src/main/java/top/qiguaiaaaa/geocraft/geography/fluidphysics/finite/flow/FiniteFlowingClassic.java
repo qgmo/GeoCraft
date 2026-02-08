@@ -129,17 +129,17 @@ public final class FiniteFlowingClassic {
         int difficulty = 1000;
 
         for (@Nonnull final EnumFacing enumfacing : EnumFacing.Plane.HORIZONTAL) {
-            facingPos$最外层$mut.setPos(pos).offsetM(enumfacing);
+            facingPos$最外层$mut.setPos(pos).offsetM(enumfacing,1);
             final @Nonnull IBlockState state = worldIn.getBlockState(facingPos$最外层$mut);
             if (!block.canDisplace(worldIn, facingPos$最外层$mut) || FluidUtil.isFluid(state)) {
                 continue;
             }
             final int slope;
             /// 疑似 Minecraft Forge 会导致当强制转换为 {@link IVec3i} 时，因为奇妙的问题导致 {@link AbstractMethodError}，因此必须转换为 {@link Vec3i}
-            if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$最外层$mut).upM(densityDir)) == FlowVerticalState.DENY) {
+            if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$最外层$mut).offsetM(EnumFacing.UP,densityDir)) == FlowVerticalState.DENY) {
                 slope = this.getSingleSlopeDistance(worldIn,
                         facingPos$最外层$mut.getX(),
-                        facingPos$最外层$mut.getY(),
+                        pos.getY(),
                         facingPos$最外层$mut.getZ(), 1, enumfacing.getOpposite());
             } else{
                 slope = 0;
@@ -175,14 +175,14 @@ public final class FiniteFlowingClassic {
             if (!block.canDisplace(worldIn, facingPos$迭代用$mut) || FluidUtil.isFluid(state)) {
                 continue;
             }
-            if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$迭代用$mut).upM(densityDir)) != FlowVerticalState.DENY) {
+            if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$迭代用$mut).offsetM(EnumFacing.UP,densityDir)) != FlowVerticalState.DENY) {
                 return distance;
             }
 
             if (distance < quantaPerBlock >> 1) {
                 final int newDistance = this.getSingleSlopeDistance(worldIn,
                         facingPos$迭代用$mut.getX(),
-                        facingPos$迭代用$mut.getY(),
+                        y,
                         facingPos$迭代用$mut.getZ(),
                         distance + 1,
                         enumfacing.getOpposite());
@@ -202,10 +202,10 @@ public final class FiniteFlowingClassic {
      * @param collectorOfPossibleDirections  一个流动方向的集合，意味着最佳的流动方向
      */
     public void multiSlopeAlgorithm(final @Nonnull World worldIn,
-                                               final @Nonnull BlockPos pos,
-                                               final @Nonnull Set<EnumFacing> accessibleDirections,
-                                               final int thisQuanta,
-                                               final @Nonnull Set<EnumFacing> collectorOfPossibleDirections) {
+                                    final @Nonnull BlockPos pos,
+                                    final @Nonnull Set<EnumFacing> accessibleDirections,
+                                    final int thisQuanta,
+                                    final @Nonnull Set<EnumFacing> collectorOfPossibleDirections) {
         double difficulty = 10000d;
 
         for (final @Nonnull EnumFacing enumfacing : accessibleDirections) {
@@ -228,7 +228,7 @@ public final class FiniteFlowingClassic {
     }
 
     /***
-     * Q>1 坡度流动模式的可流动方向寻找内层递归算法
+     * 多层坡度流动模式的可流动方向寻找内层递归算法
      * @param worldIn 所在世界
      * @param x X坐标
      * @param y Y坐标
@@ -258,7 +258,7 @@ public final class FiniteFlowingClassic {
                 continue;
             }
             if(isAir){
-                if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$迭代用$mut).upM(densityDir)) != FlowVerticalState.DENY) {
+                if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$迭代用$mut).offsetM(EnumFacing.UP,densityDir)) != FlowVerticalState.DENY) {
                     return FluidUtil.getFlowDifficulty(distance*quantaPerBlock,quantaPerBlock+thisQuanta);
                 }else{
                     return FluidUtil.getFlowDifficulty(distance*quantaPerBlock,thisQuanta);
@@ -272,7 +272,7 @@ public final class FiniteFlowingClassic {
             if (distance < (quantaPerBlock* FluidPhysicsConfig.slopeFindDistanceMultiplierForModFluidWhenQuantaAbove1.getValue())/2) {
                 final double slope = this.getMultiSlopeDistance(worldIn,
                         facingPos$迭代用$mut.getX(),
-                        facingPos$迭代用$mut.getY(),
+                        y,
                         facingPos$迭代用$mut.getZ(),
                         distance + 1,
                         thisQuanta,
@@ -290,7 +290,7 @@ public final class FiniteFlowingClassic {
      * @return 如果不是一个流体，则返回INT整形最大值。如果是一个流体，则返回自身流体量减去对方流体量的结果。
      */
     int getQuantaDiffer(final @Nonnull IBlockState state,final int thisQuanta){
-        if(!isFluidEqual(state)) return Integer.MIN_VALUE;
+        if(!isEqualFluid(state)) return Integer.MIN_VALUE;
         int quanta = quantaPerBlock-state.getValue(LEVEL);
         if(quanta<0) quanta = 0;
         return thisQuanta - quanta;
@@ -311,7 +311,7 @@ public final class FiniteFlowingClassic {
             else world.setBlockState(from,fromState.withProperty(BlockFluidClassic.LEVEL,quantaPerBlock-curQuanta));
             world.setBlockState(to,fromState.withProperty(BlockFluidClassic.LEVEL,quantaPerBlock-movQuanta));
             return curQuanta <= 0;
-        }else if(isFluidEqual(toState)){
+        }else if(isEqualFluid(toState)){
             int toQuanta = quantaPerBlock-toState.getValue(BlockFluidClassic.LEVEL);
             int myQuanta = quantaPerBlock -fromState.getValue(BlockFluidClassic.LEVEL);
             if(to.getY() == from.getY() && toQuanta>=myQuanta-1) return false;
@@ -339,7 +339,7 @@ public final class FiniteFlowingClassic {
     public FlowVerticalState canFlowDownTo(final @Nonnull World worldIn, final @Nonnull BlockPos pos){
         final @Nonnull IBlockState state = worldIn.getBlockState(pos);
         if(FluidUtil.isFluid(state)){
-            if(!isFluidEqual(state)){
+            if(!isEqualFluid(state)){
                 return this.block.canDisplace(worldIn,pos)?FlowVerticalState.SWAP:FlowVerticalState.DENY;
             }
             return FluidUtil.isFullFluid(worldIn,pos,state)?FlowVerticalState.DENY:FlowVerticalState.EQUAL_FLUID;
@@ -348,11 +348,11 @@ public final class FiniteFlowingClassic {
 
     public boolean canDisplaceEvenIsFluid(final @Nonnull World world,final @Nonnull BlockPos pos){
         final @Nonnull IBlockState state = world.getBlockState(pos);
-        if(isFluidEqual(state)) return true;
+        if(isEqualFluid(state)) return true;
         return this.block.canDisplace(world,pos);
     }
 
-    public boolean isFluidEqual(final @Nonnull IBlockState state){
+    public boolean isEqualFluid(final @Nonnull IBlockState state){
         return this.block == state.getBlock();
     }
 

@@ -27,16 +27,12 @@
 
 package top.qiguaiaaaa.geocraft.block.finite;
 
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
 
 import javax.annotation.Nonnull;
 
-public interface IBlockFluidClassicFinite {
-    /**
-     * @see top.qiguaiaaaa.geocraft.handler.event.MoreRealityEventHandler#onPostInit(FMLPostInitializationEvent) 
-     */
-    void 天圆地方$FINITE$init();
+public interface IBlockFluidClassicFinite extends IPostEventInitFinite {
     @Nonnull
     FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler();
 }

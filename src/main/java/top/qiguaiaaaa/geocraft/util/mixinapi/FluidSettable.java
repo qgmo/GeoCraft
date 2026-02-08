@@ -32,6 +32,7 @@ import net.minecraftforge.fluids.Fluid;
 /**
  * 该类用于为非IFluidBlock类提供加载自身对应流体的能力
  */
+@Deprecated
 public interface FluidSettable {
     /**
      * 设置相对应的流体

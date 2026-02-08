@@ -25,22 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util.mixinapi;
+package top.qiguaiaaaa.geocraft.block.finite;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
 
-import java.util.Random;
+import javax.annotation.Nonnull;
 
-public interface IVanillaFlowChecker {
-    /**
-     * 检查当前位置的原版液体是否能够流动
-     * @param worldIn 世界
-     * @param pos 位置
-     * @param state 方块状态
-     * @param rand 随机数生成器
-     * @return 如果能够流动，则返回true
-     */
-    boolean 天圆地方$canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand);
+public interface IBlockLiquidFinite extends IPostEventInitFinite {
+    @Nonnull
+    FiniteFlowingVanilla 天圆地方$FINITE$getFlowingHandler();
 }

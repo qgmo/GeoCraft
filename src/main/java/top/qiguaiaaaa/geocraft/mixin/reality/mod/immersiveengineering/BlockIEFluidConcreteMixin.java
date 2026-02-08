@@ -42,7 +42,7 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.RealityBlockIEConcreteUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.FiniteIEConcreteUpdateTask;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
@@ -59,7 +59,7 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFlu
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdateManager.addTask(world,new RealityBlockIEConcreteUpdateTask(pos));
+        FluidUpdateManager.addTask(world,new FiniteIEConcreteUpdateTask(pos));
     }
 
     @Override
@@ -68,6 +68,6 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFlu
     @Nonnull
     @Override
     public FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler() {
-        return RealityBlockIEConcreteUpdateTask.IE_CONCRETE_FLOWING_UPDATER;
+        return FiniteIEConcreteUpdateTask.IE_CONCRETE_FLOWING_UPDATER;
     }
 }

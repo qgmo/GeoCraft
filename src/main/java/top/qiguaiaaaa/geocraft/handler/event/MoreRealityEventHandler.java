@@ -75,8 +75,8 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
@@ -417,8 +417,8 @@ public final class MoreRealityEventHandler {
             Blocks.LAVA.setTickRandomly(false);
         }
         ForgeRegistries.BLOCKS.getValuesCollection().stream()
-                .filter(block -> block instanceof IBlockFluidClassicFinite)
-                .map(block -> (IBlockFluidClassicFinite) block)
-                .forEach(IBlockFluidClassicFinite::天圆地方$FINITE$init);
+                .filter(block -> block instanceof IPostEventInitFinite)
+                .map(block -> (IPostEventInitFinite) block)
+                .forEach(IPostEventInitFinite::天圆地方$FINITE$init);
     }
 }

@@ -50,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.block.finite.IBlockFluidClassicFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.RealityBlockFluidClassicUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.FiniteFluidClassicUpdateTask;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ import java.util.Random;
 public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IBlockFluidClassicFinite {
 
     @Unique
-    private FiniteFlowingClassic 天圆地方$flowingHandler;
+    private FiniteFlowingClassic 天圆地方$FINITE$flowing;
 
     public BlockFluidClassicMixin(Fluid fluid, Material material, MapColor mapColor) {
         super(fluid, material, mapColor);
@@ -73,18 +73,25 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
      * @reason 复写模组流体的更新
      */
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
-    public void 天圆地方$updateTick(World world, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
+    public void 天圆地方$updateTick(final @Nonnull World world,
+                                    final @Nonnull BlockPos pos,
+                                    final @Nonnull IBlockState state,
+                                    final @Nonnull Random rand,
+                                    final @Nonnull CallbackInfo ci) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
         if(!GeoFluidSetting.hasGravity(world)){
             return;
         }
-        FluidUpdateManager.addTask(world,new RealityBlockFluidClassicUpdateTask(pos,天圆地方$flowingHandler));
+        FluidUpdateManager.addTask(world,new FiniteFluidClassicUpdateTask(pos, 天圆地方$FINITE$flowing));
     }
 
     @Inject(method = "drain",at = @At("HEAD"),cancellable = true,remap = false)
-    private void 天圆地方$drain(World world, BlockPos pos, boolean doDrain, CallbackInfoReturnable<FluidStack> cir) {
+    private void 天圆地方$drain(final @Nonnull World world,
+                                final @Nonnull BlockPos pos,
+                                final boolean doDrain,
+                                final @Nonnull CallbackInfoReturnable<FluidStack> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         final FluidStack fluidStack = new FluidStack(this.getFluid(), MathHelper.floor((this.getQuantaPercentage(world, pos) * Fluid.BUCKET_VOLUME)));
 
@@ -99,7 +106,11 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
      * 参考自Forge的BlockFluidFinite类
      */
     @Inject(method = "place",at =@At("HEAD"),cancellable = true,remap = false)
-    private void 天圆地方$place(World world, BlockPos pos, FluidStack fluidStack, boolean doPlace, CallbackInfoReturnable<Integer> cir) {
+    private void 天圆地方$place(final @Nonnull World world,
+                                final @Nonnull BlockPos pos,
+                                final @Nonnull FluidStack fluidStack,
+                                final boolean doPlace,
+                                final @Nonnull CallbackInfoReturnable<Integer> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.cancel();
         IBlockState existing = world.getBlockState(pos);
@@ -130,7 +141,9 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     }
 
     @Inject(method = "canDrain",at = @At("HEAD"),cancellable = true,remap = false)
-    private void 天圆地方$canDrain(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    private void 天圆地方$canDrain(final @Nonnull World world,
+                                   final @Nonnull BlockPos pos,
+                                   final @Nonnull CallbackInfoReturnable<Boolean> cir) {
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.setReturnValue(true);
         cir.cancel();
@@ -152,12 +165,12 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
 
     @Override
     public void 天圆地方$FINITE$init() {
-        this.天圆地方$flowingHandler = new FiniteFlowingClassic((BlockFluidClassic) (Block)this);
+        this.天圆地方$FINITE$flowing = new FiniteFlowingClassic((BlockFluidClassic) (Block)this);
     }
 
     @Nonnull
     @Override
     public FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler() {
-        return this.天圆地方$flowingHandler;
+        return this.天圆地方$FINITE$flowing;
     }
 }

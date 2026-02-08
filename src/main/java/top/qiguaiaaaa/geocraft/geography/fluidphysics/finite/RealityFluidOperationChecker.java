@@ -34,7 +34,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.BlockLiquidUpdater;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
 
 import javax.annotation.Nonnull;
 
@@ -46,7 +46,7 @@ public class RealityFluidOperationChecker implements IFluidOperationChecker {
     public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
         if(state.getBlock() == Blocks.SNOW_LAYER) return false;
         if(!FluidUtil.isFluid(state)){
-            return !BlockLiquidUpdater.isBlocked(state);
+            return !VanillaFlowingVanilla.isBlocked(state);
         }
         if(FluidUtil.getFluid(state) != fluid) return false;
         return !FluidUtil.isFullFluid(world,pos,state);

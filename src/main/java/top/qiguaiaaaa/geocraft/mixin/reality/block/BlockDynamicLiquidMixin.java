@@ -32,7 +32,6 @@ import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
@@ -42,33 +41,24 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
-import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
+import top.qiguaiaaaa.geocraft.block.finite.IBlockLiquidFinite;
 import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealityBlockLiquidUpdater;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.RealityBlockDynamicLiquidUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.update.FiniteFluidVanillaUpdateTask;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
-import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
-import top.qiguaiaaaa.geocraft.util.mixinapi.IVanillaFlowChecker;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
 @Mixin(value = BlockDynamicLiquid.class)
-public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettable, IVanillaFlowChecker, ILayeredFluidHostFiniteLiquid {
+public class BlockDynamicLiquidMixin extends BlockLiquid implements IBlockLiquidFinite, ILayeredFluidHostFiniteLiquid {
     @Unique
-    private static final ThreadLocal<List<FlowChoice>> 天圆地方$averageFlowChoices = ThreadLocal.withInitial(ArrayList::new);
-    @Unique
-    private Fluid 天圆地方$thisFluid;
+    private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
 
-    @Unique
-    private RealityBlockLiquidUpdater 天圆地方$updater;
-
-    protected BlockDynamicLiquidMixin(Material materialIn) {
+    protected BlockDynamicLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
     }
 
@@ -86,8 +76,12 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
     }
 
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true)
-    public void 天圆地方$updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
+    public void 天圆地方$updateTick(@Nonnull final World worldIn,
+                                    @Nonnull final BlockPos pos,
+                                    @Nonnull final IBlockState state,
+                                    @Nonnull final Random rand,
+                                    @Nonnull final CallbackInfo ci) {
+        if(!GeoFluidSetting.isFluidToBePhysical(this.天圆地方$FINITE$flowingHandler.fluid)) return;
         ci.cancel();
         if (!worldIn.isBlockLoaded(pos)){
             return;
@@ -97,92 +91,43 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
             worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
-        FluidUpdateManager.addTask(worldIn,new RealityBlockDynamicLiquidUpdateTask(天圆地方$thisFluid,pos, 天圆地方$updater));
+        FluidUpdateManager.addTask(worldIn,new FiniteFluidVanillaUpdateTask(pos, 天圆地方$FINITE$flowingHandler));
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)
-    public void 天圆地方$onBlockAdded(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull CallbackInfo ci) {
+    public void 天圆地方$onBlockAdded(@Nonnull final World worldIn,
+                                      @Nonnull final BlockPos pos,
+                                      @Nonnull final IBlockState state,
+                                      @Nonnull final CallbackInfo ci) {
         ci.cancel();
         if (!this.checkForMixing(worldIn, pos, state)) {
             MiscUtil.scheduleFluidBlockUpdate(worldIn,pos, this, this.tickRate(worldIn));
         }
     }
 
-    @Override
-    @Unique
-    public boolean 天圆地方$canFlow(World worldIn, BlockPos pos, IBlockState state, Random rand){
-        if (!worldIn.isAreaLoaded(pos, 天圆地方$updater.getSlopeFindDistance(worldIn))){
-            return false;
-        }
-
-        int liquidMeta = state.getValue(LEVEL);
-        if(liquidMeta >= 8){
-            return false;
-        }
-        int liquidQuanta = 8-liquidMeta;
-
-        IBlockState stateBelow = worldIn.getBlockState(pos.down());
-        boolean canMoveDown = 天圆地方$updater.canMoveDownTo(stateBelow);
-        if(canMoveDown) return true;
-
-        //坡度流动模式
-        if(liquidMeta == 7){
-            if(!FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaIs1.getValue() && FluidUtil.getFluid(stateBelow) == 天圆地方$thisFluid) return false;
-            Set<EnumFacing> directions = 天圆地方$updater.getPossibleFlowDirections(worldIn, pos);
-            return !directions.isEmpty();
-        }
-        //可流动方向检查
-        final List<FlowChoice> averageModeFlowDirections = 天圆地方$averageFlowChoices.get();//平均流动模式可用方向
-        averageModeFlowDirections.clear();
-        Set<EnumFacing> slopeModeFlowDirections = FluidPhysicsConfig.slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1.getValue()?
-                EnumSet.noneOf(EnumFacing.class):null;//非Q=1坡度模式可用方向
-        天圆地方$updater.checkNeighborsToFindFlowChoices(worldIn,pos,state,liquidQuanta,averageModeFlowDirections,slopeModeFlowDirections);
-
-        if(!averageModeFlowDirections.isEmpty()){ //平均流动模式
-            averageModeFlowDirections.clear();
-            return true;
-        }else if(slopeModeFlowDirections != null && !slopeModeFlowDirections.isEmpty()){ //Q>1坡度模式
-            if(!worldIn.isAreaLoaded(pos, 天圆地方$updater.getSlopeFindDistance2(worldIn))) return false;
-            slopeModeFlowDirections = 天圆地方$updater.getPossibleFlowDirections(worldIn,pos,slopeModeFlowDirections,liquidQuanta);
-            return !slopeModeFlowDirections.isEmpty();
-        }
-        return false;
-    }
-
-    @Inject(method = "getPossibleFlowDirections",at = @At("HEAD"),cancellable = true)
-    private void 天圆地方$getPossibleFlowDirections(World worldIn, BlockPos pos, CallbackInfoReturnable<Set<EnumFacing>> cir) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
-        cir.cancel();
-        cir.setReturnValue(天圆地方$updater.getPossibleFlowDirections(worldIn,pos));
-    }
-
-    @Inject(method = "getSlopeDistance",at = @At("HEAD"),cancellable = true)
-    private void 天圆地方$getSlopeDistance(World worldIn, BlockPos pos, int distance, EnumFacing from, CallbackInfoReturnable<Integer> cir) {
-        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$thisFluid)) return;
-        cir.cancel();
-        cir.setReturnValue(天圆地方$updater.getSlopeDistance(worldIn,pos,distance,from));
-    }
-
-    //********
-    // FluidSettable
-    //********
-
-    @Override
-    @Unique
-    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
-        if(天圆地方$thisFluid != null)return;
-        this.天圆地方$thisFluid = fluid;
-        this.天圆地方$updater = new RealityBlockLiquidUpdater((BlockDynamicLiquid) (Block)this,material,fluid);
-    }
-
     //*********
-    // 透水方块
+    // 载流方块
     //*********
 
     @Nonnull
     @Override
     @Unique
     public Fluid 天圆地方$getFluid() {
-        return 天圆地方$thisFluid;
+        return this.天圆地方$FINITE$flowingHandler.fluid;
+    }
+
+    // **************
+    // IBlockLiquidFinite
+    // **************
+
+    @Nonnull
+    @Override
+    public FiniteFlowingVanilla 天圆地方$FINITE$getFlowingHandler() {
+        return this.天圆地方$FINITE$flowingHandler;
+    }
+
+    @Override
+    public void 天圆地方$FINITE$init() {
+        this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material);
     }
 }
