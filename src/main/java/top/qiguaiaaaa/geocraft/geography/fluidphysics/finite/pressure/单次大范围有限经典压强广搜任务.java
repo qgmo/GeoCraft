@@ -27,23 +27,40 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureBFSTask;
+import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IRealityPressureBFSTask extends IFluidPressureBFSTask,IRealityPressureSearchTask {
-    int getSearchTimes();
-    boolean hasSearchTimeReachedMax();
+public class 单次大范围有限经典压强广搜任务 extends 单次大范围有限压强广搜任务 implements IFiniteClassicPressureBFSTask {
+    protected final byte beginQuanta;
+    protected final byte quantaPerBlock;
+    protected final byte densityDir;
 
-    boolean search_Inner(@Nonnull WorldServer world, @Nonnull BlockPos pos);
+    单次大范围有限经典压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange, int quantaPerBlock) {
+        super(fluid, beginState, beginPos, searchRange);
+        beginQuanta = (byte) (quantaPerBlock-beginState.getValue(BlockFluidBase.LEVEL));
+        this.quantaPerBlock = (byte) quantaPerBlock;
+        this.densityDir = (byte) (fluid.getDensity()>0?1:-1);
+    }
 
     @Override
-    default boolean isFinished(){
-        return hasFoundEnoughResults() || hasSearchTimeReachedMax() || isQueueEmpty();
+    public byte getDensityDir() {
+        return densityDir;
+    }
+
+    @Override
+    public byte getBeginQuanta() {
+        return beginQuanta;
+    }
+
+    @Override
+    public byte getQuantaPerBlock() {
+        return quantaPerBlock;
     }
 }

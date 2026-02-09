@@ -45,7 +45,7 @@ import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.M
 /**
  * @author QiguaiAAAA
  */
-public abstract class 大范围物理压强广搜任务 extends FluidPressureLargeBFSBaseTask implements IRealityPressureBFSTask{
+public abstract class 大范围有限压强广搜任务 extends FluidPressureLargeBFSBaseTask implements IFinitePressureBFSTask {
     protected static final int TIMES_PER_SEARCH;
     protected final int maxSearchTimes;
     protected final FluidPressureSearchTaskLargeRangeRelativeResult res;
@@ -55,13 +55,13 @@ public abstract class 大范围物理压强广搜任务 extends FluidPressureLar
         TIMES_PER_SEARCH = FluidPhysicsConfig.REALITY_MAX_SEARCH_TIMES_PER_SEARCH_FOR_LARGE_RANGE_TASK.getValue();
     }
 
-    public 大范围物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+    public 大范围有限压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
         super(fluid, beginState, beginPos);
         queued(beginPos);
         markVisited(beginPos);
         if(searchRange >15) throw new IllegalArgumentException("FluidPressureLargeBFSBaseTask can not handle search range larger than 1048575 blocks!");
         else if(searchRange == 15) maxSearchTimes = MAX_RELATIVE_POS_OFFSET;
-        else maxSearchTimes = IRealityPressureSearchTask.getMaxSearchTimesFromRange(searchRange);
+        else maxSearchTimes = IFinitePressureSearchTask.getMaxSearchTimesFromRange(searchRange);
         res = new FluidPressureSearchTaskLargeRangeRelativeResult(beginPos);
     }
 

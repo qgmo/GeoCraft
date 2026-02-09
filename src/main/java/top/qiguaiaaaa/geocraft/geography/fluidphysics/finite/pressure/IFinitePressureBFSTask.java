@@ -25,28 +25,25 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update;
+package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
+import net.minecraft.world.WorldServer;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureBFSTask;
 
 import javax.annotation.Nonnull;
-import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class VanillaLikeFluidBlockUpdateTask extends FluidUpdateBaseTask {
-    public VanillaLikeFluidBlockUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos) {
-        super(fluid, pos);
-    }
+public interface IFinitePressureBFSTask extends IFluidPressureBFSTask, IFinitePressureSearchTask {
+    int getSearchTimes();
+    boolean hasSearchTimeReachedMax();
+
+    boolean search_Inner(@Nonnull WorldServer world, @Nonnull BlockPos pos);
 
     @Override
-    public void onUpdate(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-        ((IVanillaLikeFluidBlock)getBlock()).天圆地方$onFlowingTask(world,pos,state,rand);
+    default boolean isFinished(){
+        return hasFoundEnoughResults() || hasSearchTimeReachedMax() || isQueueEmpty();
     }
 }

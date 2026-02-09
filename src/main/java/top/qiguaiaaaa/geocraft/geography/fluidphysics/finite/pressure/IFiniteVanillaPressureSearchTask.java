@@ -27,42 +27,48 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import top.qiguaiaaaa.geocraft.util.fluid.FluidSearchUtil;
+import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 
 import javax.annotation.Nonnull;
-
-import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_REALITY_BFS;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IRealityVanillaPressureBFSTask extends IRealityPressureBFSTask,IRealityVanillaPressureSearchTask{
-    @Override
-    default boolean search_Inner(@Nonnull WorldServer world,@Nonnull BlockPos pos){
-        if(!world.isBlockLoaded(pos)) return false;
-        final BlockPos.MutableBlockPos mutablePos = MUTABLE_BLOCK_POS_FOR_REALITY_BFS.get();
-        IBlockState state = world.getBlockState(pos);
-        if(checkIfValid(world,state,pos)){
-            putBlockPosToResults(pos);
-        }
-        if(hasFoundEnoughResults()) return true; //够了
-        if(hasSearchTimeReachedMax()) return true;
+public interface IFiniteVanillaPressureSearchTask extends IFinitePressureSearchTask {
 
-        if(state.getMaterial() == Material.AIR) return false;
-        for(int[] dir: FluidSearchUtil.DIRS6){
-            if(pos.getY() == getBeginPos().getY() && dir[1]>0) continue;
-            mutablePos.setPos(pos.getX()+dir[0],pos.getY()+dir[1],pos.getZ()+dir[2]);
-            if(mutablePos.getY()<0) continue;
-            if(isVisited(mutablePos)) continue;
-            markVisited(mutablePos);
-            if(canSearchInto(world,mutablePos,dir)){
-                queued(mutablePos);
-            }
+    default boolean canSearchInto(@Nonnull WorldServer world, @Nonnull BlockPos pos, int[] dir){
+        if(!world.isBlockLoaded(pos)) return false;
+        final IBlockState state = world.getBlockState(pos);
+        if(state.getMaterial() == Material.AIR && (dir[1] != 0 || getBeginQuanta()>1 || pos.getY() < getBeginPos().getY())) return true;
+        if(FluidUtil.getFluid(state) == getFluid()) return true;
+        return false;
+    }
+
+    default boolean checkIfValid(@Nonnull WorldServer world,@Nonnull IBlockState state, @Nonnull BlockPos pos){
+        if(state.getMaterial() == Material.AIR){
+            return pos.getY() != getBeginPos().getY() || getBeginQuanta() > 1;
+        }else if(FluidUtil.getFluid(state) == getFluid()){
+            int quanta = 8-state.getValue(BlockLiquid.LEVEL);
+            return (pos.getY() < getBeginPos().getY() && quanta < 8) || (pos.getY() == getBeginPos().getY() && quanta < getBeginQuanta() - 1);
         }
         return false;
+    }
+
+    @Override
+    default boolean isEqualState(@Nonnull IBlockState curState) {
+        if(FluidUtil.getFluid(curState) == getFluid()){
+            return curState.getValue(BlockLiquid.LEVEL) == 8-getBeginQuanta();
+        }
+        return false;
+    }
+
+    @Override
+    default byte getQuantaPerBlock(){
+        return 8;
     }
 }

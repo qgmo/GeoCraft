@@ -31,7 +31,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.api.fluidphysics.IFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 
 import javax.annotation.Nonnull;

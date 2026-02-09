@@ -85,7 +85,7 @@ public final class VanillaEventHandler {
 
     @SubscribeEvent
     public void onPlayerPlacedBlock(BlockEvent.PlaceEvent event){
-        if(!onBlockReplaced(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), MoreRealityEventHandler.PlaceSource.PLAYER,event.getEntity())){
+        if(!onBlockReplaced(event.getWorld(), event.getPos(),event.getBlockSnapshot().getReplacedBlock(),event.getBlockSnapshot().getCurrentBlock(), FiniteEventHandler.PlaceSource.PLAYER,event.getEntity())){
             event.setCanceled(true);
         }
     }
@@ -93,16 +93,16 @@ public final class VanillaEventHandler {
     @SubscribeEvent
     public void onEntityPlacedBlock(BlockEvent.EntityPlaceEvent event){
         if(event instanceof BlockEvent.PlaceEvent) return;
-        MoreRealityEventHandler.PlaceSource source = MoreRealityEventHandler.PlaceSource.OTHERS;
+        FiniteEventHandler.PlaceSource source = FiniteEventHandler.PlaceSource.OTHERS;
         Entity entity = event.getEntity();
-        if(entity instanceof EntityFallingBlock) source = MoreRealityEventHandler.PlaceSource.FALLING_BLOCK;
-        else if(entity instanceof EntityEnderman) source = MoreRealityEventHandler.PlaceSource.ENDER_MAN;
+        if(entity instanceof EntityFallingBlock) source = FiniteEventHandler.PlaceSource.FALLING_BLOCK;
+        else if(entity instanceof EntityEnderman) source = FiniteEventHandler.PlaceSource.ENDER_MAN;
         if(!onBlockReplaced(event.getWorld(),event.getPos(),event.getBlockSnapshot().getCurrentBlock(),event.getBlockSnapshot().getReplacedBlock(),source,entity)){
             event.setCanceled(true);
         }
     }
 
-    public static boolean onBlockReplaced(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState currentState, @Nonnull IBlockState replacedState, @Nonnull MoreRealityEventHandler.PlaceSource source, @Nullable Entity sourceEntity){
+    public static boolean onBlockReplaced(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState currentState, @Nonnull IBlockState replacedState, @Nonnull FiniteEventHandler.PlaceSource source, @Nullable Entity sourceEntity){
         final Fluid fluid = FluidUtil.getFluid(currentState);
         if(fluid == null) return true;
         final Block block = currentState.getBlock();
@@ -131,7 +131,7 @@ public final class VanillaEventHandler {
                     break permeable;
                 }
                 IBlockState quantaState = null;
-                if(source == MoreRealityEventHandler.PlaceSource.FALLING_BLOCK){
+                if(source == FiniteEventHandler.PlaceSource.FALLING_BLOCK){
                     if(!(permeable instanceof IBlockStateLayeredFluidHost)){
                         break permeable;
                     }

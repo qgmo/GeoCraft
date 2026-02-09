@@ -37,8 +37,9 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import test_pack.block.FakeBlock;
 import test_pack.block.state.FakeBlockStateContainer;
 import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
@@ -64,11 +65,11 @@ public class LayeredFluidHostTest {
     @Test
     public void testQB(){
         long filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,7),testFluid,QBUtil.QUANTA_VOLUME,false);
-        Assert.assertEquals(QBUtil.QUANTA_VOLUME,filled);
+        Assertions.assertEquals(QBUtil.QUANTA_VOLUME,filled);
         filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,3),testFluid,QBUtil.BUCKET_VOLUME,false);
-        Assert.assertEquals(QBUtil.BUCKET_VOLUME-3*QBUtil.QUANTA_VOLUME,filled);
+        Assertions.assertEquals(QBUtil.BUCKET_VOLUME-3*QBUtil.QUANTA_VOLUME,filled);
         filled = block.addAmountInQB(null,BlockPos.ORIGIN,block.getDefaultState().withProperty(LAYERS,1),testFluid,QBUtil.BUCKET_VOLUME,true);
-        Assert.assertEquals(QBUtil.BUCKET_VOLUME-QBUtil.QUANTA_VOLUME,filled);
+        Assertions.assertEquals(QBUtil.BUCKET_VOLUME-QBUtil.QUANTA_VOLUME,filled);
     }
 
     @Test
@@ -100,8 +101,8 @@ public class LayeredFluidHostTest {
             LOGGER.info("Central left : {}",left);
 
             for(FlowChoice choice:averageModeFlowDirections){
-                Assert.assertNotNull(choice);
-                Assert.assertEquals(0,choice.apply(null,BlockPos.ORIGIN,facingState.get(choice.direction),testFluid));
+                Assertions.assertNotNull(choice);
+                Assertions.assertEquals(0,choice.apply(null,BlockPos.ORIGIN,facingState.get(choice.direction),testFluid));
             }
         }
     }

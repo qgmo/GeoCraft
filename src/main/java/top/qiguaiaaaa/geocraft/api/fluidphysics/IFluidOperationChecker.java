@@ -25,36 +25,18 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update;
+package top.qiguaiaaaa.geocraft.api.fluidphysics;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
-import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public class VanillaLikeBlockFluidClassicUpdateTask extends VanillaLikeFluidBlockUpdateTask {
-    protected final BlockFluidClassic block;
-
-    public VanillaLikeBlockFluidClassicUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos, BlockFluidClassic block) {
-        super(fluid, pos);
-        this.block = block;
-    }
-
-    @Override
-    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-    }
-
-    @Nonnull
-    @Override
-    public Block getBlock() {
-        return block;
-    }
+public interface IFluidOperationChecker {
+    boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state,@Nonnull Fluid fluid);
 }

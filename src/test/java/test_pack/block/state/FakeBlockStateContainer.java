@@ -29,7 +29,7 @@ package test_pack.block.state;
 
 import com.google.common.collect.*;
 import net.minecraft.block.properties.IProperty;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import test_pack.block.FakeBlock;
 
 import javax.annotation.Nonnull;
@@ -55,11 +55,11 @@ public class FakeBlockStateContainer {
         final List<Map<IProperty<?>,Comparable<?>>> newMaps = new ArrayList<>();
 
         for(IProperty<?> property:properties){
-            Assert.assertNotNull(property);
+            Assertions.assertNotNull(property);
             newMaps.clear();
             propertyMaps.forEach(map->{
                 Collection<? extends Comparable<?>> allowedValues = property.getAllowedValues();
-                Assert.assertTrue(allowedValues.size()>0);
+                Assertions.assertTrue(allowedValues.size()>0);
                 Iterator<? extends Comparable<?>> iterator = allowedValues.iterator();
                 map.put(property,iterator.next());
                 while (iterator.hasNext()){

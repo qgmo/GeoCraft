@@ -28,10 +28,11 @@
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite;
 
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import top.qiguaiaaaa.geocraft.handler.event.FiniteEventHandler;
 
 public interface IPostEventInitFinite {
     /**
-     * @see top.qiguaiaaaa.geocraft.handler.event.MoreRealityEventHandler#onPostInit(FMLPostInitializationEvent)
+     * @see FiniteEventHandler#onPostInit(FMLPostInitializationEvent)
      */
     void 天圆地方$FINITE$init();
 }

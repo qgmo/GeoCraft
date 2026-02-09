@@ -42,7 +42,7 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure.RealityPressureTaskBuilder;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
@@ -238,7 +238,7 @@ public class FiniteFluidClassicUpdateTask extends FluidUpdateBaseTask{
                                      final boolean directly){
         final @Nonnull IBlockState up = world.getBlockState(pos.down(flowing.densityDir));
         if(FluidUtil.getFluid(up)!=fluid && (directly || BaseUtil.getRandomResult(rand, FluidPhysicsConfig.POSSIBILITY_FOR_CLASSIC_FLUIDS_TO_CREATE_PRESSURE_TASK.getValue()))) {
-            FluidPressureSearchManager.addTask(world, RealityPressureTaskBuilder.createModClassicTask(fluid,state,pos, range,flowing.quantaPerBlock));
+            FluidPressureSearchManager.addTask(world, FinitePressureTasks.createModClassicTask(fluid,state,pos, range,flowing.quantaPerBlock));
         }
     }
 }

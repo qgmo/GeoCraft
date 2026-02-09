@@ -38,7 +38,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFSTask {
+public interface IFiniteDebugPressureBFSTask extends IDebug, IFinitePressureBFSTask {
 
     default void isEqualState_Debug(@Nonnull IBlockState curState) {
         GeoCraft.getLogger().info("{} stopped because source state changed to {}",this,curState);
@@ -78,7 +78,7 @@ public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFS
 
     @Override
     default boolean isFinished() {
-        if(IRealityPressureBFSTask.super.isFinished()){
+        if(IFinitePressureBFSTask.super.isFinished()){
             GeoCraft.getLogger().info("{} is finished with visited poses {} , queued poses {}, res poses {}, search times {}, max search times {}",
                     this,getVisitedSize(),getQueueSize(),getResultCollection().size(),getSearchTimes(),getMaxSearchTimes());
             return true;
@@ -86,10 +86,10 @@ public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFS
         return false;
     }
 
-    interface IRealityVanillaDebugPressureBFSTask extends IRealityVanillaPressureBFSTask,IRealityDebugPressureBFSTask{
+    interface IFiniteVanillaDebugPressureBFSTask extends IFiniteVanillaPressureBFSTask, IFiniteDebugPressureBFSTask {
         @Override
         default boolean isEqualState(@Nonnull IBlockState curState) {
-            if(IRealityVanillaPressureBFSTask.super.isEqualState(curState)){
+            if(IFiniteVanillaPressureBFSTask.super.isEqualState(curState)){
                 return true;
             }
             isEqualState_Debug(curState);
@@ -98,7 +98,7 @@ public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFS
 
         @Override
         default boolean canSearchInto(@Nonnull WorldServer world, @Nonnull BlockPos pos, int[] dir) {
-            if(IRealityVanillaPressureBFSTask.super.canSearchInto(world, pos, dir)){
+            if(IFiniteVanillaPressureBFSTask.super.canSearchInto(world, pos, dir)){
                 canSearchInto_Debug(world,pos,dir);
                 return true;
             }
@@ -106,10 +106,10 @@ public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFS
         }
     }
 
-    interface IRealityModClassicDebugPressureBFSTask extends IRealityModClassicPressureBFSTask,IRealityDebugPressureBFSTask{
+    interface IFiniteClassicDebugPressureBFSTask extends IFiniteClassicPressureBFSTask, IFiniteDebugPressureBFSTask {
         @Override
         default boolean isEqualState(@Nonnull IBlockState curState) {
-            if(IRealityModClassicPressureBFSTask.super.isEqualState(curState)){
+            if(IFiniteClassicPressureBFSTask.super.isEqualState(curState)){
                 return true;
             }
             isEqualState_Debug(curState);
@@ -118,7 +118,7 @@ public interface IRealityDebugPressureBFSTask extends IDebug,IRealityPressureBFS
 
         @Override
         default boolean canSearchInto(@Nonnull WorldServer world, @Nonnull BlockPos pos, int[] dir) {
-            if(IRealityModClassicPressureBFSTask.super.canSearchInto(world, pos, dir)){
+            if(IFiniteClassicPressureBFSTask.super.canSearchInto(world, pos, dir)){
                 canSearchInto_Debug(world,pos,dir);
                 return true;
             }

@@ -27,7 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.api.configs.value.geo;
 
-import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.api.fluidphysics.IFluidOperationChecker;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

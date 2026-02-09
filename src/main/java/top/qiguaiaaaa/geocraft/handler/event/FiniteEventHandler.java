@@ -93,7 +93,7 @@ import java.util.Objects;
 import static net.minecraftforge.fluids.FluidUtil.tryPlaceFluid;
 import static top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig.*;
 
-public final class MoreRealityEventHandler {
+public final class FiniteEventHandler {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onBucketEvent(FillBucketEvent event){
         World worldIn = event.getWorld();

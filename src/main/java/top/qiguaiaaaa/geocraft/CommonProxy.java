@@ -35,13 +35,13 @@ import top.qiguaiaaaa.geocraft.capability.SavingScheduledTicksCapability;
 import top.qiguaiaaaa.geocraft.capability.SchedulingTicksCapability;
 import top.qiguaiaaaa.geocraft.configs.ConfigInit;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.RealityFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
 import top.qiguaiaaaa.geocraft.handler.FluidHandler;
 import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
-import top.qiguaiaaaa.geocraft.handler.event.MoreRealityEventHandler;
+import top.qiguaiaaaa.geocraft.handler.event.FiniteEventHandler;
 import top.qiguaiaaaa.geocraft.handler.event.SoilEventHandler;
-import top.qiguaiaaaa.geocraft.handler.event.VanillaLikeEventHandler;
+import top.qiguaiaaaa.geocraft.handler.event.ClassicEventHandler;
 import top.qiguaiaaaa.geocraft.handler.network.NetworkFakeStateManager;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.MixinUtil;
@@ -82,11 +82,11 @@ public class CommonProxy {
         FluidHandler.initRegisteredFluids();
         FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
         FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());
-        FluidPhysicsMode.MORE_REALITY.setChecker(new RealityFluidOperationChecker());
+        FluidPhysicsMode.MORE_REALITY.setChecker(new FiniteFluidOperationChecker());
         if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.MORE_REALITY){
-            MoreRealityEventHandler.onPostInit(event);
+            FiniteEventHandler.onPostInit(event);
         }else if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.VANILLA_LIKE){
-            VanillaLikeEventHandler.onPostInit(event);
+            ClassicEventHandler.onPostInit(event);
         }
         SoilEventHandler.onPostInit(event);
         NetworkFakeStateManager.registerDefaultConfig();

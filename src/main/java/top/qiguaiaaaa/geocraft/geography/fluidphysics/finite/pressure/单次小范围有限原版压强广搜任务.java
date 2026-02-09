@@ -27,9 +27,9 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
@@ -37,30 +37,16 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public class 单次大范围模组Classic物理压强广搜任务 extends 单次大范围物理压强广搜任务 implements IRealityModClassicPressureBFSTask{
+public class 单次小范围有限原版压强广搜任务 extends 单次小范围有限压强广搜任务 implements IFiniteVanillaPressureBFSTask {
     protected final byte beginQuanta;
-    protected final byte quantaPerBlock;
-    protected final byte densityDir;
 
-    单次大范围模组Classic物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange, int quantaPerBlock) {
+    单次小范围有限原版压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
         super(fluid, beginState, beginPos, searchRange);
-        beginQuanta = (byte) (quantaPerBlock-beginState.getValue(BlockFluidBase.LEVEL));
-        this.quantaPerBlock = (byte) quantaPerBlock;
-        this.densityDir = (byte) (fluid.getDensity()>0?1:-1);
-    }
-
-    @Override
-    public byte getDensityDir() {
-        return densityDir;
+        beginQuanta = (byte) (8-beginState.getValue(BlockLiquid.LEVEL));
     }
 
     @Override
     public byte getBeginQuanta() {
         return beginQuanta;
-    }
-
-    @Override
-    public byte getQuantaPerBlock() {
-        return quantaPerBlock;
     }
 }

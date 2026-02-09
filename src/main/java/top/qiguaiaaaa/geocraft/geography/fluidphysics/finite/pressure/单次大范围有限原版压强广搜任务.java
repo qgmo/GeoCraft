@@ -28,47 +28,25 @@
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.WorldServer;
-import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IRealityVanillaPressureSearchTask extends IRealityPressureSearchTask{
+public class 单次大范围有限原版压强广搜任务 extends 单次大范围有限压强广搜任务 implements IFiniteVanillaPressureBFSTask {
+    protected final byte beginQuanta;
 
-    default boolean canSearchInto(@Nonnull WorldServer world, @Nonnull BlockPos pos, int[] dir){
-        if(!world.isBlockLoaded(pos)) return false;
-        final IBlockState state = world.getBlockState(pos);
-        if(state.getMaterial() == Material.AIR && (dir[1] != 0 || getBeginQuanta()>1 || pos.getY() < getBeginPos().getY())) return true;
-        if(FluidUtil.getFluid(state) == getFluid()) return true;
-        return false;
-    }
-
-    default boolean checkIfValid(@Nonnull WorldServer world,@Nonnull IBlockState state, @Nonnull BlockPos pos){
-        if(state.getMaterial() == Material.AIR){
-            return pos.getY() != getBeginPos().getY() || getBeginQuanta() > 1;
-        }else if(FluidUtil.getFluid(state) == getFluid()){
-            int quanta = 8-state.getValue(BlockLiquid.LEVEL);
-            return (pos.getY() < getBeginPos().getY() && quanta < 8) || (pos.getY() == getBeginPos().getY() && quanta < getBeginQuanta() - 1);
-        }
-        return false;
+    单次大范围有限原版压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+        super(fluid, beginState, beginPos, searchRange);
+        beginQuanta = (byte) (8-beginState.getValue(BlockLiquid.LEVEL));
     }
 
     @Override
-    default boolean isEqualState(@Nonnull IBlockState curState) {
-        if(FluidUtil.getFluid(curState) == getFluid()){
-            return curState.getValue(BlockLiquid.LEVEL) == 8-getBeginQuanta();
-        }
-        return false;
-    }
-
-    @Override
-    default byte getQuantaPerBlock(){
-        return 8;
+    public byte getBeginQuanta() {
+        return beginQuanta;
     }
 }

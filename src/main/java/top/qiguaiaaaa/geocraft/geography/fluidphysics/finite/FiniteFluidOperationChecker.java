@@ -25,41 +25,30 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update;
+package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockDynamicLiquid;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.api.fluidphysics.IFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
 
 import javax.annotation.Nonnull;
-import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public class VanillaLikeBlockDynamicLiquidUpdateTask extends VanillaLikeFluidBlockUpdateTask {
-    protected final BlockDynamicLiquid block;
-
-    public VanillaLikeBlockDynamicLiquidUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos,final @Nonnull BlockDynamicLiquid block) {
-        super(fluid, pos);
-        this.block = block;
-    }
-
+public class FiniteFluidOperationChecker implements IFluidOperationChecker {
     @Override
-    public void onFailure(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
-        world.setBlockState(pos,
-                BlockLiquid.getStaticBlock(state.getMaterial()).getDefaultState().withProperty(BlockLiquid.LEVEL,state.getValue(BlockLiquid.LEVEL)),
-                Constants.BlockFlags.SEND_TO_CLIENTS);
-    }
-
-    @Nonnull
-    @Override
-    public Block getBlock() {
-        return block;
+    public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
+        if(state.getBlock() == Blocks.SNOW_LAYER) return false;
+        if(!FluidUtil.isFluid(state)){
+            return !VanillaFlowingVanilla.isBlocked(state);
+        }
+        if(FluidUtil.getFluid(state) != fluid) return false;
+        return !FluidUtil.isFullFluid(world,pos,state);
     }
 }

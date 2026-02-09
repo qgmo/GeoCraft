@@ -49,7 +49,7 @@ import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure.RealityPressureTaskBuilder;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
@@ -300,12 +300,12 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
                                                final @Nonnull FlowingMode mode){
         switch (mode){
             case AVERAGE_MODE:
-                FluidPressureSearchManager.addTask(world, RealityPressureTaskBuilder.createVanillaTask(fluid,state,pos,0));
+                FluidPressureSearchManager.addTask(world, FinitePressureTasks.createVanillaTask(fluid,state,pos,0));
                 break;
             case SLOPE_MODE:return;
             default:
                 FluidPressureSearchManager.addTask(world,
-                        RealityPressureTaskBuilder.createVanillaTask(fluid,state,pos,
+                        FinitePressureTasks.createVanillaTask(fluid,state,pos,
                                 FluidPhysicsConfig.PRESSURE_TASK_RANGE_DYNAMIC_FLUID_NO_AVERAGE.getValue()));
         }
     }

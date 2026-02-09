@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class MiscUtil {
+public final class MiscUtil {
     @Nullable
     public static WorldServer getValidWorld(@Nonnull World world){
         if(world.isRemote) return null;

@@ -122,12 +122,12 @@ public final class RegistryHandler {
         }
     }
     private static void registerMoreRealityEventHandler(){
-        MoreRealityEventHandler moreRealityEventHandler = new MoreRealityEventHandler();
-        MinecraftForge.EVENT_BUS.register(moreRealityEventHandler);
-        EventFactory.EVENT_BUS.register(moreRealityEventHandler);
+        FiniteEventHandler finiteEventHandler = new FiniteEventHandler();
+        MinecraftForge.EVENT_BUS.register(finiteEventHandler);
+        EventFactory.EVENT_BUS.register(finiteEventHandler);
     }
     private static void registerVanillaLikeEventHandler(){
-        VanillaLikeEventHandler handler = new VanillaLikeEventHandler();
+        ClassicEventHandler handler = new ClassicEventHandler();
         MinecraftForge.EVENT_BUS.register(handler);
         EventFactory.EVENT_BUS.register(handler);
     }

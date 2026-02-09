@@ -48,7 +48,7 @@ import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import test_pack.block.FakeBlock;
 
 import javax.annotation.Nonnull;
@@ -96,7 +96,7 @@ public class FakeBlockState implements IBlockState {
         final Comparable<?> cur = properties.get(property);
         if(cur == value) return this;
         final FakeBlockState res = stateTable.get(property,value);
-        Assert.assertNotNull(res);
+        Assertions.assertNotNull(res);
         return res;
     }
 
@@ -380,7 +380,7 @@ public class FakeBlockState implements IBlockState {
 
     @Override
     public String toString() {
-        Assert.assertNotNull(block.getRegistryName());
+        Assertions.assertNotNull(block.getRegistryName());
         StringBuilder builder =  new StringBuilder(block.getRegistryName().toString());
         builder.append("[");
         AtomicBoolean isFirst = new AtomicBoolean(true);

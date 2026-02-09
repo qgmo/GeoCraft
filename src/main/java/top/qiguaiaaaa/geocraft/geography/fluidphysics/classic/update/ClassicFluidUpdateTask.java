@@ -25,30 +25,28 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite;
+package top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.api.fluid_physics.IFluidOperationChecker;
-import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.update.FluidUpdateBaseTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
 
 import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public class RealityFluidOperationChecker implements IFluidOperationChecker {
+public abstract class ClassicFluidUpdateTask extends FluidUpdateBaseTask {
+    public ClassicFluidUpdateTask(@Nonnull Fluid fluid, @Nonnull BlockPos pos) {
+        super(fluid, pos);
+    }
+
     @Override
-    public boolean canPlaceAt(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Fluid fluid) {
-        if(state.getBlock() == Blocks.SNOW_LAYER) return false;
-        if(!FluidUtil.isFluid(state)){
-            return !VanillaFlowingVanilla.isBlocked(state);
-        }
-        if(FluidUtil.getFluid(state) != fluid) return false;
-        return !FluidUtil.isFullFluid(world,pos,state);
+    public void onUpdate(@Nonnull World world, @Nonnull IBlockState state, @Nonnull Random rand) {
+        ((IVanillaLikeFluidBlock)getBlock()).天圆地方$onFlowingTask(world,pos,state,rand);
     }
 }

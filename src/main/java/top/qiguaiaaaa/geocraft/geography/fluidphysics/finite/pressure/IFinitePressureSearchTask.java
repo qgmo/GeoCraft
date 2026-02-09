@@ -27,40 +27,22 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fluids.BlockFluidBase;
-import net.minecraftforge.fluids.Fluid;
-
-import javax.annotation.Nonnull;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTask;
+import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import top.qiguaiaaaa.geocraft.api.util.math.Int21;
 
 /**
  * @author QiguaiAAAA
  */
-public class 单次小范围模组Classic物理压强广搜任务 extends 单次小范围物理压强广搜任务 implements IRealityModClassicPressureBFSTask{
-    protected final byte beginQuanta;
-    protected final byte quantaPerBlock;
-    protected final byte densityDir;
+public interface IFinitePressureSearchTask extends IFluidPressureSearchTask {
+    int getMaxSearchTimes();
+    byte getBeginQuanta();
+    byte getQuantaPerBlock();
+    boolean hasFoundEnoughResults();
 
-    单次小范围模组Classic物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange, int quantaPerBlock) {
-        super(fluid, beginState, beginPos, searchRange);
-        beginQuanta = (byte) (quantaPerBlock-beginState.getValue(BlockFluidBase.LEVEL));
-        this.quantaPerBlock = (byte) quantaPerBlock;
-        this.densityDir = (byte) (fluid.getDensity()>0?1:-1);
-    }
-
-    @Override
-    public byte getDensityDir() {
-        return densityDir;
-    }
-
-    @Override
-    public byte getBeginQuanta() {
-        return beginQuanta;
-    }
-
-    @Override
-    public byte getQuantaPerBlock() {
-        return quantaPerBlock;
+    static int getMaxSearchTimesFromRange(int searchRange){
+        if(searchRange == 4) return Int10.CONTENT_MASK;
+        if(searchRange == 15) return Int21.CONTENT_MASK;
+        return (1<<(searchRange+5));
     }
 }

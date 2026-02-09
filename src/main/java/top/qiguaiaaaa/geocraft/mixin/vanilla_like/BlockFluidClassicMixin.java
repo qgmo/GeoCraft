@@ -50,7 +50,7 @@ import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update.VanillaLikeBlockFluidClassicUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update.ClassicFluidClassicUpdateTask;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
@@ -87,7 +87,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         if(!GeoFluidSetting.hasGravity(world)){
             return;
         }
-        FluidUpdateManager.addTask(world,new VanillaLikeBlockFluidClassicUpdateTask(getFluid(),pos,(BlockFluidClassic) (Block)this));
+        FluidUpdateManager.addTask(world,new ClassicFluidClassicUpdateTask(getFluid(),pos,(BlockFluidClassic) (Block)this));
     }
 
     @Override

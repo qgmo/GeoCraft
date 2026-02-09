@@ -51,7 +51,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.mixin.IVanillaLikeFluidBlock;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update.VanillaLikeBlockDynamicLiquidUpdateTask;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.classic.update.ClassicFluidVanillaUpdateTask;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
@@ -90,7 +90,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements FluidSettabl
             worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
-        FluidUpdateManager.addTask(worldIn,new VanillaLikeBlockDynamicLiquidUpdateTask(天圆地方$thisFluid,pos,(BlockDynamicLiquid) (Block)this));
+        FluidUpdateManager.addTask(worldIn,new ClassicFluidVanillaUpdateTask(天圆地方$thisFluid,pos,(BlockDynamicLiquid) (Block)this));
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)

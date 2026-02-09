@@ -27,10 +27,10 @@
 
 package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.pressure;
 
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
@@ -41,21 +41,12 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class 大范围模组Classic物理压强广搜任务 extends 大范围物理压强广搜任务 implements IRealityModClassicPressureBFSTask{
+public class 大范围有限原版压强广搜任务 extends 大范围有限压强广搜任务 implements IFiniteVanillaPressureBFSTask {
     protected final byte beginQuanta;
-    protected final byte quantaPerBlock;
-    protected final byte densityDir;
 
-    大范围模组Classic物理压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange, int quantaPerBlock) {
-        super(fluid, beginState, beginPos,searchRange);
-        beginQuanta = (byte) (quantaPerBlock-beginState.getValue(BlockFluidBase.LEVEL));
-        this.quantaPerBlock = (byte) quantaPerBlock;
-        this.densityDir = (byte) (fluid.getDensity()>0?1:-1);
-    }
-
-    @Override
-    public byte getDensityDir() {
-        return densityDir;
+    大范围有限原版压强广搜任务(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+        super(fluid, beginState, beginPos, searchRange);
+        beginQuanta = (byte) (8-beginState.getValue(BlockLiquid.LEVEL));
     }
 
     @Override
@@ -63,15 +54,9 @@ public class 大范围模组Classic物理压强广搜任务 extends 大范围物
         return beginQuanta;
     }
 
-    @Override
-    public byte getQuantaPerBlock() {
-        return quantaPerBlock;
-    }
-
-    static class Debug extends 大范围模组Classic物理压强广搜任务 implements IRealityDebugPressureBFSTask.IRealityModClassicDebugPressureBFSTask {
-
-        Debug(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange, int quantaPerBlock) {
-            super(fluid, beginState, beginPos, searchRange, quantaPerBlock);
+    static class Debug extends 大范围有限原版压强广搜任务 implements IFiniteDebugPressureBFSTask.IFiniteVanillaDebugPressureBFSTask {
+        Debug(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos, int searchRange) {
+            super(fluid, beginState, beginPos, searchRange);
             GeoCraft.getLogger().info("{} is created",this);
         }
 
@@ -119,4 +104,5 @@ public class 大范围模组Classic物理压强广搜任务 extends 大范围物
             return super.search(world);
         }
     }
+
 }
