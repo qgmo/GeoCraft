@@ -43,9 +43,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
+
+import javax.annotation.Nonnull;
 
 import static net.minecraft.block.BlockLiquid.LEVEL;
 
@@ -100,6 +103,14 @@ public abstract class BlockLiquidMixin extends Block {
             }
         }
         cir.setReturnValue(false);
+    }
+
+    /**
+     * @reason 变更RayTrace时检测液体的逻辑，允许选中LEVEL != 0的液体
+     */
+    @Redirect(method = "canCollideCheck",at = @At(value = "INVOKE", target = "Ljava/lang/Integer;intValue()I",ordinal = 0))
+    public int 天圆地方$redirectCollideCheck(final @Nonnull Integer instance){
+        return 0;
     }
 
     @Shadow

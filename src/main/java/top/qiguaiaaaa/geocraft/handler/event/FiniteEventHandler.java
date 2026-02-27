@@ -112,6 +112,7 @@ public final class FiniteEventHandler {
         IBlockState state = worldIn.getBlockState(pos);
         if (item == Items.BUCKET) {
             if(!FluidUtil.isFluid(state)) pos = pos.offset(raytraceresult.sideHit); //非满的水方块会透过去
+            /// 上面的逻辑可能可以去掉了，因为{@link top.qiguaiaaaa.geocraft.mixin.reality.block.BlockLiquidMixin#天圆地方$redirectCollideCheck(Integer)}
             if (!worldIn.isBlockModifiable(playerIn, pos)) return;
 
             FluidStack stack = FluidOperationUtil.tryDrainFluid(worldIn,pos, Fluid.BUCKET_VOLUME,bucketFindFluidMaxDistance.getValue(),false);
@@ -148,7 +149,7 @@ public final class FiniteEventHandler {
         if(item != Items.WATER_BUCKET && item != Items.LAVA_BUCKET) return;
         boolean blockReplaceable = state.getBlock().isReplaceable(worldIn,pos);
         if(!FluidUtil.isFluid(state) && (!blockReplaceable || raytraceresult.sideHit != EnumFacing.UP))
-            pos = pos.offset(raytraceresult.sideHit);
+            pos = pos.offset(raytraceresult.sideHit); //同理，这个可能也要去掉
         else if(FluidUtil.isFullFluid(worldIn,pos,state)) pos = pos.offset(raytraceresult.sideHit);
         if (!playerIn.canPlayerEdit(pos, raytraceresult.sideHit, itemstack)) {
             return;
@@ -333,7 +334,7 @@ public final class FiniteEventHandler {
         }
         IBlockState state = worldIn.getBlockState(blockpos);
         if(!FluidUtil.isFluid(state)){
-            blockpos = blockpos.offset(rayTraceResult.sideHit);
+            blockpos = blockpos.offset(rayTraceResult.sideHit); //同理，这个可能也要去掉
             state = worldIn.getBlockState(blockpos);
         }
         if(!worldIn.isBlockModifiable(player, blockpos))

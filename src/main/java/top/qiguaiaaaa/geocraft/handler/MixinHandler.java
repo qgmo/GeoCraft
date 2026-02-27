@@ -25,19 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.util;
+package top.qiguaiaaaa.geocraft.handler;
 
+import com.google.common.collect.Sets;
 import net.minecraft.init.Blocks;
 import net.minecraftforge.fluids.FluidRegistry;
-import net.minecraftforge.fml.common.Loader;
+import top.qiguaiaaaa.geocraft.compat.GeoCompatInfo;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.util.mixinapi.FluidSettable;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
-public final class MixinUtil {
+public final class MixinHandler {
+
+    private static final GeoCompatInfo BRIGO_COMPAT = new GeoCompatInfo("brigo","top.qiguaiaaaa.geocraft.command.BrigoCompat");
+
+    public static final Set<GeoCompatInfo> COMPATS_UNDER_FINITE = Collections.unmodifiableSet(Sets.newHashSet(
+            new GeoCompatInfo("ic2",null,"mixins/ic2/mixins.geocraft_reality.json")
+                    .enableIf(FluidPhysicsConfig.enableSupportForIC2::getValue),
+            new GeoCompatInfo("immersiveengineering",null,"mixins/immersiveengineering/mixins.geocraft_reality.json")
+                    .enableIf(FluidPhysicsConfig.enableSupportForIE::getValue),
+            new GeoCompatInfo("toughasnails",
+                    "top.qiguaiaaaa.geocraft.compat.toughasnails.TANCompat",
+                    "mixins/compat/toughasnails/mixins.geocraft_finite.json")
+                    .enableIf(FluidPhysicsConfig.enableSupportForTAN::getValue),
+            BRIGO_COMPAT
+    ));
+
+    public static final Set<GeoCompatInfo>[] FLUID_PHYSICS_TO_COMPATS = new Set[]{Sets.newHashSet(BRIGO_COMPAT),Sets.newHashSet(BRIGO_COMPAT),COMPATS_UNDER_FINITE};
+
     public static void linkLiquidWithFluid(){
         if(Blocks.FLOWING_WATER instanceof FluidSettable){
             ((FluidSettable) Blocks.FLOWING_WATER).天圆地方$setCorrespondingFluid(FluidRegistry.WATER);
@@ -48,25 +69,14 @@ public final class MixinUtil {
             ((FluidSettable) Blocks.LAVA).天圆地方$setCorrespondingFluid(FluidRegistry.LAVA);
         }
     }
-    public static List<String> getModMixins(){
-        FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
-        List<String> mixins = new ArrayList<>();
-        switch (mode){
-            case MORE_REALITY:{
-                mixins = getMoreRealityModeMixins(mixins);
-                break;
-            }
-        }
 
+    @Nonnull
+    public static List<String> getCompatMixins(){
+        final @Nonnull FluidPhysicsMode mode = FluidPhysicsMode.getCurrentMode();
+        final List<String> mixins = new ArrayList<>();
+        FLUID_PHYSICS_TO_COMPATS[mode.ordinal()].stream()
+                .filter(GeoCompatInfo::isValid)
+                .forEach(compat -> compat.getMixins.accept(mixins));
         return mixins;
     }
-
-    public static List<String> getMoreRealityModeMixins(List<String> mixinList){
-        if(FluidPhysicsConfig.enableSupportForIC2.getValue() && Loader.isModLoaded("ic2"))
-            mixinList.add("mixins/ic2/mixins.geocraft_reality.json");
-        if(FluidPhysicsConfig.enableSupportForIE.getValue() && Loader.isModLoaded("immersiveengineering"))
-            mixinList.add("mixins/immersiveengineering/mixins.geocraft_reality.json");
-        return mixinList;
-    }
-
 }

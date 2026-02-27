@@ -9,7 +9,7 @@
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/modrinth_64h.png)](https://modrinth.com/project/3CKJAWbv)
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/github_64h.png)](https://github.com/qiguaideaaaa/GeoCraft)
 
-![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/built-with/java8_46h.png)
+![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/built-with/java_46h.png)
 ![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/supported/forge_46h.png)
 
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/documentation/readthedocs_46h.png)](https://github.com/qiguaideaaaa/GeoCraft/wiki)
@@ -138,11 +138,11 @@
 
 **问：该mod有移植到其它版本的计划吗？**
 
-答：暂时没有。
+暂时没有。
 
 **问：还可能加入什么内容？**
 
-答：外力作用啊、可再生岩浆等，反正想到什么有趣的地理机制就加什么。目前的计划有：
+外力作用啊、可再生岩浆等，反正想到什么有趣的地理机制就加什么。目前的计划有：
 
 - 流体混合机制（例如不同含沙量等级水的混合）；
 - 基于本模组拓展的玩法；
@@ -154,32 +154,58 @@
 
 **问：会加入新方块、实体等内容吗？**
 
-答：会。但若这些新内容无法被映射到原版就有的内容，则会以附属的形式出现，因为加入这些内容会要求客户端也必须安装此模组，这和本模组（目前）兼容原版的目标相冲突。
+会。但若这些新内容无法被映射到原版就有的内容，则会以附属的形式出现，因为加入这些内容会要求客户端也必须安装此模组，这和本模组（目前）兼容原版的目标相冲突。
 
 **问：可以加入整合包吗？**
 
-答：完全可以！但请注意该模组仍处于早期开发阶段，加入时务必小心。
+完全可以！但请注意该模组仍处于早期开发阶段，加入时务必小心。
 
 **问：更新频率怎样？**
 
-答：由于时间问题，接下来很长一段时间不会对模组进行很大的更新。
+由于时间问题，接下来很长一段时间不会对模组进行很大的功能更新。
 
 **问：有加入含水方块吗？**
 
-答：没有，含水方块会在未来通过兼容 Fluidlogged API 实现。
+没有，含水方块会在未来通过兼容 Fluidlogged API 实现。载流方块 API 只是一个流体交互协议，并不负责具体的机制。
 
 ## 为本模组编写代码
 
 ### 贡献代码到模组本体
 
-如果你不满足于本模组的某些部分，需要改进，欢迎在 Github 上通过 Pull Request 的方式为本模组贡献代码。
+如果你不满足于本模组的某些部分，需要改进，欢迎在 Github 上通过 **Pull Request** 的方式为本模组贡献代码。
 
-需要注意的是，目前本模组的开发工具链在未来还会变动。就目前为止，由于采用 Cleanroom 现代的 Forge 开发工具链，开发本模组需要 Java 25 JDK 环境。未来预计会有如下变动（按时间顺序）：
+需要注意的是，目前本模组的开发工具链在未来还会变动。就目前为止，由于采用 Cleanroom 现代的 Forge 开发工具链，开发本模组需要 **Java 25 JDK** 环境。未来预计会有如下变动（按时间顺序）：
 
 1. Gradle 项目结构重构，分成多个子项目；
 2. 引入 Cleanroom 加载器直接支持；
 3. 基于 JNI，用 Rust 编写高性能的底层实现，预计将用于流体物理和大气系统；
 4. 进一步用 Github Workflow 自动化构建流程。
+
+### 编写附属模组
+（以下教程尚未得到实际工程验证）
+
+本模组目前处于早期开发阶段，API 可能频繁变更，不推荐编写附属模组。如果仍要编写，推荐使用 Modrinth Maven 进行配置：
+
+``` groovy
+// ForgeGradle
+// 依赖项格式 maven.modrinth:qg_geocraft:版本号(Version Number)
+// 下面表示在编译时依赖天圆地方 v0.2.2 版本
+compileOnly fg.deobf("maven.modrinth:qg_geocraft:0.2.2")
+
+// RetroFuturaGradle 同理
+compileOnly rfg.deobf("maven.modrinth:qg_geocraft:0.2.2")
+```
+
+CurseForge Maven 虽然不推荐，但也可以使用：
+``` groovy
+// ForgeGradle
+// 依赖项格式 curse.maven:qg-geocraft-1423755:文件ID，具体见 CurseForge
+// 7599943 是 v0.2.2 版本文件在 CurseForge 上的 ID
+compileOnly fg.deobf("curse.maven:qg-geocraft-1423755:7599943")
+
+// RetroFuturaGradle 同理
+compileOnly rfg.deobf("curse.maven:qg-geocraft-1423755:7599943")
+```
 
 ## 你知道吗
 

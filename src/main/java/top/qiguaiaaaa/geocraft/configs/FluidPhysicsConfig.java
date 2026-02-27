@@ -612,4 +612,23 @@ public final class FluidPhysicsConfig {
             new ConfigBoolean(CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT_IE,"ImmersiveEngineeringSupport",true,
                     "如果你已经安装了沉浸工程，那么这将控制模组是否启用沉浸工程的相关支持，例如具有物理性质的混凝土液体。\n" +
                             "If you have installed Immersive Engineering, this option will control whether the mod enable supports for Immersive Engineering or not.",true);
+    // **
+
+    @Config.Comment({"设置关于[TAN]意志坚定的兼容参数",
+    "Configure compat arguments for Tough As Nails"})
+    @GeoConfig.Since("0.2.3")
+    public static final ConfigCategory CATEGORY_FLUID_PHYSICS_COMPAT_TOUGH_AS_NAILS = CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT.getChildCategory("toughasnails");
+
+    @Config.RequiresMcRestart
+    @GeoConfig.Since("0.2.3")
+    public static final ConfigBoolean enableSupportForTAN =
+            new ConfigBoolean(CATEGORY_FLUID_PHYSICS_COMPAT_TOUGH_AS_NAILS,"ToughAsNailsCompat",true,
+                    "如果您已安装意志坚定，并启用了该配置项，则天圆地方在使用 "+FluidPhysicsMode.MORE_REALITY+" 流体物理模式时会启用意志坚定的相关兼容。\n" +
+                            "If you have installed Tough As Nails, set this option to true will allow GeoCraft enabling compatibility for Tough As Nails when using fluid physics mode "+FluidPhysicsMode.MORE_REALITY+".",true);
+
+    @GeoConfig.Since("0.2.3")
+    public static final ConfigBoolean drinkPurifiedWaterByQuanta =
+            new ConfigBoolean(CATEGORY_FLUID_PHYSICS_COMPAT_TOUGH_AS_NAILS,"drinkPurifiedWaterByQuanta",false,
+                    "在右键饮用纯净水液体时，允许一层一层的饮用而非直接全部饮用。此时一层纯净水将提供 3 点水分\n" +
+                            "When right clicking purified water, drink a quanta of fluid instead of drinking the whole block directly.");
 }

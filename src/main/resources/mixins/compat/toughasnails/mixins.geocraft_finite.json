@@ -1,0 +1,11 @@
+{
+  "package": "top.qiguaiaaaa.geocraft.mixin.reality.mod.toughasnails",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "DrinkHandlerMixin"
+  ],
+  "client": [
+  ]
+}

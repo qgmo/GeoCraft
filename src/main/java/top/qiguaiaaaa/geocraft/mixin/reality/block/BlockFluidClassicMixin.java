@@ -43,6 +43,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
@@ -147,6 +148,14 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         cir.setReturnValue(true);
         cir.cancel();
+    }
+
+    /**
+     * @reason 变更RayTrace时检测液体的逻辑，允许选中LEVEL != 0的液体
+     */
+    @Redirect(method = "canCollideCheck",at = @At(value = "INVOKE", target = "Ljava/lang/Integer;intValue()I",ordinal = 0))
+    public int 天圆地方$redirectCollideCheck(final @Nonnull Integer instance){
+        return 0;
     }
 
     @Override
