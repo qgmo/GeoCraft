@@ -25,50 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package test_pack.block;
+package top.qiguaiaaaa.geocraft_test.assets;
 
-import net.minecraft.block.material.Material;
-import test_pack.block.state.FakeBlockState;
-import test_pack.block.state.FakeBlockStateContainer;
-import test_pack.registry.FakeRegistryEntry;
-
-import javax.annotation.Nonnull;
+import net.minecraftforge.fluids.Fluid;
+import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeBlock extends FakeRegistryEntry<FakeBlock> {
-    protected final Material material;
-    protected final FakeBlockStateContainer stateContainer;
-    protected FakeBlockState defaultBlockState;
-
-    public FakeBlock(@Nonnull Material material) {
-        this.material = material;
-        stateContainer = createBlockStates();
-        setDefaultState(stateContainer.getBaseState());
-    }
-
-    @Nonnull
-    public FakeBlockStateContainer createBlockStates(){
-        return new FakeBlockStateContainer(this);
-    }
-
-    @Nonnull
-    public Material getMaterial() {
-        return material;
-    }
-
-    @Nonnull
-    public final FakeBlockState getDefaultState() {
-        return defaultBlockState;
-    }
-
-    @Nonnull
-    public final FakeBlockStateContainer getBlockStateContainer(){
-        return stateContainer;
-    }
-
-    protected final void setDefaultState(@Nonnull FakeBlockState defaultBlockState) {
-        this.defaultBlockState = defaultBlockState;
-    }
+public class TestFluids {
+    public static final Fluid SNOW = new FluidSnow();
 }

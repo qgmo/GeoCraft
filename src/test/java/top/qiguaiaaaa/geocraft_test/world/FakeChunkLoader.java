@@ -25,56 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package test_pack.world;
+package top.qiguaiaaaa.geocraft_test.world;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.IChunkLoader;
-import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraft.world.storage.IPlayerFileData;
-import net.minecraft.world.storage.ISaveHandler;
-import net.minecraft.world.storage.WorldInfo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.File;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeSaveHandler implements ISaveHandler {
-    protected final FakeChunkLoader loader = new FakeChunkLoader();
-
+public class FakeChunkLoader implements IChunkLoader {
     @Nullable
     @Override
-    public WorldInfo loadWorldInfo() {
-        return new FakeWorldInfo();
-    }
-
-    @Override
-    public void checkSessionLock() {
-    }
-
-    @Nonnull
-    @Override
-    public IChunkLoader getChunkLoader(@Nonnull WorldProvider provider) {
-        return loader;
-    }
-
-    @Override
-    public void saveWorldInfoWithPlayer(@Nonnull WorldInfo worldInformation, @Nonnull NBTTagCompound tagCompound) {
-
-    }
-
-    @Override
-    public void saveWorldInfo(@Nonnull WorldInfo worldInformation) {
-
-    }
-
-    @Nonnull
-    @Override
-    public IPlayerFileData getPlayerNBTManager() {
+    public Chunk loadChunk(@Nonnull World worldIn, int x, int z) {
         return null;
+    }
+
+    @Override
+    public void saveChunk(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
+
+    }
+
+    @Override
+    public void saveExtraChunkData(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
+
+    }
+
+    @Override
+    public void chunkTick() {
+
     }
 
     @Override
@@ -82,21 +64,8 @@ public class FakeSaveHandler implements ISaveHandler {
 
     }
 
-    @Nonnull
     @Override
-    public File getWorldDirectory() {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public File getMapFileFromName(@Nonnull String mapName) {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public TemplateManager getStructureTemplateManager() {
-        return null;
+    public boolean isChunkGeneratedAt(int x, int z) {
+        return true;
     }
 }

@@ -36,6 +36,8 @@ dependencies {
     runtimeOnly 'com.cleanroommc:osxnarratorblocker:1.0'
 
     compileOnly rfg.deobf('com.github.jbredwards:fluidlogged-api:1.12.2-Latest-SNAPSHOT')
+    testImplementation rfg.deobf('com.github.jbredwards:fluidlogged-api:1.12.2-Latest-SNAPSHOT')
+
     compileOnly rfg.deobf("curse.maven:IndustrialCraft-242638:3838713")
 
     compileOnly rfg.deobf("curse.maven:ImmersiveEngineering-231951:2974106")

@@ -25,43 +25,13 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package test_pack.registry;
+package top.qiguaiaaaa.geocraft_test.assets;
 
-import com.google.common.reflect.TypeToken;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import top.qiguaiaaaa.geocraft_test.block.TestBlockFluidHostCommon;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeRegistryEntry<V extends FakeRegistryEntry<V>> implements IForgeRegistryEntry<V>{
-    private final TypeToken<V> token = new TypeToken<V>(getClass()){};
-    protected ResourceLocation location = null;
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public V setRegistryName(ResourceLocation name) {
-        location = name;
-        return (V) this;
-    }
-
-    @Nonnull
-    public V setRegistryName(@Nonnull String modid,@Nonnull String name){
-        return setRegistryName(new ResourceLocation(modid,name));
-    }
-
-    @Nullable
-    @Override
-    public ResourceLocation getRegistryName() {
-        return location;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Class<V> getRegistryType() {
-        return (Class<V>) token.getRawType();
-    }
+public final class TestBlocks {
+    public static final TestBlockFluidHostCommon FLUID_HOST_COMMON = new TestBlockFluidHostCommon();
 }

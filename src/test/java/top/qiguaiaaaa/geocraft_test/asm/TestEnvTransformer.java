@@ -25,47 +25,24 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package test_pack.world;
+package top.qiguaiaaaa.geocraft_test.asm;
 
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.IChunkLoader;
+import net.minecraft.launchwrapper.IClassTransformer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeChunkLoader implements IChunkLoader {
-    @Nullable
-    @Override
-    public Chunk loadChunk(@Nonnull World worldIn, int x, int z) {
-        return null;
-    }
+@SuppressWarnings("unused")
+public class TestEnvTransformer implements IClassTransformer {
 
     @Override
-    public void saveChunk(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void saveExtraChunkData(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void chunkTick() {
-
-    }
-
-    @Override
-    public void flush() {
-
-    }
-
-    @Override
-    public boolean isChunkGeneratedAt(int x, int z) {
-        return true;
+    public byte[] transform(final @Nullable String name, final @Nullable String transformedName,final byte[] basicClass) {
+        if(name == null) return basicClass;
+        if("net.minecraftforge.registries.GameData".equals(name)){
+            return GameDataPlugin.PLUGIN.transform(basicClass,false);
+        }
+        return basicClass;
     }
 }

@@ -25,34 +25,39 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package test_pack.world;
+package top.qiguaiaaaa.geocraft_test.asm;
 
-import net.minecraft.profiler.Profiler;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
-import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.storage.WorldInfo;
+import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
+import net.minecraft.util.ResourceLocation;
+import org.objectweb.asm.tree.ClassNode;
+import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QiguaiAAAA
  */
-public class FakeWorld extends World {
-    protected FakeWorld(WorldInfo info, WorldProvider providerIn, Profiler profilerIn, boolean client) {
-        super(new FakeSaveHandler(), info, providerIn, profilerIn, client);
-    }
+public class GameDataPlugin implements IASMPlugin {
+    public static final GameDataPlugin PLUGIN = new GameDataPlugin();
 
-    protected final FakeChunkProvider provider = new FakeChunkProvider();
-
-    @Nonnull
-    @Override
-    protected IChunkProvider createChunkProvider() {
-        return provider;
-    }
+    private GameDataPlugin(){}
 
     @Override
-    protected boolean isChunkLoaded(int x, int z, boolean allowEmpty) {
-        return true;
+    public boolean transformClass(@Nonnull final ClassNode classNode,final boolean obfuscated) {
+        overrideMethod(classNode,method -> "checkPrefix".equals(method.name),"checkPrefix", "(Ljava/lang/String;)Lnet/minecraft/util/ResourceLocation;",
+                generator -> generator.visitVarInsn(ALOAD,0));
+        return false;
+    }
+
+    @SuppressWarnings("unused")
+    public static final class Hooks{
+        @Nullable
+        public static ResourceLocation checkPrefix(final String name){
+            if(GeoCraftTest.getLoadStage() == GeoCraftTest.Stage.INIT){ //用于注入成功检测
+                return null;
+            }
+            return new ResourceLocation(name);
+        }
     }
 }
