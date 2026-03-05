@@ -77,29 +77,29 @@ public final class BaseUtil {
     }
 
     public static float checkAndReturn(float num,float min,float max) throws IllegalArgumentException{
-        if(num<min || num>max){
-            throw new IllegalArgumentException("Value {} must be in range ["+min+","+max+"]");
+        if(num>=min && num<=max){
+            return num;
         }
-        return num;
+        throw new IllegalArgumentException("Value "+num+" must be in range ["+min+","+max+"]");
     }
 
     public static double checkAndReturn(double num,double min,double max) throws IllegalArgumentException{
-        if(num<min || num>max){
-            throw new IllegalArgumentException("Value {} must be in range ["+min+","+max+"]");
+        if(num>=min && num<=max){
+            return num;
         }
-        return num;
+        throw new IllegalArgumentException("Value "+num+" must be in range ["+min+","+max+"]");
     }
 
     public static int checkAndReturn(int num,int min,int max) throws IllegalArgumentException{
         if(num<min || num>max){
-            throw new IllegalArgumentException("Value {} must be in range ["+min+","+max+"]");
+            throw new IllegalArgumentException("Value "+num+" must be in range ["+min+","+max+"]");
         }
         return num;
     }
 
     public static long checkAndReturn(long num,long min,long max) throws IllegalArgumentException{
         if(num<min || num>max){
-            throw new IllegalArgumentException("Value {} must be in range ["+min+","+max+"]");
+            throw new IllegalArgumentException("Value "+num+" must be in range ["+min+","+max+"]");
         }
         return num;
     }

@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.spongepowered.asm.launch.MixinBootstrap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -77,6 +78,10 @@ public class GeoCraftTest {
         //加载 Transformer, Patch 原版和 Forge 以提供测试环境
         LOGGER.info("Initialising Transformers");
         Launch.classLoader.registerTransformer("top.qiguaiaaaa.geocraft_test.asm.TestEnvTransformer");
+
+        LOGGER.info("Initialising Mixins");
+        System.setProperty("mixin.service", "top.qiguaiaaaa.geocraft_test.asm.mixin.MixinServiceTestEnv");
+        MixinBootstrap.init();
 
         LOGGER.info("Transforming to LaunchClassLoader");
         final @Nonnull Class<GeoCraftTest> self = (Class<GeoCraftTest>) Launch.classLoader.loadClass("top.qiguaiaaaa.geocraft_test.GeoCraftTest");

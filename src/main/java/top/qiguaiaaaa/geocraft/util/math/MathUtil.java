@@ -64,10 +64,17 @@ public final class MathUtil {
         return sum/arr.length;
     }
 
+    /**
+     * 获取第 k 百分位数。注意这不会在 arr.length*percent 刚好为整数的时候取这个元素和下一个元素的平均值
+     * @param arr 需要获取第 k 百分位数的数据，可以是乱序的，但不能为空
+     * @param percent 第 k 百分位数，应当介于 [0,1]
+     * @return 第 k 百分位数
+     */
     public static long getPercent(@Nonnull final long[] arr,final double percent){
         final long[] cp = arr.clone();
         Arrays.sort(cp);
-        int loc = (int) Math.ceil(percent*cp.length);
+        final int loc = (int) Math.ceil(percent*cp.length);
+        if(loc == 0) return cp[0];
         return cp[loc-1];
     }
 

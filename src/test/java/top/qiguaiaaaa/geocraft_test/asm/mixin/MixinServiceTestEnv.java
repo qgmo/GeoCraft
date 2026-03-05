@@ -25,42 +25,30 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.asm;
+package top.qiguaiaaaa.geocraft_test.asm.mixin;
 
-import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
-import net.minecraft.util.ResourceLocation;
-import org.objectweb.asm.tree.ClassNode;
-import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
+import org.spongepowered.asm.service.mojang.MixinServiceLaunchWrapper;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author QiguaiAAAA
  */
-public class GameDataPlugin implements IASMPlugin {
-    public static final GameDataPlugin PLUGIN = new GameDataPlugin();
-
-    private GameDataPlugin(){}
+public class MixinServiceTestEnv extends MixinServiceLaunchWrapper {
 
     @Override
-    public boolean transformClass(@Nonnull final ClassNode classNode,final boolean obfuscated) {
-        /*
-        去除 Forge 对命名空间的校验，以适应测试环境
-         */
-        overrideMethod(classNode,method -> "checkPrefix".equals(method.name),"checkPrefix", "(Ljava/lang/String;)Lnet/minecraft/util/ResourceLocation;",
-                generator -> generator.visitVarInsn(ALOAD,0));
-        return false;
+    public String getName() {
+        return "GeoTestEnv";
     }
 
-    @SuppressWarnings("unused")
-    public static final class Hooks{
-        @Nullable
-        public static ResourceLocation checkPrefix(final String name){
-            if(GeoCraftTest.getLoadStage() == GeoCraftTest.Stage.INIT){ //用于注入成功检测
-                return null;
-            }
-            return new ResourceLocation(name);
-        }
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public Collection<String> getPlatformAgents() {
+        return Collections.emptyList();
     }
 }
