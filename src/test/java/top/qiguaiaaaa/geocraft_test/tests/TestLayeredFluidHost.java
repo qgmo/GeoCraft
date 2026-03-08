@@ -51,15 +51,10 @@ import static top.qiguaiaaaa.geocraft_test.block.MockBlockFluidHostCommon.LAYERS
  * @author QiguaiAAAA
  */
 public class TestLayeredFluidHost extends GeoCraftTest {
-    private static final String SELF_CLS_NAME = TestLayeredFluidHost.class.getName();
-
-    public static void doTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        GeoCraftTest.run(SELF_CLS_NAME,Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
-    }
 
     @Test
     public void testQB() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        doTest();
+        test();
     }
 
     @SuppressWarnings("unused")
@@ -76,7 +71,7 @@ public class TestLayeredFluidHost extends GeoCraftTest {
 
     @Test
     public void testAverageFlow() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        doTest();
+        test();
     }
 
     @SuppressWarnings("unused")

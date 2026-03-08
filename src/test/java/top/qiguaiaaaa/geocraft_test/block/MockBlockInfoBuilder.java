@@ -37,26 +37,31 @@ import javax.annotation.Nonnull;
 /**
  * @author QiguaiAAAA
  */
-public final class MockBlockInfoBuilder {
+public class MockBlockInfoBuilder<S extends MockBlockInfoBuilder<S>> {
     Material material = Material.GROUND;
     ResourceLocation id = null;
     MapColor color = MapColor.STONE;
 
     @Nonnull
-    public MockBlockInfoBuilder withMaterial(final @Nonnull Material material) {
+    @SuppressWarnings("unchecked")
+    public final S withMaterial(final @Nonnull Material material) {
         this.material = material;
-        return this;
+        return (S) this;
     }
 
     @Nonnull
-    public MockBlockInfoBuilder withID(final @Nonnull String id) {
+    @SuppressWarnings("unchecked")
+    public final S withID(final @Nonnull String id) {
         this.id = new ResourceLocation(GeoCraftTest.MODID, id);
-        return this;
+        return (S) this;
     }
 
     @Nonnull
-    public MockBlockInfoBuilder withMapColor(final @Nonnull MapColor color) {
+    @SuppressWarnings("unchecked")
+    public final S withMapColor(final @Nonnull MapColor color) {
         this.color = color;
-        return this;
+        return (S) this;
     }
+
+    public final static class Impl extends MockBlockInfoBuilder<Impl>{}
 }

@@ -55,6 +55,11 @@ public class MockSimpleSandbox implements IMockSandbox {
         this.outerBlock = outer;
     }
 
+    @Nonnull
+    public IBlockState[][][] getStructure() {
+        return structure;
+    }
+
     @Nullable
     @Override
     public TileEntity getTileEntity(final @Nonnull BlockPos pos) {

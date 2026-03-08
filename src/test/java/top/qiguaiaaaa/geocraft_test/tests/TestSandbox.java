@@ -35,8 +35,6 @@ import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
 import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSimpleSandbox;
 
-import java.lang.reflect.InvocationTargetException;
-
 import static top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder.layer;
 
 /**
@@ -50,18 +48,12 @@ public class TestSandbox {
      */
     public static final class TestBases extends GeoCraftTest{
 
-        private static final String SELF_CLS_NAME = TestBases.class.getName();
-
-        public static void doTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-            GeoCraftTest.run(SELF_CLS_NAME,Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
-        }
-
         /**
          * ChatGPT Generated
          */
         @Test
         public void generateFromCharactersTest() throws Exception {
-            doTest();
+            test();
         }
 
         /**
@@ -81,12 +73,12 @@ public class TestSandbox {
                     layer(
                             "",
                             "〇〇〇",
-                            "〇水〇",
+                            "〇木〇",
                             "〇〇〇"
                     )
             };
 
-            final IBlockState[][][] result = MockBlocks.Bases.generateFromCharacters(size, structure);
+            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
 
             GeoCraftTest.LOGGER.info("Generated structure height={}", result.length);
 
@@ -106,7 +98,7 @@ public class TestSandbox {
             );
 
             Assertions.assertEquals(
-                    MockBlocks.Bases.水,
+                    MockBlocks.Bases.木,
                     world.getBlockState(new BlockPos(1,1,1))
             );
 
@@ -123,7 +115,7 @@ public class TestSandbox {
          */
         @Test
         public void generateSingleLayerTest() throws Exception {
-            doTest();
+            test();
         }
 
         /**
@@ -137,12 +129,12 @@ public class TestSandbox {
                     layer(
                             "",
                             "石石石",
-                            "石水石",
+                            "石木石",
                             "石石石"
                     )
             };
 
-            final IBlockState[][][] result = MockBlocks.Bases.generateFromCharacters(size, structure);
+            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
 
             GeoCraftTest.LOGGER.info("Single layer height={}", result.length);
 
@@ -151,7 +143,7 @@ public class TestSandbox {
             final MockSimpleSandbox world = new MockSimpleSandbox(result);
 
             Assertions.assertEquals(
-                    MockBlocks.Bases.水,
+                    MockBlocks.Bases.木,
                     world.getBlockState(new BlockPos(1,0,1))
             );
 
@@ -168,7 +160,7 @@ public class TestSandbox {
          */
         @Test
         public void generateAllAirTest() throws Exception {
-            doTest();
+            test();
         }
 
         /**
@@ -187,7 +179,7 @@ public class TestSandbox {
                     )
             };
 
-            final IBlockState[][][] result = MockBlocks.Bases.generateFromCharacters(size, structure);
+            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
 
             final MockSimpleSandbox world = new MockSimpleSandbox(result);
 
@@ -208,7 +200,7 @@ public class TestSandbox {
          */
         @Test
         public void characterMappingTest() throws Exception {
-            doTest();
+            test();
         }
 
         /**
@@ -221,18 +213,18 @@ public class TestSandbox {
             final String[] structure = new String[]{
                     layer(
                             "",
-                            "石水〇",
-                            "〇石水",
-                            "水〇石"
+                            "石木〇",
+                            "〇石木",
+                            "木〇石"
                     )
             };
 
-            final IBlockState[][][] result = MockBlocks.Bases.generateFromCharacters(size, structure);
+            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
 
             final MockSimpleSandbox world = new MockSimpleSandbox(result);
 
             Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(0,0,0)));
-            Assertions.assertEquals(MockBlocks.Bases.水, world.getBlockState(new BlockPos(1,0,0)));
+            Assertions.assertEquals(MockBlocks.Bases.木, world.getBlockState(new BlockPos(1,0,0)));
             Assertions.assertEquals(MockBlocks.Bases.〇, world.getBlockState(new BlockPos(2,0,0)));
 
             Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(1,0,1)));
@@ -245,7 +237,7 @@ public class TestSandbox {
          */
         @Test
         public void multiLayerHeightTest() throws Exception {
-            doTest();
+            test();
         }
 
         /**
@@ -270,19 +262,19 @@ public class TestSandbox {
                     ),
                     layer(
                             "",
-                            "水水水",
-                            "水水水",
-                            "水水水"
+                            "木木木",
+                            "木木木",
+                            "木木木"
                     )
             };
 
-            final IBlockState[][][] result = MockBlocks.Bases.generateFromCharacters(size, structure);
+            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
 
             final MockSimpleSandbox world = new MockSimpleSandbox(result);
 
             Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(1,0,1)));
             Assertions.assertEquals(MockBlocks.Bases.〇, world.getBlockState(new BlockPos(1,1,1)));
-            Assertions.assertEquals(MockBlocks.Bases.水, world.getBlockState(new BlockPos(1,2,1)));
+            Assertions.assertEquals(MockBlocks.Bases.木, world.getBlockState(new BlockPos(1,2,1)));
 
             GeoCraftTest.LOGGER.info("multiLayerHeightTest passed");
         }

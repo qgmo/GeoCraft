@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft_test.world;
 import com.google.common.annotations.Beta;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -53,12 +54,35 @@ import javax.annotation.Nullable;
 public class MockSimpleWorld extends World {
 
     protected IMockSandbox sandbox;
+    protected IBlockState air;
 
     protected MockSimpleWorld(final @Nonnull WorldInfo info,
                               final @Nonnull WorldProvider providerIn,
                               final @Nonnull Profiler profilerIn,
                               final boolean client) {
         super(new FakeSaveHandler(), info, providerIn, profilerIn, client);
+    }
+
+    @Nonnull
+    public static MockSimpleWorld create(final @Nonnull WorldInfo info,final boolean isClient){
+        return new MockSimpleWorld(
+                info,
+                new MockWorldProvider(),
+                new Profiler(),
+                isClient
+        );
+    }
+
+    public void setSandbox(final @Nonnull IMockSandbox sandbox){
+        this.sandbox = sandbox;
+    }
+
+    public void setAirBlock(final @Nonnull IBlockState air) {
+        this.air = air;
+    }
+
+    public final @Nonnull IMockSandbox getSandbox() {
+        return sandbox;
     }
 
     @Nonnull
@@ -82,6 +106,12 @@ public class MockSimpleWorld extends World {
         if(sandbox.isOutOfRange(pos)) return false;
         sandbox.setBlockState(pos,newState);
         return true;
+    }
+
+    @Override
+    public boolean setBlockToAir(final @Nonnull BlockPos pos) {
+        Assertions.assertNotNull(air);
+        return this.setBlockState(pos, air);
     }
 
     @Override

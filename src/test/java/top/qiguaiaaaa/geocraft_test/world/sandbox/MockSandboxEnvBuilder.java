@@ -31,6 +31,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.block.state.IBlockState;
 import org.junit.jupiter.api.Assertions;
+import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
@@ -75,17 +76,18 @@ public class MockSandboxEnvBuilder<S extends MockSandboxEnvBuilder<S>> {
     @Nonnull
     @SuppressWarnings("unchecked")
     public S withStateData(final @Nonnull Class<?> stateDataCls){
-        final @Nonnull Field[] fields = stateDataCls.getFields();
+        final @Nonnull Field[] fields = stateDataCls.getDeclaredFields();
 
         for(@Nonnull final Field field:fields){
             if((field.getModifiers() & Modifier.STATIC) == 0) continue;
-            if(IBlockState.class.isAssignableFrom(field.getDeclaringClass())){
+            if(IBlockState.class.isAssignableFrom(field.getType())){
                 field.setAccessible(true);
                 try {
                     final IBlockState state = (IBlockState) field.get(null);
                     final String name = field.getName();
                     Assertions.assertNotNull(state);
                     Assertions.assertEquals(name.length(), Character.charCount(name.codePointAt(0))); //保证只有一个中文字符
+                    GeoCraftTest.LOGGER.info("Putted {} -> {} from class {}",name,state,stateDataCls.getName());
                     characterToState.put(name,state);
                 } catch (final IllegalAccessException e) {
                     Assertions.fail(e);
@@ -101,6 +103,16 @@ public class MockSandboxEnvBuilder<S extends MockSandboxEnvBuilder<S>> {
     public S withStateData(final @Nonnull MockSandboxEnvBuilder<?> anotherBuilder){
         this.characterToState.putAll(anotherBuilder.characterToState);
         return (S) this;
+    }
+
+    /**
+     * 从汉字组成的字符串描述生成一个基本的沙盒结构
+     * @param chars 由汉字描述的结构，从低到高，其边长必须是 size 的大小
+     * @return 转换后的 IBlockState，索引为 Y,Z,X
+     */
+    @Nonnull
+    public IBlockState[][][] generateFromCharacters(final @Nonnull String[] chars){
+        return generateFromCharacters(getSizeFrom(chars),chars);
     }
 
     /**
@@ -137,6 +149,47 @@ public class MockSandboxEnvBuilder<S extends MockSandboxEnvBuilder<S>> {
     @Nonnull
     public IBlockState getBlockStateByName(final @Nonnull String name){
         return characterToState.computeIfAbsent(name, k -> Assertions.fail(k + " isn't a block!"));
+    }
+
+    public void assertEqualStructure(final @Nonnull IBlockState[][][] A, final @Nonnull IBlockState[][][] B){
+        Assertions.assertEquals(A.length,B.length);
+        for(int y =0;y < A.length; y++){
+            Assertions.assertEquals(A[y].length,B[y].length);
+            for(int z =0;z < A[y].length; z ++){
+                Assertions.assertArrayEquals(A[y][z],B[y][z],"Mismatch at layer(Y)=" + y + " row(Z)=" + z);
+            }
+        }
+    }
+
+    public void assertEqualStructure(final @Nonnull IBlockState[][][] A, final @Nonnull String[] B){
+        Assertions.assertEquals(A.length,B.length);
+        if(B.length == 0) return;
+        assertEqualStructure(A,generateFromCharacters(getSizeFrom(B),B));
+    }
+
+    @Nonnull
+    public String[] serialise(final @Nonnull IBlockState[][][] structure){
+        final String[] serialised = new String[structure.length];
+        for(int y=0;y<structure.length;y++){
+            final StringBuilder builder = new StringBuilder();
+            for(int z =0;z<structure[y].length;z++){
+                for(int x=0;x<structure[y][z].length;x++){
+                    builder.append(characterToState.inverse().get(structure[y][z][x]));
+                }
+                builder.append('\n');
+            }
+            serialised[y] = builder.toString();
+        }
+        return serialised;
+    }
+
+    public void print(final @Nonnull IBlockState[][][] structure){
+        GeoCraftTest.LOGGER.info("Structure:\n{}",String.join("\n",serialise(structure)));
+    }
+
+    protected static int getSizeFrom(final @Nonnull String[] structure){
+        if(structure.length == 0) return 0;
+        return (int) structure[0].split("\n")[0].codePoints().count();
     }
 
     public static final class Impl extends MockSandboxEnvBuilder<Impl> {

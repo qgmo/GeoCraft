@@ -25,28 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.block;
+package top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow;
 
-import net.minecraft.block.Block;
-
-import javax.annotation.Nonnull;
-import java.util.function.Consumer;
+import net.minecraft.init.Blocks;
+import net.minecraftforge.fluids.FluidRegistry;
 
 /**
+ * 存放常用的 Flowing 逻辑实例
+ * 之所以不放在具体逻辑类是为了便利单元测试
  * @author QiguaiAAAA
  */
-public final class MockBlockSimple extends Block {
-
-    private MockBlockSimple(final @Nonnull MockBlockInfoBuilder<?> builder) {
-        super(builder.material,builder.color);
-        this.setRegistryName(builder.id);
-    }
-
-    @Nonnull
-    public static MockBlockSimple create(final @Nonnull Consumer<MockBlockInfoBuilder<?>> builderConsumer){
-        final MockBlockInfoBuilder.Impl builder = new MockBlockInfoBuilder.Impl();
-        builderConsumer.accept(builder);
-        return new MockBlockSimple(builder);
-    }
-
+public final class FiniteFlowings {
+    public static final FiniteFlowingVanilla WATER_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_WATER,Blocks.WATER, FluidRegistry.WATER);
+    public static final FiniteFlowingVanilla LAVA_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_LAVA,Blocks.LAVA,FluidRegistry.LAVA);
 }

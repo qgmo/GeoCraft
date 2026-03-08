@@ -137,6 +137,10 @@ public class GeoCraftTest {
         }
     }
 
+    public void test() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
+    }
+
     public static final class Stage{
         public static final byte NO_INIT = 0;
         public static final byte PRE_INIT = 1;
