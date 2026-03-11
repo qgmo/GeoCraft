@@ -139,8 +139,9 @@ public class MockSandboxEnvBuilder<S extends MockSandboxEnvBuilder<S>> {
                 }
                 if(z == size-1) break;
                 Assertions.assertTrue(z<size-1);
-                Assertions.assertEquals('\n', chars[y].charAt(i));
-                i++;
+                Assertions.assertTrue(Character.isWhitespace(chars[y].charAt(i)));
+                i = requireWhitespace(chars[y],i);
+                Assertions.assertTrue(i<chars[y].length());
             }
         }
         return sandbox;
@@ -149,6 +150,13 @@ public class MockSandboxEnvBuilder<S extends MockSandboxEnvBuilder<S>> {
     @Nonnull
     public IBlockState getBlockStateByName(final @Nonnull String name){
         return characterToState.computeIfAbsent(name, k -> Assertions.fail(k + " isn't a block!"));
+    }
+
+    protected static int requireWhitespace(final @Nonnull String s, int i) {
+        while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
+            i++;
+        }
+        return i;
     }
 
     public void assertEqualStructure(final @Nonnull IBlockState[][][] A, final @Nonnull IBlockState[][][] B){

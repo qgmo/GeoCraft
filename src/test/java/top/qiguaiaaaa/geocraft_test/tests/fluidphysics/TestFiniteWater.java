@@ -27,25 +27,33 @@
 
 package top.qiguaiaaaa.geocraft_test.tests.fluidphysics;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.Resource;
+import io.github.classgraph.ScanResult;
 import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
-import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
 import top.qiguaiaaaa.geocraft_test.world.MockSimpleWorld;
 import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSimpleSandbox;
 import top.qiguaiaaaa.geocraft_test.world.storage.MockWorldInfo;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.stream.Stream;
 
 import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.Bases.〇;
 import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.FiniteFluids.*;
-import static top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder.layer;
 
 /**
  * @author QiguaiAAAA
@@ -54,125 +62,95 @@ public final class TestFiniteWater extends GeoCraftTest {
 
     private static MockSimpleWorld world;
 
-    @Test
-    public void 测试直接下落() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test();
+    @ParameterizedTest
+    @MethodSource("pullDataFor测试直接下落")
+    public void 测试直接下落(final @Nonnull 直接下落测试数据 data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        test(Pair.of(new Class<?>[]{int.class,int.class,int[].class,String[].class,String[].class},
+                new Object[]{data.height,data.size,data.beginPosRaw,data.structure,data.expected}));
+    }
+
+    public static class 直接下落测试数据{
+        final int height;
+        final int size;
+        final @Nonnull int[] beginPosRaw;
+        final @Nonnull String[] structure;
+        final @Nonnull String[] expected;
+
+        private 直接下落测试数据(final int height,final int size,final @Nonnull int[] beginPosRaw,
+                                 final @Nonnull String[] structure,final @Nonnull String[] expected) {
+            this.height = height;
+            this.size = size;
+            this.beginPosRaw = beginPosRaw;
+            this.structure = structure;
+            this.expected = expected;
+        }
+    }
+
+    @Nonnull
+    public static Stream<直接下落测试数据> pullDataFor测试直接下落(){
+        final String DATA_DIR = "data/fluidphysics/finite/直接下落/";
+        final ArrayList<直接下落测试数据> cases = new ArrayList<>();
+        try (final ScanResult scan = new ClassGraph().acceptPaths(DATA_DIR).scan()){
+            scan.getResourcesWithExtension("in").forEach(in ->{
+                try (final InputStream testInIS = in.open();
+                     final Scanner scannerIn = new Scanner(testInIS, StandardCharsets.UTF_8.name())){
+                    final int height = scannerIn.nextInt();
+                    final int size = scannerIn.nextInt();
+                    final int[] beginPosRaw = new int[]{scannerIn.nextInt(),scannerIn.nextInt(),scannerIn.nextInt()};
+                    final String[] structure = new String[height];
+                    final String[] expected = new String[height];
+
+                    scannerIn.nextLine(); //jump rest of line
+                    buildStructureFromScanner(structure,scannerIn,size);
+
+                    final String outPath = in.getPath().replaceAll("\\.in$", ".ans");
+                    final @Nonnull Resource out = scan.getResourcesWithPath(outPath).get(0);
+                    try (final InputStream testOutIS = out.open();
+                         final Scanner scannerOut = new Scanner(testOutIS, StandardCharsets.UTF_8.name())){
+                        buildStructureFromScanner(expected,scannerOut,size);
+                    }
+
+                    cases.add(new 直接下落测试数据(height,size,beginPosRaw,structure,expected));
+                } catch (final IOException e) {
+                    Assertions.fail(e);
+                }
+            });
+        }
+        return cases.stream();
+    }
+
+    private static void buildStructureFromScanner(final @Nonnull String[] structure,final @Nonnull Scanner scanner,final int size){
+        for (int y = 0;y<structure.length;y++){
+            final StringBuilder builder = new StringBuilder();
+            for(int z=0;z<size;z++){
+                builder.append(scanner.nextLine().codePoints()
+                                .filter(code -> !Character.isWhitespace(code))
+                                .collect(StringBuilder::new,
+                                        StringBuilder::appendCodePoint,
+                                        StringBuilder::append))
+                        .append('\n');
+            }
+            structure[y] = builder.toString();
+            if(y == structure.length-1) break;
+            scanner.nextLine(); //jump empty line
+        }
     }
 
     @SuppressWarnings("unused")
-    public static void 测试直接下落_Inner(){
-        try {
+    public static void 测试直接下落_Inner(final int height,
+                                          final int size,
+                                          final int[] beginPosRaw,
+                                          final @Nonnull String[] structure,
+                                          final @Nonnull String[] expected){
+        try{
             GeneralConfig.ENABLE_BLOCK_UPDATER.setValue(false);
 
             world = MockSimpleWorld.create(MockWorldInfo.create(b-> b.withGameType(GameType.CREATIVE)), false);
             world.setAirBlock(〇);
-            final BlockPos raw = new BlockPos(1,1,1);
 
-            /*
-             Case 1
-             */
+            final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
 
-            // 往右 X 正方向，往下 Z 正方向
-            final String[] structure1 = new String[]{
-                    layer("",
-                            "石石石",
-                            "石灬石",
-                            "石石石"),
-                    layer("",
-                            "石石石",
-                            "石灬石",
-                            "石石石")
-            };
-            final String[] expected1 = new String[]{
-                    layer("",
-                            "石石石",
-                            "石溢石",
-                            "石石石"),
-                    layer("",
-                            "石石石",
-                            "石〇石",
-                            "石石石")
-            };
-            直接下落(structure1,expected1,raw,灬);
-
-            /*
-              Case 2
-             */
-            final String[] structure2 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木灬木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇灬〇",
-                            "〇石石")
-            };
-            final String[] expected2 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木溢木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇〇〇",
-                            "〇石石")
-            };
-
-            直接下落(structure2,expected2,raw,灬);
-
-            /*
-              Case 3
-             */
-            final String[] structure3 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木水木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇水〇",
-                            "〇石石")
-            };
-            final String[] expected3 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木溢木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇浅〇",
-                            "〇石石")
-            };
-
-            直接下落(structure3,expected3,raw,水);
-
-            /*
-              Case 4
-             */
-            final String[] structure4 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木水木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇丶〇",
-                            "〇石石")
-            };
-            final String[] expected4 = new String[]{
-                    layer("",
-                            "石石石",
-                            "木洪木",
-                            "石石石"),
-                    layer("",
-                            "石〇石",
-                            "〇〇〇",
-                            "〇石石")
-            };
-
-            直接下落(structure4,expected4,raw,丶);
-
+            直接下落(structure,expected,beginPos);
         }finally {
             GeneralConfig.ENABLE_BLOCK_UPDATER.setValue(true);
         }
@@ -180,18 +158,19 @@ public final class TestFiniteWater extends GeoCraftTest {
 
     private static void 直接下落(@Nonnull final String[] structure,
                                  @Nonnull final String[] expected,
-                                 @Nonnull final BlockPos beginPos,
-                                 @Nonnull final IBlockState beginState){
-        final MockSimpleSandbox sandbox = new MockSimpleSandbox(MockBlocks.FiniteFluids.BUILDER.generateFromCharacters(structure));
+                                 @Nonnull final BlockPos beginPos){
+        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox(BUILDER.generateFromCharacters(structure));
         world.setSandbox(sandbox);
-        Assertions.assertEquals(beginState,world.getBlockState(beginPos));
-        MockBlocks.FiniteFluids.WATER_FLOWING.flowDown(
+        GeoCraftTest.LOGGER.info("begin pos {}",beginPos);
+        BUILDER.print(sandbox.getStructure());
+        WATER_FLOWING.flowDown(
                 world,
                 beginPos,
                 world.getBlockState(beginPos.down()),
                 8-world.getBlockState(beginPos).getValue(BlockLiquid.LEVEL),
                 5
         );
+        GeoCraftTest.LOGGER.info("output:");
         BUILDER.print(sandbox.getStructure());
         BUILDER.assertEqualStructure(sandbox.getStructure(),expected);
 

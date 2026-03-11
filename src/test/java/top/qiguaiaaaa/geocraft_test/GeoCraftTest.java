@@ -33,6 +33,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.registries.GameData;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -54,7 +55,6 @@ import java.util.HashMap;
  */
 @ExtendWith(GeoCraftTest.SetupGeoTestExtension.class)
 public class GeoCraftTest {
-
     public static final String MODID = "test";
     private static byte stage = Stage.NO_INIT;
     public static final Logger LOGGER = LogManager.getLogger("GeoTest");
@@ -121,12 +121,12 @@ public class GeoCraftTest {
         LOGGER.info("Test Environment Initialised On LaunchClassLoader");
     }
 
-    public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint)
+    public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint,final @Nonnull Pair<Class<?>[],Object[]> data)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Assertions.assertEquals(Stage.TEST_AVAILABLE,stage);
         final @Nonnull Class<?> entryCls = Launch.classLoader.loadClass(testEntryClass);
-        final @Nonnull Method entryPoint = entryCls.getMethod(testEntryPoint);
-        entryPoint.invoke(null);
+        final @Nonnull Method entryPoint = entryCls.getMethod(testEntryPoint,data.getKey());
+        entryPoint.invoke(null,data.getValue());
     }
 
     public static final class SetupGeoTestExtension implements BeforeAllCallback{
@@ -138,7 +138,11 @@ public class GeoCraftTest {
     }
 
     public void test() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
+        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner",Pair.of(new Class<?>[]{},new Object[]{}));
+    }
+
+    public void test(final @Nonnull Pair<Class<?>[],Object[]> data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner",data);
     }
 
     public static final class Stage{
