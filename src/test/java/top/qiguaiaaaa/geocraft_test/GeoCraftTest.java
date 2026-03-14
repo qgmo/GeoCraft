@@ -41,6 +41,7 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -116,6 +117,9 @@ public class GeoCraftTest {
                 Assertions.fail(e);
             }
         }
+
+        LOGGER.info("Initialising Minecraft Blocks");
+        MockBlocks.initMinecraftBlocks();
 
         stage = Stage.INITED;
         LOGGER.info("Test Environment Initialised On LaunchClassLoader");

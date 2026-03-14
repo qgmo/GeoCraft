@@ -42,6 +42,8 @@ public class TestEnvTransformer implements IClassTransformer {
         if(name == null) return basicClass;
         if("net.minecraftforge.registries.GameData".equals(name)){
             return GameDataPlugin.PLUGIN.transform(basicClass,false);
+        }else if("net.minecraft.init.Blocks".equals(name)){
+            return InitBlocksPlugin.PLUGIN.transform(basicClass,false);
         }
         return basicClass;
     }

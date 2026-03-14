@@ -27,10 +27,10 @@
 
 package top.qiguaiaaaa.geocraft_test.block;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -60,16 +60,7 @@ public final class MockBlockLiquid {
     public static class MockBlockDynamicLiquid extends BlockDynamicLiquid {
         protected MockBlockDynamicLiquid(final @Nonnull MockBlockInfoBuilder<?> builder) {
             super(builder.material);
-            this.setRegistryName(builder.id);
-        }
-
-        @Override
-        public void neighborChanged(final @Nonnull IBlockState state,
-                                    final @Nonnull World worldIn,
-                                    final @Nonnull BlockPos pos,
-                                    final @Nonnull Block blockIn,
-                                    final @Nonnull BlockPos fromPos) {
-            // do nothing
+            this.setRegistryName(new ResourceLocation(builder.id.getNamespace(),"flowing_"+builder.id.getPath()));
         }
 
         @Override
@@ -85,15 +76,6 @@ public final class MockBlockLiquid {
         protected MockBlockStaticLiquid(final @Nonnull MockBlockInfoBuilder<?> builder){
             super(builder.material);
             this.setRegistryName(builder.id);
-        }
-
-        @Override
-        public void neighborChanged(final @Nonnull IBlockState state,
-                                    final @Nonnull World worldIn,
-                                    final @Nonnull BlockPos pos,
-                                    final @Nonnull Block blockIn,
-                                    final @Nonnull BlockPos fromPos) {
-            // do nothing
         }
 
         @Override

@@ -36,4 +36,5 @@ import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
 public class MockFluids {
     public static final Fluid SNOW = new FluidSnow();
     public static final Fluid WATER = new FluidSnow();
+    public static final Fluid LAVA = new FluidSnow();
 }

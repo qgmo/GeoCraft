@@ -30,7 +30,6 @@ package top.qiguaiaaaa.geocraft_test.world;
 import com.google.common.annotations.Beta;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -104,7 +103,8 @@ public class MockSimpleWorld extends World {
     @Override
     public boolean setBlockState(final @Nonnull BlockPos pos,final @Nonnull IBlockState newState,final int flags) {
         if(sandbox.isOutOfRange(pos)) return false;
-        sandbox.setBlockState(pos,newState);
+        final @Nonnull IBlockState oldState = sandbox.setBlockState(pos,newState);
+        this.markAndNotifyBlock(pos, null, oldState, newState, flags);
         return true;
     }
 

@@ -31,6 +31,8 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,6 +40,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.world.MockSimpleWorld;
 import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSimpleSandbox;
@@ -123,6 +126,7 @@ public final class TestFiniteWater extends GeoCraftTest {
         for (int y = 0;y<structure.length;y++){
             final StringBuilder builder = new StringBuilder();
             for(int z=0;z<size;z++){
+                Assertions.assertTrue(scanner.hasNextLine());
                 builder.append(scanner.nextLine().codePoints()
                                 .filter(code -> !Character.isWhitespace(code))
                                 .collect(StringBuilder::new,
@@ -150,20 +154,25 @@ public final class TestFiniteWater extends GeoCraftTest {
 
             final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
 
-            直接下落(structure,expected,beginPos);
+            直接下落(size,structure,expected,beginPos);
         }finally {
             GeneralConfig.ENABLE_BLOCK_UPDATER.setValue(true);
         }
     }
 
-    private static void 直接下落(@Nonnull final String[] structure,
+    private static void 直接下落(final int size,
+                                 @Nonnull final String[] structure,
                                  @Nonnull final String[] expected,
                                  @Nonnull final BlockPos beginPos){
-        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox(BUILDER.generateFromCharacters(structure));
+        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox(BUILDER.generateFromCharacters(size,structure));
+        sandbox.setOuterBlock(曜);
         world.setSandbox(sandbox);
         GeoCraftTest.LOGGER.info("begin pos {}",beginPos);
         BUILDER.print(sandbox.getStructure());
-        WATER_FLOWING.flowDown(
+        final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
+        final FiniteFlowingVanilla flowing = beginState.getMaterial().isLiquid()?beginState.getMaterial() == Material.WATER?WATER_FLOWING:LAVA_FLOWING:Assertions.fail("Unknown Liquid Type!");
+        Assertions.assertNotNull(flowing);
+        flowing.flowDown(
                 world,
                 beginPos,
                 world.getBlockState(beginPos.down()),
@@ -172,7 +181,6 @@ public final class TestFiniteWater extends GeoCraftTest {
         );
         GeoCraftTest.LOGGER.info("output:");
         BUILDER.print(sandbox.getStructure());
-        BUILDER.assertEqualStructure(sandbox.getStructure(),expected);
-
+        BUILDER.assertEqualStructure(sandbox.getStructure(),expected,size);
     }
 }

@@ -29,13 +29,20 @@ package top.qiguaiaaaa.geocraft_test.tests;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
+import top.qiguaiaaaa.geocraft_test.world.MockSimpleWorld;
 import top.qiguaiaaaa.geocraft_test.world.sandbox.MockSimpleSandbox;
+import top.qiguaiaaaa.geocraft_test.world.storage.MockWorldInfo;
+
+import javax.annotation.Nonnull;
 
 import static top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder.layer;
+import static top.qiguaiaaaa.geocraft_test.world.sandbox.MockSandboxEnvBuilder.line;
+import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.Bases.*;
 
 /**
  * @author QiguaiAAAA
@@ -48,151 +55,74 @@ public class TestSandbox {
      */
     public static final class TestBases extends GeoCraftTest{
 
-        /**
-         * ChatGPT Generated
-         */
         @Test
         public void generateFromCharactersTest() throws Exception {
             test();
         }
 
-        /**
-         * ChatGPT Generated
-         */
         public static void generateFromCharactersTest_Inner(){
-
-            final int size = 3;
-
-            final String[] structure = new String[]{
-                    layer(
-                            "",
+            BUILDER.assertEqualStructure(new IBlockState[][][]{
+                    layer(null,
+                            line(石,石,石),
+                            line(石,〇,石),
+                            line(石,石,石)),
+                    layer(null,
+                            line(〇,〇,〇),
+                            line(〇,崗,〇),
+                            line(〇,〇,〇))
+            },new String[]{
+                    layer("",
                             "石石石",
                             "石〇石",
                             "石石石"
                     ),
-                    layer(
-                            "",
+                    layer("",
                             "〇〇〇",
-                            "〇木〇",
+                            "〇崗〇",
                             "〇〇〇"
                     )
-            };
-
-            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
-
-            GeoCraftTest.LOGGER.info("Generated structure height={}", result.length);
-
-            Assertions.assertEquals(2, result.length);
-            Assertions.assertEquals(size, result[0].length);
-
-            final MockSimpleSandbox world = new MockSimpleSandbox(result);
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.〇,
-                    world.getBlockState(new BlockPos(1,0,1))
-            );
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.石,
-                    world.getBlockState(new BlockPos(0,0,0))
-            );
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.木,
-                    world.getBlockState(new BlockPos(1,1,1))
-            );
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.〇,
-                    world.getBlockState(new BlockPos(2,1,2))
-            );
-
-            GeoCraftTest.LOGGER.info("generateFromCharactersTest passed");
+            },3);
         }
 
-        /**
-         * ChatGPT Generated
-         */
         @Test
         public void generateSingleLayerTest() throws Exception {
             test();
         }
 
-        /**
-         * ChatGPT Generated
-         */
         public static void generateSingleLayerTest_Inner(){
-
-            final int size = 3;
-
-            final String[] structure = new String[]{
-                    layer(
-                            "",
+            BUILDER.assertEqualStructure(new IBlockState[][][]{
+                    layer(null,
+                            line(石,石,石),
+                            line(石,崗,石),
+                            line(石,石,石))
+            },new String[]{
+                    layer("",
                             "石石石",
-                            "石木石",
+                            "石崗石",
                             "石石石"
                     )
-            };
-
-            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
-
-            GeoCraftTest.LOGGER.info("Single layer height={}", result.length);
-
-            Assertions.assertEquals(1, result.length);
-
-            final MockSimpleSandbox world = new MockSimpleSandbox(result);
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.木,
-                    world.getBlockState(new BlockPos(1,0,1))
-            );
-
-            Assertions.assertEquals(
-                    MockBlocks.Bases.石,
-                    world.getBlockState(new BlockPos(0,0,0))
-            );
-
-            GeoCraftTest.LOGGER.info("generateSingleLayerTest passed");
+            },3);
         }
 
-        /**
-         * ChatGPT Generated
-         */
         @Test
         public void generateAllAirTest() throws Exception {
             test();
         }
 
-        /**
-         * ChatGPT Generated
-         */
         public static void generateAllAirTest_Inner(){
-
-            final int size = 3;
-
-            final String[] structure = new String[]{
+            BUILDER.assertEqualStructure(new IBlockState[][][]{
+                    layer(null,
+                            line(〇,〇,〇),
+                            line(〇,〇,〇),
+                            line(〇,〇,〇))
+            },new String[]{
                     layer(
                             "",
                             "〇〇〇",
                             "〇〇〇",
                             "〇〇〇"
                     )
-            };
-
-            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
-
-            final MockSimpleSandbox world = new MockSimpleSandbox(result);
-
-            for(int x=0;x<size;x++){
-                for(int z=0;z<size;z++){
-                    Assertions.assertEquals(
-                            MockBlocks.Bases.〇,
-                            world.getBlockState(new BlockPos(x,0,z))
-                    );
-                }
-            }
-
-            GeoCraftTest.LOGGER.info("generateAllAirTest passed");
+            },3);
         }
 
         /**
@@ -207,29 +137,25 @@ public class TestSandbox {
          * ChatGPT Generated
          */
         public static void characterMappingTest_Inner(){
-
-            final int size = 3;
-
             final String[] structure = new String[]{
-                    layer(
-                            "",
-                            "石木〇",
-                            "〇石木",
-                            "木〇石"
+                    layer("",
+                            "石土 〇",
+                            "〇土1崗",
+                            "崗〇 石"
                     )
             };
-
-            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
-
-            final MockSimpleSandbox world = new MockSimpleSandbox(result);
-
-            Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(0,0,0)));
-            Assertions.assertEquals(MockBlocks.Bases.木, world.getBlockState(new BlockPos(1,0,0)));
-            Assertions.assertEquals(MockBlocks.Bases.〇, world.getBlockState(new BlockPos(2,0,0)));
-
-            Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(1,0,1)));
-
-            GeoCraftTest.LOGGER.info("characterMappingTest passed");
+            final IBlockState[][][] result = BUILDER.generateFromCharacters(3,structure);
+            BUILDER.assertEqualStructure(result,new IBlockState[][][]{
+                    layer(null,
+                            line(石,土0,〇),
+                            line(〇,土1,崗),
+                            line(崗,〇,石))
+            });
+            final @Nonnull MockSimpleWorld world = MockSimpleWorld.create(MockWorldInfo.create(b -> b.withGameType(GameType.CREATIVE)),false);
+            world.setSandbox(new MockSimpleSandbox(result));
+            Assertions.assertEquals(world.getBlockState(new BlockPos(1,0,1)),土1); //中间
+            Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,0)),〇); //右上角
+            Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,2)),石); //右下角
         }
 
         /**
@@ -244,10 +170,20 @@ public class TestSandbox {
          * ChatGPT Generated
          */
         public static void multiLayerHeightTest_Inner(){
-
-            final int size = 3;
-
-            final String[] structure = new String[]{
+            BUILDER.assertEqualStructure(new IBlockState[][][]{
+                    layer(null,
+                            line(石,石,石),
+                            line(石,石,石),
+                            line(石,石,石)),
+                    layer(null,
+                            line(〇,〇,〇),
+                            line(〇,〇,〇),
+                            line(〇,〇,〇)),
+                    layer(null,
+                            line(閃,閃,閃),
+                            line(崗,崗,崗),
+                            line(䒚,粆,砂))
+            },new String[]{
                     layer(
                             "",
                             "石石石",
@@ -262,21 +198,11 @@ public class TestSandbox {
                     ),
                     layer(
                             "",
-                            "木木木",
-                            "木木木",
-                            "木木木"
+                            "閃 閃 閃",
+                            "崗 崗 崗",
+                            "䒚0粆0砂0"
                     )
-            };
-
-            final IBlockState[][][] result = MockBlocks.Bases.BUILDER.generateFromCharacters(size, structure);
-
-            final MockSimpleSandbox world = new MockSimpleSandbox(result);
-
-            Assertions.assertEquals(MockBlocks.Bases.石, world.getBlockState(new BlockPos(1,0,1)));
-            Assertions.assertEquals(MockBlocks.Bases.〇, world.getBlockState(new BlockPos(1,1,1)));
-            Assertions.assertEquals(MockBlocks.Bases.木, world.getBlockState(new BlockPos(1,2,1)));
-
-            GeoCraftTest.LOGGER.info("multiLayerHeightTest passed");
+            },3);
         }
     }
 }

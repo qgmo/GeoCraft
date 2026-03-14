@@ -76,7 +76,7 @@ public class MockSimpleSandbox implements IMockSandbox {
     public IBlockState getBlockState(final @Nonnull BlockPos pos) {
         if(isOutOfRange(pos)){
             if(outerBlock != null) return outerBlock;
-            return Assertions.fail("Out of Range");
+            return Assertions.fail("Out of Range "+pos);
         }
         return structure[pos.getY()][pos.getZ()][pos.getX()];
     }
@@ -115,7 +115,7 @@ public class MockSimpleSandbox implements IMockSandbox {
     }
 
     protected boolean isOutOfRange(final int x,final int y,final int z){
-        return !(y < structure.length && z < structure[y].length && x < structure[y][x].length);
+        return !(y>=0 && y < structure.length && z>=0 && z < structure[y].length && x>=0 && x < structure[y][z].length);
     }
 
     @Override

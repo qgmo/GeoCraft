@@ -25,19 +25,18 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft_test.block;
+package top.qiguaiaaaa.geocraft_test.world.sandbox;
 
-import net.minecraft.block.BlockAir;
-import net.minecraft.util.ResourceLocation;
-
-import javax.annotation.Nonnull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author QiguaiAAAA
  */
-public class MockBlockAir extends BlockAir {
-    public MockBlockAir(final @Nonnull ResourceLocation id) {
-        super();
-        this.setRegistryName(id);
-    }
+public @interface Sandbox {
+    @Target({ElementType.FIELD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Default{}
 }
