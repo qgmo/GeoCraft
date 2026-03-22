@@ -42,8 +42,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.Mixins;
+import top.qiguaiaaaa.geocraft_test.assets.FluidPhysicsMocks;
 import top.qiguaiaaaa.geocraft_test.assets.MockBlocks;
-import top.qiguaiaaaa.geocraft_test.tests.TestMixinEnvironment;
+import top.qiguaiaaaa.geocraft_test.assets.MockFluids;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -134,6 +135,12 @@ public class GeoCraftTest {
 
         LOGGER.info("Initialising Minecraft Blocks");
         MockBlocks.initMinecraftBlocks();
+
+        LOGGER.info("Initialising Fluids");
+        MockFluids.initMinecraftFluids();
+
+        LOGGER.info("Initialising GeoCraft");
+        FluidPhysicsMocks.initFluidPhysicsMode();
 
         stage = Stage.INITED;
         LOGGER.info("Test Environment Initialised On LaunchClassLoader");

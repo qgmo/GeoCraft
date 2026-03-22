@@ -27,17 +27,17 @@
 
 package top.qiguaiaaaa.geocraft_test.assets;
 
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
-import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
 
 /**
  * @author QiguaiAAAA
  */
-public final class MockFluids {
-    public static final Fluid SNOW = new FluidSnow();
-
-    public static void initMinecraftFluids(){
-        FluidRegistry.WATER.isGaseous(); //force load it
+public class FluidPhysicsMocks {
+    public static void initFluidPhysicsMode(){
+        FluidPhysicsMode.MORE_REALITY.setChecker(new FiniteFluidOperationChecker());
+        FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());
+        FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
     }
 }

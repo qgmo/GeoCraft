@@ -32,6 +32,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import top.qiguaiaaaa.geocraft.api.util.math.Degree;
 
 import javax.annotation.Nonnull;
@@ -43,6 +44,14 @@ public final class MathUtil {
         double len = vec.length();
         double rad = Math.asin(Math.abs(vec.y)/len);
         return new Degree(rad,true);
+    }
+
+    public static double tanh(final double x,final double a,final double m,final double d){
+        return a*Math.tanh((x-d)/m)+a+1d;
+    }
+
+    public static int manhattanDistance(final @Nonnull Vec3i a,final @Nonnull Vec3i b){
+        return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY()- b.getY()) + Math.abs(a.getZ() - b.getZ());
     }
 
     /**

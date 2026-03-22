@@ -32,11 +32,13 @@ import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
 import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
 import top.qiguaiaaaa.geocraft.block.soil.BlockSoilDirt;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import top.qiguaiaaaa.geocraft_test.GeoCraftTest;
 import top.qiguaiaaaa.geocraft_test.asm.InitBlocksPlugin;
 import top.qiguaiaaaa.geocraft_test.block.*;
@@ -154,16 +156,16 @@ public final class MockBlocks {
     public static final class VanillaFluids {
         public static final MockSandboxEnvBuilder<?> BUILDER;
 
-        public static final FiniteFlowingVanilla WATER_FLOWING = MockBlockLiquid.create(b ->
-                b.withID("water").withMaterial(Material.WATER).withMapColor(MapColor.WATER).withFluid(MockFluids.WATER));
+        private static final Pair<MockBlockLiquid.MockBlockDynamicLiquid, MockBlockLiquid.MockBlockStaticLiquid> WATERS =
+                MockBlockLiquid.create(b -> b.withID("water").withMaterial(Material.WATER).withMapColor(MapColor.WATER));
 
-        public static final FiniteFlowingVanilla LAVA_FLOWING = MockBlockLiquid.create(b ->
-                b.withID("lava").withMaterial(Material.LAVA).withFluid(MockFluids.LAVA));
+        private static final Pair<MockBlockLiquid.MockBlockDynamicLiquid, MockBlockLiquid.MockBlockStaticLiquid> LAVAS =
+                MockBlockLiquid.create(b -> b.withID("lava").withMaterial(Material.LAVA));
 
-        public static final BlockDynamicLiquid DYNAMIC_WATER = WATER_FLOWING.dynamic;
-        public static final BlockStaticLiquid STATIC_WATER = WATER_FLOWING._static;
-        public static final BlockDynamicLiquid DYNAMIC_LAVA = LAVA_FLOWING.dynamic;
-        public static final BlockStaticLiquid STATIC_LAVA = LAVA_FLOWING._static;
+        public static final BlockDynamicLiquid DYNAMIC_WATER = WATERS.getKey();
+        public static final BlockStaticLiquid STATIC_WATER = WATERS.getRight();
+        public static final BlockDynamicLiquid DYNAMIC_LAVA = LAVAS.getKey();
+        public static final BlockStaticLiquid STATIC_LAVA = LAVAS.getRight();
 
         public static final BlockObsidian OBSIDIAN = new BlockObsidian(){{
             registerToMinecraft("OBSIDIAN",49, this.setSoundType(SoundType.STONE)
@@ -254,7 +256,7 @@ public final class MockBlocks {
 
         @Nonnull
         public static FiniteFlowingVanilla getFlowingByMaterial(final @Nonnull Material material){
-            return material.isLiquid()?material == Material.WATER?WATER_FLOWING:LAVA_FLOWING:Assertions.fail("Unknown Liquid Type!");
+            return material.isLiquid()?material == Material.WATER? FiniteFlowings.WATER_FLOW : FiniteFlowings.LAVA_FLOW :Assertions.fail("Unknown Liquid Type!");
         }
     }
 

@@ -77,6 +77,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.handler.ServerStatusMonitor;
 import top.qiguaiaaaa.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
@@ -201,12 +202,17 @@ public final class FiniteEventHandler {
         }
     }
 
-    public static boolean onBlockReplaced(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull IBlockState currentState, @Nonnull IBlockState replacedState, @Nonnull PlaceSource source, @Nullable Entity sourceEntity){
+    public static boolean onBlockReplaced(@Nonnull final World world,
+                                          @Nonnull final BlockPos pos,
+                                          @Nonnull final IBlockState currentState,
+                                          @Nonnull final IBlockState replacedState,
+                                          @Nonnull final PlaceSource source,
+                                          @Nullable final Entity sourceEntity){
         final Fluid fluid = FluidUtil.getFluid(currentState);
         if(fluid == null) return true;
         final Block block = currentState.getBlock();
         if(block instanceof BlockLiquid){
-            final PhysicsBlockLiquidWrapper wrapper = new PhysicsBlockLiquidWrapper((BlockLiquid) block,world,pos);
+            final PhysicsBlockLiquidWrapper wrapper = new PhysicsBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(currentState.getMaterial()),world,pos);
             wrapper.setIgnoreCurrentPos(true);
             int quanta = FluidUtil.getFluidQuanta(world, pos,currentState);
             long QB = QBUtil.toQBFromQuanta(quanta);

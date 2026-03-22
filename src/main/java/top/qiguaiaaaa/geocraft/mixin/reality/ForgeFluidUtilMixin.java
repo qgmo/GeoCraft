@@ -38,14 +38,18 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsBlockLiquidWrapper;
 import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsFluidBlockWrapper;
+
+import javax.annotation.Nonnull;
+
 @Mixin(value = FluidUtil.class,remap = false)
 public class ForgeFluidUtilMixin {
     @Redirect(method = "getFluidBlockHandler",
             at= @At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/FluidBlockWrapper"),remap = false)
-    private static FluidBlockWrapper getFluidBlockHandlerMod(IFluidBlock fluidBlock, World world, BlockPos blockPos) {
+    private static FluidBlockWrapper getFluidBlockHandlerMod(final @Nonnull IFluidBlock fluidBlock,final @Nonnull World world,final @Nonnull BlockPos blockPos) {
         if(GeoFluidSetting.isFluidToUseVanillaBucketMode(fluidBlock.getFluid())
         || !GeoFluidSetting.isFluidToBePhysical(fluidBlock.getFluid())) return new FluidBlockWrapper(fluidBlock,world,blockPos);
         return new PhysicsFluidBlockWrapper(fluidBlock, world, blockPos);
@@ -53,8 +57,8 @@ public class ForgeFluidUtilMixin {
     @Redirect(method = "getFluidBlockHandler",
             at=@At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/BlockLiquidWrapper"),remap = false)
-    private static BlockLiquidWrapper getFluidBlockHandlerVanilla(BlockLiquid blockLiquid, World world, BlockPos blockPos) {
+    private static BlockLiquidWrapper getFluidBlockHandlerVanilla(final @Nonnull BlockLiquid blockLiquid, final @Nonnull World world,final @Nonnull BlockPos blockPos) {
         if(!GeoFluidSetting.isFluidToBePhysical(blockLiquid)) return new BlockLiquidWrapper(blockLiquid,world,blockPos);
-        return new PhysicsBlockLiquidWrapper(blockLiquid,world,blockPos);
+        return new PhysicsBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(blockLiquid.getDefaultState().getMaterial()),world,blockPos);
     }
 }

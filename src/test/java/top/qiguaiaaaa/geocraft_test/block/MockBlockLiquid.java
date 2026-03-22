@@ -33,8 +33,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
@@ -46,12 +45,12 @@ import java.util.function.Consumer;
 public final class MockBlockLiquid {
 
     @Nonnull
-    public static FiniteFlowingVanilla create(final @Nonnull Consumer<MockLiquidInfoBuilder> builderConsumer){
-        final MockLiquidInfoBuilder builder = new MockLiquidInfoBuilder();
+    public static Pair<MockBlockDynamicLiquid,MockBlockStaticLiquid> create(final @Nonnull Consumer<MockBlockInfoBuilder<?>> builderConsumer){
+        final MockBlockInfoBuilder<?> builder = new MockBlockInfoBuilder.Impl();
         builderConsumer.accept(builder);
         final MockBlockDynamicLiquid dynamic = new MockBlockDynamicLiquid(builder);
         final MockBlockStaticLiquid _static = new MockBlockStaticLiquid(builder);
-        return new FiniteFlowingVanilla(dynamic,_static,builder.fluid);
+        return Pair.of(dynamic,_static);
     }
 
     /**
@@ -81,16 +80,6 @@ public final class MockBlockLiquid {
         @Override
         public void updateTick(@Nonnull final World worldIn,@Nonnull final BlockPos pos,@Nonnull final IBlockState state,@Nonnull final Random rand) {
             // do nothing
-        }
-    }
-
-    public static final class MockLiquidInfoBuilder extends MockBlockInfoBuilder<MockLiquidInfoBuilder>{
-        Fluid fluid;
-
-        @Nonnull
-        public MockLiquidInfoBuilder withFluid(@Nonnull final Fluid fluid){
-            this.fluid = fluid;
-            return this;
         }
     }
 }

@@ -28,8 +28,11 @@
 package top.qiguaiaaaa.geocraft_test.world.sandbox;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.WorldType;
+import net.minecraft.world.biome.Biome;
 import org.junit.jupiter.api.Assertions;
 
 import javax.annotation.Nonnull;
@@ -38,39 +41,39 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class MockSimpleSandbox extends MockSandboxAbstract {
-
-    protected final IBlockState[][][] structure; //y,z,x
-
-    protected @Nullable IBlockState outerBlock;
-
-    public MockSimpleSandbox(final @Nonnull IBlockState[][][] structure) {
-        this.structure = structure;
-    }
-
-    public void setOuterBlock(final @Nullable IBlockState outer){
-        this.outerBlock = outer;
-    }
-
-    @Nonnull
-    public IBlockState[][][] getStructure() {
-        return structure;
-    }
-
-    @Nonnull
+public abstract class MockSandboxAbstract implements IMockSandbox{
+    @Nullable
     @Override
-    public IBlockState getBlockState(final @Nonnull BlockPos pos) {
-        if(isOutOfRange(pos)){
-            if(outerBlock != null) return outerBlock;
-            return Assertions.fail("Out of Range "+pos);
-        }
-        return structure[pos.getY()][pos.getZ()][pos.getX()];
+    public TileEntity getTileEntity(final @Nonnull BlockPos pos) {
+        return null;
+    }
+
+    @Override
+    public int getCombinedLight(final @Nonnull BlockPos pos,final int lightValue) {
+        return lightValue;
     }
 
     @Override
     public boolean isAirBlock(final @Nonnull BlockPos pos) {
         final @Nonnull IBlockState state = getBlockState(pos);
         return state.getBlock().isAir(state,this,pos);
+    }
+
+    @Override
+    @Nonnull
+    public Biome getBiome(final @Nonnull BlockPos pos) {
+        return Assertions.fail("Don't support biome");
+    }
+
+    @Override
+    public int getStrongPower(final @Nonnull BlockPos pos,final @Nonnull EnumFacing direction) {
+        return 0;
+    }
+
+    @Override
+    @Nonnull
+    public WorldType getWorldType() {
+        return WorldType.DEFAULT;
     }
 
     @Override
@@ -81,32 +84,5 @@ public class MockSimpleSandbox extends MockSandboxAbstract {
         final @Nonnull IBlockState state = getBlockState(pos);
         if (state.isTopSolid() && side == EnumFacing.UP) return true;
         return state.isNormalCube();
-    }
-
-    protected boolean isOutOfRange(final int x,final int y,final int z){
-        return !(y>=0 && y < structure.length && z>=0 && z < structure[y].length && x>=0 && x < structure[y][z].length);
-    }
-
-    @Override
-    public boolean isOutOfRange(@Nonnull final BlockPos pos) {
-        return isOutOfRange(pos.getX(),pos.getY(),pos.getZ());
-    }
-
-    @Override
-    public boolean canSeeSky(@Nonnull BlockPos pos) {
-        while (pos.getY()<=structure.length){
-            if(!isAirBlock(pos)) return false;
-            pos = pos.up();
-        }
-        return true;
-    }
-
-    @Override
-    public IBlockState setBlockState(@Nonnull final BlockPos pos, @Nonnull final IBlockState state) {
-        Assertions.assertNotNull(state);
-        Assertions.assertFalse(isOutOfRange(pos));
-        final IBlockState old = structure[pos.getY()][pos.getZ()][pos.getX()];
-        structure[pos.getY()][pos.getZ()][pos.getX()] = state;
-        return old;
     }
 }

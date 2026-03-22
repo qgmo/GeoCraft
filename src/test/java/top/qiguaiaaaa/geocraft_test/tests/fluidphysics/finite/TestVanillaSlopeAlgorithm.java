@@ -60,6 +60,7 @@ import static top.qiguaiaaaa.geocraft_test.assets.MockBlocks.VanillaFluids.getFl
 public final class TestVanillaSlopeAlgorithm extends FluidPhysicsTest {
     public static Map<String,EnumFacing> FACING_ALIASES = Maps.newHashMap();
 
+    @SuppressWarnings("unused")
     public static void initFacingAliases(){
         final @Nonnull Function<EnumFacing,Consumer<String>> putAllTo = facing -> alias -> FACING_ALIASES.put(alias,facing);
         Arrays.asList("前","北","HEAD","AHEAD").forEach(putAllTo.apply(EnumFacing.NORTH));

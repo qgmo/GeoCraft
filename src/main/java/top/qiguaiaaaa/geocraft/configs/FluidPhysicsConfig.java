@@ -578,6 +578,34 @@ public final class FluidPhysicsConfig {
             "enableInvalidLiquidStateReport",false,"当在世界中设置不应该出现的原版液体状态时，打印WARN日志。这有助于在出现bug时调试。\n" +
             "Print WARN-level logs when vanilla liquid states that should not appear in the world are detected. This aids in debugging when issues occur.",true);
 
+    /*
+     * Fluid Place Behaviour
+     */
+
+    @Config.Comment("Configure behaviour of fluid placement.")
+    @GeoConfig.Since("0.2.4")
+    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_PLACE = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("place");
+
+    @GeoConfig.Since("0.2.4")
+    @Config.RangeDouble(min = 0d,max = 16000d)
+    public static final ConfigDouble PLACE_ALGORITHM_MAX_COST_FACTOR = new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PLACE,
+            "placeAlgorithmMaxCostFactor",2000d,
+            "计算放置流体代价的算法的最大代价因子，对应 a*tanh((g-d)/m)+a+1 中的 a 常数\n" +
+                    "The a value in the expression a*tanh((g-d)/m)+a+1");
+
+    @GeoConfig.Since("0.2.4")
+    @Config.RangeDouble(min = 0.01d)
+    public static final ConfigDouble PLACE_ALGORITHM_COST_SMOOTHNESS = new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PLACE,
+            "placeAlgorithmCostSmoothness",0.9d,
+            "计算放置流体代价的算法随重力代价增长的平缓度，对应 a*tanh((g-d)/m)+a+1 中的 m 常数\n" +
+                    "The m value in the expression a*tanh((g-d)/m)+a+1");
+
+    @GeoConfig.Since("0.2.4")
+    public static final ConfigDouble PLACE_ALGORITHM_COST_MIDPOINT = new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PLACE,
+            "placeAlgorithmCostMidpoint",1.5d,
+            "计算放置流体代价的算法的中点，对应 a*tanh((g-d)/m)+a+1 中的 d 常数\n" +
+                    "The d value in the expression a*tanh((g-d)/m)+a+1");
+
     @Config.Comment({"设置第三方模组联动参数",
     "Configure compat parameters"})
     @GeoConfig.Since("0.1")
