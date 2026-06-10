@@ -90,6 +90,7 @@ repositories {
         }
     }
     maven { url = 'https://jitpack.io' }
+    maven { url = 'https://mod-buildcraft.com/maven' }
     mavenLocal() // Must be last for caching to work
 }
 
@@ -109,7 +110,7 @@ dependencies {
     compileOnly rfg.deobf("maven.modrinth:brigo:1.1.1+1.12.x")
     //https://modrinth.com/mod/tough-as-nails/version/3.1.0.139
     compileOnly rfg.deobf("maven.modrinth:tough-as-nails:3.1.0.139")
-    compileOnly rfg.deobf("maven.modrinth:buildcraft:8.0.0")
+    compileOnly "com.mod-buildcraft:buildcraft-all:8.0.0"
 
     testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.11.0'
     testImplementation("io.github.classgraph:classgraph:4.8.184")

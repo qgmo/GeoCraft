@@ -29,34 +29,36 @@ package 清汩萌.造;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.空间.网格参数;
+import 清汩萌.造.空间.词块网格;
+import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * @author QiguaiAAAA
  */
 public final class 格文件 {
+    public static final String 扩展名 = "格";
     private static final Function<Object,String> STRIPE = o -> StringUtil.strip(o.toString());
     private static final int[] $关键字 = "略用".codePoints().toArray();
     private static final @Nonnull IntOpenHashSet $关键字集合 = new IntOpenHashSet($关键字,1.0f);
 
+    private int $版本;
     private @Nullable Map<String,Object> $头部信息;
     private @Nullable String $名称;
-    private int $层数;
-    private int $行数;
-    private int $列数;
-    private @Nullable String $默认方块;
+    private 词块网格 $网格;
     private @Nullable Map<String,Object> $附加数据;
-
-    private String[] $层;
 
     static {
         $关键字集合.trim();
@@ -68,11 +70,18 @@ public final class 格文件 {
         return $关键字集合.contains(codePoint);
     }
 
+    @Nonnull
     public static 格文件 解析(@Nonnull final File file){
+        return 解析(file.toPath());
+    }
+
+    @Nonnull
+    public static 格文件 解析(@Nonnull final Path path){
         final 格文件 res = new 格文件();
-        try (final BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)){
+        res.$名称 = path.toString();
+        try (final BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)){
             res.$头部信息 = 解析头部信息(reader);
-            res.$层 = 解析层(reader).toArray(new String[0]);
+            res.$网格 = 解析网格(reader);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,16 +94,9 @@ public final class 格文件 {
         return $名称;
     }
 
-    public int 获取层数(){
-        return $层数;
-    }
-
-    public int 获取行数() {
-        return $行数;
-    }
-
-    public int 获取列数() {
-        return $列数;
+    @Nonnull
+    public 词块网格 获取网格(){
+        return $网格;
     }
 
     @Nullable
@@ -114,59 +116,71 @@ public final class 格文件 {
                 final String line = reader.readLine();
                 if(line == null) throw new RuntimeException("不完整的头部信息");
                 if("---".equals(StringUtil.strip(line.split("#",2)[0]))) break;
-                builder.append(line);
+                builder.append(line).append('\n');
             }
             return 造.YAML.load(builder.toString());
         }else return null;
     }
 
     @Nonnull
-    private static List<String> 解析层(final @Nonnull BufferedReader reader) throws IOException {
-        final @Nonnull List<String> layers = new ArrayList<>();
+    private static 词块网格 解析网格(final @Nonnull BufferedReader reader) throws IOException {
+        final @Nonnull 词块网格 $网格 = new 词块网格();
         String line;
-        StringBuilder builder = new StringBuilder();
+        词块网格.一层词块 $当前层 = null;
         while (true){
             line = reader.readLine();
             if(line == null) break;
             line = StringUtil.strip(line.split("#",2)[0]);
             if("---".equals(line)) break;
             if(line.isEmpty()){
-                if(builder != null){
-                    layers.add(builder.toString());
-                    builder = null;
+                if($当前层 != null){
+                    $当前层.完成();
+                    $当前层 = null;
                 }
+            }else if(line.startsWith("略")){
+                if($当前层 != null){
+                    $当前层.完成();
+                    $当前层 = null;
+                }
+                line = line.replace("略","L");
+                final @Nonnull List<词块> parsed = 空间构造器.解析行(StringUtil.removeWhitesInCodePoints(line.codePoints()));
+                if(parsed.size() != 1) throw new IllegalArgumentException(line);
+                final 词块 $略 = parsed.get(0);
+                final int count = $略.获取下标().isEmpty()?1:Integer.parseInt($略.获取下标());
+                $网格.略(count);
+
             }else {
-                if(builder == null) builder = new StringBuilder();
-                builder.append(line.codePoints()
-                        .filter(cp -> !Character.isWhitespace(cp))
-                        .collect(StringBuilder::new,
-                                StringBuilder::appendCodePoint,
-                                StringBuilder::append)
-                );
+                if($当前层 == null) $当前层 = $网格.层();
+                $当前层.行(line);
             }
         }
-        return layers;
+        if($当前层 != null) $当前层.完成();
+        return $网格;
     }
 
     @SuppressWarnings("unchecked")
     private void 初始化元数据(){
         if($头部信息 != null) {
-            $名称 = computeIfNonNull($头部信息.get("name"), STRIPE);
-            $默认方块 = computeIfNonNull($头部信息.get("default"),STRIPE);
+            $版本 = Optional.ofNullable($头部信息.get("ver"))
+                    .map(o -> Integer.parseInt(o.toString()))
+                    .filter(ver -> ver > 0)
+                    .orElseThrow(IllegalArgumentException::new);
+            $名称 = computeIfNonNull(Optional.ofNullable(
+                    Optional.ofNullable($头部信息.get("name")).orElse(Optional.ofNullable($头部信息.get("名")).orElse($名称))).map(STRIPE), STRIPE);
+            Optional.ofNullable(Optional.ofNullable($头部信息.get("default")).orElse($头部信息.get("默认用")))
+                    .ifPresent(o -> $网格.默认用(STRIPE.apply(o)));
 
-            @Nullable List<Integer> $大小 = (List<Integer>) $头部信息.get("size");
-            if($大小 != null){
-                $层数 = $大小.get(0);
-                $行数 = $大小.get(1);
-                $列数 = $大小.get(2);
-            }
+            @Nullable final List<Integer> $大小 = (List<Integer>) Optional.ofNullable($头部信息.get("size")).filter(o -> o instanceof List).orElse($头部信息.get("期望"));
+            if($大小 != null)
+                for(@Nonnull final 网格参数 $参数:网格参数.列表)
+                    $网格.期望($大小.get($参数.ordinal()),$参数);
             $附加数据 = (Map<String,Object>) $头部信息.get("ext");
         }else{
             throw new RuntimeException(); //TODO
         }
     }
 
-    private static <T> T computeIfNonNull(final Object obj, final @Nonnull Function<Object,T> mapping){
+    private static <T> T computeIfNonNull(final @Nullable Object obj, final @Nonnull Function<Object,T> mapping){
         return obj == null?null:mapping.apply(obj);
     }
 }

@@ -32,23 +32,28 @@ import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author QiguaiAAAA
  */
 public final class 词块网格 {
-    private final @Nonnull 空间构造器 $构造器;
+    private @Nullable 空间构造器 $构造器;
     private final List<一层词块> $层列表 = new ArrayList<>();
     private 词块 $默认填充方块;
+    private int $层数 = 0;
     private int $行数 = 0;
     private int $列数 = 0;
 
-    public 词块网格(@Nonnull final 空间构造器 $构造器) {
+    @Nonnull
+    public 词块网格 基于(final @Nonnull 空间构造器 $构造器){
         this.$构造器 = $构造器;
+        return this;
     }
 
     @Nonnull
@@ -75,6 +80,23 @@ public final class 词块网格 {
     }
 
     @Nonnull
+    public 词块网格 期望(final int $数量,final @Nonnull 网格参数 $参数){
+        switch ($参数){
+            case 层:{
+                this.$层数 = Math.max($层数,$数量);
+                break;
+            }case 行:{
+                this.$行数 = Math.max($行数,$数量);
+                break;
+            }case 列:{
+                this.$列数 = Math.max($列数,$数量);
+                break;
+            }
+        }
+        return this;
+    }
+
+    @Nonnull
     public 词块网格 略() {
         略(1);
         return this;
@@ -84,32 +106,77 @@ public final class 词块网格 {
     public 词块网格 略(final int $略去层数) {
         if ($略去层数 < 1) throw new IllegalArgumentException();
         for (int i = 0; i < $略去层数; i++) $层列表.add(new 一层词块());
+        $层数 = Math.max($层数,$层列表.size());
         return this;
     }
 
     @Nonnull
     public IBlockState[][][] 构造() {
-        填充默认();
-        return $构造器.构造($层列表.stream().map($单层 -> $单层.$行列表).collect(Collectors.toList()));
+        return 构造(Objects.requireNonNull(this.$构造器));
     }
 
-    private void 填充默认(){
-       for(final @Nonnull 一层词块 $单层:$层列表) $单层.填充默认();
+    @Nonnull
+    public IBlockState[][][] 构造(@Nonnull final 空间构造器 $构造器) {
+        return $构造器.构造(处理填充().stream().map($单层 -> $单层.$行列表).collect(Collectors.toList()));
+    }
+
+    @Nonnull
+    private List<一层词块> 处理填充(){
+        final List<一层词块> $层列表复制 = $层列表.stream()
+                .map(一层词块::new)
+                .peek(一层词块::填充默认)
+                .collect(Collectors.toList());
+        while ($层列表复制.size()<$层数) $层列表复制.add(new 一层词块().填充默认());
+        return $层列表复制;
     }
 
     @Override
     public String toString() {
-        填充默认();
-        return $层列表.stream().map(Object::toString).collect(Collectors.joining("\n\n"));
+        return 处理填充().stream().map(Object::toString).collect(Collectors.joining("\n\n"));
     }
 
-    public final class 一层词块 {
-        private final List<List<词块>> $行列表 = new ArrayList<>();
+    public int 获取层数() {
+        return $层数;
+    }
+
+    public int 获取行数() {
+        return $行数;
+    }
+
+    public int 获取列数() {
+        return $列数;
+    }
+
+    public int 获取参数(final @Nonnull 网格参数 $参数){
+        switch ($参数){
+            case 层:return $层数;
+            case 行:return $行数;
+            case 列:return $列数;
+            default:throw new IllegalArgumentException();
+        }
+    }
+
+    public final class 一层词块{
+        private final List<List<词块>> $行列表;
         private int $最大列数 = 0;
+
+        public 一层词块(){
+            this.$行列表 = new ArrayList<>();
+        }
+
+        public 一层词块(final @Nonnull 一层词块 B){
+            this.$行列表 = B.$行列表.stream().map(ArrayList::new).collect(Collectors.toList());
+            this.$最大列数 = B.$最大列数;
+        }
 
         @Nonnull
         public 一层词块 行(final @Nonnull String line) {
-            final @Nonnull List<词块> dat = 空间构造器.解析行(StringUtil.removeWhites(line));
+            return 行(line.codePoints());
+        }
+
+        @Nonnull
+        public 一层词块 行(final @Nonnull IntStream line) {
+            final @Nonnull List<词块> dat = 空间构造器.解析行(StringUtil.removeWhitesInCodePoints(line));
             this.$行列表.add(dat);
             $最大列数 = Math.max($最大列数, dat.size());
             return this;
@@ -118,6 +185,7 @@ public final class 词块网格 {
         @Nonnull
         public 词块网格 完成() {
             $层列表.add(this);
+            $层数 = Math.max($层数,$层列表.size());
             $行数 = Math.max($行数, $行列表.size());
             $列数 = Math.max($列数, $最大列数);
             return 词块网格.this;
@@ -125,15 +193,23 @@ public final class 词块网格 {
 
         @Override
         public String toString() {
-            填充默认();
-            return $行列表.stream().map($单行 -> $单行.stream().map(Objects::toString).collect(Collectors.joining())).collect(Collectors.joining("\n"));
+            return new 一层词块(this)
+                    .填充默认()
+                    .$行列表.stream().map($单行 -> $单行.stream()
+                            .map(Objects::toString)
+                            .collect(Collectors.joining()))
+                    .collect(Collectors.joining("\n"));
         }
 
-        private void 填充默认(){
+        @Nonnull
+        private 一层词块 填充默认(){
+            $最大列数 = Math.max($列数,$最大列数);
             while ($行列表.size() < $行数) $行列表.add(new ArrayList<>());
-            if($默认填充方块 == null) return;
+            if($默认填充方块 == null) return this;
             for (final @Nonnull List<词块> $单行 : $行列表)
                 while ($单行.size() < $列数) $单行.add($默认填充方块);
+
+            return this;
         }
     }
 }

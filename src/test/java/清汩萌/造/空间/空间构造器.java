@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author QiguaiAAAA
@@ -109,13 +110,18 @@ public final class 空间构造器 {
 
     @Nonnull
     public 词块网格 构造(){
-        return new 词块网格(this);
+        return new 词块网格().基于(this);
     }
 
     @Nonnull
     public static List<词块> 解析行(final @Nonnull String $行){
+        return 解析行($行.codePoints());
+    }
+
+    @Nonnull
+    public static List<词块> 解析行(final @Nonnull IntStream $行){
         final List<词块> $词块列表 = new ArrayList<>();
-        final int[] codePoints = $行.codePoints().toArray();
+        final int[] codePoints = $行.toArray();
         int i = 0;
 
         final @Nonnull StringBuilder $当前词块 = new StringBuilder();
@@ -135,8 +141,9 @@ public final class 空间构造器 {
                     $处于主体中 = false;
                     i++;
                     continue;
-                } else if(下标工具.是下标字符(cp)) throw new IllegalArgumentException($行+" 主体中不能包含下标字符!");
-                else if(!主体工具.是主体字符(cp)) throw new IllegalArgumentException($行 + " 包含非法主体字符");
+                } else if(下标工具.是下标字符(cp)) throw new IllegalArgumentException(new String(codePoints,0,codePoints.length) +" 主体中不能包含下标字符!");
+                else if(!主体工具.是主体字符(cp))
+                    throw new IllegalArgumentException(new String(codePoints,0,codePoints.length) + " 包含非法主体字符 "+new String(new int[]{cp},0,1));
                 $当前词块.appendCodePoint(cp);
                 if(!$处于括号中) $处于主体中 = false;
                 i++;

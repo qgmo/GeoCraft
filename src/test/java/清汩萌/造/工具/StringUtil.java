@@ -28,6 +28,7 @@
 package 清汩萌.造.工具;
 
 import javax.annotation.Nonnull;
+import java.util.stream.IntStream;
 
 /**
  * @author QiguaiAAAA
@@ -40,12 +41,12 @@ public final class StringUtil {
         int l = 0, r = s.length();
         while (l < r){
             final int cp = s.codePointAt(l);
-            if(!Character.isWhitespace(cp)) break;
+            if(!isEmptyCharacter(cp)) break;
             l += Character.charCount(cp);
         }
         while (r > l){
             final int cp = s.codePointBefore(r);
-            if(!Character.isWhitespace(cp)) break;
+            if(!isEmptyCharacter(cp)) break;
             r -= Character.charCount(cp);
         }
         return s.substring(l, r);
@@ -53,6 +54,20 @@ public final class StringUtil {
 
     @Nonnull
     public static String removeWhites(final @Nonnull String s){
-        return s.codePoints().filter(cp -> !Character.isWhitespace(cp)).collect(StringBuilder::new,StringBuilder::appendCodePoint,StringBuilder::append).toString();
+        return removeWhites(s.codePoints());
+    }
+
+    @Nonnull
+    public static String removeWhites(final @Nonnull IntStream s){
+        return removeWhitesInCodePoints(s).collect(StringBuilder::new,StringBuilder::appendCodePoint,StringBuilder::append).toString();
+    }
+
+    @Nonnull
+    public static IntStream removeWhitesInCodePoints(final @Nonnull IntStream s){
+        return s.filter(cp -> !isEmptyCharacter(cp));
+    }
+
+    public static boolean isEmptyCharacter(final int cp){
+        return Character.isWhitespace(cp) || Character.isSpaceChar(cp) || Character.getType(cp) == Character.FORMAT;
     }
 }
