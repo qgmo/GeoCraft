@@ -44,8 +44,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsBlockLiquidWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsFluidBlockWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteFluidBlockWrapper;
 
 import javax.annotation.Nonnull;
 
@@ -67,11 +67,11 @@ public class TileEntityFluidPlacerMixin {
         if(fluid.getBlock() instanceof BlockLiquid){
             final BlockLiquid block = (BlockLiquid) fluid.getBlock();
             final FiniteFlowingVanilla flowing = FiniteFlowingVanilla.getFlowingByMaterial(block.getDefaultState().getMaterial());
-            final PhysicsBlockLiquidWrapper wrapper = new PhysicsBlockLiquidWrapper(flowing,worldIn,pos);
+            final FiniteBlockLiquidWrapper wrapper = new FiniteBlockLiquidWrapper(flowing,worldIn,pos);
             cir.setReturnValue(天圆地方$tryPlaceFluidByWrapper(player,worldIn,new FluidStack(fluid,Fluid.BUCKET_VOLUME),pos,wrapper));
         }else if(fluid.getBlock() instanceof BlockFluidClassic){
             final BlockFluidClassic block = (BlockFluidClassic) fluid.getBlock();
-            final PhysicsFluidBlockWrapper wrapper = new PhysicsFluidBlockWrapper(block,worldIn,pos);
+            final FiniteFluidBlockWrapper wrapper = new FiniteFluidBlockWrapper(block,worldIn,pos);
             cir.setReturnValue(天圆地方$tryPlaceFluidByWrapper(player,worldIn,new FluidStack(fluid,Fluid.BUCKET_VOLUME),pos,wrapper));
         }
     }

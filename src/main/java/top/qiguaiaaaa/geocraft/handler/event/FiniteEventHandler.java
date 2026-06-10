@@ -84,8 +84,8 @@ import top.qiguaiaaaa.geocraft.util.WaterUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidMixinUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidOperationUtil;
 import top.qiguaiaaaa.geocraft.util.wrappers.InfiniteFluidBucketWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsBlockLiquidWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsFluidBlockWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteFluidBlockWrapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -212,7 +212,7 @@ public final class FiniteEventHandler {
         if(fluid == null) return true;
         final Block block = currentState.getBlock();
         if(block instanceof BlockLiquid){
-            final PhysicsBlockLiquidWrapper wrapper = new PhysicsBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(currentState.getMaterial()),world,pos);
+            final FiniteBlockLiquidWrapper wrapper = new FiniteBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(currentState.getMaterial()),world,pos);
             wrapper.setIgnoreCurrentPos(true);
             int quanta = FluidUtil.getFluidQuanta(world, pos,currentState);
             long QB = QBUtil.toQBFromQuanta(quanta);
@@ -280,10 +280,9 @@ public final class FiniteEventHandler {
 
             quanta = QBUtil.toQuanta(QB-canFillQB);
 
-            int amount = quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME;
-            wrapper.setExpectedQuanta(quanta);
-            FluidStack stack = new FluidStack(fluid,amount);
-            int available = wrapper.fill(stack,false);
+            final int amount = quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME;
+            final @Nonnull FluidStack stack = new FluidStack(fluid,amount);
+            final int available = wrapper.fill(stack,false);
             if(available < amount){
                 return false;
             }
@@ -302,7 +301,7 @@ public final class FiniteEventHandler {
                 }
             }
         }else if(block instanceof BlockFluidBase){
-            PhysicsFluidBlockWrapper wrapper = new PhysicsFluidBlockWrapper((IFluidBlock) block,world,pos);
+            FiniteFluidBlockWrapper wrapper = new FiniteFluidBlockWrapper((BlockFluidBase) block,world,pos);
             wrapper.setIgnoreCurrentPos(true);
             int amount = FluidMixinUtil.getAmountForBlockFluidBase(currentState);
             FluidStack stack = new FluidStack(fluid,amount);

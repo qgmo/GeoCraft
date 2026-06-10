@@ -30,35 +30,46 @@ package top.qiguaiaaaa.geocraft.mixin.finite;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fluids.BlockFluidBase;
+import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.capability.wrappers.BlockLiquidWrapper;
 import net.minecraftforge.fluids.capability.wrappers.FluidBlockWrapper;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsBlockLiquidWrapper;
-import top.qiguaiaaaa.geocraft.util.wrappers.PhysicsFluidBlockWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import top.qiguaiaaaa.geocraft.util.wrappers.FiniteFluidBlockWrapper;
 
 import javax.annotation.Nonnull;
 
 @Mixin(value = FluidUtil.class,remap = false)
 public class ForgeFluidUtilMixin {
-    @Redirect(method = "getFluidBlockHandler",
+    @Redirect(method = {"getFluidHandler","getFluidBlockHandler"},
             at= @At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/FluidBlockWrapper"),remap = false)
-    private static FluidBlockWrapper getFluidBlockHandlerMod(final @Nonnull IFluidBlock fluidBlock,final @Nonnull World world,final @Nonnull BlockPos blockPos) {
-        if(GeoFluidSetting.isFluidToUseVanillaBucketMode(fluidBlock.getFluid())
-        || !GeoFluidSetting.isFluidToBePhysical(fluidBlock.getFluid())) return new FluidBlockWrapper(fluidBlock,world,blockPos);
-        return new PhysicsFluidBlockWrapper(fluidBlock, world, blockPos);
+    private static FluidBlockWrapper 天圆地方$getFluidBlockHandlerMod(final @Nonnull IFluidBlock block, final @Nonnull World world, final @Nonnull BlockPos pos) {
+        if(天圆地方$useVanillaFluidBehavior(block)) return new FluidBlockWrapper(block,world,pos);
+        return new FiniteFluidBlockWrapper((BlockFluidBase) block, world, pos);
     }
-    @Redirect(method = "getFluidBlockHandler",
+
+    @Unique
+    private static boolean 天圆地方$useVanillaFluidBehavior(final @Nonnull IFluidBlock block){
+        if(block instanceof BlockFluidBase){
+            final @Nonnull Fluid fluid = block.getFluid();
+            return GeoFluidSetting.isFluidToUseVanillaBucketMode(fluid) || !GeoFluidSetting.isFluidToBePhysical(fluid);
+        }else return true;
+    }
+
+    @Redirect(method = {"getFluidHandler","getFluidBlockHandler"},
             at=@At(value = "NEW",
                     target = "net/minecraftforge/fluids/capability/wrappers/BlockLiquidWrapper"),remap = false)
-    private static BlockLiquidWrapper getFluidBlockHandlerVanilla(final @Nonnull BlockLiquid blockLiquid, final @Nonnull World world,final @Nonnull BlockPos blockPos) {
-        if(!GeoFluidSetting.isFluidToBePhysical(blockLiquid)) return new BlockLiquidWrapper(blockLiquid,world,blockPos);
-        return new PhysicsBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(blockLiquid.getDefaultState().getMaterial()),world,blockPos);
+    private static BlockLiquidWrapper 天圆地方$Inject$getFluidBlockHandlerVanilla(final @Nonnull BlockLiquid block, final @Nonnull World world, final @Nonnull BlockPos pos) {
+        if(!GeoFluidSetting.isFluidToBePhysical(block)) return new BlockLiquidWrapper(block,world,pos);
+        return new FiniteBlockLiquidWrapper(FiniteFlowingVanilla.getFlowingByMaterial(block.getDefaultState().getMaterial()),world,pos);
     }
 }
