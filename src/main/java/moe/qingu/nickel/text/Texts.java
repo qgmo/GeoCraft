@@ -27,6 +27,12 @@
 
 package moe.qingu.nickel.text;
 
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.event.HoverEvent;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -43,5 +49,42 @@ public final class Texts {
     @Nonnull
     public static TranslationTextBuilder translation(final @Nonnull String key){
         return new TranslationTextBuilder(key);
+    }
+
+    public final static class Shows{
+
+        public static PlainTextBuilder block(final @Nonnull Block block){
+            return plain(block.getLocalizedName())
+                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
+                    .then(Hovers.block(block));
+        }
+
+        public static TranslationTextBuilder item(final @Nonnull Item item){
+            return translation(item.getTranslationKey())
+                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
+                    .then(Hovers.item(item));
+        }
+
+        public static TranslationTextBuilder itemStack(final @Nonnull ItemStack stack){
+            return translation(stack.getTranslationKey())
+                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
+                    .then(Hovers.itemStack(stack));
+        }
+    }
+
+    public final static class Hovers{
+        private Hovers(){}
+
+        public static PlainTextBuilder block(final @Nonnull Block block){
+            return item(Item.getItemFromBlock(block));
+        }
+
+        public static PlainTextBuilder item(final @Nonnull Item item){
+            return itemStack(new ItemStack(item,1));
+        }
+
+        public static PlainTextBuilder itemStack(final @Nonnull ItemStack stack){
+            return plain(stack.writeToNBT(new NBTTagCompound()).toString());
+        }
     }
 }

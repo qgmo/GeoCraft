@@ -28,7 +28,7 @@
 package top.qiguaiaaaa.geocraft.test;
 
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -49,5 +49,5 @@ public abstract class GeoTestItem {
     }
 
     @Nonnull
-    public abstract ActionResult<?> test(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nullable ICommandSender sender);
+    public abstract EnumActionResult test(final @Nonnull World world, final @Nonnull BlockPos pos, final @Nullable ICommandSender sender);
 }

@@ -25,42 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.test;
+package top.qiguaiaaaa.geocraft.test.snow;
 
+import net.minecraft.block.BlockSnow;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
-import top.qiguaiaaaa.geocraft.test.finite.FluidDrainMixinTest;
-import top.qiguaiaaaa.geocraft.test.snow.SnowMixinText;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
+import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
+import top.qiguaiaaaa.geocraft.test.GeoTestItem;
 import top.qiguaiaaaa.geocraft.test.soil.SoilMixinTest;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author QGMoe
  */
-public final class GeoTest {
+public final class SnowMixinText extends GeoTestItem {
 
-    private static final Map<ResourceLocation,GeoTestItem> tests = new HashMap<>();
-
-    static {
-        register(new FluidDrainMixinTest());
-        register(new SoilMixinTest());
-        register(new SnowMixinText());
-    }
-
-    public static void register(final @Nonnull GeoTestItem item){
-        tests.put(item.getId(),item);
-    }
-
-    @Nullable
-    public static GeoTestItem query(final @Nonnull ResourceLocation id){
-        return tests.get(id);
+    public SnowMixinText(){
+        this.id = new ResourceLocation(GeoCraft.MODID,"snow_mixin_test");
     }
 
     @Nonnull
-    public static Collection<ResourceLocation> queryAll(){
-        return tests.keySet().stream().sorted(Comparator.comparing(ResourceLocation::toString)).collect(Collectors.toList());
+    @Override
+    public EnumActionResult test(@Nonnull final World world, @Nonnull final BlockPos pos, @Nullable final ICommandSender sender) {
+        final Class<? extends BlockSnow> expected = FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSnowMoreReality.class:BlockSnowExtended.class;
+        return SoilMixinTest.isExpectedClass(Blocks.SNOW_LAYER,expected,sender)?EnumActionResult.SUCCESS:EnumActionResult.FAIL;
     }
 }

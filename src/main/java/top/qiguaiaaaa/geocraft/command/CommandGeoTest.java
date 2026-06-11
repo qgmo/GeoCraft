@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.command;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
@@ -78,8 +79,8 @@ public final class CommandGeoTest {
         final GeoTestItem item = GeoTest.query(new ResourceLocation(ctx.get("test_id", StringNode.class)));
         assert item != null;
         try {
-            final @Nonnull ActionResult<?> res = item.test(ctx.getWorld(),pos,sender);
-            switch (res.getType()){
+            final @Nonnull EnumActionResult res = item.test(ctx.getWorld(),pos,sender);
+            switch (res){
                 case FAIL:{
                     sender.sendMessage(translation("geocraft.command.geotest.run.failed").arg(item.getId()).color(TextFormatting.RED).done());
                     sender.sendMessage(GeoMessages.在GitHub上向作者报告().done());

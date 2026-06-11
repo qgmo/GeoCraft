@@ -41,6 +41,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.test.GeoTestItem;
 import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
@@ -62,8 +63,8 @@ public final class FluidDrainMixinTest extends GeoTestItem {
 
     @Nonnull
     @Override
-    public ActionResult<?> test(@Nonnull final World world, @Nonnull final BlockPos pos, @Nullable final ICommandSender sender) {
-        final @Nullable ActionResult<?> validation = validate(world, pos, sender);
+    public EnumActionResult test(@Nonnull final World world, @Nonnull final BlockPos pos, @Nullable final ICommandSender sender) {
+        final @Nullable EnumActionResult validation = validate(world, pos, sender);
         if(validation !=null) return validation;
 
         final EnumActionResult result;
@@ -76,21 +77,26 @@ public final class FluidDrainMixinTest extends GeoTestItem {
                     .color(TextFormatting.RED)
                     .done());
         }
-        return new ActionResult<>(result,"NULL");
+        return result;
     }
 
     @Nullable
-    private static ActionResult<?> validate(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nullable ICommandSender sender){
+    private static EnumActionResult validate(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nullable ICommandSender sender){
+        if(FluidPhysicsMode.getCurrentMode() != FluidPhysicsMode.MORE_REALITY){
+            if(sender != null) sender.sendMessage(translation("geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_mode").arg(FluidPhysicsMode.getCurrentMode())
+                    .color(TextFormatting.RED).done());
+            return EnumActionResult.PASS;
+        }
         final IBlockState state = world.getBlockState(pos);
         final Fluid fluid = top.qiguaiaaaa.geocraft.api.util.FluidUtil.getFluid(state);
         if(fluid == null || !(state.getBlock() instanceof BlockLiquid) || (fluid != FluidRegistry.WATER && fluid != FluidRegistry.LAVA)){
             if(sender != null) sender.sendMessage(translation("geocraft.geotest.finite_fluid_drain_mixin_test.pass").arg(pos,state).color(TextFormatting.RED).done());
-            return new ActionResult<>(EnumActionResult.PASS,"NULL");
+            return EnumActionResult.PASS;
         }
         if(GeoFluidSetting.isFluidToUseVanillaBucketMode(fluid) || !GeoFluidSetting.isFluidToBePhysical(fluid)){
             if(sender != null) sender.sendMessage(translation("geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_config").arg(pos,fluid.getName())
                     .color(TextFormatting.RED).done());
-            return new ActionResult<>(EnumActionResult.PASS,"NULL");
+            return EnumActionResult.PASS;
         }
         return null;
     }

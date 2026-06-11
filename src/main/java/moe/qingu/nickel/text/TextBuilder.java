@@ -136,6 +136,13 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
             TextBuilder.this.style.setHoverEvent(new HoverEvent(action,text.build()));
             return (S) TextBuilder.this;
         }
+
+        @SuppressWarnings("unchecked")
+        @Nonnull
+        public S then(final @Nonnull ITextComponent text){
+            TextBuilder.this.style.setHoverEvent(new HoverEvent(action,text));
+            return (S) TextBuilder.this;
+        }
     }
 
     public final class ClickEventBuilder{

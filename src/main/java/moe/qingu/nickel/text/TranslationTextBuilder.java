@@ -48,7 +48,9 @@ public final class TranslationTextBuilder extends TextBuilder<TextComponentTrans
 
     @Nonnull
     public TranslationTextBuilder arg(final @Nonnull Object arg){
-        this.objs.add(Objects.requireNonNull(arg));
+        if(arg instanceof TextBuilder<?,?>){
+            this.objs.add(((TextBuilder<?, ?>) arg).done());
+        }else this.objs.add(Objects.requireNonNull(arg));
         return this;
     }
 
