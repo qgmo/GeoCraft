@@ -27,6 +27,8 @@
 
 package 清汩萌.造;
 
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.空间.空间构造器;
@@ -37,6 +39,7 @@ import 清汩萌.造.词块.词块;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -68,6 +72,19 @@ public final class 格文件 {
 
     public static boolean 是关键字(final int codePoint){
         return $关键字集合.contains(codePoint);
+    }
+
+    @Nonnull
+    public static Stream<格文件> 获取目录下所有格文件(final @Nonnull String path){
+        try (final @Nonnull ScanResult scan = new ClassGraph().acceptPaths(path).scan()){
+            return scan.getResourcesWithExtension(格文件.扩展名).stream()
+                    .map(in -> 解析(new File(in.getURI())));
+        }
+    }
+
+    @Nonnull
+    public static 格文件 解析(final @Nonnull URI uri){
+        return 解析(new File(uri));
     }
 
     @Nonnull
@@ -105,6 +122,7 @@ public final class 格文件 {
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     private static Map<String,Object> 解析头部信息(final @Nonnull BufferedReader reader) throws IOException {
         final @Nullable String firstLine = reader.readLine();
         if(firstLine == null) return null;
@@ -118,7 +136,12 @@ public final class 格文件 {
                 if("---".equals(StringUtil.strip(line.split("#",2)[0]))) break;
                 builder.append(line).append('\n');
             }
-            return 造.YAML.load(builder.toString());
+            final @Nonnull Object o = 造.YAML.load(builder.toString());
+            if(o instanceof Map) return (Map<String, Object>) o;
+            else{
+                造.LOGGER.fatal("解析 YAML 失败: {} 不是一个有效的映射表",builder.toString());
+                throw new IllegalArgumentException();
+            }
         }else return null;
     }
 

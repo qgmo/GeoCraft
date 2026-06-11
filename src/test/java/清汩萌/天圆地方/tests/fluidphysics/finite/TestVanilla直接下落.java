@@ -30,7 +30,6 @@ package 清汩萌.天圆地方.tests.fluidphysics.finite;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,12 +37,15 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingV
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.造.工具.YamlUtil;
+import 清汩萌.造.格文件;
 import 清汩萌.造.空间.空间假设;
+import 清汩萌.造.空间.空间工具;
+import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.*;
@@ -55,50 +57,41 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataFor测试直接下落")
     public void 测试直接下落(final @Nonnull 直接下落测试数据 data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(Pair.of(new Class<?>[]{int.class,int[].class,String[].class,String[].class},
-                new Object[]{data.zLength,data.beginPosRaw,data.structure,data.expected}));
+        test(new Object[]{打包网格数据(data.$网格),
+                data.beginPosRaw,
+                打包网格数据(data.expected)});
     }
 
     public static class 直接下落测试数据 extends SandboxTestCase{
         final @Nonnull int[] beginPosRaw;
-        final @Nonnull String[] expected;
+        final @Nonnull 词块网格 expected;
 
-        private 直接下落测试数据(final int size,final @Nonnull int[] beginPosRaw, final @Nonnull String[] structure,final @Nonnull String[] expected) {
-            super(structure,size);
-            this.beginPosRaw = beginPosRaw;
-            this.expected = expected;
+        private 直接下落测试数据(final @Nonnull 格文件 in,final @Nonnull 格文件 ans) {
+            super(in);
+            this.expected = ans.获取网格();
+            final Map<String,Object> ext = $格文件.获取附加数据();
+            Assertions.assertNotNull(ext);
+            this.beginPosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"fall_pos"));
         }
     }
 
     @Nonnull
     public static Stream<直接下落测试数据> pullDataFor测试直接下落(){
         final ArrayList<直接下落测试数据> cases = new ArrayList<>();
-        SandboxTestCase.findInputs("data/fluidphysics/finite/直接下落/",(scan,in,scannerIn) -> {
-            final int height = scannerIn.nextInt();
-            final int size = scannerIn.nextInt();
-            final int[] beginPosRaw = new int[]{scannerIn.nextInt(),scannerIn.nextInt(),scannerIn.nextInt()};
-            final String[] structure = new String[height];
-            final String[] expected = new String[height];
-
-            scannerIn.nextLine(); //jump rest of line
-            SandboxTestCase.buildStructureFromScanner(structure,scannerIn,size);
-
-            try (final @Nonnull Scanner scannerOut = SandboxTestCase.getScannerOf(SandboxTestCase.getAnswerByInput(scan,in))){
-                SandboxTestCase.buildStructureFromScanner(expected,scannerOut,size);
-            }
-
-            cases.add(new 直接下落测试数据(size,beginPosRaw,structure,expected));
+        SandboxTestCase.findInputs("data/fluidphysics/finite/直接下落/",(scan,in) -> {
+            final @Nonnull 格文件 $输入 = 格文件.解析(in.getURI());
+            final @Nonnull 格文件 $答案 = 格文件.解析(SandboxTestCase.getAnswerByInput(scan,in).getURI());
+            cases.add(new 直接下落测试数据($输入,$答案));
         });
         return cases.stream();
     }
 
     @SuppressWarnings("unused")
-    public static void 测试直接下落_Inner(final int size,
-                                          final int[] beginPosRaw,
-                                          final @Nonnull String[] structure,
-                                          final @Nonnull String[] expected){
+    public static void 测试直接下落_Inner(final @Nonnull Object[] $打包输入网格数据,
+                                          final @Nonnull int[] beginPosRaw,
+                                          final @Nonnull Object[] $打包答案网格数据){
         final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,beginPos,size,size,structure);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据($打包输入网格数据),beginPos);
         final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
         final @Nonnull FiniteFlowingVanilla flowing = getFlowingByMaterial(beginState.getMaterial());
         Assertions.assertNotNull(flowing);
@@ -111,6 +104,6 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
         );
         天圆地方测试.LOGGER.info("output:");
         VANILLA_FLUIDS_BUILDER.打印(sandbox.getStructure());
-        空间假设.假设构造相同(VANILLA_FLUIDS_BUILDER.构造(size,expected),sandbox.getStructure());
+        空间假设.假设构造相同(恢复网格数据($打包答案网格数据).构造(VANILLA_FLUIDS_BUILDER),sandbox.getStructure());
     }
 }

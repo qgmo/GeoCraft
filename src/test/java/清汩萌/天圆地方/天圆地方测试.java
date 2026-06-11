@@ -33,7 +33,6 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.registries.GameData;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -45,6 +44,7 @@ import org.spongepowered.asm.mixin.Mixins;
 import 清汩萌.天圆地方.assets.FluidPhysicsMocks;
 import 清汩萌.天圆地方.assets.MockBlocks;
 import 清汩萌.天圆地方.assets.MockFluids;
+import 清汩萌.天圆地方.util.NullableArg;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * @author QiguaiAAAA
@@ -148,15 +149,47 @@ public class 天圆地方测试 {
 
     public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        run(testEntryClass,testEntryPoint,Pair.of(new Class<?>[]{},new Object[]{}));
+        run(testEntryClass,testEntryPoint,new Object[0]);
     }
 
-    public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint,final @Nonnull Pair<Class<?>[],Object[]> data)
+    public static void run(final @Nonnull String testEntryClass, final @Nonnull String testEntryPoint,final @Nonnull Object[] data)
             throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Assertions.assertEquals(Stage.TEST_AVAILABLE,stage);
         final @Nonnull Class<?> entryCls = Launch.classLoader.loadClass(testEntryClass);
-        final @Nonnull Method entryPoint = entryCls.getMethod(testEntryPoint,data.getKey());
-        entryPoint.invoke(null,data.getValue());
+        final @Nonnull Class<?>[] methodParaments = new Class[data.length];
+        for(int i=0;i<data.length;i++) {
+            if (Objects.requireNonNull(data[i]) instanceof NullableArg) {
+                final @Nonnull NullableArg<?> arg = (NullableArg<?>) data[i];
+                methodParaments[i] = requireTransferSafely(toPrimitiveIfNumber(arg.type), Launch.classLoader);
+                data[i] = arg.t;
+            } else methodParaments[i] = requireTransferSafely(toPrimitiveIfNumber(data[i].getClass()), Launch.classLoader);
+        }
+        final @Nonnull Method entryPoint = entryCls.getMethod(testEntryPoint,methodParaments);
+        entryPoint.invoke(null,data);
+    }
+
+    private static Class<?> toPrimitiveIfNumber(final @Nonnull Class<?> cls){
+        if(Integer.class == cls) return int.class;
+        else if(Long.class == cls) return long.class;
+        else if(Boolean.class == cls) return boolean.class;
+        else if(Short.class == cls) return short.class;
+        else if(Byte.class == cls) return byte.class;
+        else if(Character.class == cls) return char.class;
+        else if(Double.class == cls) return double.class;
+        else if(Float.class == cls) return float.class;
+        else return cls;
+    }
+
+    private static Class<?> requireTransferSafely(final @Nonnull Class<?> cls,final @Nonnull ClassLoader target){
+        if(cls.isPrimitive()) return cls;
+        else if(cls.isArray()){
+            requireTransferSafely(cls.getComponentType(),target);
+            return cls;
+        }
+        try {
+            if(target.loadClass(cls.getName()) == cls) return cls;
+        }catch (final @Nonnull ClassNotFoundException ignored){}
+        throw new IllegalArgumentException(cls.getName() +" can't be transfer safely across classloader "+target.getClass().getName());
     }
 
     public static final class SetupGeoTestExtension implements BeforeAllCallback{
@@ -175,7 +208,7 @@ public class 天圆地方测试 {
         run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner");
     }
 
-    public void test(final @Nonnull Pair<Class<?>[],Object[]> data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    public void test(final @Nonnull Object[] data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         run(this.getClass().getName(),Thread.currentThread().getStackTrace()[2].getMethodName()+"_Inner",data);
     }
 

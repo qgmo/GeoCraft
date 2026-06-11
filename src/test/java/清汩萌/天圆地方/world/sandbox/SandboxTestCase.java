@@ -31,79 +31,65 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import org.junit.jupiter.api.Assertions;
-import 清汩萌.天圆地方.util.IOTriConsumer;
+import 清汩萌.天圆地方.util.IOBiConsumer;
+import 清汩萌.造.格文件;
+import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Scanner;
+import java.util.Map;
 
 /**
  * @author QiguaiAAAA
  */
 public class SandboxTestCase {
-    public static final String INPUT_FILE_EXT = "in";
-    public static final String ANSWER_FILE_EXT = "ans";
+    public static final String INPUT_FILE_EXT = ".in.格";
+    public static final String ANSWER_FILE_EXT = ".ans.格";
+    public static final String COMMON_ANSWER_FILE_EXT = "ans";
 
-    public final String[] structure;
-    public final int xLength;
-    public final int zLength;
+    public final String name;
+    public final @Nonnull 格文件 $格文件;
+    public final @Nonnull 词块网格 $网格;
 
-    public SandboxTestCase(final @Nonnull String[] structure,final int size) {
-        this.structure = structure;
-        this.xLength = size;
-        this.zLength = size;
+    public SandboxTestCase(final @Nonnull 格文件 $格文件) {
+        this.$格文件 = $格文件;
+        this.name = $格文件.获取名称();
+        this.$网格 = $格文件.获取网格();
+        final Map<String,Object> ext = $格文件.获取附加数据();
+        Assertions.assertNotNull(ext);
     }
 
-
-    public SandboxTestCase(final @Nonnull String[] structure,final int zLength,final int xLength) {
-        this.structure = structure;
-        this.xLength = xLength;
-        this.zLength = zLength;
-    }
-
-    public static void findInputs(final @Nonnull String dataDir, final @Nonnull IOTriConsumer<ScanResult, Resource, Scanner> forEachInput){
+    public static void findInputs(final @Nonnull String dataDir, final @Nonnull IOBiConsumer<ScanResult, Resource> forEachInput){
         try (final @Nonnull ScanResult scan = new ClassGraph().acceptPaths(dataDir).scan()){
             findInputs(scan,forEachInput);
         }
     }
 
-    public static void findInputs(final @Nonnull ScanResult scan, final @Nonnull IOTriConsumer<ScanResult, Resource, Scanner> forEachInput){
-        scan.getResourcesWithExtension(SandboxTestCase.INPUT_FILE_EXT).forEach(in ->{
-            try (final Scanner scannerIn = getScannerOf(in)){
-                forEachInput.accept(scan,in,scannerIn);
-            } catch (final IOException e) {
-                Assertions.fail("IOException when reading input test file "+in.getPath(),e);
-            }
-        });
+    public static void findInputs(final @Nonnull ScanResult scan, final @Nonnull IOBiConsumer<ScanResult, Resource> forEachInput){
+        scan.getResourcesWithExtension(格文件.扩展名)
+                .filter(r -> r.getPath().endsWith(INPUT_FILE_EXT))
+                .forEach(in -> {
+                    try {
+                        forEachInput.accept(scan,in);
+                    } catch (final @Nonnull Exception e) {
+                        Assertions.fail("error occurred when processing "+in.getPath(),e);
+                    }
+                });
     }
 
     @Nonnull
     public static Resource getAnswerByInput(final @Nonnull ScanResult scan,final @Nonnull Resource in){
-        final String outPath = in.getPath().replaceAll("\\."+INPUT_FILE_EXT+"$", "."+ANSWER_FILE_EXT);
+        final String outPath = in.getPath().replaceAll("\\.in\\.格$", ".ans.格");
         return scan.getResourcesWithPath(outPath).get(0);
     }
 
     @Nonnull
-    public static Scanner getScannerOf(final @Nonnull Resource res) throws IOException{
-        return new Scanner(res.open(),StandardCharsets.UTF_8.name());
+    public static Resource getCommonAnswerByInput(final @Nonnull ScanResult scan,final @Nonnull Resource in){
+        final String outPath = in.getPath().replaceAll("\\.in\\.格$", "."+COMMON_ANSWER_FILE_EXT);
+        return scan.getResourcesWithPath(outPath).get(0);
     }
 
-    public static void buildStructureFromScanner(final @Nonnull String[] structure,final @Nonnull Scanner scanner,final int zLength){
-        for (int y = 0;y<structure.length;y++){
-            final StringBuilder builder = new StringBuilder();
-            for(int z=0;z<zLength;z++){
-                Assertions.assertTrue(scanner.hasNextLine());
-                builder.append(scanner.nextLine().split("#",2)[0].codePoints()
-                                .filter(code -> !Character.isWhitespace(code))
-                                .collect(StringBuilder::new,
-                                        StringBuilder::appendCodePoint,
-                                        StringBuilder::append))
-                        .append('\n');
-            }
-            structure[y] = builder.toString();
-            if(y == structure.length-1) break;
-            scanner.nextLine(); //jump empty line
-        }
+    @Override
+    public String toString() {
+        return name;
     }
 }

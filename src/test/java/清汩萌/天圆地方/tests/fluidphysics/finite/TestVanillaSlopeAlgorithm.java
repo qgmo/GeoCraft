@@ -40,9 +40,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.工具.YamlUtil;
+import 清汩萌.造.格文件;
+import 清汩萌.造.空间.空间工具;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -77,51 +84,35 @@ public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataForTestSlopeAlgorithm")
     public void testSingleSlopeAlgorithm(final @Nonnull SlopeAlgorithmTestData data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(Pair.of(new Class<?>[]{String[].class,int.class,int.class,int[].class,String[].class},
-                new Object[]{data.structure,data.zLength,data.xLength,data.beginPosRaw,data.expectedDirections}));
+        test(new Object[]{打包网格数据(data.$网格),data.beginPosRaw,data.expectedDirections});
     }
 
     public static class SlopeAlgorithmTestData extends SandboxTestCase{
         public final int[] beginPosRaw;
         public final String[] expectedDirections;
 
-        public SlopeAlgorithmTestData(final @Nonnull String[] structure,
-                                      final int zLength,
-                                      final int xLength,
-                                      @Nonnull int[] beginPosRaw,
-                                      final String[] expectedDirections) {
-            super(structure,zLength,xLength);
-            this.beginPosRaw = beginPosRaw;
+        public SlopeAlgorithmTestData(final @Nonnull 格文件 $格文件,
+                                      final @Nonnull String[] expectedDirections) {
+            super($格文件);
+            final Map<String,Object> ext = $格文件.获取附加数据();
+            Assertions.assertNotNull(ext);
+            this.beginPosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"begin_at"));
             this.expectedDirections = expectedDirections;
         }
     }
 
-    /**
-     * 第一行三个整数 h r c，表示层数，每层行数和每层列数。
-     * 第二行三个整数 x y z，表示测试结构中第 y+1 层，第 z+1 行，第 x+1 列的原版流体方块进行单层坡度流动计算。
-     * 然后是结构，共 h 层，每层 r 行 c 列，层与层间间隔一行。
-     * @return 坡度流动测试数据
-     */
     @Nonnull
     public static Stream<SlopeAlgorithmTestData> pullDataForTestSlopeAlgorithm(){
         final ArrayList<SlopeAlgorithmTestData> cases = new ArrayList<>();
-        SandboxTestCase.findInputs("data/fluidphysics/finite/VanillaSlopeFlow/",(scan,in,scannerIn) -> {
-            final int height = scannerIn.nextInt();
-            final int zLength = scannerIn.nextInt();
-            final int xLength = scannerIn.nextInt();
-            final int[] beginPosRaw = new int[]{scannerIn.nextInt(),scannerIn.nextInt(),scannerIn.nextInt()};
-            scannerIn.nextLine(); //jump rest of line
-
-            final String[] structure = new String[height];
-            final Set<String> expected = new HashSet<>();
-
-            SandboxTestCase.buildStructureFromScanner(structure,scannerIn,zLength);
-
-            try (final Scanner scannerOut = SandboxTestCase.getScannerOf(SandboxTestCase.getAnswerByInput(scan,in))){
-                while (scannerOut.hasNextLine()) expected.add(scannerOut.nextLine().trim());
+        SandboxTestCase.findInputs("data/fluidphysics/finite/VanillaSlopeFlow/",(scan,in) -> {
+            final @Nonnull 格文件 $输入 = 格文件.解析(in.getURI());
+            final ArrayList<String> expected = new ArrayList<>();
+            try (final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(SandboxTestCase.getCommonAnswerByInput(scan, in).open(), StandardCharsets.UTF_8))){
+                String line;
+                while ((line = reader.readLine()) != null) expected.add(StringUtil.strip(line));
             }
-
-            cases.add(new SlopeAlgorithmTestData(structure,zLength,xLength,beginPosRaw,expected.toArray(new String[0])));
+            cases.add(new SlopeAlgorithmTestData($输入,expected.toArray(new String[0])));
         });
         return cases.stream();
     }
@@ -157,13 +148,11 @@ public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
     }
 
     @SuppressWarnings("unused")
-    public static void testSingleSlopeAlgorithm_Inner(final @Nonnull String[] structure,
-                                                      final int zLength,
-                                                      final int xLength,
+    public static void testSingleSlopeAlgorithm_Inner(final @Nonnull Object[] raw,
                                                       final int[] beginPosRaw,
                                                       final @Nonnull String[] expectedDirections){
         final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,beginPos,zLength,xLength,structure);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据(raw),beginPos);
         final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
         Assertions.assertEquals(7,beginState.getValue(BlockLiquid.LEVEL));
         final @Nonnull FiniteFlowingVanilla flowing = getFlowingByMaterial(beginState.getMaterial());

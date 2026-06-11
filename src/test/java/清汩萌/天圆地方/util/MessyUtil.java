@@ -27,11 +27,16 @@
 
 package 清汩萌.天圆地方.util;
 
-import java.io.IOException;
+import javax.annotation.Nullable;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public interface IOTriConsumer<K, V, S> {
-    void accept(final K k,final V v,final S s) throws IOException;
+public final class MessyUtil {
+    private MessyUtil(){}
+
+    @Nullable
+    public static String toNullableString(final @Nullable Object o){
+        return o == null? null:o.toString();
+    }
 }

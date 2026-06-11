@@ -51,6 +51,21 @@ public final class 词块网格 {
     private int $列数 = 0;
 
     @Nonnull
+    public static 词块网格 从原始网格数据恢复(@Nonnull final List<List<List<String>>> raw){
+        final @Nonnull 词块网格 $网格 = new 词块网格();
+        $网格.$层列表.addAll(raw.stream()
+                .map($原始单层 ->{
+                    final 一层词块 $单层 = $网格.new 一层词块($原始单层);
+                    $网格.$行数 = Math.max($单层.$行列表.size(),$网格.$行数);
+                    $网格.$列数 = Math.max($单层.$最大列数, $网格.$列数);
+                    return $单层;})
+                .peek($单层 -> $单层.$最大列数 = $网格.$列数)
+                .collect(Collectors.toList()));
+        $网格.$层数 = $网格.$层列表.size();
+        return $网格;
+    }
+
+    @Nonnull
     public 词块网格 基于(final @Nonnull 空间构造器 $构造器){
         this.$构造器 = $构造器;
         return this;
@@ -147,6 +162,10 @@ public final class 词块网格 {
         return $列数;
     }
 
+    public int[] 获取参数(){
+        return new int[]{$层数,$行数,$列数};
+    }
+
     public int 获取参数(final @Nonnull 网格参数 $参数){
         switch ($参数){
             case 层:return $层数;
@@ -154,6 +173,18 @@ public final class 词块网格 {
             case 列:return $列数;
             default:throw new IllegalArgumentException();
         }
+    }
+
+    @Nullable
+    public 词块 获取默认填充方块(){
+        return this.$默认填充方块;
+    }
+
+    @Nonnull
+    public List<List<List<String>>> 获取原始网格数据(){
+        return $层列表.stream()
+                .map(一层词块::获取原始数据)
+                .collect(Collectors.toList());
     }
 
     public final class 一层词块{
@@ -167,6 +198,15 @@ public final class 词块网格 {
         public 一层词块(final @Nonnull 一层词块 B){
             this.$行列表 = B.$行列表.stream().map(ArrayList::new).collect(Collectors.toList());
             this.$最大列数 = B.$最大列数;
+        }
+
+        public 一层词块(final @Nonnull List<List<String>> raw){
+            this.$行列表 = raw.stream()
+                    .map($原始单行 -> $原始单行.stream()
+                            .map(词块::of)
+                            .collect(Collectors.toList()))
+                    .peek($单行 -> this.$最大列数 = Math.max(this.$最大列数,$单行.size()))
+                    .collect(Collectors.toList());
         }
 
         @Nonnull
@@ -189,6 +229,15 @@ public final class 词块网格 {
             $行数 = Math.max($行数, $行列表.size());
             $列数 = Math.max($列数, $最大列数);
             return 词块网格.this;
+        }
+
+        @Nonnull
+        public List<List<String>> 获取原始数据(){
+            return $行列表.stream()
+                    .map($单行 -> $单行.stream()
+                            .map(Objects::toString)
+                            .collect(Collectors.toList()))
+                    .collect(Collectors.toList());
         }
 
         @Override

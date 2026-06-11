@@ -30,16 +30,22 @@ package 清汩萌.天圆地方.tests.fluidphysics;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
+import 清汩萌.天圆地方.util.MessyUtil;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.MockSimpleWorld;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.storage.MockWorldInfo;
 import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.空间.网格参数;
+import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import static 清汩萌.天圆地方.assets.MockBlocks.Bases.〇;
 import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.曜;
@@ -75,15 +81,42 @@ public class FluidPhysicsTest extends 天圆地方测试 {
 
     @Nonnull
     public static MockSimpleSandbox initWorldSandbox(final @Nonnull 空间构造器 $构造器,
-                                                     final @Nonnull BlockPos beginPos,
-                                                     final int zLength,
-                                                     final int xLength,
-                                                     final @Nonnull String[] structure){
-        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox($构造器.构造(zLength,xLength,structure));
+                                                     final @Nonnull 词块网格 $网格,
+                                                     final @Nonnull BlockPos beginPos){
+        天圆地方测试.LOGGER.info("begin pos {}",beginPos);
+        return initWorldSandbox($构造器, $网格);
+    }
+
+    @Nonnull
+    public static MockSimpleSandbox initWorldSandbox(final @Nonnull 空间构造器 $构造器,final @Nonnull 词块网格 $网格){
+        final @Nonnull MockSimpleSandbox sandbox = new MockSimpleSandbox($网格.构造($构造器));
         sandbox.setOuterBlock(曜);
         world.setSandbox(sandbox);
-        天圆地方测试.LOGGER.info("begin pos {}",beginPos);
         $构造器.打印(sandbox.getStructure());
         return sandbox;
+    }
+
+    @Nonnull
+    public static Object[] 打包网格数据(final @Nonnull 词块网格 $网格){
+        return new Object[]{$网格.获取原始网格数据(),
+                $网格.获取参数(),
+                MessyUtil.toNullableString($网格.获取默认填充方块())};
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static 词块网格 恢复网格数据(final @Nonnull Object[] raw){
+        Assertions.assertEquals(3,raw.length);
+        return 恢复网格数据((List<List<List<String>>>) raw[0], (int[]) raw[1], (String) raw[2]);
+    }
+
+    @Nonnull
+    public static 词块网格 恢复网格数据(final @Nonnull List<List<List<String>>> $原始网格数据,
+                                        final int[] $原始尺寸数据,
+                                        final @Nullable String $原始默认方块数据){
+        final 词块网格 $网格 = 词块网格.从原始网格数据恢复($原始网格数据);
+        for(final 网格参数 $参数:网格参数.列表) $网格.期望($原始尺寸数据[$参数.ordinal()],$参数);
+        if($原始默认方块数据 != null) $网格.默认用($原始默认方块数据);
+        return $网格;
     }
 }

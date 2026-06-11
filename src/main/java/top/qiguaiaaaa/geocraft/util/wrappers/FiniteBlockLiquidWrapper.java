@@ -137,7 +137,7 @@ public class FiniteBlockLiquidWrapper extends BlockLiquidWrapper {
 
         final int maxDrainQuanta = maxDrain / FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME;
         final @Nonnull IBlockState state = world.getBlockState(blockPos);
-        if (state.getBlock() == blockLiquid) {
+        if (state.getBlock() == flowing.dynamic || state.getBlock() == flowing._static) {
             final @Nullable FluidStack stack = getStackByMaxQuanta(state,maxDrainQuanta);
             if (stack != null && (fluid == null || stack.getFluid().equals(fluid))) {
                 if (doDrain) {

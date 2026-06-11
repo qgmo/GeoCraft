@@ -31,7 +31,6 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.FluidStack;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -41,13 +40,16 @@ import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
-import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.工具.YamlUtil;
+import 清汩萌.造.格文件;
+import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.*;
@@ -59,86 +61,44 @@ public final class TestPlaceFluid extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataForTestPlaceFluid")
     public void testPlaceFluid(final @Nonnull PlaceFluidTestData data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(Pair.of(new Class<?>[]{String[].class,int.class,int.class,int[].class,String.class,boolean.class},
-                new Object[]{data.structure,data.zLength,data.xLength,data.placePosRaw,data.fluidToPlace,data.expectedAblePlace}));
+        test(new Object[]{打包网格数据(data.$网格),
+                data.placePosRaw,
+                data.fluidToPlace.toString(),
+                data.expectedAblePlace});
     }
 
     public static final class PlaceFluidTestData extends SandboxTestCase {
-        private final String name;
-        public final int[] placePosRaw;
-        public final String fluidToPlace;
+        public final @Nonnull int[] placePosRaw;
+        public final @Nonnull 词块 fluidToPlace;
         public final boolean expectedAblePlace;
 
-        public PlaceFluidTestData(final @Nonnull String name,
-                                  final @Nonnull String[] structure,
-                                      final int zLength,
-                                      final int xLength,
-                                      @Nonnull int[] placePosRaw,
-                                      @Nonnull String fluidToPlace,
-                                      final boolean expectedAblePlace) {
-            super(structure,zLength,xLength);
-            this.name = name;
-            this.placePosRaw = placePosRaw;
-            this.fluidToPlace = fluidToPlace;
-            this.expectedAblePlace = expectedAblePlace;
-        }
-
-        @Override
-        public String toString() {
-            return name;
+        public PlaceFluidTestData(final @Nonnull 格文件 $格文件) {
+            super($格文件);
+            final Map<String,Object> ext = $格文件.获取附加数据();
+            Assertions.assertNotNull(ext);
+            final Map<String,Object> place = YamlUtil.getMap(ext,"place");
+            this.placePosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(place,"at"));
+            this.fluidToPlace = 词块.of(YamlUtil.getString(place,"fluid"));
+            this.expectedAblePlace = YamlUtil.getBool(ext,"expected");
         }
     }
 
-    /**
-     * 第一行三个整数 h r c，表示层数，每层行数和每层列数。
-     * 第二行三个整数 x y z，表示在测试结构中第 y+1 层，第 z+1 行，第 x+1 列尝试放置一个流体方块。
-     * 第三行一个字符串，表示需要放置的流体方块
-     * 然后是结构，共 h 层，每层 r 行 c 列，层与层间间隔一行。
-     * @return 坡度流动测试数据
-     */
     @Nonnull
     public static Stream<PlaceFluidTestData> pullDataForTestPlaceFluid(){
         final ArrayList<PlaceFluidTestData> cases = new ArrayList<>();
-        SandboxTestCase.findInputs("data/fluidphysics/finite/PlaceFluid/",(scan,in,scannerIn) -> {
-            final int height = scannerIn.nextInt();
-            final int zLength = scannerIn.nextInt();
-            final int xLength = scannerIn.nextInt();
-            final int[] placePosRaw = new int[]{scannerIn.nextInt(),scannerIn.nextInt(),scannerIn.nextInt()};
-            final String placement = scannerIn.next();
-            scannerIn.nextLine(); //jump rest of line
-
-            final String[] structure = new String[height];
-            final boolean expected;
-
-            SandboxTestCase.buildStructureFromScanner(structure,scannerIn,zLength);
-
-            try (final Scanner scannerOut = SandboxTestCase.getScannerOf(SandboxTestCase.getAnswerByInput(scan,in))){
-                final String input = scannerOut.next();
-                if("Y".equalsIgnoreCase(input)){
-                    expected = true;
-                }else if("N".equalsIgnoreCase(input)){
-                    expected = false;
-                }else{
-                    Assertions.fail("Invalid expected result: "+input);
-                    expected = false; //won't reach here
-                }
-            }
-
-            cases.add(new PlaceFluidTestData(in.getPath(),structure,zLength,xLength,placePosRaw,placement,expected));
-        });
+        SandboxTestCase.findInputs("data/fluidphysics/finite/PlaceFluid/",
+                (scan,in) -> cases.add(new PlaceFluidTestData(格文件.解析(in.getURI()))));
         return cases.stream();
     }
 
     @SuppressWarnings("unused")
-    public static void testPlaceFluid_Inner(final @Nonnull String[] structure,
-                                            final int zLength,
-                                            final int xLength,
-                                            final int[] placePosRaw,
-                                            final @Nonnull String placement,
+    public static void testPlaceFluid_Inner(final @Nonnull Object[] $打包网格数据,
+                                            final @Nonnull int[] placePosRaw,
+                                            final @Nonnull String placementRaw,
                                             final boolean expectedAbleToPlace){
         final BlockPos placePos = new BlockPos(placePosRaw[0],placePosRaw[1],placePosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,placePos,zLength,xLength,structure);
-        final @Nonnull IBlockState state = VANILLA_FLUIDS_BUILDER.进行映射(词块.of(placement.trim()));
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据($打包网格数据),placePos);
+        final @Nonnull IBlockState state = VANILLA_FLUIDS_BUILDER.进行映射(词块.of(StringUtil.removeWhites(placementRaw)));
         Assertions.assertFalse(state.getValue(BlockLiquid.LEVEL)>7);
         天圆地方测试.LOGGER.info("{} block state is {}",placePos,world.getBlockState(placePos));
 
