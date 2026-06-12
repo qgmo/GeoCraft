@@ -56,3 +56,4 @@ nickel.command.exception.base.node.sub=
 nickel.command.exception.base.details=Details: 
 nickel.command.exception.base.branch=Branch: 
 #行末空格结束
+nickel.command.exception.runtime.message=Error occurred when the command was running: %s

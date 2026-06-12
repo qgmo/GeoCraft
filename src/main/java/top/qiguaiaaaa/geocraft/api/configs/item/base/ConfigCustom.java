@@ -54,6 +54,11 @@ public class ConfigCustom<V> extends ConfigItem<V,ConfigCustom<V>> {
         this.parser = Objects.requireNonNull(parser);
     }
 
+    @Nonnull
+    public Function<String, V> getParser() {
+        return parser;
+    }
+
     /**
      * {@inheritDoc}
      * @param property {@inheritDoc}

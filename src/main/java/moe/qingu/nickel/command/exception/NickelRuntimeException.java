@@ -25,48 +25,43 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.configs;
+package moe.qingu.nickel.command.exception;
 
+import moe.qingu.nickel.text.TextBuilder;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.common.config.Config;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.lang.annotation.Annotation;
 
+import static moe.qingu.nickel.text.Texts.*;
 /**
  * @author QGMoe
  */
-public enum EffectiveMode {
-    INSTANT("geocraft.command.geoconfig.info.mode.instant",null),
-    RESTART_WORLD("geocraft.command.geoconfig.info.mode.world",Config.RequiresWorldRestart.class),
-    RESTART_MINECRAFT("geocraft.command.geoconfig.info.mode.mc",Config.RequiresMcRestart.class);
+public class NickelRuntimeException extends CommandException implements INickelException{
+    protected final ITextComponent information;
 
-    private final @Nonnull String translationKey;
-    private final @Nullable Class<? extends Annotation> annotation;
-
-    EffectiveMode(@Nonnull final String translationKey,
-                  final @Nullable Class<? extends Annotation> annotation) {
-        this.translationKey = translationKey;
-        this.annotation = annotation;
+    public NickelRuntimeException(final @Nonnull ITextComponent information) {
+        super("nickel.command.exception.base.message");
+        this.information = information;
     }
 
-    @Nullable
-    public final Class<? extends Annotation> getAnnotation() {
-        return annotation;
+    public NickelRuntimeException(final @Nonnull TextBuilder<?,?> information) {
+        super("nickel.command.exception.base.message");
+        this.information = information.done();
     }
 
     @Nonnull
-    public String getTranslationKey() {
-        return translationKey;
+    public ITextComponent getInformation() {
+        return information;
     }
 
-    @Nonnull
-    public TextFormatting getColor() { //这个类会在很早的时候加载，所以不能直接将Formatting作为对象字段
-        switch (this){
-            case INSTANT:return TextFormatting.GREEN;
-            case RESTART_WORLD:return TextFormatting.GOLD;
-            default:return TextFormatting.RED;
-        }
+    @Override
+    public void feedbackTo(@Nonnull final ICommandSender sender) {
+        sender.sendMessage(translation("nickel.command.exception.runtime.message")
+                .arg(information)
+                .color(TextFormatting.RED)
+                .done());
     }
 }

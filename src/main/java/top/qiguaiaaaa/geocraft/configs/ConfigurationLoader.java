@@ -34,6 +34,7 @@ import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 
 
 public final class ConfigurationLoader {
@@ -64,6 +65,11 @@ public final class ConfigurationLoader {
 
     public static boolean isInitialised(){
         return initialised;
+    }
+
+    @Nonnull
+    public static Collection<ConfigItem<?,?>> getConfigItems(){
+        return configItems;
     }
 
     static void registerConfigItem(final ConfigItem<?,?> item){

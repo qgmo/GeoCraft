@@ -43,6 +43,7 @@ import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
 import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.command.CommandFluidPhysics;
+import top.qiguaiaaaa.geocraft.command.CommandGeoConfig;
 import top.qiguaiaaaa.geocraft.command.CommandGeoTest;
 import top.qiguaiaaaa.geocraft.compat.GeoCompatLoader;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
@@ -88,6 +89,7 @@ public class GeoCraft {
         event.registerServerCommand(CommandAtmosphere.create(event.getServer()));
         event.registerServerCommand(CommandFluidPhysics.create());
         event.registerServerCommand(CommandGeoTest.create());
+        event.registerServerCommand(CommandGeoConfig.create());
 //        event.registerServerCommand(new CommandQueryBlockState());
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncRun();

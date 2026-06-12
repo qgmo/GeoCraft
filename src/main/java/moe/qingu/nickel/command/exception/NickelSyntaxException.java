@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class NickelSyntaxException extends SyntaxErrorException {
+public class NickelSyntaxException extends SyntaxErrorException implements INickelException{
     protected final CommandBranch fromBranch;
     protected final IDocumentaryNode fromNode;
     protected final ITextComponent appendix;

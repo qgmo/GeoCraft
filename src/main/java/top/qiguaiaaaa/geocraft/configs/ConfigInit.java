@@ -99,7 +99,7 @@ public final class ConfigInit {
         itemProcessors.put(GeoConfig.SizeRange.class,(item, a)->{
             if(item instanceof ConfigCollection<?,?,?>){
                 final GeoConfig.SizeRange size = (GeoConfig.SizeRange) a;
-                ((ConfigCollection<?,?,?>)item).requireSize(SizeRequirement.range(0,size.min()));
+                ((ConfigCollection<?,?,?>)item).requireSize(SizeRequirement.range(size.min(),size.max()));
             }});
 
         itemProcessors.put(GeoConfig.KeyComment.class,(item,a)->{
@@ -163,7 +163,7 @@ public final class ConfigInit {
                                                final @Nonnull Annotation[] annotations,
                                                final @Nonnull HashMap<Class<? extends Annotation>, BiConsumer<T,Annotation>> processors){
         for(final @Nonnull Annotation a:annotations){
-            final @Nullable BiConsumer<T,Annotation> processor = processors.get(a.getClass());
+            final @Nullable BiConsumer<T,Annotation> processor = processors.get(a.annotationType());
             if(processor != null) processor.accept(item,a);
         }
     }

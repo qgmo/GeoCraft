@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node;
 
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
@@ -128,9 +129,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
         if(childNode == null) return;
         try {
             childNode.execute(new LinkedList<>(Arrays.asList(args)),new ExecuteContext(this,server,sender));
-        }catch (final @Nonnull NickelSyntaxException e){
-            e.feedbackTo(sender);
-        }catch (final @Nonnull NickelCommandException e){
+        }catch (final @Nonnull NickelSyntaxException | NickelCommandException | NickelRuntimeException e){
             e.feedbackTo(sender);
         }
     }

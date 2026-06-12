@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.builder.functional;
 
+import moe.qingu.nickel.command.builder.execute.SimpleCommandExecutor;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -115,6 +116,11 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
     public S execute(@Nonnull final CommandExecutor func){
         defaultBuilder = Nodes.execute(DEFAULT_EXECUTE_FUNC_CHECKER.then(func));
         return (S) this;
+    }
+
+    @Nonnull
+    public S execute(@Nonnull final SimpleCommandExecutor func){
+        return execute((CommandExecutor) func);
     }
 
     /**

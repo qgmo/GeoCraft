@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 /**
  * @author QiguaiAAAA
  */
-public class NickelCommandException extends CommandException {
+public class NickelCommandException extends CommandException implements INickelException{
     protected final CommandBranch fromBranch;
     protected final IDocumentaryNode fromNode;
     protected final ITextComponent appendix;
@@ -86,6 +86,7 @@ public class NickelCommandException extends CommandException {
         return appendix;
     }
 
+    @Override
     public void feedbackTo(@Nonnull final ICommandSender sender){
         final ITextComponent node;
         if(this.getNodeDocument() == null) node = new TextComponentTranslation("nickel.command.exception.base.message");
