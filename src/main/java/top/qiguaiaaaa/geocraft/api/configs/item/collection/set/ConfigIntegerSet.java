@@ -38,31 +38,30 @@ import java.util.Collection;
 /**
  * @author QiguaiAAAA
  */
-public class ConfigIntegerSet extends ConfigSet<Integer> implements IConfigIntCollection {
-    protected int minValue = Integer.MIN_VALUE,
-            maxValue = Integer.MAX_VALUE;
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue) {
-        this(category, configKey, defaultValue,null);
+public class ConfigIntegerSet extends ConfigSet<Integer,ConfigIntegerSet> implements IConfigIntCollection<ConfigIntegerSet> {
+    protected int minValue = Integer.MIN_VALUE;
+    protected int maxValue = Integer.MAX_VALUE;
+
+    public ConfigIntegerSet(final @Nonnull ConfigCategory category,
+                            final @Nonnull String configKey,
+                            final @Nonnull IConfigurableSet<Integer> defaultValue) {
+        super(category, configKey, defaultValue,Integer::parseInt);
     }
 
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue, String comment) {
-        this(category, configKey, defaultValue, comment,false);
-    }
-
-    public ConfigIntegerSet(ConfigCategory category, String configKey, IConfigurableSet<Integer> defaultValue, String comment, boolean isFinal) {
-        super(category, configKey, defaultValue, comment,Integer::parseInt, isFinal);
-    }
-
+    @Nonnull
     @Override
-    public ConfigIntegerSet setMinValue(int minValue) {
+    public ConfigIntegerSet setMinValue(final int minValue) {
         this.minValue = minValue;
         return this;
     }
+
+    @Nonnull
     @Override
-    public ConfigIntegerSet setMaxValue(int maxValue) {
+    public ConfigIntegerSet setMaxValue(final int maxValue) {
         this.maxValue = maxValue;
         return this;
     }
+
     @Override
     public int getMinValue() {
         return minValue;
@@ -70,12 +69,6 @@ public class ConfigIntegerSet extends ConfigSet<Integer> implements IConfigIntCo
     @Override
     public int getMaxValue() {
         return maxValue;
-    }
-
-    @Override
-    public ConfigIntegerSet setMaxListSize(int maxListSize) {
-        super.setMaxListSize(maxListSize);
-        return this;
     }
 
     @Override
@@ -87,16 +80,18 @@ public class ConfigIntegerSet extends ConfigSet<Integer> implements IConfigIntCo
 
     @Override
     public void load(@Nonnull Configuration config) {
-        property = config.get(category.getPath(),key,toIntList(defaultValue),comment,minValue,maxValue,isListSizeFixed,maxListSize);
+        property = config.get(category.getPath(),key,toIntList(defaultValue),comment,minValue,maxValue,sizeRequire.isSizeFixed(),sizeRequire.getMaxListSize());
         property.setComment(getPolishedComment());
         load(property);
     }
 
+    @Nonnull
     protected String getPolishedComment(){
-        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (maxListSize>=0?", maxSize: " + maxListSize:"") + "]";
+        return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (sizeRequire.getMaxListSize()>=0?", maxSize: " + sizeRequire.getMaxListSize():"") + "]";
     }
 
-    protected int[] toIntList(@Nonnull Collection<Integer> c){
+    @Nonnull
+    public static int[] toIntList(@Nonnull final Collection<Integer> c){
         int[] ints = new int[c.size()];
         int i=0;
         for(Integer integer:c){

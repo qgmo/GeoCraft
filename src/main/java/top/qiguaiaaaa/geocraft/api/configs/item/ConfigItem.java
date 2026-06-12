@@ -30,58 +30,59 @@ package top.qiguaiaaaa.geocraft.api.configs.item;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
+import top.qiguaiaaaa.geocraft.api.configs.EffectiveMode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /**
  * 配置项目
  * @param <V> 配置的值类型,需要支持{@link Object#toString()}以写入配置文件
+ * @param <S> CRTP
  */
-public abstract class ConfigItem<V> {
+public abstract class ConfigItem<V,S extends ConfigItem<V,S>> {
     protected final ConfigCategory category;
     protected final String key;
     protected final V defaultValue;
-    protected final String comment;
-    protected final boolean isFinal; //配置初始化后是否不可更改
+    protected EffectiveMode mode;
+    protected @Nullable String comment;
     protected V value;
-    protected Property property;
+    protected @Nullable Property property;
     protected boolean isDeprecated;
-
-    /**
-     * @see #ConfigItem(ConfigCategory, String, Object, String, boolean)
-     */
-    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull V defaultValue){
-        this(category,configKey,defaultValue,null,false);
-    }
-
-    /**
-     * @see #ConfigItem(ConfigCategory, String, Object,String,boolean)
-     */
-    public ConfigItem(ConfigCategory category, String configKey, V defaultValue, String comment){
-        this(category,configKey,defaultValue,comment,false);
-    }
 
     /**
      * 创建一个配置项
      * @param category 配置所在目录
      * @param configKey 配置的key
      * @param defaultValue 配置的默认值，不应为null，因为会调用{@link Object#toString()}
-     * @param comment 配置的注释
-     * @param isFinal 配置是否在初始化后不可更改
      */
-    public ConfigItem(@Nonnull ConfigCategory category, @Nonnull String configKey, @Nonnull V defaultValue, @Nullable String comment, boolean isFinal){
-        this.category = category;
-        this.key = configKey;
-        this.defaultValue = defaultValue;
+    public ConfigItem(@Nonnull final ConfigCategory category, final @Nonnull String configKey, final @Nonnull V defaultValue){
+        this.category = Objects.requireNonNull(category);
+        this.key = Objects.requireNonNull(configKey);
+        this.defaultValue = Objects.requireNonNull(defaultValue);
         this.value = defaultValue;
-        this.isFinal = isFinal;
-        this.comment = comment;
     }
 
     @Nonnull
-    public ConfigCategory getCategory() {
+    public final ConfigCategory getCategory() {
         return category;
+    }
+
+    @Nonnull
+    public final V getDefaultValue(){
+        return defaultValue;
+    }
+
+    @Nonnull
+    public final String getKey(){
+        return key;
+    }
+
+    @Nonnull
+    public EffectiveMode getEffectiveMode() {
+        if(mode == null) return EffectiveMode.INSTANT;
+        return mode;
     }
 
     @Nonnull
@@ -89,36 +90,25 @@ public abstract class ConfigItem<V> {
         return value;
     }
 
-    @Nonnull
-    public V getDefaultValue(){
-        return defaultValue;
-    }
-
     @Nullable
     public String getComment() {
         return comment;
     }
 
-    @Nonnull
-    public String getKey(){
-        return key;
-    }
-
     /**
      * 获取该配置项的配置路径
-     * @return 配置路径，例如exampleCategory.exampleItem
+     * @return 配置路径，例如 exampleCategory.exampleItem
      */
     @Nonnull
     public String getPath(){
-        return category.getPath()+ Configuration.CATEGORY_SPLITTER+key;
+        return category.getPath() + Configuration.CATEGORY_SPLITTER + key;
     }
 
     /**
      * 更新配置项的值
-     * @param newValue 新值，注意不能为null
+     * @param newValue 新值，注意不能为 null
      */
-    public void setValue(@Nonnull V newValue){
-        if(isFinal) return;
+    public void setValue(@Nonnull final V newValue){
         this.value = newValue;
     }
 
@@ -126,8 +116,28 @@ public abstract class ConfigItem<V> {
      * 标记当前配置项目是否已被弃用
      * @param deprecated 是否被弃用
      */
-    public void setDeprecated(boolean deprecated) {
+    @SuppressWarnings("unchecked")
+    public S setDeprecated(final boolean deprecated) {
         isDeprecated = deprecated;
+        return (S) this;
+    }
+
+    /**
+     * 设置当前配置项的生效模式
+     * @param mode 生效模式
+     * @throws IllegalStateException 如果当前配置项已经设置生效模式则抛出
+     */
+    @SuppressWarnings("unchecked")
+    public S setMode(final @Nonnull EffectiveMode mode) {
+        if(this.mode != null) throw new IllegalStateException();
+        this.mode = mode;
+        return (S) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public S setComment(@Nullable final String comment) {
+        this.comment = comment;
+        return (S) this;
     }
 
     /**
@@ -136,14 +146,6 @@ public abstract class ConfigItem<V> {
      */
     public boolean isDeprecated() {
         return isDeprecated;
-    }
-
-    /**
-     * 该配置项是否不可更新
-     * @return 若不能更新，则返回true
-     */
-    public boolean isFinal(){
-        return this.isFinal;
     }
 
     /**
@@ -158,7 +160,7 @@ public abstract class ConfigItem<V> {
      * 提供指定的配置文件,以加载当前配置项目
      * @param config 指定的配置文件
      */
-    public void load(@Nonnull Configuration config){
+    public void load(@Nonnull final Configuration config){
         property = config.get(category.getPath(),key,defaultValue.toString(),comment);
         load(property);
     }

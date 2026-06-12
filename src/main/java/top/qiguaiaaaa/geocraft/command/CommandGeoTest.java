@@ -29,7 +29,6 @@ package top.qiguaiaaaa.geocraft.command;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -54,11 +53,11 @@ import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
  * @author QGMoe
  */
 public final class CommandGeoTest {
-    public static final String GEO_TEST_COMMAND_NAME = "geotest";
-    public static final String GEO_TEST_PERMISSION_NODE = "geocraft.command.geotest";
+    public static final String GEOTEST_COMMAND_NAME = "geotest";
+    public static final String GEOTEST_PERMISSION_NODE = "geocraft.command."+GEOTEST_COMMAND_NAME;
     public static ICommand create(){
-        return new CommandBuilder(GEO_TEST_COMMAND_NAME)
-                .require(GEO_TEST_PERMISSION_NODE).allow(DefaultPermissionLevel.OP).register()
+        return new CommandBuilder(GEOTEST_COMMAND_NAME)
+                .require(GEOTEST_PERMISSION_NODE).allow(DefaultPermissionLevel.OP).register()
                 .requirePlayer(true)
                 .then(literals()
                         .when("run").then(string("test_id")

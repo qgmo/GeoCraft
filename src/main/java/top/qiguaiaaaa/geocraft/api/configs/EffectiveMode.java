@@ -27,60 +27,27 @@
 
 package top.qiguaiaaaa.geocraft.api.configs;
 
-import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Config;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.HashMap;
+import java.lang.annotation.Annotation;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public final class ConfigCategory {
-    public final String name;
-    public final @Nullable ConfigCategory parent;
-    private final HashMap<String,ConfigCategory> children = new HashMap<>();
-    private @Nullable String comment;
+public enum EffectiveMode {
+    INSTANT(null),
+    RESTART_WORLD(Config.RequiresWorldRestart.class),
+    RESTART_MINECRAFT(Config.RequiresMcRestart.class);
 
-    public ConfigCategory(final @Nonnull String name) {
-        this(null,name);
-    }
+    private final @Nullable Class<? extends Annotation> annotation;
 
-    public ConfigCategory(final @Nullable ConfigCategory parent, final @Nonnull String name){
-        this.parent = parent;
-        this.name = name;
-    }
-
-    @Nonnull
-    public ConfigCategory setComment(final @Nullable String comment) {
-        this.comment = comment;
-        return this;
+    EffectiveMode(final @Nullable Class<? extends Annotation> annotation) {
+        this.annotation = annotation;
     }
 
     @Nullable
-    public String getComment() {
-        return comment;
-    }
-
-    @Nonnull
-    public ConfigCategory getChildCategory(final @Nonnull String name){
-        return children.computeIfAbsent(name,k -> new ConfigCategory(this,k));
-    }
-
-    @Nonnull
-    public Collection<ConfigCategory> getChildren() {
-        return children.values();
-    }
-
-    @Nonnull
-    public String getPath(){
-        if(parent == null) return name;
-        return parent.getPath()+ Configuration.CATEGORY_SPLITTER + name;
-    }
-
-    @Override
-    public String toString() {
-        return getPath();
+    public final Class<? extends Annotation> getAnnotation() {
+        return annotation;
     }
 }

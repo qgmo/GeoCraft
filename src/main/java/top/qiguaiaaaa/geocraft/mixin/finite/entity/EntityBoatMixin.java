@@ -25,19 +25,31 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api;
+package top.qiguaiaaaa.geocraft.mixin.finite.entity;
 
-import org.apache.logging.log4j.Logger;
-import top.qiguaiaaaa.geocraft.api.util.APIUtil;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityBoat;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
+
+import javax.annotation.Nonnull;
 
 /**
- * @since 0.1
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public final class GeoCraftAPI {
-    public final static long API_VERSION = 3;
-    public final static String API_VERSION_NAME = "0.3.1";
-    public final static String MODID = "geocraft";
-    public final static String PROVIDERS = "GeoCraftAPI";
-    public final static Logger LOGGER = APIUtil.LOGGER;
+@Mixin(value = EntityBoat.class)
+public abstract class EntityBoatMixin extends Entity {
+    public EntityBoatMixin(final @Nonnull World worldIn) {
+        super(worldIn);
+    }
+
+    /**
+     * @reason 修改船的下沉判定，让船更难下沉
+     */
+    @ModifyConstant(method = "getUnderwaterStatus",constant = @Constant(doubleValue = 0.001d),allow = 1)
+    private double 天圆地方$modifyUnderwater(final double original){
+        return 0.4d;
+    }
 }

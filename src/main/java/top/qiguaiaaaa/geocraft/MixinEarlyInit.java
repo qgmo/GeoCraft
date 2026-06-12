@@ -69,6 +69,7 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
             case MORE_REALITY:
             default:{
                 mixinList.add("mixins/fluid_physics/finite/mixins.geocraft_finite.json");
+                mixinList.add("mixins/fluid_physics/finite/mixins.orbtellus_finite_boat.json");
                 if(FluidPhysicsConfig.ENABLE_INVALID_LIQUID_STATE_REPORT.getValue()){
                     mixinList.add("mixins/fluid_physics/finite/mixins.geocraft_finite_debug.json");
                 }
