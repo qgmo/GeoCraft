@@ -1,18 +1,18 @@
 # 天圆地方 GeoCraft
 
-**切换语言**: **简体中文** | [English](https://github.com/qiguaideaaaa/GeoCraft/blob/master/README_EN.md)
+**切换语言**: **简体中文** | [English](https://github.com/QGMoe/GeoCraft/blob/master/README_EN.md)
 
 <img src="https://s2.loli.net/2025/10/08/hc1zrUCmfgWTQ4k.png" alt="" width="818"/>
 
 [![go to download GeoCraft on mcmod.cn. 在 MC百科 上下载 天圆地方。](https://raw.githubusercontent.com/KessokuTeaTime/Badges-Extra/refs/heads/main/assets/cozy/available/mcmodcn_64h.png)](https://www.mcmod.cn/class/22470.html)
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/curseforge_64h.png)](https://www.curseforge.com/minecraft/mc-mods/qg-geocraft)
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/modrinth_64h.png)](https://modrinth.com/project/3CKJAWbv)
-[![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/github_64h.png)](https://github.com/qiguaideaaaa/GeoCraft)
+[![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/github_64h.png)](https://github.com/QGMoe/GeoCraft)
 
 ![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/built-with/java_46h.png)
 ![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/supported/forge_46h.png)
 
-[![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/documentation/readthedocs_46h.png)](https://github.com/qiguaideaaaa/GeoCraft/wiki)
+[![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/documentation/readthedocs_46h.png)](https://github.com/QGMoe/GeoCraft/wiki)
 
 天圆地方（GeoCraft）是一个致力于将地理要素融合进 Minecraft 的模组。 模组在保证尽可能不添加新方块、物品等要素的情况下，尽一切可能通过修改游戏机制，使 Minecraft 世界更加符合真实世界，将真正的地理带入 Minecraft。
 
