@@ -72,6 +72,12 @@ public class ConfigDouble extends ConfigItem<Double,ConfigDouble> {
         property.setComment(getPolishedComment());
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.double";
+    }
+
     /**
      * {@inheritDoc}
      * @param config {@inheritDoc}

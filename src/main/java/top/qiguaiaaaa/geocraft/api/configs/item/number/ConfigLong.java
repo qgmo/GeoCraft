@@ -72,6 +72,12 @@ public class ConfigLong extends ConfigItem<Long,ConfigLong> {
         return minValue;
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.long";
+    }
+
     /**
      * {@inheritDoc}
      * @param config {@inheritDoc}

@@ -50,6 +50,12 @@ public class ConfigIntegerSet extends ConfigSet<Integer,ConfigIntegerSet> implem
 
     @Nonnull
     @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.set.int";
+    }
+
+    @Nonnull
+    @Override
     public ConfigIntegerSet setMinValue(final int minValue) {
         this.minValue = minValue;
         return this;

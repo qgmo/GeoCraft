@@ -27,11 +27,11 @@
 
 package moe.qingu.nickel.text;
 
+import moe.qingu.nickel.text.hover.HoverEventBuilder;
 import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
 
@@ -53,38 +53,73 @@ public final class Texts {
 
     public final static class Shows{
 
+        @Nonnull
         public static PlainTextBuilder block(final @Nonnull Block block){
-            return plain(block.getLocalizedName())
-                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
-                    .then(Hovers.block(block));
+            return plain(block.getLocalizedName()).hoverTo(Hovers.block(block));
         }
 
+        @Nonnull
         public static TranslationTextBuilder item(final @Nonnull Item item){
-            return translation(item.getTranslationKey())
-                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
-                    .then(Hovers.item(item));
+            return translation(item.getTranslationKey()).hoverTo(Hovers.item(item));
         }
 
+        @Nonnull
         public static TranslationTextBuilder itemStack(final @Nonnull ItemStack stack){
-            return translation(stack.getTranslationKey())
-                    .hoverTo(HoverEvent.Action.SHOW_ITEM)
-                    .then(Hovers.itemStack(stack));
+            return translation(stack.getTranslationKey()).hoverTo(Hovers.itemStack(stack));
+        }
+
+        @Nonnull
+        public static PlainTextBuilder entity(final @Nonnull Entity entity){
+            return plain(entity.getName()).hoverTo(Hovers.entity(entity));
         }
     }
 
     public final static class Hovers{
         private Hovers(){}
 
-        public static PlainTextBuilder block(final @Nonnull Block block){
-            return item(Item.getItemFromBlock(block));
+        @Nonnull
+        public static HoverEventBuilder.ShowItem item(){
+            return new HoverEventBuilder.ShowItem();
         }
 
-        public static PlainTextBuilder item(final @Nonnull Item item){
-            return itemStack(new ItemStack(item,1));
+        @Nonnull
+        public static HoverEventBuilder<?> item(final @Nonnull Item item){
+            return new HoverEventBuilder.ShowItem().of(item);
         }
 
-        public static PlainTextBuilder itemStack(final @Nonnull ItemStack stack){
-            return plain(stack.writeToNBT(new NBTTagCompound()).toString());
+        @Nonnull
+        public static HoverEventBuilder<?> item(final @Nonnull Item item,final int count){
+            return new HoverEventBuilder.ShowItem().of(item,count);
+        }
+
+        @Nonnull
+        public static HoverEventBuilder<?> itemStack(final @Nonnull ItemStack stack){
+            return new HoverEventBuilder.ShowItem().of(stack);
+        }
+
+        @Nonnull
+        public static HoverEventBuilder<?> block(final @Nonnull Block block){
+            return new HoverEventBuilder.ShowItem().of(block);
+        }
+
+        @Nonnull
+        public static HoverEventBuilder.ShowText text(){
+            return new HoverEventBuilder.ShowText();
+        }
+
+        @Nonnull
+        public static HoverEventBuilder.ShowText text(final @Nonnull TextBuilder<?,?> builder){
+            return new HoverEventBuilder.ShowText().then(builder);
+        }
+
+        @Nonnull
+        public static HoverEventBuilder.ShowEntity entity(){
+            return new HoverEventBuilder.ShowEntity();
+        }
+
+        @Nonnull
+        public static HoverEventBuilder<?> entity(final @Nonnull Entity entity){
+            return new HoverEventBuilder.ShowEntity().of(entity);
         }
     }
 }

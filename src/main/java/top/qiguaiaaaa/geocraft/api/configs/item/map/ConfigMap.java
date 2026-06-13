@@ -110,6 +110,12 @@ public class ConfigMap<K,V> extends ConfigItem<ConfigurableLinkedHashMap<K,V>,Co
         property.setComment(getPolishedComment());
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.map";
+    }
+
     @Override
     public void load(@Nonnull final Configuration config) {
         property = config.get(category.getPath(),key,defaultValue.toStringList(),getPolishedComment());

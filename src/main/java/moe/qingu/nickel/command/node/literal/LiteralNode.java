@@ -83,7 +83,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
     }
 
     @Override
-    public <T extends List<String> & Deque<String>> void execute(@Nonnull T args, @Nonnull ExecuteContext context) throws CommandException {
+    public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         final String first = args.getFirst();
         if(!literal.equals(first)){

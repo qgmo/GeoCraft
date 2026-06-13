@@ -57,6 +57,7 @@ public final class AtmosphereConfig {
 
     @GeoConfig.Since("0.1")
     @Config.Comment("开启详细的大气日志记录")
+    @Config.LangKey("geocraft.config.comment.atmosphere.enable_detailed_logging")
     @Config.RequiresMcRestart
     public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging", false){
         @Override

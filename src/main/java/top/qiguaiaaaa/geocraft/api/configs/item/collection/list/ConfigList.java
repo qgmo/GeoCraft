@@ -80,6 +80,12 @@ public class ConfigList<ValueType,SELF extends ConfigList<ValueType,SELF>>
         return unmodifiable;
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list";
+    }
+
     //***********
     // List
     //***********

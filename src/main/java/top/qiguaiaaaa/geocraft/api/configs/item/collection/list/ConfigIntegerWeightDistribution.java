@@ -77,6 +77,12 @@ public class ConfigIntegerWeightDistribution extends ConfigIntegerList<ConfigInt
         reloadWeights();
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.int.distribution";
+    }
+
     public int getRandomResult(final @Nonnull Random rnd){
         int rndRes = rnd.nextInt(sum);
         int accumulation = 0;

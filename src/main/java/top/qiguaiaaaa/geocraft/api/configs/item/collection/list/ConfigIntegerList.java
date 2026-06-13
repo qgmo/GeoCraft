@@ -98,6 +98,12 @@ public class ConfigIntegerList<S extends ConfigIntegerList<S>> extends ConfigLis
         return (comment==null?"":comment)+" [range: " + minValue + " ~ " + maxValue + (sizeRequire.getMaxListSize()>=0?", maxSize: " + sizeRequire.getMaxListSize():"") + "]";
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.int";
+    }
+
     private static final class Impl extends ConfigIntegerList<Impl>{
 
         public Impl(@Nonnull final ConfigCategory category, @Nonnull final String configKey, @Nonnull final IConfigurableList<Integer> defaultValue) {

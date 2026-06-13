@@ -103,6 +103,12 @@ public class ConfigDoubleList<S extends ConfigDoubleList<S>> extends ConfigList<
         return doubles;
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.list.double";
+    }
+
     private static final class Impl extends ConfigDoubleList<Impl>{
 
         private Impl(@Nonnull final ConfigCategory category, @Nonnull final String configKey, @Nonnull final ConfigurableList<Double> defaultValue) {

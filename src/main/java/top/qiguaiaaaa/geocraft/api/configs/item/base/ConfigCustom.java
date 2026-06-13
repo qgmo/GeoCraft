@@ -59,6 +59,12 @@ public class ConfigCustom<V> extends ConfigItem<V,ConfigCustom<V>> {
         return parser;
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.custom";
+    }
+
     /**
      * {@inheritDoc}
      * @param property {@inheritDoc}

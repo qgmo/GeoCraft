@@ -83,6 +83,12 @@ public class ConfigSet<V,S extends ConfigSet<V,S>> extends ConfigCollection<ICon
 
     @Nonnull
     @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.collection.set";
+    }
+
+    @Nonnull
+    @Override
     protected Collection<V> getUnmodifiableCollection() {
         if(unmodifiable == null) unmodifiable = new UnmodifiableConfigurableSet<>(value);
         return unmodifiable;

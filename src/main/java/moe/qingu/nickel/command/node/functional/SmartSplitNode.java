@@ -86,9 +86,18 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
     @Override
     public <T extends List<String> & Deque<String>> void execute(@Nonnull final T args, @Nonnull final ExecuteContext context) throws CommandException {
         final ICommandNode node = findNextNode(args, context);
-        if(node == null || node instanceof ExecuteNode && !((ExecuteNode) node).keepArguments() && !args.isEmpty() && !args.get(0).trim().isEmpty())
+        if(node == null || isSyntaxError(args,node))
             throw new NickelSyntaxException(curBranch,this);
         node.execute(args,context);
+    }
+
+    private boolean isSyntaxError(@Nonnull final List<String> args,@Nonnull final ICommandNode node){
+        if(node instanceof ExecuteNode){
+            if(!((ExecuteNode)node).keepArguments()){
+                return !args.isEmpty() && !args.get(0).trim().isEmpty();
+            }
+            return false;
+        }else return args.isEmpty() || args.get(0).trim().isEmpty();
     }
 
     @Nullable

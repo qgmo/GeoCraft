@@ -47,6 +47,7 @@ public abstract class ConfigItem<V,S extends ConfigItem<V,S>> {
     protected final V defaultValue;
     protected EffectiveMode mode;
     protected @Nullable String comment;
+    protected @Nullable String translationKey;
     protected V value;
     protected @Nullable Property property;
     protected boolean isDeprecated;
@@ -104,6 +105,14 @@ public abstract class ConfigItem<V,S extends ConfigItem<V,S>> {
         return category.getPath() + Configuration.CATEGORY_SPLITTER + key;
     }
 
+    @Nonnull
+    public abstract String getTypeTranslationKey();
+
+    @Nullable
+    public String getTranslationKey() {
+        return translationKey;
+    }
+
     /**
      * 更新配置项的值
      * @param newValue 新值，注意不能为 null
@@ -140,6 +149,12 @@ public abstract class ConfigItem<V,S extends ConfigItem<V,S>> {
         return (S) this;
     }
 
+    @SuppressWarnings("unchecked")
+    public S setTranslationKey(@Nullable final String translationKey) {
+        this.translationKey = translationKey;
+        return (S) this;
+    }
+
     /**
      * 该配置项是否已被弃用
      * @return 若已被弃用,则返回 true
@@ -166,16 +181,16 @@ public abstract class ConfigItem<V,S extends ConfigItem<V,S>> {
     }
 
     /**
+     * 通过{@link Property}的内容来初始化配置项
+     * @param property 属性配置
+     */
+    protected abstract void load(@Nonnull final Property property);
+
+    /**
      * 保存当前配置项目。若在保存前没有{@link #load(Configuration)}则不会生效
      */
     public void save(){
         if(property == null) return;
         property.setValue(value.toString());
     }
-
-    /**
-     * 通过{@link Property}的内容来初始化配置项
-     * @param property 属性配置
-     */
-    protected abstract void load(@Nonnull Property property);
 }

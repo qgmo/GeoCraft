@@ -69,6 +69,7 @@ public final class ConfigInit {
     private static void loadItemProcessors(){
         itemProcessors.put(Deprecated.class,(item,a) -> item.setDeprecated(true));
         itemProcessors.put(Config.Comment.class,(item,a)-> item.setComment(String.join("\n",((Config.Comment)a).value())));
+        itemProcessors.put(Config.LangKey.class,(item,a) -> item.setTranslationKey(((Config.LangKey)a).value()));
 
         for(final @Nonnull EffectiveMode mode : EffectiveMode.values())
             if(mode.getAnnotation() != null)

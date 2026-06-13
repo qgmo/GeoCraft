@@ -97,7 +97,7 @@ public final class CommandGeoTest {
         }catch (final @Nonnull Exception e){
             sender.sendMessage(translation("geocraft.command.geotest.run.failed").arg(item.getId())
                     .color(TextFormatting.DARK_RED)
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT).then(plain(e.getMessage()).color(TextFormatting.AQUA))
+                    .hoverTo(HoverEvent.Action.SHOW_TEXT).content(plain(e.getMessage()).color(TextFormatting.AQUA))
                     .done());
             sender.sendMessage(GeoMessages.在GitHub上向作者报告().done());
         }

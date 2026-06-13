@@ -83,7 +83,7 @@ public interface SizeRequirement {
         @Nonnull
         public Range min(final int min){
             if(min > max || min < 0) throw new IllegalArgumentException();
-            this.max = min;
+            this.min = min;
             return this;
         }
 

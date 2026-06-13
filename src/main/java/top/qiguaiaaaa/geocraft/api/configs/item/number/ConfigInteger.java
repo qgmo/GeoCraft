@@ -81,6 +81,12 @@ public class ConfigInteger extends ConfigItem<Integer,ConfigInteger> {
         property.setComment(getPolishedComment());
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.int";
+    }
+
     /**
      * {@inheritDoc}
      * @param config {@inheritDoc}

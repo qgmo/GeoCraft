@@ -45,6 +45,7 @@ public final class GeneralConfig {
     @Config.RequiresMcRestart
     @Config.Comment("在区块生成的时候阻止方块下落，这可能可以防止一部分的因流体大量下落造成的卡顿。\n" +
             "Prevent blocks from falling during chunk generation, which may help reduce lag caused by massive fluid updates.")
+    @Config.LangKey("geocraft.config.comment.general.prevent_falling_block_while_generation")
     @GeoConfig.Since("0.1")
     public static final ConfigBoolean PREVENT_FALLING_BLOCK_FROM_FALLING_WHILE_GENERATION =
             new ConfigBoolean(GENERAL, "preventBlockFromFallingDuringGeneration",true);
@@ -69,6 +70,7 @@ public final class GeneralConfig {
 
     @Config.Comment("开启BlockUpdater以在1游戏刻内提供额外的方块更新额度和更精细的更新管理\n" +
             "Enable BlockUpdater to provide additional block update quotas and more refined update management within a single game tick.")
+    @Config.LangKey("geocraft.config.comment.general.enable_block_updater")
     @GeoConfig.Since("0.1")
     public static final ConfigBoolean ENABLE_BLOCK_UPDATER =
             new ConfigBoolean(CATEGORY_BLOCK_UPDATER, "enableBlockUpdater",true);

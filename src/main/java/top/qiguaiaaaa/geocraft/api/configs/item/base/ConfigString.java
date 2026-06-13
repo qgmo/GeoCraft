@@ -48,6 +48,12 @@ public class ConfigString extends ConfigItem<String,ConfigString> {
         super(category, configKey, defaultValue);
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.string";
+    }
+
     /**
      * {@inheritDoc}
      * @param property {@inheritDoc}

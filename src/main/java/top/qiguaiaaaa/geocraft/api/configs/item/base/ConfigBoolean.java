@@ -55,6 +55,12 @@ public class ConfigBoolean extends ConfigItem<Boolean,ConfigBoolean> {
         property.setComment(comment);
     }
 
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "geocraft.config.type.boolean";
+    }
+
     /**
      * {@inheritDoc}
      * @param config {@inheritDoc}

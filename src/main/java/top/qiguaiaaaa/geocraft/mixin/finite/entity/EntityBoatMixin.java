@@ -29,10 +29,11 @@ package top.qiguaiaaaa.geocraft.mixin.finite.entity;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityBoat;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.*;
+import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 
 import javax.annotation.Nonnull;
 
@@ -50,6 +51,14 @@ public abstract class EntityBoatMixin extends Entity {
      */
     @ModifyConstant(method = "getUnderwaterStatus",constant = @Constant(doubleValue = 0.001d),allow = 1)
     private double 天圆地方$modifyUnderwater(final double original){
-        return 0.4d;
+        return FluidPhysicsConfig.BOAT_SINKING_THRESHOLD.getValue();
+    }
+
+    /**
+     * @reason 让船的浮力计算更符合视觉情况
+     */
+    @Redirect(method = "checkInWater",at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;ceil(D)I",ordinal = 1))
+    private int 天圆地方$modifyMaxY(final double original){
+        return MathHelper.ceil(this.getEntityBoundingBox().maxY);
     }
 }

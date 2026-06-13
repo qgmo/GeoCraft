@@ -31,10 +31,12 @@ import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
+import moe.qingu.nickel.text.TextBuilder;
+import moe.qingu.nickel.text.TranslationTextBuilder;
+import moe.qingu.nickel.text.hover.HoverEventBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
@@ -143,9 +145,33 @@ public final class CommandGeoConfig {
                                 .translate("geocraft.command.geoconfig.arg.config_value")
                                 .then(execute(CommandGeoConfig::applyChanges))
                         ).done()
+                        .literal("query").then(execute(CommandGeoConfig::showInfo)).done()
                         .execute(CommandGeoConfig::showInfo)
                         .done())
                 .build();
+    }
+
+    @Nonnull
+    private static HoverEventBuilder.ShowText showComment(final @Nonnull ConfigItem<?,?> item){
+        return Hovers.text((
+                (item.getTranslationKey() != null)? translation(item.getTranslationKey()):
+                        item.hasComment()?plain(item.getComment()):
+                                translation("geocraft.command.geoconfig.info.no_comment")
+        ).italic(true));
+    }
+
+    @Nonnull
+    private static TranslationTextBuilder modeTextOf(final @Nonnull ConfigItem<?,?> item){
+        return translation(item.getEffectiveMode().getTranslationKey())
+                .color(item.getEffectiveMode().getColor())
+                .bold(true);
+    }
+
+    @Nonnull
+    private static TextBuilder<?,?> valueTextOf(final @Nonnull ConfigItem<?,?> item){
+        final String value = item.getValue().toString();
+        return value.codePoints().count()<100?plain(value).color(TextFormatting.AQUA):
+                translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD);
     }
 
     public static void showInfo(@Nonnull final ExecuteContext ctx) {
@@ -154,20 +180,15 @@ public final class CommandGeoConfig {
                 .arg(item.getPath())
                 .color(TextFormatting.AQUA)
                 .bold(true)
-                .hoverTo(HoverEvent.Action.SHOW_TEXT)
-                .then((item.hasComment()?plain(item.getComment()):translation("geocraft.command.geoconfig.info.no_comment"))
-                        .italic(true))
+                .hoverTo(showComment(item))
                 .done());
-        ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.type").arg(item.getClass().getSimpleName()).done());
+        ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.type")
+                .arg(translation(item.getTypeTranslationKey())).done());
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.mode")
-                .arg(translation(item.getEffectiveMode().getTranslationKey())
-                        .color(item.getEffectiveMode().getColor())
-                        .bold(true))
+                .arg(modeTextOf(item))
                 .done());
-        final String value = item.getValue().toString();
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.cur_value")
-                .arg(value.codePoints().count()<50?plain(value).color(TextFormatting.AQUA):
-                        translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD))
+                .arg(valueTextOf(item))
                 .done());
     }
 
@@ -178,25 +199,20 @@ public final class CommandGeoConfig {
             final Processor processor = applicationProcessors.get(cls);
             if(processor != null){
                 processor.process(item,val);
-                final String value = item.getValue().toString();
                 try {
                     ConfigurationLoader.save();
                 }catch (final @Nonnull RuntimeException e){
                     GeoCraft.getLogger().error(e);
                     ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.set.save_fail")
-                            .arg(value.codePoints().count()<50?plain(value).color(TextFormatting.AQUA):
-                                    translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD))
+                            .arg(valueTextOf(item))
                             .arg(e.getMessage())
                             .color(TextFormatting.RED)
                             .done());
                     return;
                 }
                 ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.set.success")
-                        .arg(value.codePoints().count()<50?plain(value).color(TextFormatting.AQUA):
-                                translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD))
-                        .arg(translation(item.getEffectiveMode().getTranslationKey())
-                                .color(item.getEffectiveMode().getColor())
-                                .bold(true))
+                        .arg(valueTextOf(item))
+                        .arg(modeTextOf(item))
                         .color(TextFormatting.GREEN)
                         .done());
                 return;

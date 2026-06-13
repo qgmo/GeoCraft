@@ -405,7 +405,7 @@ public final class FluidPhysicsConfig {
     //More Reality Fluid Physics Config
     //******************************
     @GeoConfig.Since("0.1")
-    public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY = CATEGORY_FLUID_PHYSICS.getChildCategory("more_reality")
+    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE = CATEGORY_FLUID_PHYSICS.getChildCategory("more_reality")
             .setComment("设置流体物理模式为"+FluidPhysicsMode.MORE_REALITY+"时的参数\n" +
                     "Set the parameters when Fluid Physics Mode is "+FluidPhysicsMode.MORE_REALITY);
 
@@ -413,26 +413,26 @@ public final class FluidPhysicsConfig {
     // Pressure System
     @Config.Comment("压强系统参数")
     @GeoConfig.Since("0.1")
-    public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_PRESSURE = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("pressure_system");
+    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("pressure_system");
 
     @GeoConfig.Since("0.1")
     @Config.Comment("是否启用压强系统\n" + "Enable Pressure System.")
     public static final ConfigBoolean PRESSURE_SYSTEM_FOR_REALITY =
-            new ConfigBoolean(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "enablePressureSystem",true);
+            new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "enablePressureSystem",true);
 
     @Config.RangeDouble(min = 0,max = 0.9999)
     @GeoConfig.Since("0.1")
     @Config.Comment("原版流体处于静止状态时，创建压强任务的可能性。过高的值可能导致压强任务的频繁创建，从而导致卡顿。\n" +
             "Possibility for Vanilla static liquids to create a pressure task. Higher value may cause the pressure tasks to be created frequently and then cause lagging.")
     public static final ConfigDouble POSSIBILITY_FOR_STATIC_VANILLA_LIQUID_TO_CREATE_PRESSURE_TASK =
-            new ConfigDouble(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "possibilityForVanillaStaticLiquidToCreatePressureTask",0.4);
+            new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "possibilityForVanillaStaticLiquidToCreatePressureTask",0.4);
 
     @Config.RangeDouble(min = 0,max = 0.9999)
     @GeoConfig.Since("0.1")
     @Config.Comment("继承自BlockFluidClassic的模组流体处于静止状态时，创建压强任务的可能性。过高的值可能导致压强任务的频繁创建，从而导致卡顿。\n" +
             "Possibility for Vanilla static liquids to create a pressure task. Higher value may cause the pressure tasks to be created frequently and then cause lagging.")
     public static final ConfigDouble POSSIBILITY_FOR_CLASSIC_FLUIDS_TO_CREATE_PRESSURE_TASK =
-            new ConfigDouble(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "possibilityForModClassicFluidsToCreatePressureTask",0.4);
+            new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "possibilityForModClassicFluidsToCreatePressureTask",0.4);
 
     @Config.RangeInt(min = 0)
     @GeoConfig.SizeRange(max = 17)
@@ -450,7 +450,7 @@ public final class FluidPhysicsConfig {
             "6 -> 1%\n" +
             "压强搜寻具体范围，即广度优先搜索的迭代最大次数，等于2^(范围等级+5)。例如，范围等级为2表示迭代最大次数为128。本列表支持的最小范围等级为-1，表示迭代最大次数为16。")
     public static final ConfigIntegerWeightDistribution WEIGHT_DISTRIBUTION_FOR_PRESSURE_SEARCH_RANGE =
-            new ConfigIntegerWeightDistribution(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "pressureSearchRangeWeights",
+            new ConfigIntegerWeightDistribution(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "pressureSearchRangeWeights",
                     new ConfigurableList<>(0,0,0,10,10,75,4,1))
             .setBegin(-1);
 
@@ -459,7 +459,7 @@ public final class FluidPhysicsConfig {
     @Config.Comment("原版流体在非平均流动模式流动过程中，发布压强任务的范围等级。\n" +
             "The range level at which vanilla fluids issue pressure tasks during non-average flow mode movement.")
     public static final ConfigInteger PRESSURE_TASK_RANGE_DYNAMIC_FLUID_NO_AVERAGE =
-            new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "pressureSearchRangeWhenNotAverageModeForVanillaDynamicLiquids",4);
+            new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "pressureSearchRangeWhenNotAverageModeForVanillaDynamicLiquids",4);
 
     @Config.RangeInt(min = 1,max = Int10.CONTENT_MASK)
     @Config.RequiresMcRestart
@@ -468,7 +468,7 @@ public final class FluidPhysicsConfig {
             "Max iterated times in a single search for Small Range Pressure Search Task.If the search range of task is smaller than or equal to this, " +
             "the Task will be transformed to single search task to reduce memory usage. However, higher value means more cpu load needed.")
     public static final ConfigInteger REALITY_MAX_SEARCH_TIMES_PER_SEARCH_FOR_SMALL_RANGE_TASK =
-            new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "maxSearchTimesPerSearchForSmallRangeTask",511);
+            new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "maxSearchTimesPerSearchForSmallRangeTask",511);
 
     @Config.RangeInt(min = 1,max = Int21.CONTENT_MASK)
     @Config.RequiresMcRestart
@@ -476,7 +476,7 @@ public final class FluidPhysicsConfig {
     @Config.Comment("大范围流体压强任务在单次更新中，最大的迭代次数。若任务的搜索范围小于该值，则该任务会被转换为单次搜寻任务，从而大幅度减少内存开销。值越大意味着对CPU性能要求更高。\n" +
             "Max iterated times in a single search for Large Range Pressure Search Task. Higher value means more cpu load needed.")
     public static final ConfigInteger REALITY_MAX_SEARCH_TIMES_PER_SEARCH_FOR_LARGE_RANGE_TASK =
-            new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_PRESSURE, "maxSearchTimesPerSearchForLargeRangeTask",512);
+            new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "maxSearchTimesPerSearchForLargeRangeTask",512);
 
     // Ended
     //**********************
@@ -485,7 +485,7 @@ public final class FluidPhysicsConfig {
     // Slope Algorithm
 
     @GeoConfig.Since("0.1")
-    public static final ConfigCategory CATEGORY_MORE_REALITY_SLOPE = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("slope_algorithm");
+    public static final ConfigCategory CATEGORY_MORE_REALITY_SLOPE = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("slope_algorithm");
 
     @GeoConfig.Since("0.1")
     @Config.Comment("当单层液体下方也为该液体的时候，为原版液体使用坡度流动算法。")
@@ -533,19 +533,19 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     @Config.Comment("空桶装流体时的寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）。")
     public static final ConfigInteger bucketFindFluidMaxDistance =
-            new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY,"bucketFindFluidMaxDistance",5);
+            new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE,"bucketFindFluidMaxDistance",5);
 
     @GeoConfig.Since("0.1")
     @Config.Comment("允许空桶在地上流体少于1000mB时装入流体，注意这时候你不会获得一个装满流体的桶，地上的流体会直接消失。")
     public static final ConfigBoolean allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB =
-            new ConfigBoolean(CATEGORY_SIMULATION_MORE_REALITY,"allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB",false);
+            new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE,"allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB",false);
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
     @Config.Comment("空瓶装流体（一般是水）时寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）\n" +
             "The max distance to find water when filling an empty bottle.")
     public static final ConfigInteger bottleFindFluidMaxDistance =
-            new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY,"bottleFindFluidMaxDistance",3);
+            new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE,"bottleFindFluidMaxDistance",3);
     /**
      * @see GeoFluidSetting#isFluidToUseVanillaBucketMode(Fluid) 
      * @see GeoFluidSetting#setFluidToUseVanillaBucketMode(String, boolean) 
@@ -554,7 +554,7 @@ public final class FluidPhysicsConfig {
     @Config.Comment("流体对应的桶其行为表现不受本模组影响的流体。\n" +
             "Fluids whose buckets' behaviour will not be affected by GeoCraft")
     public static final ConfigList<ConfigurableFluid,?> fluidsWhoseBucketsBehavesAsVanillaBuckets =
-            ConfigList.create(CATEGORY_SIMULATION_MORE_REALITY,"fluidsWhoseBucketsBehavesAsVanillaBuckets", new ConfigurableList<>(), ConfigurableFluid::new);
+            ConfigList.create(CATEGORY_FLUIDPHYSICS_FINITE,"fluidsWhoseBucketsBehavesAsVanillaBuckets", new ConfigurableList<>(), ConfigurableFluid::new);
 
     /**
      * @see GeoFluidSetting#isFluidToBePhysical(Fluid) 
@@ -563,7 +563,7 @@ public final class FluidPhysicsConfig {
      */
     @GeoConfig.Since("0.1")
     public static final ConfigList<ConfigurableFluid,?> fluidsNotToSimulate =
-            ConfigList.create(CATEGORY_SIMULATION_MORE_REALITY,"fluidBlackList", new ConfigurableList<>(), ConfigurableFluid::new)
+            ConfigList.create(CATEGORY_FLUIDPHYSICS_FINITE,"fluidBlackList", new ConfigurableList<>(), ConfigurableFluid::new)
                     .setComment("不受此模式影响的流体。在下方填入的流体也相当于在"+fluidsWhoseBucketsBehavesAsVanillaBuckets.getPath()+"内填入对应流体，即流体对应的桶行为同样也会变为原版的情况。");
 
     @Config.RequiresMcRestart
@@ -571,15 +571,15 @@ public final class FluidPhysicsConfig {
     @Config.Comment("当在世界中设置不应该出现的原版液体状态时，打印WARN日志。这有助于在出现bug时调试。\n" +
             "Print WARN-level logs when vanilla liquid states that should not appear in the world are detected. This aids in debugging when issues occur.")
     public static final ConfigBoolean ENABLE_INVALID_LIQUID_STATE_REPORT =
-            new ConfigBoolean(CATEGORY_SIMULATION_MORE_REALITY, "enableInvalidLiquidStateReport",false);
+            new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE, "enableInvalidLiquidStateReport",false);
 
     /*
      * Fluid Place Behaviour
      */
 
-    @Config.Comment("Configure behaviour of fluid placement.")
+    @Config.Comment({"调整流体的放置行为","Configure behaviour of fluid placement."})
     @GeoConfig.Since("0.2.4")
-    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_PLACE = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("place");
+    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_PLACE = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("place");
 
     @GeoConfig.Since("0.2.4")
     @Config.RangeDouble(min = 0d,max = 16000d)
@@ -601,10 +601,36 @@ public final class FluidPhysicsConfig {
     public static final ConfigDouble PLACE_ALGORITHM_COST_MIDPOINT =
             new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PLACE, "placeAlgorithmCostMidpoint",1.5d);
 
+    /*
+     * Adjustment 调整
+     */
+
+    @GeoConfig.Since("0.2.5")
+    @Config.Comment({"玩法相关调整配置","Adjustments for Game Play"})
+    public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_ADJUSTMENT = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("adjustment");
+
+    @Config.Comment({"是否启用针对船的调整","Whether to enable adjustments for boat."})
+    @Config.LangKey("geocraft.config.comment.fluidphysics.finite.adjustment.boat")
+    @Config.RequiresMcRestart
+    @GeoConfig.Since("0.2.5")
+    public static final ConfigBoolean BOAT_ADJUSTMENT =
+            new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE_ADJUSTMENT,"boatAdjustment",true);
+
+    @Config.RangeDouble(min = 0.001,max = 10)
+    @GeoConfig.Since("0.2.5")
+    @Config.Comment({"船只被判定为处于水底被动下沉的阈值，单位为格（方块）","The threshold to determine whether the boat should sink or not, measured in blocks."})
+    @Config.LangKey("geocraft.config.comment.fluidphysics.finite.adjustment.boat_sinking_threshold")
+    public static final ConfigDouble BOAT_SINKING_THRESHOLD =
+            new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_ADJUSTMENT,"boatSinkingThreshold",0.4d);
+
+    /*
+     * 兼容
+     */
+
     @Config.Comment({"设置第三方模组联动参数",
     "Configure compat parameters"})
     @GeoConfig.Since("0.1")
-    public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT = CATEGORY_SIMULATION_MORE_REALITY.getChildCategory("mod_support");
+    public static final ConfigCategory CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("mod_support");
     // ** IC2 Config
     @Config.Comment({"设置关于[IC2]工业时代II的参数",
     "Configure compat parameters with Industrial Craft II"})

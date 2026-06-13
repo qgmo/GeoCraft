@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.text;
 
+import moe.qingu.nickel.text.hover.HoverEventBuilder;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
@@ -45,7 +46,7 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S color(@Nonnull final TextFormatting color){
+    public final S color(@Nonnull final TextFormatting color){
         if(!color.isColor()) throw new IllegalArgumentException();
 
         this.style.setColor(color);
@@ -54,59 +55,77 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S bold(final boolean yes){
+    public final S bold(final boolean yes){
         this.style.setBold(yes);
         return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S italic(final boolean yes){
+    public final S italic(final boolean yes){
         this.style.setItalic(yes);
         return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S underlined(final boolean yes){
+    public final S underlined(final boolean yes){
         this.style.setUnderlined(yes);
         return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S obfuscated(final boolean yes){
+    public final S obfuscated(final boolean yes){
         this.style.setObfuscated(yes);
         return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S strikethrough(final boolean yes){
+    public final S strikethrough(final boolean yes){
         this.style.setStrikethrough(yes);
         return (S) this;
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S insert(@Nonnull final String insertion){
+    public final S insert(@Nonnull final String insertion){
         this.style.setInsertion(insertion);
         return (S) this;
     }
 
     @Nonnull
-    public HoverEventBuilder hoverTo(@Nonnull final HoverEvent.Action action){
-        return new HoverEventBuilder(action);
+    @SuppressWarnings("unchecked")
+    public final HoverEventBuilder.Inner<S> hoverTo(@Nonnull final HoverEvent.Action action){
+        return new HoverEventBuilder.Inner<>(action,event -> {
+            TextBuilder.this.style.setHoverEvent(event);
+            return (S) TextBuilder.this;
+        });
     }
 
     @Nonnull
-    public ClickEventBuilder clickTo(@Nonnull final ClickEvent.Action action){
+    @SuppressWarnings("unchecked")
+    public final S hoverTo(@Nonnull final HoverEventBuilder<?> builder){
+        this.style.setHoverEvent(builder.build());
+        return (S) this;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public final S hoverTo(@Nonnull final HoverEvent event){
+        this.style.setHoverEvent(event);
+        return (S) this;
+    }
+
+    @Nonnull
+    public final ClickEventBuilder clickTo(@Nonnull final ClickEvent.Action action){
         return new ClickEventBuilder(action);
     }
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S then(@Nonnull final TextBuilder<?,?> builder){
+    public final S then(@Nonnull final TextBuilder<?,?> builder){
         if(then != null) then.then(builder);
         else then = builder;
         return (S) this;
@@ -122,28 +141,6 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
 
     @Nonnull
     protected abstract T build();
-
-    public final class HoverEventBuilder{
-        private final @Nonnull HoverEvent.Action action;
-
-        public HoverEventBuilder(@Nonnull final HoverEvent.Action action) {
-            this.action = action;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Nonnull
-        public S then(final @Nonnull TextBuilder<?,?> text){
-            TextBuilder.this.style.setHoverEvent(new HoverEvent(action,text.build()));
-            return (S) TextBuilder.this;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Nonnull
-        public S then(final @Nonnull ITextComponent text){
-            TextBuilder.this.style.setHoverEvent(new HoverEvent(action,text));
-            return (S) TextBuilder.this;
-        }
-    }
 
     public final class ClickEventBuilder{
         private final @Nonnull ClickEvent.Action action;
