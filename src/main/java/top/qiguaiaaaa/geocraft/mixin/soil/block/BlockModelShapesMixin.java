@@ -72,15 +72,17 @@ public class BlockModelShapesMixin {
                     final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
                     @Nonnull String variantName = BlockDirt.VARIANT.getName((BlockDirt.DirtType)map.remove(BlockDirt.VARIANT));
 
-                    if (BlockDirt.DirtType.PODZOL != state.getValue(BlockDirt.VARIANT)) {
+                    if (BlockDirt.DirtType.PODZOL == state.getValue(BlockDirt.VARIANT)) {
+                        map.remove(BlockProperties.HUMIDITY);
+                        if(state.getValue(BlockProperties.HUMIDITY) > 0){
+                            variantName = GeoCraft.MODID+":"+variantName+"_h"+state.getValue(BlockProperties.HUMIDITY);
+                        }
+                    }else {
                         map.remove(BlockDirt.SNOWY);
+                        if(state.getValue(BlockProperties.HUMIDITY) > 0)
+                            variantName = GeoCraft.MODID + ":" + variantName;
+                        else map.remove(BlockProperties.HUMIDITY);
                     }
-
-                    map.remove(BlockProperties.HUMIDITY);
-                    if(state.getValue(BlockProperties.HUMIDITY) > 0){
-                        variantName = GeoCraft.MODID+":"+variantName+"_h"+state.getValue(BlockProperties.HUMIDITY);
-                    }
-
                     return new ModelResourceLocation(variantName, this.getPropertyString(map));
                 }
             };
@@ -93,16 +95,37 @@ public class BlockModelShapesMixin {
 
     }
     @Inject(method = "registerAllBlocks",at = @At("TAIL"))
-    private void registerAllBlocks(CallbackInfo ci){
-        this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS, (new StateMap.Builder())
-                .ignore(BlockProperties.HUMIDITY)
-                .build());
+    private void registerAllBlocks(final @Nonnull CallbackInfo ci){
+        final IStateMapper commonHumidityMapper = new StateMapperBase() {
+            @Nonnull
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(final @Nonnull IBlockState state) {
+                final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
+                String name = Block.REGISTRY.getNameForObject(state.getBlock()).getPath();
+                if(state.getValue(BlockProperties.HUMIDITY)>0) name = GeoCraft.MODID+":"+name;
+                else map.remove(BlockProperties.HUMIDITY);
+                return new ModelResourceLocation(name,this.getPropertyString(map));
+            }
+        };
+        assert Blocks.GRASS != null;
+        assert Blocks.GRAVEL != null;
+        assert Blocks.GRASS_PATH != null;
+        assert Blocks.CLAY != null;
+        this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS, new StateMapperBase() {
+            @Nonnull
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(final @Nonnull IBlockState state) {
+                final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
+                map.remove(BlockProperties.HUMIDITY);
+                String name = Block.REGISTRY.getNameForObject(state.getBlock()).getPath();
+                if(state.getValue(BlockProperties.HUMIDITY)>0) name = GeoCraft.MODID+":"+name+"_h"+state.getValue(BlockProperties.HUMIDITY);
+                return new ModelResourceLocation(name,this.getPropertyString(map));
+            }
+        });
         this.blockStateMapper.registerBlockStateMapper(Blocks.GRAVEL,(new StateMap.Builder())
                 .ignore(BlockProperties.HUMIDITY)
                 .build());
-        this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS_PATH,(new StateMap.Builder())
-                .ignore(BlockProperties.HUMIDITY)
-                .build());
+        this.blockStateMapper.registerBlockStateMapper(Blocks.GRASS_PATH,commonHumidityMapper);
         this.blockStateMapper.registerBlockStateMapper(Blocks.CLAY,(new StateMap.Builder()
                 .ignore(BlockProperties.HUMIDITY)
                 .build()));
