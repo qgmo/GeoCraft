@@ -39,6 +39,8 @@ import moe.qingu.nickel.command.node.parameter.minecraft.DimensionNode;
 
 import javax.annotation.Nonnull;
 
+import java.util.Collections;
+
 import static moe.qingu.nickel.command.Nodes.*;
 
 /**
@@ -48,6 +50,7 @@ public final class GeoArguments {
 
     public static final String POS = "pos";
     public static final String VALUE = "value";
+    public static final String MULTIPLY = "multiply";
     public static final String PROPERTY = "property";
     public static final String WORLD = "world";
 
@@ -56,33 +59,43 @@ public final class GeoArguments {
     private GeoArguments(){}
 
     @Nonnull
-    public static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> pos(){
+    public static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> _pos(){
         return blockPos(POS)
                 .asOptional()
                 .translate("geocraft.command.common.arg.pos");
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Double, NumberNode<Double>> value(){
+    public static NumberNodeBuilder<Double, NumberNode<Double>> $value(){
         return doubleArg(VALUE)
                 .translate("geocraft.command.common.arg.value");
     }
 
     @Nonnull
-    public static StringNodeBuilder property(){
+    public static NumberNodeBuilder<Double, NumberNode<Double>> _multiply(){
+        return doubleArg(MULTIPLY)
+                .asOptional()
+                .defaultAs(1d)
+                .suggest(Collections.emptyList())
+                .translate("geocraft.command.common.arg.multiply")
+                .comment("geocraft.command.common.comment.multiply");
+    }
+
+    @Nonnull
+    public static StringNodeBuilder $property(){
         return string(PROPERTY)
                 .translate("geocraft.command.common.arg.property");
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> world(){
+    public static FastParameterNodeBuilder.FastSmart<World, DimensionNode> _world(){
         return dimension(WORLD)
                 .asOptional()
                 .translate("geocraft.command.common.arg.world");
     }
 
     @Nonnull
-    public static StringNodeBuilder doit(){
+    public static StringNodeBuilder _doit(){
         return string(DOIT)
                 .asOptional()
                 .defaultAs("")

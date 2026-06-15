@@ -27,6 +27,7 @@
 
 package top.qiguaiaaaa.geocraft.command;
 
+import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.EnumActionResult;
@@ -55,6 +56,12 @@ import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 public final class CommandGeoTest {
     public static final String GEOTEST_COMMAND_NAME = "geotest";
     public static final String GEOTEST_PERMISSION_NODE = "geocraft.command."+GEOTEST_COMMAND_NAME;
+
+    private static final int STATUS_SUCCESS = 1;
+    private static final int STATUS_PASS = -1;
+    private static final int STATUS_FAILED = -2;
+    private static final int STATUS_ERROR = -3;
+
     public static ICommand create(){
         return new CommandBuilder(GEOTEST_COMMAND_NAME)
                 .require(GEOTEST_PERMISSION_NODE).allow(DefaultPermissionLevel.OP).register()
@@ -63,7 +70,7 @@ public final class CommandGeoTest {
                         .when("run").then(string("test_id")
                                 .translate("geocraft.command.geotest.arg.test_id")
                                 .allow(GeoTest.queryAll().stream().map(Object::toString).collect(Collectors.toList()))
-                                .then(pos()
+                                .then(_pos()
                                         .then(entity("target")
                                                 .asSingle()
                                                 .asOptional()
@@ -83,18 +90,22 @@ public final class CommandGeoTest {
                 case FAIL:{
                     sender.sendMessage(translation("geocraft.command.geotest.run.failed").arg(item.getId()).color(TextFormatting.RED).done());
                     sender.sendMessage(GeoMessages.在GitHub上向作者报告().done());
+                    ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,STATUS_FAILED);
                     break;
                 }
                 case PASS:{
                     sender.sendMessage(translation("geocraft.command.geotest.run.pass").arg(item.getId()).color(TextFormatting.GOLD).done());
+                    ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,STATUS_PASS);
                     break;
                 }
                 case SUCCESS:{
                     sender.sendMessage(translation("geocraft.command.geotest.run.success").arg(item.getId()).color(TextFormatting.GREEN).done());
+                    ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,STATUS_SUCCESS);
                 }
                 default:break;
             }
         }catch (final @Nonnull Exception e){
+            ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,STATUS_ERROR);
             sender.sendMessage(translation("geocraft.command.geotest.run.failed").arg(item.getId())
                     .color(TextFormatting.DARK_RED)
                     .hoverTo(HoverEvent.Action.SHOW_TEXT).content(plain(e.getMessage()).color(TextFormatting.AQUA))

@@ -276,8 +276,8 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildSetCommand(){
         return literal("set")
                 .require(ATM_PERMISSION_NODE +".set").allow(DefaultPermissionLevel.OP).register()
-                .then(property().suggest(Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()).collect(Collectors.toList()))
-                        .then(value().then(pos().then(process(CommandAtmosphere::set)))
+                .then($property().suggest(Stream.concat(getPropertyList().stream(),SetConsumer.keySet().stream()).collect(Collectors.toList()))
+                        .then($value().then(_pos().then(process(CommandAtmosphere::set)))
         ));
     }
 
@@ -285,7 +285,7 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildStopCommand(){
         return literal("stop")
                 .require(ATM_PERMISSION_NODE +".stop").allow(DefaultPermissionLevel.OP).register()
-                .then(world().then(execute(ctx -> {
+                .then(_world().then(execute(ctx -> {
                             final World world = ctx.get(WORLD, DimensionNode.class);
                             final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
                             if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
@@ -301,8 +301,8 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildResetCommand(){
         return literal("reset")
                 .require(ATM_PERMISSION_NODE +".reset").allow(DefaultPermissionLevel.OP).register()
-                .then(property().allow("temp").then(
-                        pos().then(process((args, context) -> {
+                .then($property().allow("temp").then(
+                        _pos().then(process((args, context) -> {
                                     final World world = context.getWorld();
                                     final Atmosphere atmosphere = context.get(ATMOSPHERE);
                                     final BlockPos pos = context.getBlockPos(POS);
@@ -330,16 +330,16 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildAddCommand(){
         return literal("add")
                 .require(ATM_PERMISSION_NODE +".add").allow(DefaultPermissionLevel.OP).register()
-                .then(property().suggest(
+                .then($property().suggest(
                         Stream.concat(getPropertyList().stream(),AddConsumer.keySet().stream()).collect(Collectors.toList())
-                ).then(value().then(pos().then(process(CommandAtmosphere::add)))));
+                ).then($value().then(_pos().then(process(CommandAtmosphere::add)))));
     }
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
         return literal("query")
                 .require(ATM_PERMISSION_NODE +".query").allow(DefaultPermissionLevel.OP).register()
-                .then(property().allow(QueryConsumer.keySet()).then(pos().then(process(CommandAtmosphere::query))
+                .then($property().allow(QueryConsumer.keySet()).then(_pos().then(process(CommandAtmosphere::query))
         ));
     }
 
@@ -378,7 +378,7 @@ public final class CommandAtmosphere {
                 .requirePlayer(true)
                 .require(4)
                 .require(ATM_PERMISSION_NODE +".track").allow(DefaultPermissionLevel.OP).register()
-                .then(property()
+                .then($property()
                         .suggest(
                                 Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList())
                         ).then(integer("time")
@@ -391,7 +391,7 @@ public final class CommandAtmosphere {
                                         .comment("geocraft.command.atmosphere.comment.file_name")
                                         .pattern("[^\\s\\\\/:\\*\\?\\\"<>\\|](\\x20|[^\\s\\\\/:\\*\\?\\\"<>\\|])*[^\\s\\\\/:\\*\\?\\\"<>\\|\\.]$") //过滤正确的文件名
                                         .suggest((strings, context) -> Collections.singletonList("track_"+new Date().getTime()+".csv"))
-                                        .then(pos().then(process(CommandAtmosphere::track)))
+                                        .then(_pos().then(process(CommandAtmosphere::track)))
                         )
                 )
         );

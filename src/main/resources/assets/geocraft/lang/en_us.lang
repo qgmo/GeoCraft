@@ -29,6 +29,7 @@ geocraft.command.config_item_not_found=配置项 %s 不存在
 
 geocraft.command.common.arg.pos=Position
 geocraft.command.common.arg.value=Value
+geocraft.command.common.arg.multiply=Multiply
 geocraft.command.common.arg.property=Property
 geocraft.command.common.arg.world=World
 geocraft.command.common.arg.doit=Do
@@ -42,11 +43,12 @@ geocraft.command.geoconfig.arg.config_entry=Config Item
 geocraft.command.geoconfig.arg.config_value=Config Value
 geocraft.command.geoconfig.arg.request_id=Request ID
 
+geocraft.command.common.comment.multiply=该乘数会影响 QueryResult 的值
 geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
 geocraft.command.atmosphere.comment.file_name=指示需要将追踪的数据存储到的文件名，不能为空或包含特殊字符，推荐在末尾带上 .csv 后缀
 
-geocraft.command.atmosphere.nonexistent=(%s,%s,%s) doesn't exist Atmosphere or Atmosphere there isn't initialised.
+geocraft.command.atmosphere.nonexistent=%s doesn't exist Atmosphere or Atmosphere there isn't initialised.
 geocraft.command.atmosphere.unknown=Unknown Atmosphere Class. You may have installed other mods or plugins that provide third-party Atmosphere Implement.
 geocraft.command.atmosphere.unknown_underlying=未知下垫面层类，无法操作。您可能安装了提供其他大气系统实现的第三方模组或插件
 geocraft.command.atmosphere.layer.null=Atmosphere Layer doesn't exist at such a height.
@@ -106,6 +108,7 @@ geocraft.command.fluidphysics.usage=/fluidphysics <query|util> ...
 geocraft.command.fluidphysics.inaccessibility_to_atmosphere=(%s,%s,%s) can't access outer atmosphere.
 geocraft.command.fluidphysics.unable_to_evaporate=Evaporation at pos (%s,%s,%s) is disallowed.
 geocraft.command.fluidphysics.not_water=Block at pos (%s,%s,%s) is %s, but water is expected.
+geocraft.command.fluidphysics.query.mode=当前流体物理模式：%s
 geocraft.command.fluidphysics.evapration.reasons.upon_non_air=Block upon isn't air
 geocraft.command.fluidphysics.evapration.reasons.invalid_water=Invalid Water State
 geocraft.command.fluidphysics.evapration.reasons.rawPossibility=Raw

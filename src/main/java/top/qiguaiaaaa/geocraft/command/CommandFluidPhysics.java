@@ -30,6 +30,7 @@ package top.qiguaiaaaa.geocraft.command;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -96,20 +97,23 @@ public final class CommandFluidPhysics {
     public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
         return literal("query")
                 .then(literals()
-                        .when("mode").then(execute(ctx -> ctx.notifyCommandListener("当前流体物理模式："+ FluidPhysicsMode.getCurrentMode()))));
+                        .when("mode").then(execute(ctx -> {
+                            ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.query.mode").arg(FluidPhysicsMode.getCurrentMode()).done());
+                            ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,FluidPhysicsMode.getCurrentMode().ordinal());
+                        })));
     }
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildUtilCommand(){
         return literal("operation")
                 .then(literals()
-                        .when("evaporate").then(pos()
-                                .then(doit()
+                        .when("evaporate").then(_pos()
+                                .then(_doit()
                                         .then(process(HANDLER::evaporate,true)))));
     }
 
     @Nonnull
-    public static RelayExecuteNodeBuilder process(@Nonnull final FluidPhysicsCommandExecutor executor,final boolean checkAccessibility){
+    static RelayExecuteNodeBuilder process(@Nonnull final FluidPhysicsCommandExecutor executor,final boolean checkAccessibility){
         return relay(checkAccessibility?GET_LIGHTED_ATMOSPHERE_ACCESSOR.then(CHECK_ATMOSPHERE_ACCESSIBILITY):GET_LIGHTED_ATMOSPHERE_ACCESSOR)
                 .keepArguments(false)
                 .then(execute(executor))
@@ -177,15 +181,13 @@ public final class CommandFluidPhysics {
                 ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.possibility.pre")
                         .then(plain(possibility * 100d +" %").color(TextFormatting.AQUA))
                         .done());
-                reasons.forEach((reason,delta)->{
-                    ctx.getSender().sendMessage(translation(reason)
-                            .then(plain(" : "))
-                            .italic(true)
-                            .then(plain((delta>=0?"+":"-")+String.format("%.4f %%",delta*100d))
-                                    .color(delta>0?TextFormatting.GREEN:delta<0?TextFormatting.RED:TextFormatting.GRAY)
-                                    .underlined(true))
-                            .done());
-                });
+                reasons.forEach((reason,delta)-> ctx.getSender().sendMessage(translation(reason)
+                        .then(plain(" : "))
+                        .italic(true)
+                        .then(plain((delta>=0?"+":"-")+String.format("%.4f %%",delta*100d))
+                                .color(delta>0?TextFormatting.GREEN:delta<0?TextFormatting.RED:TextFormatting.GRAY)
+                                .underlined(true))
+                        .done()));
                 if(doEvaporate) this.evaporateFor(state,accessor,ctx);
             }
 
@@ -235,6 +237,7 @@ public final class CommandFluidPhysics {
                         .arg(quanta*FluidUtil.ONE_IN_EIGHT_OF_BUCKET_VOLUME,quanta)
                         .color(quanta <= 0?TextFormatting.GRAY:TextFormatting.GREEN)
                         .done());
+                ctx.getSender().setCommandStat(CommandResultStats.Type.AFFECTED_BLOCKS,quanta==0?0:1);
             }
         },
         CLASSIC(FluidPhysicsMode.VANILLA_LIKE){
@@ -253,9 +256,9 @@ public final class CommandFluidPhysics {
                         .bold(true)
                         .done());
                 ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.evapration.amount")
-                        .then(plain(amount +" mB")
-                                .color(TextFormatting.AQUA))
+                        .then(plain(amount +" mB").color(TextFormatting.AQUA))
                         .done());
+                ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,amount);
                 if(doEvaporate) this.evaporateFor(state,accessor,ctx);
             }
 

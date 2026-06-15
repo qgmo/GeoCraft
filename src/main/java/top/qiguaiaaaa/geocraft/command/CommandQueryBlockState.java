@@ -52,10 +52,10 @@ public class CommandQueryBlockState{
     public static ICommand create(){
         return new CommandBuilder("queryBlockState")
                 .require(2)
-                .then(pos()
+                .then(_pos()
                         .center(true)
                         .asOptional()
-                        .then(world().then(execute(ctx->{
+                        .then(_world().then(execute(ctx->{
                             final BlockPos pos = ctx.getBlockPos(POS);
                             final World world = ctx.get(WORLD);
                             final IBlockState state = world.getBlockState(pos);
