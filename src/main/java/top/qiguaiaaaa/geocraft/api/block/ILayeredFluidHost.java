@@ -447,7 +447,7 @@ public interface ILayeredFluidHost {
 
     /**
      * 将指定流体流体层数设置到指定层数。和 addLayer 的区别在于 setLayer 不应该考虑流体状态变化而导致的变化。<br/>
-     * @see top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality#setLayer(World, BlockPos, IBlockState, Fluid, int, NBTTagCompound, int, int)
+     * @see top.qiguaiaaaa.geocraft.block.BlockSnowFinite#setLayer(World, BlockPos, IBlockState, Fluid, int, NBTTagCompound, int, int)
      * @param world 世界
      * @param pos 当前位置
      * @param state 方块状态，不一定和 world#getBlockState 一致，例如放置方块的时候

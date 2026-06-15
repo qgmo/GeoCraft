@@ -37,7 +37,7 @@ import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
-import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
+import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.test.GeoTestItem;
 import top.qiguaiaaaa.geocraft.test.soil.SoilMixinTest;
 
@@ -56,7 +56,7 @@ public final class SnowMixinText extends GeoTestItem {
     @Nonnull
     @Override
     public EnumActionResult test(@Nonnull final World world, @Nonnull final BlockPos pos, @Nullable final ICommandSender sender) {
-        final Class<? extends BlockSnow> expected = FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSnowMoreReality.class:BlockSnowExtended.class;
+        final Class<? extends BlockSnow> expected = FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSnowFinite.class:BlockSnowExtended.class;
         return SoilMixinTest.isExpectedClass(Blocks.SNOW_LAYER,expected,sender)?EnumActionResult.SUCCESS:EnumActionResult.FAIL;
     }
 }

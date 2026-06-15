@@ -42,7 +42,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
 import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
-import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
+import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
@@ -76,7 +76,7 @@ public final class RegistryHandler {
      * @see Block#registerBlocks()
      */
     private static void registerVanillaBlockOverrides(){
-        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowMoreReality():new BlockSnowExtended())
+        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowFinite():new BlockSnowExtended())
                 .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
         final Block grass;
         final Block dirt;

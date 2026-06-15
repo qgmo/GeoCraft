@@ -35,7 +35,7 @@ import net.minecraft.init.Blocks;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
-import top.qiguaiaaaa.geocraft.block.BlockSnowMoreReality;
+import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.block.soil.BlockSoilDirt;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
@@ -266,7 +266,7 @@ public final class MockBlocks {
 
     @SuppressWarnings("unused")
     public static final class GeoSnows{
-        public static final BlockSnowMoreReality SNOW = new BlockSnowMoreReality(){{
+        public static final BlockSnowFinite SNOW = new BlockSnowFinite(){{
             this.setSoundType(SoundType.SNOW).setLightOpacity(0).setRegistryName(天圆地方测试.MODID,"snow_layer").setHardness(0.1F);
             registerToMinecraft("SNOW_LAYER",78,this);
         }};
