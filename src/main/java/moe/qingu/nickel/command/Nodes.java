@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command;
 
+import moe.qingu.nickel.command.builder.parameter.EnumNodeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -222,6 +223,11 @@ public final class Nodes {
     @Nonnull
     public static StringNodeBuilder string(@Nonnull final String name){
         return new StringNodeBuilder(name);
+    }
+
+    @Nonnull
+    public static <E extends Enum<E>> EnumNodeBuilder<E> enumArg(@Nonnull final String name, @Nonnull final Class<E> cls){
+        return new EnumNodeBuilder<>(name,cls);
     }
 
     @Nonnull

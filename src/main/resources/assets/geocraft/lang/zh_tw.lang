@@ -37,6 +37,7 @@ geocraft.command.atmosphere.arg.block_to_query=需要查询的方块状态
 geocraft.command.atmosphere.arg.util_name=工具名称
 geocraft.command.atmosphere.arg.time=追踪时长
 geocraft.command.atmosphere.arg.file_name=文件名
+geocraft.command.atmosphere.arg.blockProp=方块物理属性
 geocraft.command.geotest.arg.test_id=测试ID
 geocraft.command.geotest.arg.target=测试目标
 geocraft.command.geoconfig.arg.config_entry=配置项
@@ -47,6 +48,7 @@ geocraft.command.common.comment.multiply=该乘数会影响 QueryResult 的值
 geocraft.command.common.comment.doit=是否真的执行此项操作
 geocraft.command.atmosphere.comment.time=追踪的时长，单位为大气刻
 geocraft.command.atmosphere.comment.file_name=指示需要将追踪的数据存储到的文件名，不能为空或包含特殊字符，推荐在末尾带上 .csv 后缀
+geocraft.command.atmosphere.comment.blockProp= QueryResult 返回的方块物理属性值，使用 * 表示不设置 QueryResult。该参数不影响聊天框返回的信息
 
 geocraft.command.atmosphere.nonexistent=%s 不存在大气或大气尚未初始化
 geocraft.command.atmosphere.unknown=未知大气种类，无法操作。您可能安装了提供其他大气系统实现的第三方模组或插件

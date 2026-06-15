@@ -196,7 +196,7 @@ public final class CommandAtmosphere {
             ctx.accessor.setNotAir(ctx.execute.getWorld().getBlockState(ctx.pos).getMaterial() != Material.AIR);
             final double temp = ctx.accessor.getTemperature();
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.block_temp",ctx.x,ctx.y,ctx.z,temp);
-            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)temp);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(temp*ctx.multiply));
         });
         QueryConsumer.put("steam",ctx->{
             final FluidState steam = (ctx.layer instanceof AtmosphereLayer)?((AtmosphereLayer)ctx.layer).getSteam():null;
@@ -205,7 +205,7 @@ public final class CommandAtmosphere {
                 return;
             }
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.steam",ctx.x,ctx.y,ctx.z,steam);
-            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,steam.getFluidAmount());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(steam.getFluidAmount()* ctx.multiply));
         });
         QueryConsumer.put("water",ctx->{
             final FluidState water = ctx.layer.getWater();
@@ -214,19 +214,21 @@ public final class CommandAtmosphere {
                 return;
             }
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.water",ctx.x,ctx.y,ctx.z,water);
-            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,water.getFluidAmount());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(water.getFluidAmount()*ctx.multiply));
         });
-        QueryConsumer.put("temp",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.temp",ctx.x,ctx.y,ctx.z,ctx.layer.getTemperature()));
+        QueryConsumer.put("temp",ctx->{
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.temp",ctx.x,ctx.y,ctx.z,ctx.layer.getTemperature());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(ctx.layer.getTemperature().get()*ctx.multiply));
+        });
         QueryConsumer.put("ground_temp",ctx->{
             final TemperatureState state = ctx.atmosphere.getUnderlying(ctx.pos).getTemperature();
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.ground_temp", ctx.x, ctx.y, ctx.z, state);
-            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) state.get());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) (state.get()*ctx.multiply));
         });
         QueryConsumer.put("wind",ctx->{
             final Vec3d wind = ctx.accessor.getWind();
-            for(EnumFacing facing:EnumFacing.VALUES){
-                ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.wind."+facing.getName(), ctx.x,ctx.y, ctx.z, wind.dotProduct(new Vec3d(facing.getDirectionVec())));
-            }
+            for(final @Nonnull EnumFacing facing:EnumFacing.VALUES) ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.wind."+facing.getName(), ctx.x,ctx.y, ctx.z, wind.dotProduct(new Vec3d(facing.getDirectionVec())));
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(wind.length()*ctx.multiply));
         });
         QueryConsumer.put("underlying",ctx->{
             final UnderlyingLayer underlying1 = ctx.atmosphere.getUnderlying(ctx.pos);
@@ -244,10 +246,16 @@ public final class CommandAtmosphere {
         });
         QueryConsumer.put("heat_volume",ctx->{
             ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.heat_volume",ctx.x,ctx.y,ctx.z,ctx.layer.getHeatCapacity());
-            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) ctx.layer.getHeatCapacity());
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) (ctx.layer.getHeatCapacity()*ctx.multiply));
         });
-        QueryConsumer.put("water_pressure",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.water_pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getWaterPressure()*0.01));
-        QueryConsumer.put("pressure",ctx-> ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getPressure()*0.01));
+        QueryConsumer.put("water_pressure",ctx-> {
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.water_pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getWaterPressure()*0.01);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(ctx.accessor.getWaterPressure()*ctx.multiply));
+        });
+        QueryConsumer.put("pressure",ctx-> {
+            ctx.execute.notifyCommandListener("geocraft.command.atmosphere.query.pressure",ctx.x,ctx.y,ctx.z,ctx.accessor.getPressure()*0.01);
+            ctx.execute.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(ctx.accessor.getPressure()*ctx.multiply));
+        });
     }
 
     @Nonnull
@@ -292,6 +300,7 @@ public final class CommandAtmosphere {
                             system.setStop(!system.isStopped());
                             if(system.isStopped()) ctx.notifyCommandListener("geocraft.command.atmosphere.stop.stopped",world.provider.getDimension());
                             else ctx.notifyCommandListener("geocraft.command.atmosphere.stop.running",world.provider.getDimension());
+                            ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,system.isStopped()?-1:1);
                         })
                 )
         );
@@ -339,7 +348,7 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
         return literal("query")
                 .require(ATM_PERMISSION_NODE +".query").allow(DefaultPermissionLevel.OP).register()
-                .then($property().allow(QueryConsumer.keySet()).then(_pos().then(process(CommandAtmosphere::query))
+                .then($property().allow(QueryConsumer.keySet()).then(_pos().then(_multiply().then(process(CommandAtmosphere::query)))
         ));
     }
 
@@ -353,13 +362,23 @@ public final class CommandAtmosphere {
                         .translate("geocraft.command.atmosphere.arg.block_to_query")
                         .asOptional()
                         .defaultAs(((node, context) -> context.getWorld().getBlockState(context.getSender().getPosition().down())))
-                        .then(execute(ctx ->{
-                            final IBlockState state = ctx.get("blockToQuery");
-                            final ConfigurableBlockState cState = new ConfigurableBlockState(state);
-                            final int heatCapacity = GeoBlockSetting.getBlockHeatCapacity(state);
-                            final double reflectivity= GeoBlockSetting.getBlockReflectivity(state);
-                            ctx.notifyCommandListener("geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
-                        }))
+                        .then(string("blockProp")
+                                .asOptional()
+                                .allow("reflectivity","heat_capacity","*")
+                                .translate("geocraft.command.atmosphere.arg.blockProp")
+                                .comment("geocraft.command.atmosphere.comment.blockProp")
+                                .defaultAs("*")
+                                .then(_multiply().then(execute(ctx ->{
+                                    final IBlockState state = ctx.get("blockToQuery");
+                                    final double multiply = ctx.get(MULTIPLY);
+                                    final ConfigurableBlockState cState = new ConfigurableBlockState(state);
+                                    final int heatCapacity = GeoBlockSetting.getBlockHeatCapacity(state);
+                                    final double reflectivity= GeoBlockSetting.getBlockReflectivity(state);
+                                    ctx.notifyCommandListener("geocraft.command.atmosphere.util.block_info",cState,heatCapacity,reflectivity);
+                                    final String prop = ctx.get("blockProp");
+                                    if("reflectivity".equals(prop)) ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int) (reflectivity*multiply));
+                                    else if("heat_capacity".equals(prop)) ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(heatCapacity*multiply));
+                                }))))
                 ).done()
                 .append(string("util_name")
                         .allow("sun","property","storage")
@@ -683,6 +702,7 @@ public final class CommandAtmosphere {
         public final int x;
         public final int y;
         public final int z;
+        public final double multiply;
         public final ExecuteContext execute;
         public CommandException exception;
 
@@ -694,6 +714,9 @@ public final class CommandAtmosphere {
             this.x = pos.getX();
             this.y = pos.getY();
             this.z = pos.getZ();
+            final @Nullable Object multiply = execute.getContexts().get(MULTIPLY);
+            if(!(multiply instanceof Double)) this.multiply = 1d;
+            else this.multiply = (double) multiply;
             this.execute = execute;
         }
     }

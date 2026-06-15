@@ -39,10 +39,7 @@ import dev.xhyrom.brigo.shadow.brigadier.tree.LiteralCommandNode;
 import net.minecraft.command.ICommandManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.LoaderState;
-import scala.Long;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.api.configs.item.ConfigItem;
-import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
 import top.qiguaiaaaa.geocraft.test.GeoTest;
 
 import javax.annotation.Nonnull;
@@ -107,14 +104,16 @@ public final class BrigoCompat {
                                 .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
                 .then(literal("query",new ArrayList<>(CommandAtmosphere.QueryConsumer.keySet()),
-                        builder -> pos(builder,Function.identity())
+                        builder -> pos(builder,posThen ->
+                                posThen.then(argument("scale",DoubleArgumentType.doubleArg()))
+                                        .executes(DO_NOTHING))
                                 .executes(DO_NOTHING)))
                 .then(literal("reset")
                         .then(pos(literal("temp"),Function.identity())
                                 .executes(DO_NOTHING)))
                 .then(literal("util")
                         .then(literal("block_info")
-                                .then(argument("block state to query",greedyString()))
+                                .then(argument("[block state to query] [prop] [scale]",greedyString()))
                                 .executes(DO_NOTHING))
                         .then(literal("sun"))
                         .then(literal("property"))
@@ -151,7 +150,9 @@ public final class BrigoCompat {
     public static void registerGeoConfig(){
         register(literal(CommandGeoConfig.GEO_CONFIG_COMMAND_NAME)
                 .then(argument("config_item_path",StringArgumentType.word())
-                        .then(literal("query"))
+                        .then(literal("query")
+                                .then(argument("scale",DoubleArgumentType.doubleArg()))
+                                .executes(DO_NOTHING))
                         .then(literal("set")
                                 .then(argument("bool", BoolArgumentType.bool()))
                                 .then(argument("int", IntegerArgumentType.integer()))
