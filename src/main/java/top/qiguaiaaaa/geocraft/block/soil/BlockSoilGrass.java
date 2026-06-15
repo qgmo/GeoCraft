@@ -63,7 +63,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
         }
         if (!worldIn.isAreaLoaded(pos, 3)) return;
         if (worldIn.getLightFromNeighbors(pos.up()) < 4 && worldIn.getBlockState(pos.up()).getLightOpacity(worldIn, pos.up()) > 2) {
-            worldIn.setBlockState(pos, state.withProperty(HUMIDITY,state.getValue(HUMIDITY)));
+            worldIn.setBlockState(pos, Blocks.DIRT.getDefaultState().withProperty(HUMIDITY,state.getValue(HUMIDITY)));
             return;
         }
         final BlockPosI.Mutable mutablePos = new BlockPosI.Mutable();
@@ -107,6 +107,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void neighborChanged(IBlockState state, @Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull Block blockIn, @Nonnull BlockPos fromPos) {
         if(state.getValue(HUMIDITY) <= getMaxStableHumidity(state)) return;
         worldIn.scheduleUpdate(pos, this, this.tickRate(worldIn));
