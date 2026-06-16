@@ -41,11 +41,11 @@ import top.qiguaiaaaa.geocraft.api.GeoCraftProperties;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.property.IGeographyProperty;
+import top.qiguaiaaaa.geocraft.api.soil.SoilSystem;
 import top.qiguaiaaaa.geocraft.block.BlockSnowExtended;
 import top.qiguaiaaaa.geocraft.block.BlockSnowFinite;
 import top.qiguaiaaaa.geocraft.block.soil.*;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
-import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.property.*;
 import top.qiguaiaaaa.geocraft.handler.event.*;
 
@@ -84,7 +84,7 @@ public final class RegistryHandler {
         final Block gravel;
         final Block grass_path;
         final Block clay;
-        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+        if(SoilSystem.getStatus()){
             grass = new BlockSoilGrass();
             dirt = new BlockSoilDirt();
             sand = new BlockSoilSand();
@@ -111,7 +111,7 @@ public final class RegistryHandler {
 
     @SuppressWarnings("deprecation")
     public static void mapMissingStates(){
-        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) return;
+        if(SoilSystem.getStatus()) return;
         GeoCraft.getLogger().info("GeoCraft is mapping missing states for disabling soil system");
         for(final @Nonnull Block block: Arrays.asList(Blocks.GRASS,Blocks.DIRT,Blocks.SAND,Blocks.GRAVEL,Blocks.GRASS_PATH,Blocks.CLAY)){
             final Object2IntOpenHashMap<IBlockState> extendedStateToMetaMap = new Object2IntOpenHashMap<>();
@@ -157,7 +157,7 @@ public final class RegistryHandler {
 
     public static void registerEventHandler(){
         EventFactory.EVENT_BUS.register(AtmosphereEventHandler.class);
-        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
+        if(SoilSystem.getStatus()) MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
         final @Nonnull FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
         switch (mode){
             case MORE_REALITY:{

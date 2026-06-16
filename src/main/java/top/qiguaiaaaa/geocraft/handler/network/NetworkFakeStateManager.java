@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import top.qiguaiaaaa.geocraft.api.soil.SoilSystem;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 
 import javax.annotation.Nonnull;
@@ -80,7 +81,7 @@ public final class NetworkFakeStateManager {
     public static void registerDefaultConfig(){
         registerRule(Blocks.SNOW_LAYER,state -> state.withProperty(MIXTURE,false),(id,meta)->(id<<4)|(meta&7));
 
-        if(!SoilConfig.ENABLE_SOIL_SYSTEM.getValue()) return;
+        if(!SoilSystem.getStatus()) return;
 
         final Function<IBlockState,IBlockState> removeHumidity = state -> state.withProperty(HUMIDITY,0);
         registerRule(Blocks.DIRT,removeHumidity,(id, meta)->(id<<4)|(meta%3));

@@ -62,6 +62,13 @@ public final class GeneralConfig {
             "This configuration item does noting to Client Side.")
     public static final ConfigBoolean COMPATIBLE_FOR_VANILLA_CLIENT = new ConfigBoolean(GENERAL, "compatibilityForVanillaClient",true);
 
+    @Config.RequiresWorldRestart
+    @GeoConfig.Since("0.2.6")
+    @Config.Comment({"是否允许天圆地方在进入存档前检查各系统当前状态是否匹配存档状态，例如流体物理模式是否匹配，并在不匹配时警告并阻碍存档加载。",
+    "Allow GeoCraft to warn status mismatches when current status of all GeoCraft's systems doesn't fully match with the status of a save. "})
+    @Config.LangKey("geocraft.config.comment.general.enable_security_check")
+    public static final ConfigBoolean ENABLE_SECURE_CHECK = new ConfigBoolean(GENERAL,"enableSecurityCheck",true);
+
     //*********************
     // Block Updater
     //*********************

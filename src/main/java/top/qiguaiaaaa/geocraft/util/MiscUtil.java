@@ -28,9 +28,12 @@
 package top.qiguaiaaaa.geocraft.util;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.relauncher.Side;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 
@@ -68,5 +71,13 @@ public final class MiscUtil {
     public static int modifyTickRateByGravity(final @Nonnull World world,final int tickRate){
         final double gravity = GeoFluidSetting.getGravity(world);
         return gravity == 0d?0:Math.max((int) (tickRate*gravity),1);
+    }
+
+    @Nonnull
+    @SuppressWarnings("deprecation")
+    public static String translate(final @Nonnull String key, final @Nonnull Object... objs) {
+        return FMLCommonHandler.instance().getSide() == Side.CLIENT ?
+                I18n.format(key, objs) :
+                net.minecraft.util.text.translation.I18n.translateToLocalFormatted(key,objs);
     }
 }

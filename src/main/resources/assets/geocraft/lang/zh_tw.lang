@@ -1,6 +1,11 @@
 nickel.command.parameter.geocraft.atmosphere_accessor=大气访问器
 nickel.command.parameter.geocraft.config_item=天圆地方配置项
 
+geocraft.storage.mismatch.fluidphysics=警告：当前的流体物理模式为 %s，但该存档的流体物理模式为 %s ，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.fluidphysics.unknown=警告：该存档的流体物理模式因未知原因无法识别，当前的流体物理模式为 %s，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.soil=警告：当前土壤系统的状态为 %s，但该存档的土壤系统状态为 %s，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.soil.unknown=警告：该存档的土壤系统启用状态因未知原因无法识别，当前土壤系统的状态为 %s，您确定要继续加载该存档吗？
+
 geocraft.config.type.string=字符串
 geocraft.config.type.int=整型
 geocraft.config.type.long=长整型
@@ -16,6 +21,7 @@ geocraft.config.type.collection.set.int=整型集合
 geocraft.config.type.collection.map=映射表
 
 geocraft.config.comment.atmosphere.enable_detailed_logging=开启详细的大气日志记录
+geocraft.config.comment.general.enable_security_check=是否允许天圆地方在进入存档前检查各系统当前状态是否匹配存档状态，例如流体物理模式是否匹配，并在不匹配时警告并阻碍存档加载。
 geocraft.config.comment.general.prevent_falling_block_while_generation=在区块生成的时候阻止方块下落，这可能可以防止一部分的因流体大量下落造成的卡顿。
 geocraft.config.comment.general.enable_block_updater=开启BlockUpdater以在1游戏刻内提供额外的方块更新额度和更精细的更新管理
 geocraft.config.comment.fluidphysics.finite.adjustment.boat=是否启用针对船的调整

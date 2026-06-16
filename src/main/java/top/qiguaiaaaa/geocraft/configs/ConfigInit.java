@@ -135,11 +135,11 @@ public final class ConfigInit {
     }
 
     private static void initConfigClass(final @Nonnull Class<?> configClass){
-        final @Nonnull Field[] fields = configClass.getFields();
+        final @Nonnull Field[] fields = configClass.getDeclaredFields();
         for(final @Nonnull  Field field:fields){
             final int modifiers = field.getModifiers();
             if(!Modifier.isStatic(modifiers)) continue;
-            if(!Modifier.isPublic(modifiers)) continue;
+            field.setAccessible(true);
             try {
                 initField(field);
             } catch (final @Nonnull IllegalAccessException e) {

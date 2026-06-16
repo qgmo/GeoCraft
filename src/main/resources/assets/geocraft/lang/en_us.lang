@@ -1,6 +1,11 @@
 nickel.command.parameter.geocraft.atmosphere_accessor=AtmosphereAccessor
 nickel.command.parameter.geocraft.config_item=天圆地方 Config Item
 
+geocraft.storage.mismatch.fluidphysics=[WARNING] 当前的流体物理模式为 %s，但该存档的流体物理模式为 %s ，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.fluidphysics.unknown=[WARNING] 该存档的流体物理模式因未知原因无法识别，当前的流体物理模式为 %s，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.soil=[WARNING] 当前土壤系统的状态为 %s，但该存档的土壤系统状态为 %s，您确定要继续加载该存档吗？
+geocraft.storage.mismatch.soil.unknown=[WARNING] 该存档的土壤系统启用状态因未知原因无法识别，当前土壤系统的状态为 %s，您确定要继续加载该存档吗？
+
 geocraft.config.type.string=String
 geocraft.config.type.int=Integer
 geocraft.config.type.long=Long
@@ -16,6 +21,7 @@ geocraft.config.type.collection.set.int=Integer Set
 geocraft.config.type.collection.map=Map
 
 geocraft.config.comment.atmosphere.enable_detailed_logging=Enable Detailed Logging
+geocraft.config.comment.general.enable_security_check=Allow GeoCraft to warn status mismatches when current status of all GeoCraft's systems doesn't fully match with the status of a save.
 geocraft.config.comment.general.prevent_falling_block_while_generation=Prevent blocks from falling during chunk generation, which may help reduce lag caused by massive fluid updates.
 geocraft.config.comment.general.enable_block_updater=Enable BlockUpdater to provide additional block update quotas and more refined update management within a single game tick.
 geocraft.config.comment.fluidphysics.finite.adjustment.boat=Whether to enable adjustments for boat.

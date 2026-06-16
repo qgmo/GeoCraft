@@ -28,6 +28,7 @@
 package top.qiguaiaaaa.geocraft.configs;
 
 import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.Property;
 import top.qiguaiaaaa.geocraft.api.configs.ConfigCategory;
 import top.qiguaiaaaa.geocraft.api.configs.GeoConfig;
 import top.qiguaiaaaa.geocraft.api.configs.item.base.ConfigBoolean;
@@ -38,7 +39,10 @@ import top.qiguaiaaaa.geocraft.api.configs.value.collection.ConfigurableSet;
 import top.qiguaiaaaa.geocraft.api.configs.value.map.entry.ConfigEntry;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBiome;
 import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState;
+import top.qiguaiaaaa.geocraft.api.soil.SoilSystem;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
@@ -54,7 +58,13 @@ public final class SoilConfig {
     @Config.LangKey("geocraft.config.comment.soil.enable_soil")
     @GeoConfig.Experimental
     @Config.RequiresMcRestart
-    public static final ConfigBoolean ENABLE_SOIL_SYSTEM = new ConfigBoolean(CATEGORY_SOIL,"enableSoilSystem",true);
+    private static final ConfigBoolean ENABLE_SOIL_SYSTEM = new ConfigBoolean(CATEGORY_SOIL,"enableSoilSystem",true){
+        @Override
+        protected void load(@Nonnull Property property) {
+            super.load(property);
+            SoilSystem.setStatus(this.value);
+        }
+    };
 
     @Config.RequiresMcRestart
     @Config.Ignore

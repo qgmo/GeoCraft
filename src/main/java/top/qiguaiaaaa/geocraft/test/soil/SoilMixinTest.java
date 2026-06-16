@@ -37,8 +37,8 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.api.soil.SoilSystem;
 import top.qiguaiaaaa.geocraft.block.soil.*;
-import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.test.GeoTestItem;
 
 import javax.annotation.Nonnull;
@@ -61,7 +61,7 @@ public final class SoilMixinTest extends GeoTestItem {
 
     private synchronized void refreshMap(){
         injectionClsMap = new HashMap<>();
-        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+        if(SoilSystem.getStatus()){
             injectionClsMap.put(Blocks.DIRT, BlockSoilDirt.class);
             injectionClsMap.put(Blocks.GRASS, BlockSoilGrass.class);
             injectionClsMap.put(Blocks.SAND, BlockSoilSand.class);

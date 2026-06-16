@@ -27,16 +27,10 @@
 
 package top.qiguaiaaaa.geocraft;
 
-import net.minecraftforge.fml.common.LoaderState;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
+import net.minecraftforge.fml.common.event.*;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
@@ -47,12 +41,15 @@ import top.qiguaiaaaa.geocraft.command.CommandGeoConfig;
 import top.qiguaiaaaa.geocraft.command.CommandGeoTest;
 import top.qiguaiaaaa.geocraft.compat.GeoCompatLoader;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
+import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidUpdateManager;
 import top.qiguaiaaaa.geocraft.world.BlockUpdater;
 import top.qiguaiaaaa.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
+import top.qiguaiaaaa.geocraft.world.storage.GeoDataFile;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 
 @Mod(modid = GeoCraft.MODID, name = GeoCraft.NAME, version = GeoCraft.VERSION, dependencies = "required:mixinbooter;required:nickelapi@[0.0.2,)",acceptableRemoteVersions = "*",useMetadata = true)
 public class GeoCraft {
@@ -85,6 +82,20 @@ public class GeoCraft {
     }
 
     @EventHandler
+    public void onServerAboutToStart(final @Nonnull FMLServerAboutToStartEvent event){
+        final @Nonnull MinecraftServer server = event.getServer();
+        final File saveDir = server.isDedicatedServer()? new File(server.getDataDirectory(),server.getFolderName()):
+                new File(server.getDataDirectory(),"saves"+File.separator+server.getFolderName());
+        GeoDataFile.init(saveDir);
+        if(!GeneralConfig.ENABLE_SECURE_CHECK.getValue()) return;
+        try {
+            GeoDataFile.validateEqualization();
+        }catch (final @Nonnull StartupQuery.AbortedException ignored){
+            GeoDataFile.CURRENT.setTrash(true);
+        }
+    }
+
+    @EventHandler
     public void onServerStarting(final @Nonnull FMLServerStartingEvent event){
         event.registerServerCommand(CommandAtmosphere.create(event.getServer()));
         event.registerServerCommand(CommandFluidPhysics.create());
@@ -101,6 +112,7 @@ public class GeoCraft {
 
     @EventHandler
     public void onServerStopping(final @Nonnull FMLServerStoppingEvent event){
+        GeoDataFile.captureCurrentState();
         AtmosphereSystemRunner.onServerStopping(event);
         if(FluidPhysicsConfig.RUN_PRESSURE_SYSTEM_AS_ASYNC.getValue()){
             FluidPressureSearchManager.asyncStop();

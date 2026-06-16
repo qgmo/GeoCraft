@@ -58,12 +58,17 @@ public final class AtmosphereConfig {
     @GeoConfig.Since("0.1")
     @Config.Comment("开启详细的大气日志记录")
     @Config.LangKey("geocraft.config.comment.atmosphere.enable_detailed_logging")
-    @Config.RequiresMcRestart
     public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging", false){
         @Override
-        public void load(@Nonnull Configuration config) {
+        public void load(@Nonnull final Configuration config) {
             super.load(config);
             GeoAtmosphereSetting.setEnableDetailedLogging(value);
+        }
+
+        @Override
+        public void setValue(@Nonnull final Boolean newValue) {
+            super.setValue(newValue);
+            GeoAtmosphereSetting.setEnableDetailedLogging(this.value);
         }
     };
 
@@ -88,8 +93,8 @@ public final class AtmosphereConfig {
             "   none - 无大气系统. No atmosphere system.\n" +
             "不同大气系统有不同的配置项，请参阅相关文档获取详细信息。\n" +
             "Different atmosphere systems have different configuration items. Please refer to the relevant documentation for detailed information.")
-    @Config.RequiresWorldRestart
-    public static final ConfigMap<Integer, AtmosphereSystemInfo> ATMOSPHERE_SYSTEM_TYPES =
+    @Config.RequiresMcRestart
+    private static final ConfigMap<Integer, AtmosphereSystemInfo> ATMOSPHERE_SYSTEM_TYPES =
             new ConfigMap<Integer, AtmosphereSystemInfo>(CATEGORY_ATMOSPHERE,"customAtmosphereSystem",
                     Integer::parseInt,AtmosphereSystemInfo::new,
                     new ConfigEntry<>(0, SurfaceAtmosphereSystemInfo.create()
@@ -126,7 +131,7 @@ public final class AtmosphereConfig {
     @GeoConfig.Since("0.1")
     @Config.Comment("方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)")
     @Config.RequiresMcRestart
-    public static final ConfigMap<ConfigurableBlockState,Integer> SPECIFIC_HEAT_CAPACITIES =
+    private static final ConfigMap<ConfigurableBlockState,Integer> SPECIFIC_HEAT_CAPACITIES =
             new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"specificHeatCapacities",ConfigurableBlockState::getInstanceByString, Integer::parseInt,
                     //水
                     new BlockIntegerEntry("minecraft:water",4200),
@@ -445,7 +450,6 @@ public final class AtmosphereConfig {
     @Config.RangeInt(min = 2)
     @GeoConfig.Since("0.1")
     @Config.Comment("大气重新计算下垫面性质的间隔时间，单位为大气刻")
-    @Config.RequiresMcRestart
     public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE, "atmosphereUnderlyingRecalculateGap",400){
         @Override
         public void load(@Nonnull final Configuration config) {

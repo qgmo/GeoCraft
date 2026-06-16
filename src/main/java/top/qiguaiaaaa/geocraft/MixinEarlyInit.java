@@ -35,6 +35,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import top.qiguaiaaaa.geocraft.api.soil.SoilSystem;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
@@ -93,7 +94,7 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
             }else mixinList.add("mixins/pressure/async/mixins.geocraft_pressure_async.json");
         }
         mixinList.add("mixins/ground_water/mixins.geocraft_ground_water.json");
-        if(SoilConfig.ENABLE_SOIL_SYSTEM.getValue()){
+        if(SoilSystem.getStatus()){
             mixinList.add("mixins/soil/mixins.geocraft_soil.json");
         }else mixinList.add("mixins/soil/mixins.geocraft_disabled_soil.json");
         mixinList.add("mixins.geocraft_atmosphere.json");
