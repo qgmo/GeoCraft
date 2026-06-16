@@ -1,0 +1,9 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "particle": "blocks/snow",
+    "bottom": "blocks/snow",
+    "top": "geocraft:blocks/snow_mixture",
+    "side": "blocks/snow"
+  }
+}

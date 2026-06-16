@@ -27,9 +27,14 @@
 
 package top.qiguaiaaaa.geocraft.mixin.common.client;
 
+import com.google.common.collect.Maps;
+import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.renderer.BlockModelShapes;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.BlockStateMapper;
-import net.minecraft.client.renderer.block.statemap.StateMap;
+import net.minecraft.client.renderer.block.statemap.StateMapperBase;
 import net.minecraft.init.Blocks;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,7 +42,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.block.BlockProperties;
+
+import javax.annotation.Nonnull;
+import java.util.Map;
 
 /**
  * @author QiguaiAAAA
@@ -51,8 +60,16 @@ public class BlockModelShapesMixin {
 
     @Inject(method = "registerAllBlocks",at = @At("TAIL"))
     private void registerAllBlocks(CallbackInfo ci){
-        this.blockStateMapper.registerBlockStateMapper(Blocks.SNOW_LAYER, (new StateMap.Builder())
-                .ignore(BlockProperties.MIXTURE)
-                .build());
+        this.blockStateMapper.registerBlockStateMapper(Blocks.SNOW_LAYER, new StateMapperBase() {
+            @Nonnull
+            @Override
+            protected ModelResourceLocation getModelResourceLocation(final @Nonnull IBlockState state) {
+                final @Nonnull Map<IProperty<?>, Comparable<? >> map = Maps.newLinkedHashMap(state.getProperties());
+                String name = Block.REGISTRY.getNameForObject(state.getBlock()).getPath();
+                map.remove(BlockProperties.MIXTURE);
+                if(state.getValue(BlockProperties.MIXTURE)) name = GeoCraft.MODID + ":" + name;
+                return new ModelResourceLocation(name,this.getPropertyString(map));
+            }
+        });
     }
 }

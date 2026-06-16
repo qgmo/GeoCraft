@@ -61,16 +61,16 @@ public final class CommonEventHandler {
     }
 
     @SubscribeEvent
-    public static void onRegisterAtmosphereProperty(RegistryEvent.Register<IGeographyProperty> event){
+    public static void onRegisterAtmosphereProperty(final @Nonnull RegistryEvent.Register<IGeographyProperty> event){
         RegistryHandler.registerGeographyProperties(event);
     }
 
     @SubscribeEvent
     @Deprecated
-    public static void onWorldLoad(WorldEvent.Load event){
-        World world = event.getWorld();
+    public static void onWorldLoad(final @Nonnull WorldEvent.Load event){
+        final @Nonnull World world = event.getWorld();
         if(world.isRemote) return;
-        GeoCraftWorldSavedData data = getSavedData(world);
+        final @Nullable GeoCraftWorldSavedData data = getSavedData(world);
         if(data == null) return;
         BlockUpdater.scheduleUpdates(world,data.getEntrySet());
         data.setEntrySet(BlockUpdater.getEntries(world));
@@ -78,7 +78,7 @@ public final class CommonEventHandler {
     }
 
     @SubscribeEvent
-    public static void onWorldAttachCapabilities(AttachCapabilitiesEvent<World> event){
+    public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event){
         if(event.getObject().isRemote) return;
         event.addCapability(BlockUpdater.ID, new ICapabilityProvider() {
             @Override
