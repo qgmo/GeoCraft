@@ -9,7 +9,8 @@
     "common.item.ItemHoeMixin",
     "common.item.ItemSpadeMixin",
     "common.entity.EntityFallingBlockMixin",
-    "common.entity.EntityFallingBlockAccessor"
+    "common.entity.EntityFallingBlockAccessor",
+    "common.entity.EntityPotionMixin"
   ],
   "client": [
     "common.client.BlockModelShapesMixin"

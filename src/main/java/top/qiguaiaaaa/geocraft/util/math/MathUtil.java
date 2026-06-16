@@ -38,8 +38,21 @@ import top.qiguaiaaaa.geocraft.api.util.math.Degree;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Random;
 
 public final class MathUtil {
+    public static final int[][] OUTER_DIRECTIONS = new int[][]{ //{x,z}
+            new int[]{2,0},new int[]{1,1},
+            new int[]{0,2},new int[]{-1,1},
+            new int[]{-2,0},new int[]{-1,-1},
+            new int[]{0,-2},new int[]{1,-1}
+    };
+    public static final EnumFacing[] OUTER_DIR_FACINGS = new EnumFacing[]{
+            EnumFacing.EAST,EnumFacing.EAST,
+            EnumFacing.SOUTH,EnumFacing.SOUTH,
+            EnumFacing.WEST,EnumFacing.WEST,
+            EnumFacing.NORTH,EnumFacing.NORTH
+    };
     public static Degree 计算与水平面夹角(Vec3d vec){
         double len = vec.length();
         double rad = Math.asin(Math.abs(vec.y)/len);
@@ -92,6 +105,16 @@ public final class MathUtil {
             b = (c = (b = b ^ c) ^ c) ^ b;
         }
         return a>=b && a <= c;
+    }
+
+    public static byte[] randomizeByteArray(final byte[] arr, final @Nonnull Random rnd){
+        for(int i=arr.length-1;i>0;i--){
+            final int j = rnd.nextInt(i+1);
+            final byte tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
+        }
+        return arr;
     }
 
     @Nullable
