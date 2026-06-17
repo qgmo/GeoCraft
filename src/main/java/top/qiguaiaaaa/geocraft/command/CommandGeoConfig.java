@@ -56,7 +56,6 @@ import top.qiguaiaaaa.geocraft.command.node.ConfigItemNode;
 import top.qiguaiaaaa.geocraft.configs.ConfigurationLoader;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -233,7 +232,7 @@ public final class CommandGeoConfig {
 
     public static void showInfo(@Nonnull final ExecuteContext ctx) {
         final ConfigItem<?,?> item = ctx.get("config_entry",ConfigItemNode.class);
-        final double multiply = ctx.getDouble(MULTIPLY);
+        final double multiply = ctx.getContexts().containsKey(MULTIPLY)?ctx.getDouble(MULTIPLY):1d;
         ctx.getSender().sendMessage(translation("geocraft.command.geoconfig.info.title")
                 .arg(statusTextOf(item))
                 .arg(item.getPath())

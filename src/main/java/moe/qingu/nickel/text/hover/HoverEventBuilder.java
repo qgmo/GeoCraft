@@ -121,7 +121,7 @@ public interface HoverEventBuilder<S extends HoverEventBuilder<S>> {
         @Deprecated
         public HoverEvent build() {
             if(stack == null) throw new IllegalStateException();
-            return new HoverEvent(HoverEvent.Action.SHOW_TEXT,plain(stack.writeToNBT(new NBTTagCompound()).toString()).done());
+            return new HoverEvent(HoverEvent.Action.SHOW_ITEM,plain(stack.writeToNBT(new NBTTagCompound()).toString()).done());
         }
     }
 

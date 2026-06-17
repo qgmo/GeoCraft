@@ -86,6 +86,7 @@ public final class GeneralConfig {
     @Config.Comment("天圆地方内置的附加方块更新器在一游戏刻内最多更新的方块数量，多余的更新任务会被忽略。\n" +
             "The max number of blocks to update by Block Updater inside GeoCraft. The excess part will be ignored.")
     @GeoConfig.Since("0.1")
+    @Config.RequiresMcRestart
     public static final ConfigInteger BLOCK_UPDATER_MAX_UPDATES_BLOCK =
             new ConfigInteger(CATEGORY_BLOCK_UPDATER, "maxUpdateBlocksPerTick",65536*4);
 

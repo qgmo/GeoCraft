@@ -53,7 +53,7 @@ public class ItemSpadeMixin {
                     target = "Lnet/minecraft/world/World;getBlockState(Lnet/minecraft/util/math/BlockPos;)Lnet/minecraft/block/state/IBlockState;",
                     ordinal = 0)
             ,cancellable = true)
-    private static void 天圆地方$onItemUse(final @Nonnull EntityPlayer player,
+    private void 天圆地方$onItemUse(final @Nonnull EntityPlayer player,
                                            final @Nonnull World worldIn,
                                            final @Nonnull BlockPos pos,
                                            final @Nonnull EnumHand hand,

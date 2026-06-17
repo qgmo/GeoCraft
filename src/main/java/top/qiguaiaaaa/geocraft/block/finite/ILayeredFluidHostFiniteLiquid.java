@@ -45,6 +45,7 @@ import top.qiguaiaaaa.geocraft.api.util.AtmosphereUtil;
 import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
+import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -128,7 +129,7 @@ public interface ILayeredFluidHostFiniteLiquid extends IBlockStateLayeredFluidHo
         if(newLayer <= 0) {
             return world.setBlockState(pos,Blocks.AIR.getDefaultState(),flags);
         }
-        return world.setBlockState(pos,state.withProperty(LEVEL,8- newLayer), flags);
+        return world.setBlockState(pos, FiniteFlowingVanilla.getFlowingByMaterial(state.getMaterial()).dynamic.getDefaultState().withProperty(LEVEL,8- newLayer), flags);
     }
 
     @Nullable
