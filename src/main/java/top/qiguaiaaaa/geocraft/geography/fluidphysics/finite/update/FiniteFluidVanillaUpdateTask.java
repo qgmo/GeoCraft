@@ -44,7 +44,7 @@ import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
@@ -79,7 +79,7 @@ public final class FiniteFluidVanillaUpdateTask extends FluidUpdateBaseTask {
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> bestFlowDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] bestFlowDirectionsArr = new EnumFacing[4];
     private static final @Nonnull IBlockState AIR_DEFAULT_STATE = Blocks.AIR.getDefaultState();
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable facingPos$mut = new BlockPosI.Mutable();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$mut = new MBlockPos();
     final @Nonnull FiniteFlowingVanilla flowing;
     IBlockState state;
 

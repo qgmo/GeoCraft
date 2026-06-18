@@ -36,8 +36,9 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +47,7 @@ public final class ChunkUtil {
     public static final List<EnumFacing> HORIZONTALS = Collections.unmodifiableList(Arrays.asList(
             EnumFacing.WEST, EnumFacing.EAST, EnumFacing.NORTH, EnumFacing.SOUTH));
 
-    public static int getSameLiquidDepth(Chunk chunk,int x,int y,int z, Fluid fluid, int maxDepth){
+    public static int getSameLiquidDepth(final @Nonnull Chunk chunk,final int x,int y,final int z,final @Nonnull Fluid fluid,final int maxDepth){
         int ans = 0;
         while (FluidUtil.getFluid(chunk.getBlockState(x,y,z))== fluid){
             ans++;
@@ -56,15 +57,14 @@ public final class ChunkUtil {
         return ans;
     }
 
-    public static int getNeighborsLightFor(World world, EnumSkyBlock type, BlockPos pos) {
+    public static int getNeighborsLightFor(final @Nonnull World world,final @Nonnull EnumSkyBlock type,final @Nonnull BlockPos pos) {
         if (!world.provider.hasSkyLight() && type == EnumSkyBlock.SKY) {
             return 0;
         }
-
-        BlockPosI.Mutable mutable = new BlockPosI.Mutable(pos);
-        if (pos.getY() < 0) {
-            mutable.setPos(pos.getX(), 0, pos.getZ());
-        }
+        final int x = pos.getX();
+        final int y = Math.max(pos.getY(), 0);
+        final int z = pos.getZ();
+        final MBlockPos mutable = new MBlockPos(x,y,z);
 
         if (!world.isValid(mutable)) {
             return type.defaultLightValue;
@@ -72,15 +72,16 @@ public final class ChunkUtil {
             return type.defaultLightValue;
         }
         int light = 0;
-        for(EnumFacing facing:EnumFacing.values()){
-            light = Math.max(light,world.getLightFor(EnumSkyBlock.SKY,mutable.offsetM(facing)));
+        for(final @Nonnull EnumFacing facing:EnumFacing.VALUES){
+            light = Math.max(light,world.getLightFor(EnumSkyBlock.SKY,mutable.setPos(x,y,z).offsetM(facing)));
         }
         return light;
     }
 
-    public static Biome getMainBiome(Chunk chunk){
-        byte[] biomes = chunk.getBiomeArray();
-        short[] frequency = new short[biomes.length+256];
+    @Nonnull
+    public static Biome getMainBiome(final @Nonnull Chunk chunk){
+        final byte[] biomes = chunk.getBiomeArray();
+        final short[] frequency = new short[biomes.length+256];
         for (int biome : biomes) {
             if(biome<0) biome = biome+256;
             frequency[biome+256]++;

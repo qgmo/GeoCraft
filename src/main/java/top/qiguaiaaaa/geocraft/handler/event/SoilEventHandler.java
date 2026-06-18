@@ -49,7 +49,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockStat
 import top.qiguaiaaaa.geocraft.api.event.player.ExtendedUseHoeEvent;
 import top.qiguaiaaaa.geocraft.api.event.player.UseSpadeEvent;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
+import top.qiguaiaaaa.geocraft.block.soil.IBlockSoil;
 import top.qiguaiaaaa.geocraft.configs.SoilConfig;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 

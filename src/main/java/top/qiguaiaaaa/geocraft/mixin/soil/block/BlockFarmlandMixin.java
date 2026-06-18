@@ -43,7 +43,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
+import top.qiguaiaaaa.geocraft.block.soil.IBlockSoil;
 
 import static top.qiguaiaaaa.geocraft.api.block.BlockProperties.HUMIDITY;
 

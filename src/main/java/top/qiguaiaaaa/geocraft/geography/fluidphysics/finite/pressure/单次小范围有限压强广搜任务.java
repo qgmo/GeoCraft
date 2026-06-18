@@ -37,11 +37,11 @@ import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchBaseTask;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchTaskSmallRangeRelativeResult;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
 import top.qiguaiaaaa.geocraft.api.util.math.Int10;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,9 +49,9 @@ import java.util.Collection;
 
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.*;
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.X_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.Y_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.RelativeMVec3s.MUTABLE;
 
 /**
  * 该类仅单线程使用，不得多线程并发使用
@@ -122,9 +122,9 @@ public abstract class 单次小范围有限压强广搜任务 extends FluidPress
     }
 
     protected BlockPos getPosFromInt(int posInt){
-        final int x = Int10.toInt((posInt&IVec3i.X_INT_MASK)>> X_INT_OFFSET),
-                y = Int10.toInt((posInt&IVec3i.Y_INT_MASK)>> Y_INT_OFFSET),
-                z = Int10.toInt(posInt&IVec3i.Z_INT_MASK);
+        final int x = Int10.toInt((posInt& Vec3s.X_INT_MASK)>> X_INT_OFFSET),
+                y = Int10.toInt((posInt& Vec3s.Y_INT_MASK)>> Y_INT_OFFSET),
+                z = Int10.toInt(posInt& Vec3s.Z_INT_MASK);
         return MUTABLE_BLOCK_POS_FOR_QUEUE.get().setPos(beginPos.getX()+x,beginPos.getY()+y,beginPos.getZ()+z);
     }
 

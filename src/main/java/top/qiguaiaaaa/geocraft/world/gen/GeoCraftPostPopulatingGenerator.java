@@ -36,9 +36,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.Fluid;
@@ -48,8 +46,8 @@ import top.qiguaiaaaa.geocraft.api.block.ILayeredFluidHost;
 import top.qiguaiaaaa.geocraft.api.event.EventFactory;
 import top.qiguaiaaaa.geocraft.api.setting.GeoSoilSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
+import top.qiguaiaaaa.geocraft.block.soil.IBlockSoil;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -76,7 +74,7 @@ public class GeoCraftPostPopulatingGenerator implements IWorldGenerator {
             return;
         }
         enableProtection = ENABLE_PRE_PROTECTION_OF_WATER_FALLING.getValue();
-        BlockPosI.Mutable pos = new BlockPosI.Mutable();
+        MBlockPos pos = new MBlockPos();
         int beginX = chunkX<<4;
         int beginZ = chunkZ<<4;
         for(int x=0;x<16;x++){

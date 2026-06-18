@@ -35,15 +35,16 @@ import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.Int21;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_RES;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i.X_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i.Y_LONG_OFFSET;
 
 /**
  * @author QiguaiAAAA
@@ -63,10 +64,6 @@ public class FluidPressureSearchTaskLargeRangeRelativeResult implements IFluidPr
         this(centerPos.getX(),centerPos.getY(),centerPos.getZ());
     }
 
-    public FluidPressureSearchTaskLargeRangeRelativeResult(IVec3i centerPos){
-        this(centerPos.getX(),centerPos.getY(),centerPos.getZ());
-    }
-
     @ThreadOnly(ThreadType.FLUID_PRESSURE_TASKS)
     public Collection<BlockPos> toResultCollection(){
         ArrayList<BlockPos> list = new ArrayList<>(res.size());
@@ -77,7 +74,7 @@ public class FluidPressureSearchTaskLargeRangeRelativeResult implements IFluidPr
     }
 
     @ThreadOnly(ThreadType.FLUID_PRESSURE_TASKS)
-    public void put(IVec3i pos){
+    public void put(final @Nonnull RelativeMVec3i pos){
         res.add(pos.toLong());
     }
 
@@ -102,9 +99,9 @@ public class FluidPressureSearchTaskLargeRangeRelativeResult implements IFluidPr
 
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.FLUID_PRESSURE_TASKS})
     protected BlockPos getPosFromLong(long posLong){
-        final int x = Int21.toInt((posLong& IVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
-                y = Int21.toInt((posLong&IVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
-                z = Int21.toInt(posLong&IVec3i.Z_LONG_MASK);
+        final int x = Int21.toInt((posLong& RelativeMVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
+                y = Int21.toInt((posLong& RelativeMVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
+                z = Int21.toInt(posLong& RelativeMVec3i.Z_LONG_MASK);
         return MUTABLE_BLOCK_POS_FOR_RES.get().setPos(cx+x,cy+y,cz+z);
     }
 }

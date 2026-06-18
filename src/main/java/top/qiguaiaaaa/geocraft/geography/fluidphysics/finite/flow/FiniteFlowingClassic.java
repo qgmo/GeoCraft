@@ -40,8 +40,7 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.OldFlowChoice;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.util.MiscUtil;
 import top.qiguaiaaaa.geocraft.util.fluid.FluidMixinUtil;
@@ -60,9 +59,9 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
 public final class FiniteFlowingClassic {
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable facingPos$最外层$mut = new BlockPosI.Mutable();
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable downPos$mutable = new BlockPosI.Mutable();
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable facingPos$迭代用$mut = new BlockPosI.Mutable();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$最外层$mut = new MBlockPos();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos downPos$mutable = new MBlockPos();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$迭代用$mut = new MBlockPos();
     public final @Nonnull BlockFluidClassic block;
     public final @Nonnull Material material;
     public final @Nonnull Fluid fluid;
@@ -135,8 +134,7 @@ public final class FiniteFlowingClassic {
                 continue;
             }
             final int slope;
-            /// 疑似 Minecraft Forge 会导致当强制转换为 {@link IVec3i} 时，因为奇妙的问题导致 {@link AbstractMethodError}，因此必须转换为 {@link Vec3i}
-            if (canFlowDownTo(worldIn, downPos$mutable.setPos((Vec3i) facingPos$最外层$mut).offsetM(EnumFacing.UP,densityDir)) == FlowVerticalState.DENY) {
+            if (canFlowDownTo(worldIn, downPos$mutable.setPos(facingPos$最外层$mut).offsetM(EnumFacing.UP,densityDir)) == FlowVerticalState.DENY) {
                 slope = this.getSingleSlopeDistance(worldIn,
                         facingPos$最外层$mut.getX(),
                         pos.getY(),

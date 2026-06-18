@@ -43,7 +43,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
 
 /**
  * @author QiguaiAAAA
@@ -69,7 +68,7 @@ public abstract class EntityFallingBlockMixin extends Entity {
         if(this.dontSetBlock) return;
         final Block fallingBlock = this.fallTile.getBlock();
         if(fallingBlock instanceof BlockFalling) return;
-        blockpos1 = blockpos1 == null? new BlockPosI(this):blockpos1;
+        blockpos1 = blockpos1 == null? new BlockPos(this):blockpos1;
         iblockstate = iblockstate == null?world.getBlockState(blockpos1):iblockstate;
         if(fallingBlock instanceof IBlockFalling) {
             ((IBlockFalling)fallingBlock).onEndFalling(this.world,blockpos1,this.fallTile,iblockstate);
@@ -83,7 +82,7 @@ public abstract class EntityFallingBlockMixin extends Entity {
         if(!this.dontSetBlock) return;
         final Block fallingBlock = this.fallTile.getBlock();
         if(fallingBlock instanceof BlockFalling) return;
-        blockpos1 = blockpos1 == null? new BlockPosI(this):blockpos1;
+        blockpos1 = blockpos1 == null? new BlockPos(this):blockpos1;
         if(fallingBlock instanceof IBlockFalling) {
             ((IBlockFalling)fallingBlock).onBroken(this.world,blockpos1);
         }

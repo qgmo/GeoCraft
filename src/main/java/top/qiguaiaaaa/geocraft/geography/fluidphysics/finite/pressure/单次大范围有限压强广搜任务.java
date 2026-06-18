@@ -38,7 +38,7 @@ import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.Int21;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchBaseTask;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchTaskLargeRangeRelativeResult;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
@@ -47,9 +47,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_LONG_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosI.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i.X_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i.Y_LONG_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i.MUTABLE;
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_QUEUE;
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_POS_I_FOR_REALITY_BFS_RES;
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.task.pressure.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
@@ -121,9 +121,9 @@ public abstract class 单次大范围有限压强广搜任务 extends FluidPress
     }
 
     protected BlockPos getPosFromLong(long posLong){
-        final int x = Int21.toInt((posLong& IVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
-                y = Int21.toInt((posLong&IVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
-                z = Int21.toInt(posLong&IVec3i.Z_LONG_MASK);
+        final int x = Int21.toInt((posLong& RelativeMVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
+                y = Int21.toInt((posLong& RelativeMVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
+                z = Int21.toInt(posLong& RelativeMVec3i.Z_LONG_MASK);
         return MUTABLE_BLOCK_POS_FOR_QUEUE.get().setPos(beginPos.getX()+x,beginPos.getY()+y,beginPos.getZ()+z);
     }
 

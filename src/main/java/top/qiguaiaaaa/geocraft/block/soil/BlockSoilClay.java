@@ -30,7 +30,6 @@ package top.qiguaiaaaa.geocraft.block.soil;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
 import javax.annotation.Nonnull;

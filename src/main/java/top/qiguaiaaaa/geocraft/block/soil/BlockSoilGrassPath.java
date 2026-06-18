@@ -35,7 +35,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
 import javax.annotation.Nonnull;

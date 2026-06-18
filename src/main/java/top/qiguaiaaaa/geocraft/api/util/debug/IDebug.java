@@ -30,5 +30,6 @@ package top.qiguaiaaaa.geocraft.api.util.debug;
 /**
  * @author QiguaiAAAA
  */
+@Deprecated
 public interface IDebug {
 }

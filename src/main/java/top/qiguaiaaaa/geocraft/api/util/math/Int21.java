@@ -34,36 +34,25 @@ public final class Int21 {
     public static final int SIGN_MASK = 0x100000;
     public static final int CONTENT_MASK = 0xFFFFF;
     public static final long ALL_MASK = 0x1FFFFF;
-    private final int val;
 
-    public Int21(int v){
-        val = (int) toInt21(v);
-    }
+    private Int21(){}
 
-    public Int21(short v){
-        val = (int) toInt21(v);
-    }
-
-    public Int21(byte v){
-        val = (int) toInt21(v);
-    }
-
-    public static long toInt21(byte v){
+    public static long toInt21(final byte v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static long toInt21(short v){
+    public static long toInt21(final short v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static long toInt21(int v){
+    public static long toInt21(final int v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static int toInt(long int21){
+    public static int toInt(final long int21){
         return (int) ((SIGN_MASK&int21)==0?int21:-(int21&CONTENT_MASK));
     }
 }

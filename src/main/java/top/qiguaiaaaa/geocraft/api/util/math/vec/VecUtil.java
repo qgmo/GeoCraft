@@ -33,7 +33,7 @@ package top.qiguaiaaaa.geocraft.api.util.math.vec;
 public final class VecUtil {
     private VecUtil(){}
 
-    public static double centerPos(int pos){
+    public static double centerPos(final int pos){
         return pos+0.5d;
     }
 }

@@ -210,7 +210,7 @@ public final class CommandGeoConfig {
 
     @Nonnull
     private static TextBuilder<?,?> defaultValueTextOf(final @Nonnull ConfigItem<?,?> item){
-        final String value = item.getValue().toString();
+        final String value = item.getDefaultValue().toString();
         return value.codePoints().count()<500?plain(value).color(TextFormatting.AQUA):
                 translation("geocraft.command.geoconfig.info.cur_value.out_of_range").color(TextFormatting.GOLD);
     }

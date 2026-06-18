@@ -34,7 +34,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 
 import javax.annotation.Nonnull;
 
@@ -81,7 +81,7 @@ public interface IBlockFalling {
         // 下面是在区块生成的时候调用的代码
         IBlockState state = world.getBlockState(pos);
         world.setBlockToAir(pos); //没有生成实体，需要手动设置为空气
-        BlockPosI.Mutable curPos = new BlockPosI.Mutable(pos);
+        MBlockPos curPos = new MBlockPos(pos);
 
         do {
             curPos.downM();

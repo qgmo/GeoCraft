@@ -30,8 +30,8 @@ package top.qiguaiaaaa.geocraft.geography.fluidphysics;
 import net.minecraft.util.math.BlockPos;
 import top.qiguaiaaaa.geocraft.api.util.annotation.MultiThread;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosI;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s;
 
 /**
  * @author QiguaiAAAA
@@ -50,12 +50,12 @@ public final class ThreadLocalHelper {
             ThreadLocal.withInitial(BlockPos.MutableBlockPos::new);
 
     @MultiThread(ThreadType.FLUID_PRESSURE_TASKS)
-    public static final ThreadLocal<RelativeBlockPosI.Mutable> MUTABLE_POS_I_FOR_REALITY_BFS_RES =
-            ThreadLocal.withInitial(RelativeBlockPosI.Mutable::new);
+    public static final ThreadLocal<RelativeMVec3i> MUTABLE_POS_I_FOR_REALITY_BFS_RES =
+            ThreadLocal.withInitial(RelativeMVec3i::new);
 
     @MultiThread(ThreadType.FLUID_PRESSURE_TASKS)
-    public static final ThreadLocal<RelativeBlockPosS.Mutable> MUTABLE_POS_S_FOR_REALITY_BFS_RES =
-            ThreadLocal.withInitial(RelativeBlockPosS.Mutable::new);
+    public static final ThreadLocal<Vec3s.RelativeMVec3s> MUTABLE_POS_S_FOR_REALITY_BFS_RES =
+            ThreadLocal.withInitial(Vec3s.RelativeMVec3s::new);
 
     public static void clear(){
         MUTABLE_BLOCK_POS_FOR_RES.remove();

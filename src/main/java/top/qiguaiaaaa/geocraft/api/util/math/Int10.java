@@ -35,36 +35,24 @@ public final class Int10 {
     public static final int CONTENT_MASK = 0x1FF;
     public static final int ALL_MASK = 0x3FF;
 
-    private final short val;
+    private Int10(){}
 
-    public Int10(int v){
-        val = (short) toInt10(v);
-    }
-
-    public Int10(short v){
-        val = (short) toInt10(v);
-    }
-
-    public Int10(byte v){
-        val = (short) toInt10(v);
-    }
-
-    public static int toInt10(byte v){
+    public static int toInt10(final byte v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static int toInt10(short v){
+    public static int toInt10(final short v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static int toInt10(int v){
+    public static int toInt10(final int v){
         if(v>=0) return v;
         return SIGN_MASK | ((-v) & CONTENT_MASK);
     }
 
-    public static int toInt(int int10){
+    public static int toInt(final int int10){
         return (SIGN_MASK&int10)==0?int10:-(int10&CONTENT_MASK);
     }
 }

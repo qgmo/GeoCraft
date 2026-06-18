@@ -48,7 +48,7 @@ import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import top.qiguaiaaaa.geocraft.util.math.MathUtil;
 import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
@@ -75,7 +75,7 @@ public abstract class EntityPotionMixin extends EntityThrowable {
         left -= 天圆地方$applyOnLayeredFluidHost(res.sideHit,curPos,天圆地方$randomizeAmount(left));
         left -= 天圆地方$applyOnLayeredFluidHostSide(res.sideHit,hitPos,天圆地方$randomizeAmount(left),4);
         final byte[] directions = MathUtil.randomizeByteArray(new byte[]{0,1,2,3},world.rand);
-        final BlockPosI.Mutable mutable = new BlockPosI.Mutable();
+        final MBlockPos mutable = new MBlockPos();
         for(int i=0;i<4;i++){
             final EnumFacing side = EnumFacing.HORIZONTALS[directions[i]];
             final BlockPos pos = mutable.setPos(curPos).offsetM(side);

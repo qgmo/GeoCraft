@@ -45,6 +45,7 @@ import java.util.Set;
 /**
  * @author QiguaiAAAA
  */
+@Deprecated
 public class GeoCraftWorldSavedData extends WorldSavedData {
     public static final String DATA_NAME = "GeoCraftData";
 

@@ -34,15 +34,15 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
 import top.qiguaiaaaa.geocraft.api.util.math.Int10;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 import static top.qiguaiaaaa.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_QUEUE;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.X_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.IVec3i.Y_INT_OFFSET;
-import static top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeBlockPosS.Mutable.MUTABLE;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.X_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.Y_INT_OFFSET;
+import static top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s.RelativeMVec3s.MUTABLE;
 
 /**
  * 以{@link Integer}存储坐标的BFS搜寻任务，适用于搜寻范围不超过{@link #MAX_RELATIVE_POS_OFFSET}的任务
@@ -115,9 +115,9 @@ public abstract class FluidPressureSmallBFSBaseTask extends FluidPressureBFSBase
     }
 
     protected BlockPos getPosFromInt(int posInt){
-        final int x = Int10.toInt((posInt& IVec3i.X_INT_MASK)>> X_INT_OFFSET),
-                y = Int10.toInt((posInt&IVec3i.Y_INT_MASK)>> Y_INT_OFFSET),
-                z = Int10.toInt(posInt&IVec3i.Z_INT_MASK);
+        final int x = Int10.toInt((posInt& Vec3s.X_INT_MASK)>> X_INT_OFFSET),
+                y = Int10.toInt((posInt& Vec3s.Y_INT_MASK)>> Y_INT_OFFSET),
+                z = Int10.toInt(posInt& Vec3s.Z_INT_MASK);
         return MUTABLE_BLOCK_POS_FOR_QUEUE.get().setPos(beginPos.getX()+x,beginPos.getY()+y,beginPos.getZ()+z);
     }
 

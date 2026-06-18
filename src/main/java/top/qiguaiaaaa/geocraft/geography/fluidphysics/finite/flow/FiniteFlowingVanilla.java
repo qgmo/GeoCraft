@@ -45,7 +45,7 @@ import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadOnly;
 import top.qiguaiaaaa.geocraft.api.util.annotation.ThreadType;
 import top.qiguaiaaaa.geocraft.api.util.math.FlowChoice;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 import top.qiguaiaaaa.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.FluidPressureSearchManager;
@@ -68,9 +68,9 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<FlowChoice> averageFlowChoices = new ArrayList<>();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> bestFlowDirections = EnumSet.noneOf(EnumFacing.class);
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable facingPos$最外层$mut = new BlockPosI.Mutable();
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable downPos$mutable = new BlockPosI.Mutable();
-    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) BlockPosI.Mutable facingPos$迭代用$mut = new BlockPosI.Mutable();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$最外层$mut = new MBlockPos();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos downPos$mutable = new MBlockPos();
+    private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) MBlockPos facingPos$迭代用$mut = new MBlockPos();
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     private static final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
 

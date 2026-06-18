@@ -27,27 +27,36 @@
 
 package top.qiguaiaaaa.geocraft.api.util.math.vec;
 
+import net.minecraft.util.math.Vec3i;
+import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import static top.qiguaiaaaa.geocraft.api.util.math.Int10.toInt10;
-import static top.qiguaiaaaa.geocraft.api.util.math.Int21.toInt21;
 
 /**
  * @author QiguaiAAAA
  */
-public class Vec3s implements IVec3i{
+public class Vec3s{
+    public static final int X_INT_OFFSET = 20;
+    public static final int X_INT_MASK = Int10.ALL_MASK<< X_INT_OFFSET;
+    public static final int Y_INT_OFFSET = 10;
+    public static final int Y_INT_MASK = Int10.ALL_MASK<< Y_INT_OFFSET;
+    public static final int Z_INT_OFFSET = 0;
+    public static final int Z_INT_MASK = Int10.ALL_MASK<< Z_INT_OFFSET;
     protected short x,y,z;
-    public Vec3s(short x, short y, short z){
+
+    public Vec3s(final short x,final short y,final short z){
         this.x = x;
         this.y = y;
         this.z = z;
     }
-    public Vec3s(Vec3s vec){
+
+    public Vec3s(final @Nonnull Vec3s vec){
         this(vec.x, vec.y,vec.z);
     }
-    public Vec3s(IVec3i vec){
-        this((short) vec.getX(), (short) vec.getY(), (short) vec.getZ());
-    }
+
     public short getSX() {
         return this.x;
     }
@@ -60,26 +69,20 @@ public class Vec3s implements IVec3i{
         return this.z;
     }
 
-    @Override
     public int toInt(){
         return toInt10(x)<<20 | toInt10(y) << 10 | toInt10(z);
     }
 
     @Override
-    public long toLong(){
-        return toInt21(x) <<42 | toInt21(y) <<21 | toInt21(z);
-    }
-
-    @Override
     public int hashCode() {
-        return (this.getSY() + this.getSZ() * 31) * 31 + this.getSX();
+        return (this.y + this.z * 31) * 31 + this.x;
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final @Nullable Object obj) {
         if(obj instanceof Vec3s){
             Vec3s b = (Vec3s) obj;
-            return b.getSX() == getSX() && b.getSY() == getSY() && b.getSZ() == getSZ();
+            return b.x == x && b.y == y && b.z == z;
         }
         return false;
     }
@@ -89,27 +92,36 @@ public class Vec3s implements IVec3i{
         return this.getClass().getName()+"("+ getSX()+","+ getSY()+","+ getSZ()+")";
     }
 
-    //******
-    //IVec3i
-    //******
-    @Override
-    public int getX() {
-        return getSX();
-    }
+    public static class RelativeMVec3s extends Vec3s{
+        public static final ThreadLocal<RelativeMVec3s> MUTABLE = ThreadLocal.withInitial(RelativeMVec3s::new);
+        public RelativeMVec3s(){
+            super((short) 0, (short) 0, (short) 0);
+        }
 
-    @Override
-    public int getY() {
-        return getSY();
-    }
+        public RelativeMVec3s(final short ax, final short ay, final short az) {
+            super(ax, ay, az);
+        }
 
-    @Override
-    public int getZ() {
-        return getSZ();
-    }
+        public RelativeMVec3s(final int x, final int y, final int z, final int tx, final int ty, final int tz) {
+            this((short) (tx-x), (short) (ty-y), (short) (tz-z));
+        }
+        public RelativeMVec3s(final @Nonnull Vec3i origin, final @Nonnull Vec3i target) {
+            this(origin.getX(),origin.getY(),origin.getZ(),target.getX(),target.getY(),target.getZ());
+        }
 
-    @Override
-    @Nonnull
-    public IVec3i asImmutable() {
-        return this;
+        public RelativeMVec3s setPos(final short x, final short y, final short z){
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            return this;
+        }
+
+        public RelativeMVec3s setPos(final int cx, final int cy, final int cz, final int ax, final int ay, final int az){
+            return this.setPos((short) (ax-cx),(short) (ay-cy),(short) (az-cz));
+        }
+
+        public RelativeMVec3s setPos(@Nonnull final Vec3i center, @Nonnull final Vec3i to){
+            return this.setPos(center.getX(),center.getY(),center.getZ(),to.getX(),to.getY(),to.getZ());
+        }
     }
 }

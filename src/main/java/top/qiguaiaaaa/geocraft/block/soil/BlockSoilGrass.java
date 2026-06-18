@@ -37,8 +37,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import top.qiguaiaaaa.geocraft.api.block.IBlockFalling;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.BlockPosI;
-import top.qiguaiaaaa.geocraft.block.IBlockSoil;
+import top.qiguaiaaaa.geocraft.api.util.math.vec.MBlockPos;
 import top.qiguaiaaaa.geocraft.geography.soil.BlockSoilType;
 
 import javax.annotation.Nonnull;
@@ -66,7 +65,7 @@ public class BlockSoilGrass extends BlockSoilExtends.Grass implements IBlockSoil
             worldIn.setBlockState(pos, Blocks.DIRT.getDefaultState().withProperty(HUMIDITY,state.getValue(HUMIDITY)));
             return;
         }
-        final BlockPosI.Mutable mutablePos = new BlockPosI.Mutable();
+        final MBlockPos mutablePos = new MBlockPos();
         if (worldIn.getLightFromNeighbors(pos.up()) >= 9) {
             for (int i = 0; i < 4; ++i) {
                 mutablePos.setPos(pos.getX()+rand.nextInt(3) - 1, pos.getY()+rand.nextInt(5) - 3, pos.getZ()+rand.nextInt(3) - 1);
