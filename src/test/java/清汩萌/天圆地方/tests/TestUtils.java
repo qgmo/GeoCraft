@@ -29,14 +29,40 @@ package 清汩萌.天圆地方.tests;
 
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.GameType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.util.BaseUtil;
+import top.qiguaiaaaa.geocraft.util.ChunkUtil;
 import top.qiguaiaaaa.geocraft.util.math.MathUtil;
+import 清汩萌.天圆地方.util.网格工具;
+import 清汩萌.天圆地方.world.MockSimpleWorld;
+import 清汩萌.天圆地方.world.MockWorldProvider;
+import 清汩萌.天圆地方.world.light.SimpleLightGrid;
+import 清汩萌.天圆地方.world.sandbox.MockHashSandbox;
+import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
+import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.天圆地方.world.storage.MockWorldInfo;
 import 清汩萌.天圆地方.天圆地方测试;
+import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.工具.YamlUtil;
+import 清汩萌.造.格文件;
+import 清汩萌.造.空间.亮度构造器;
+import 清汩萌.造.空间.空间工具;
+import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static 清汩萌.天圆地方.assets.MockBlocks.Bases.〇;
+import static 清汩萌.天圆地方.util.网格工具.打包网格数据;
 
 /**
  * @author QiguaiAAAA
@@ -452,6 +478,63 @@ public class TestUtils {
             );
 
             天圆地方测试.LOGGER.info("parseBooleanTest passed");
+        }
+    }
+
+    /**
+     * @author QGMoe
+     * @see top.qiguaiaaaa.geocraft.util.ChunkUtil
+     */
+    public final static class TestChunkUtil extends 天圆地方测试{
+        @ParameterizedTest
+        @MethodSource("prepareForGetNeighborsLightFor")
+        public void testGetNeighborsLightFor(final @Nonnull NeighborsLightTestCase c) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+            test(new Object[]{打包网格数据(c.$网格),
+                    c.posToTest,
+                    c.type,
+                    c.expected});
+        }
+
+        public static final class NeighborsLightTestCase extends SandboxTestCase {
+            private static final Object2BooleanArrayMap<String> validType = new Object2BooleanArrayMap<>(
+                    new String[]{"block","方块","sky","天空"},
+                    new boolean[]{true,true,false,false}
+            );
+            final @Nonnull int[] posToTest;
+            final boolean type;
+            final int expected;
+
+            public NeighborsLightTestCase(final @Nonnull 格文件 $格文件) {
+                super($格文件);
+                final Map<String,Object> ext = $格文件.获取附加数据();
+                Assertions.assertNotNull(ext);
+                this.posToTest = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"at"));
+                this.type = validType.computeIfAbsent(StringUtil.strip(YamlUtil.getString(ext,"type")).toLowerCase(Locale.ROOT),
+                        k -> Assertions.fail("unknown light type "+k));
+                this.expected = YamlUtil.getInt(ext,"expected");
+            }
+        }
+
+        @Nonnull
+        public static Stream<NeighborsLightTestCase> prepareForGetNeighborsLightFor(){
+            return SandboxTestCase.findInputs("data/util/chunk/LightTest/",NeighborsLightTestCase::new);
+        }
+
+        public static void testGetNeighborsLightFor_Inner(final @Nonnull Object[] $打包网格数据,
+                                                          final @Nonnull int[] posToTestRaw,
+                                                          final boolean typeRaw,
+                                                          final int expected){
+            final BlockPos postToTest = new BlockPos(posToTestRaw[0],posToTestRaw[1],posToTestRaw[2]);
+            final 词块网格 $网格 = 网格工具.恢复网格数据($打包网格数据);
+            天圆地方测试.LOGGER.info("Pos To Test:{} \n Data: {}",postToTest,$网格);
+            final MockSimpleWorld world = MockSimpleWorld.create(MockWorldInfo.create(b-> b.withGameType(GameType.CREATIVE))
+                    ,new MockWorldProvider().setSkyLight(true),false);
+            final MockHashSandbox sandbox = new MockHashSandbox(〇);
+            world.setSandbox(sandbox);
+            if(typeRaw) world.setLightGridBlock(new SimpleLightGrid(EnumSkyBlock.BLOCK,亮度构造器.$亮度构造器.构造($网格)));//方块
+            else world.setLightGridSky(new SimpleLightGrid(EnumSkyBlock.SKY,亮度构造器.$亮度构造器.构造($网格)));
+            final int val = ChunkUtil.getNeighborsLightFor(world,typeRaw?EnumSkyBlock.BLOCK:EnumSkyBlock.SKY,postToTest);
+            Assertions.assertEquals(expected,val);
         }
     }
 }

@@ -50,7 +50,7 @@ public abstract class MockSandboxAbstract implements IMockSandbox{
 
     @Override
     public int getCombinedLight(final @Nonnull BlockPos pos,final int lightValue) {
-        return lightValue;
+        throw new UnsupportedOperationException("Unsupported Get Combined Light");
     }
 
     @Override

@@ -25,36 +25,49 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.world;
+package 清汩萌.天圆地方.world.light;
 
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
+import org.junit.jupiter.api.Assumptions;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class MockWorldProvider extends WorldProvider {
+public class SimpleLightGrid implements ILightGrid{
+    protected final @Nonnull EnumSkyBlock type;
+    protected final @Nonnull byte[][][] structure;
+    protected byte outLight;
 
-    protected @Nonnull DimensionType type = DimensionType.THE_END;
-
-    @Nonnull
-    public MockWorldProvider setSkyLight(final boolean has){
-        this.hasSkyLight = has;
-        return this;
+    public SimpleLightGrid(@Nonnull final EnumSkyBlock type, @Nonnull byte[][][] structure) {
+        this.type = type;
+        this.structure = structure;
     }
 
-    @Nonnull
-    public MockWorldProvider setDimensionType(final @Nonnull DimensionType type){
-        this.type = Objects.requireNonNull(type);
-        return this;
+    public void setOutLight(final byte outLight) {
+        Assumptions.assumeTrue(outLight >=0 && outLight <= 15);
+        this.outLight = outLight;
+    }
+
+    protected boolean isOutOfRange(final int x,final int y,final int z){
+        return !(y>=0 && y < structure.length && z>=0 && z < structure[y].length && x>=0 && x < structure[y][z].length);
     }
 
     @Nonnull
     @Override
-    public DimensionType getDimensionType() {
+    public EnumSkyBlock getType() {
         return type;
+    }
+
+    @Override
+    public byte getLight(@Nonnull final BlockPos pos) {
+        return isOutOfRange(pos)?this.outLight:this.structure[pos.getY()][pos.getZ()][pos.getX()];
+    }
+
+    @Override
+    public boolean isOutOfRange(@Nonnull final BlockPos pos) {
+        return isOutOfRange(pos.getX(),pos.getY(),pos.getZ());
     }
 }

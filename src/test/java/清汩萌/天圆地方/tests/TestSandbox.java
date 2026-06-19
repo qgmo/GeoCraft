@@ -46,144 +46,138 @@ import static 清汩萌.天圆地方.assets.MockBlocks.Bases.*;
 import static 清汩萌.造.空间.IBlockStateGridBuilder.grid;
 
 /**
- * @author QiguaiAAAA
+ * @author QiguaiAAAA, ChatGPT
+ * @see MockBlocks
  */
-public class TestSandbox {
+public final class TestSandbox extends 天圆地方测试{
+
+    @Test
+    public void generateFromCharactersTest() throws Exception {
+        test();
+    }
+
+    @SuppressWarnings("unused")
+    public static void generateFromCharactersTest_Inner(){
+        空间假设.假设构造相同(grid().layer()
+                        .row(石,石,石)
+                        .row(石,〇,石)
+                        .row(石,石,石).done()
+                        .layer()
+                        .row(〇,〇,〇)
+                        .row(〇,崗,〇)
+                        .row(〇,〇,〇)
+                        .done().build()
+                ,BUILDER.构造().层()
+                        .行("石石石")
+                        .行("石〇石")
+                        .行("石石石").完成()
+                        .层()
+                        .行("〇〇〇")
+                        .行("〇崗〇")
+                        .行("〇〇〇")
+                        .完成().构造()
+        );
+    }
+
+    @Test
+    public void generateSingleLayerTest() throws Exception {
+        test();
+    }
+
+    public static void generateSingleLayerTest_Inner(){
+        空间假设.假设构造相同(grid().layer()
+                        .row(石,石,石)
+                        .row(石,崗,石)
+                        .row(石,石,石).done().build()
+                ,BUILDER.构造().层()
+                        .行("石石石")
+                        .行("石崗石")
+                        .行("石石石").完成().构造()
+        );
+    }
+
+    @Test
+    public void generateAllAirTest() throws Exception {
+        test();
+    }
+
+    public static void generateAllAirTest_Inner(){
+        空间假设.假设构造相同(grid().layer()
+                        .row(〇,〇,〇)
+                        .row(〇,〇,〇)
+                        .row(〇,〇,〇).done().build()
+                ,BUILDER.构造().层()
+                        .行("〇〇〇")
+                        .行("〇〇〇")
+                        .行("〇〇〇").完成().构造()
+        );
+    }
 
     /**
-     * @author QiguaiAAAA, ChatGPT
-     * @see MockBlocks.Bases
+     * ChatGPT Generated
      */
-    public static final class TestBases extends 天圆地方测试 {
+    @Test
+    public void characterMappingTest() throws Exception {
+        test();
+    }
 
-        @Test
-        public void generateFromCharactersTest() throws Exception {
-            test();
-        }
+    /**
+     * ChatGPT Generated
+     */
+    public static void characterMappingTest_Inner(){
+        final IBlockState[][][] A = BUILDER.构造().层()
+                .行("石土 〇")
+                .行("〇土1崗")
+                .行("崗〇 石")
+                .完成().构造();
+        空间假设.假设构造相同(A,grid().layer()
+                .row(石, MockBlocks.Soils.土0,〇)
+                .row(〇, MockBlocks.Soils.土1,崗)
+                .row(崗,〇,石).done().build()
+        );
+        final @Nonnull MockSimpleWorld world = MockSimpleWorld.create(MockWorldInfo.create(b -> b.withGameType(GameType.CREATIVE)),false);
+        world.setSandbox(new MockSimpleSandbox(A));
+        Assertions.assertEquals(world.getBlockState(new BlockPos(1,0,1)), MockBlocks.Soils.土1); //中间
+        Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,0)),〇); //右上角
+        Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,2)),石); //右下角
+    }
 
-        @SuppressWarnings("unused")
-        public static void generateFromCharactersTest_Inner(){
-            空间假设.假设构造相同(grid().layer()
-                            .row(石,石,石)
-                            .row(石,〇,石)
-                            .row(石,石,石).done()
-                            .layer()
-                            .row(〇,〇,〇)
-                            .row(〇,崗,〇)
-                            .row(〇,〇,〇)
-                            .done().build()
-                    ,BUILDER.构造().层()
-                            .行("石石石")
-                            .行("石〇石")
-                            .行("石石石").完成()
-                            .层()
-                            .行("〇〇〇")
-                            .行("〇崗〇")
-                            .行("〇〇〇")
-                            .完成().构造()
-            );
-        }
+    /**
+     * ChatGPT Generated
+     */
+    @Test
+    public void multiLayerHeightTest() throws Exception {
+        test();
+    }
 
-        @Test
-        public void generateSingleLayerTest() throws Exception {
-            test();
-        }
-
-        public static void generateSingleLayerTest_Inner(){
-            空间假设.假设构造相同(grid().layer()
-                            .row(石,石,石)
-                            .row(石,崗,石)
-                            .row(石,石,石).done().build()
-                    ,BUILDER.构造().层()
-                            .行("石石石")
-                            .行("石崗石")
-                            .行("石石石").完成().构造()
-            );
-        }
-
-        @Test
-        public void generateAllAirTest() throws Exception {
-            test();
-        }
-
-        public static void generateAllAirTest_Inner(){
-            空间假设.假设构造相同(grid().layer()
-                            .row(〇,〇,〇)
-                            .row(〇,〇,〇)
-                            .row(〇,〇,〇).done().build()
-                    ,BUILDER.构造().层()
-                            .行("〇〇〇")
-                            .行("〇〇〇")
-                            .行("〇〇〇").完成().构造()
-            );
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void characterMappingTest() throws Exception {
-            test();
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        public static void characterMappingTest_Inner(){
-            final IBlockState[][][] A = BUILDER.构造().层()
-                    .行("石土 〇")
-                    .行("〇土1崗")
-                    .行("崗〇 石")
-                    .完成().构造();
-            空间假设.假设构造相同(A,grid().layer()
-                    .row(石, MockBlocks.Soils.土0,〇)
-                    .row(〇, MockBlocks.Soils.土1,崗)
-                    .row(崗,〇,石).done().build()
-            );
-            final @Nonnull MockSimpleWorld world = MockSimpleWorld.create(MockWorldInfo.create(b -> b.withGameType(GameType.CREATIVE)),false);
-            world.setSandbox(new MockSimpleSandbox(A));
-            Assertions.assertEquals(world.getBlockState(new BlockPos(1,0,1)), MockBlocks.Soils.土1); //中间
-            Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,0)),〇); //右上角
-            Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,2)),石); //右下角
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void multiLayerHeightTest() throws Exception {
-            test();
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        public static void multiLayerHeightTest_Inner(){
-            空间假设.假设构造相同(grid().layer()
-                    .row(石,石,石)
-                    .row(石,石,石)
-                    .row(石,石,石).done()
-                    .layer()
-                    .row(〇,〇,〇)
-                    .row(〇,〇,〇)
-                    .row(〇,〇,〇).done()
-                    .layer()
-                    .row(閃,閃,閃)
-                    .row(崗,崗,崗)
-                    .row(MockBlocks.Soils.䒚, MockBlocks.Soils.雪砂, MockBlocks.Soils.砂).done().build()
-                    ,BUILDER.构造().层()
-                    .行("石石石")
-                    .行("石石石")
-                    .行("石石石").完成()
-                    .层()
-                    .行("〇〇〇")
-                    .行("〇〇〇")
-                    .行("〇〇〇").完成()
-                    .层()
-                    .行("閃 閃 閃")
-                    .行("崗 崗 崗")
-                    .行("䒚0[雪砂]0砂0").完成().构造()
-            );
-        }
+    /**
+     * ChatGPT Generated
+     */
+    public static void multiLayerHeightTest_Inner(){
+        空间假设.假设构造相同(grid().layer()
+                        .row(石,石,石)
+                        .row(石,石,石)
+                        .row(石,石,石).done()
+                        .layer()
+                        .row(〇,〇,〇)
+                        .row(〇,〇,〇)
+                        .row(〇,〇,〇).done()
+                        .layer()
+                        .row(閃,閃,閃)
+                        .row(崗,崗,崗)
+                        .row(MockBlocks.Soils.䒚, MockBlocks.Soils.雪砂, MockBlocks.Soils.砂).done().build()
+                ,BUILDER.构造().层()
+                        .行("石石石")
+                        .行("石石石")
+                        .行("石石石").完成()
+                        .层()
+                        .行("〇〇〇")
+                        .行("〇〇〇")
+                        .行("〇〇〇").完成()
+                        .层()
+                        .行("閃 閃 閃")
+                        .行("崗 崗 崗")
+                        .行("䒚0[雪砂]0砂0").完成().构造()
+        );
     }
 }

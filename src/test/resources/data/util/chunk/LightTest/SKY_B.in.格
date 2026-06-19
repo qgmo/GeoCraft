@@ -1,0 +1,19 @@
+---
+name: 嵌入地面的天空光照
+ver: 1
+ext:
+  at: [2,2,2]
+  type: sky
+  expected: 15
+---
+零零零
+零零零
+零零零
+
+零零零
+零零零
+零零零
+
+F F F
+F F F
+F F F

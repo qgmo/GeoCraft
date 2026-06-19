@@ -1,0 +1,19 @@
+---
+name: 测试基本的方块光照
+ver: 1
+ext:
+  at: [2,2,2]
+  type: block
+  expected: 15
+---
+F F F
+F F F
+F F F
+
+F F F
+F 零 F
+F F F
+
+F F F
+F F F
+F F F

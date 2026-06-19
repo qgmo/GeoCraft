@@ -36,7 +36,10 @@ import 清汩萌.造.格文件;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -56,6 +59,15 @@ public class SandboxTestCase {
         this.$网格 = $格文件.获取网格();
         final Map<String,Object> ext = $格文件.获取附加数据();
         Assertions.assertNotNull(ext);
+    }
+
+    public static <T> Stream<T> findInputs(final @Nonnull String dataDir,
+                                                                   final @Nonnull Function<格文件,T> supplier){
+        try (final @Nonnull ScanResult scan = new ClassGraph().acceptPaths(dataDir).scan()){
+            final ArrayList<T> cases = new ArrayList<>();
+            findInputs(scan,(ignored,in)-> cases.add(supplier.apply(格文件.解析(in.getURI()))));
+            return cases.stream();
+        }
     }
 
     public static void findInputs(final @Nonnull String dataDir, final @Nonnull IOBiConsumer<ScanResult, Resource> forEachInput){

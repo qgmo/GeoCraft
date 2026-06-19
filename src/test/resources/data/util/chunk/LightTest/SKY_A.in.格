@@ -1,0 +1,19 @@
+---
+name: 测试基本的天空光照
+ver: 1
+ext:
+  at: [2,2,2]
+  type: sky
+  expected: 15
+---
+F F F
+F F F
+F F F
+
+F F F
+F 零 F
+F F F
+
+F F F
+F F F
+F F F

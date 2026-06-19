@@ -37,6 +37,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.api.util.QBUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
 import 清汩萌.天圆地方.天圆地方测试;
@@ -64,7 +65,7 @@ public final class TestDrainFluid extends FiniteModeTest{
     @ParameterizedTest
     @MethodSource("pullDataForTestDrainFluid")
     public void testDrainFluid(final @Nonnull DrainFluidTestCase c) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(new Object[]{打包网格数据(c.$网格),
+        test(new Object[]{网格工具.打包网格数据(c.$网格),
                 c.drainPosRaw,
                 c.expectedDrainedQB});
     }
@@ -102,7 +103,7 @@ public final class TestDrainFluid extends FiniteModeTest{
                                             final @Nonnull int[] $drainPosRaw,
                                             final long expectedDrainedQB){
         final BlockPos drainPos = new BlockPos($drainPosRaw[0],$drainPosRaw[1],$drainPosRaw[2]);
-        final 词块网格 $网格 = 恢复网格数据($打包网格数据);
+        final 词块网格 $网格 = 网格工具.恢复网格数据($打包网格数据);
         final 空间构造器 $构造器 = 获取或用默认构造器($网格);
         final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,drainPos);
         final @Nonnull IBlockState state = world.getBlockState(drainPos);

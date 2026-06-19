@@ -25,36 +25,50 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.world;
-
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.WorldProvider;
+package 清汩萌.造.空间;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
+import java.util.ArrayList;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class MockWorldProvider extends WorldProvider {
-
-    protected @Nonnull DimensionType type = DimensionType.THE_END;
+public final class ByteGridBuilder {
+    private final ArrayList<ByteLayerBuilder> layers = new ArrayList<>();
 
     @Nonnull
-    public MockWorldProvider setSkyLight(final boolean has){
-        this.hasSkyLight = has;
-        return this;
+    public static ByteGridBuilder grid(){
+        return new ByteGridBuilder();
     }
 
     @Nonnull
-    public MockWorldProvider setDimensionType(final @Nonnull DimensionType type){
-        this.type = Objects.requireNonNull(type);
-        return this;
+    public ByteLayerBuilder layer(){
+        return new ByteLayerBuilder();
     }
 
     @Nonnull
-    @Override
-    public DimensionType getDimensionType() {
-        return type;
+    public byte[][][] build(){
+        return layers.stream().map(ByteLayerBuilder::build).toArray(byte[][][]::new);
+    }
+
+    public final class ByteLayerBuilder {
+        private final ArrayList<byte[]> rows = new ArrayList<>();
+
+        @Nonnull
+        public ByteLayerBuilder row(@Nonnull final byte... row){
+            rows.add(row);
+            return this;
+        }
+
+        @Nonnull
+        public ByteGridBuilder done(){
+            layers.add(this);
+            return ByteGridBuilder.this;
+        }
+
+        @Nonnull
+        public byte[][] build(){
+            return rows.toArray(new byte[0][0]);
+        }
     }
 }

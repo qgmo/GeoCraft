@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
@@ -58,9 +59,9 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataFor测试直接下落")
     public void 测试直接下落(final @Nonnull 直接下落测试数据 data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(new Object[]{打包网格数据(data.$网格),
+        test(new Object[]{网格工具.打包网格数据(data.$网格),
                 data.beginPosRaw,
-                打包网格数据(data.expected)});
+                网格工具.打包网格数据(data.expected)});
     }
 
     public static class 直接下落测试数据 extends SandboxTestCase{
@@ -92,7 +93,7 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
                                           final @Nonnull int[] beginPosRaw,
                                           final @Nonnull Object[] $打包答案网格数据){
         final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
-        final 词块网格 $网格 = 恢复网格数据($打包输入网格数据);
+        final 词块网格 $网格 = 网格工具.恢复网格数据($打包输入网格数据);
         final 空间构造器 $构造器 = 获取或用默认构造器($网格);
         final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,beginPos);
         final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
@@ -107,6 +108,6 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
         );
         天圆地方测试.LOGGER.info("output:");
         $构造器.打印(sandbox.getStructure());
-        空间假设.假设构造相同(恢复网格数据($打包答案网格数据).构造($构造器),sandbox.getStructure());
+        空间假设.假设构造相同(网格工具.恢复网格数据($打包答案网格数据).构造($构造器),sandbox.getStructure());
     }
 }

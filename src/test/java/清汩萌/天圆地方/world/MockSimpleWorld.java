@@ -41,6 +41,8 @@ import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.storage.SaveHandlerMP;
 import net.minecraft.world.storage.WorldInfo;
 import org.junit.jupiter.api.Assertions;
+import 清汩萌.天圆地方.world.light.ILightGrid;
+import 清汩萌.天圆地方.world.light.NoneLightGrid;
 import 清汩萌.天圆地方.world.sandbox.IMockSandbox;
 
 import javax.annotation.Nonnull;
@@ -53,6 +55,8 @@ import javax.annotation.Nullable;
 public class MockSimpleWorld extends World {
 
     protected IMockSandbox sandbox;
+    protected ILightGrid lightGridSky = NoneLightGrid.SKY;
+    protected ILightGrid lightGridBlock = NoneLightGrid.BLOCK;
     protected IBlockState air;
 
     protected MockSimpleWorld(final @Nonnull WorldInfo info,
@@ -64,9 +68,14 @@ public class MockSimpleWorld extends World {
 
     @Nonnull
     public static MockSimpleWorld create(final @Nonnull WorldInfo info,final boolean isClient){
+        return create(info,new MockWorldProvider(),isClient);
+    }
+
+    @Nonnull
+    public static MockSimpleWorld create(final @Nonnull WorldInfo info,final @Nonnull MockWorldProvider provider,final boolean isClient){
         return new MockSimpleWorld(
                 info,
-                new MockWorldProvider(),
+                provider,
                 new Profiler(),
                 isClient
         );
@@ -74,6 +83,16 @@ public class MockSimpleWorld extends World {
 
     public void setSandbox(final @Nonnull IMockSandbox sandbox){
         this.sandbox = sandbox;
+    }
+
+    public void setLightGridSky(final @Nonnull ILightGrid lightGridSky) {
+        Assertions.assertEquals(EnumSkyBlock.SKY, lightGridSky.getType());
+        this.lightGridSky = lightGridSky;
+    }
+
+    public void setLightGridBlock(final @Nonnull ILightGrid lightGridBlock) {
+        Assertions.assertEquals(EnumSkyBlock.BLOCK, lightGridBlock.getType());
+        this.lightGridBlock = lightGridBlock;
     }
 
     public void setAirBlock(final @Nonnull IBlockState air) {
@@ -164,17 +183,21 @@ public class MockSimpleWorld extends World {
 
     @Override
     public int getLight(final @Nonnull BlockPos pos) {
-        return 0;
-    }
-
-    @Override
-    public int getLightFromNeighbors(final @Nonnull BlockPos pos) {
-        return 0;
+        return Math.max(lightGridSky.getLight(pos),lightGridBlock.getLight(pos));
     }
 
     @Override
     public int getLight(@Nonnull final BlockPos pos,final boolean checkNeighbors) {
-        return 0;
+        if (checkNeighbors && this.getBlockState(pos).useNeighborBrightness()) {
+            final int up = this.getLight(pos.up(), false);
+            final int east = this.getLight(pos.east(), false);
+            final int west = this.getLight(pos.west(), false);
+            final int south = this.getLight(pos.south(), false);
+            final int north = this.getLight(pos.north(), false);
+            return Math.max(up,Math.max(east,Math.max(west,Math.max(south,north))));
+        } else{
+            return getLight(pos);
+        }
     }
 
     @Override
@@ -189,18 +212,34 @@ public class MockSimpleWorld extends World {
     }
 
     @Override
+    @Deprecated
     public int getLightFromNeighborsFor(final @Nonnull EnumSkyBlock type, final @Nonnull BlockPos pos) {
-        return 0;
+        if (!this.isValid(pos)) {
+            return type.defaultLightValue;
+        } else if (!this.isBlockLoaded(pos)) {
+            return type.defaultLightValue;
+        } else if (this.getBlockState(pos).useNeighborBrightness()) {
+            final int up = this.getLightFor(type,pos.up());
+            final int east = this.getLightFor(type,pos.east());
+            final int west = this.getLightFor(type,pos.west());
+            final int south = this.getLightFor(type,pos.south());
+            final int north = this.getLightFor(type,pos.north());
+            return Math.max(up,Math.max(east,Math.max(west,Math.max(south,north))));
+        } else return getLightFor(type,pos);
     }
 
     @Override
     public int getLightFor(@Nonnull final EnumSkyBlock type,final @Nonnull BlockPos pos) {
-        return 0;
+        switch (type){
+            case SKY:return lightGridSky.getLight(pos);
+            case BLOCK:return lightGridBlock.getLight(pos);
+            default:return Assertions.fail("NULL Light TYPE!");
+        }
     }
 
     @Override
     public void setLightFor(@Nonnull final EnumSkyBlock type,final @Nonnull BlockPos pos,final int lightValue) {
-        // do nothing
+        throw new UnsupportedOperationException();
     }
 
     @Override

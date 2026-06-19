@@ -37,6 +37,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
+import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
@@ -50,7 +51,6 @@ import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -63,7 +63,7 @@ public final class TestPlaceFluid extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataForTestPlaceFluid")
     public void testPlaceFluid(final @Nonnull PlaceFluidTestData data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(new Object[]{打包网格数据(data.$网格),
+        test(new Object[]{网格工具.打包网格数据(data.$网格),
                 data.placePosRaw,
                 data.fluidToPlace.toString(),
                 data.expectedAblePlace});
@@ -87,10 +87,7 @@ public final class TestPlaceFluid extends FiniteModeTest {
 
     @Nonnull
     public static Stream<PlaceFluidTestData> pullDataForTestPlaceFluid(){
-        final ArrayList<PlaceFluidTestData> cases = new ArrayList<>();
-        SandboxTestCase.findInputs("data/fluidphysics/finite/PlaceFluid/",
-                (scan,in) -> cases.add(new PlaceFluidTestData(格文件.解析(in.getURI()))));
-        return cases.stream();
+        return SandboxTestCase.findInputs("data/fluidphysics/finite/PlaceFluid/",PlaceFluidTestData::new);
     }
 
     @SuppressWarnings("unused")
@@ -99,7 +96,7 @@ public final class TestPlaceFluid extends FiniteModeTest {
                                             final @Nonnull String placementRaw,
                                             final boolean expectedAbleToPlace){
         final BlockPos placePos = new BlockPos(placePosRaw[0],placePosRaw[1],placePosRaw[2]);
-        final 词块网格 $网格 = 恢复网格数据($打包网格数据);
+        final 词块网格 $网格 = 网格工具.恢复网格数据($打包网格数据);
         final 空间构造器 $构造器 = 获取或用默认构造器($网格);
         final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,placePos);
         final @Nonnull IBlockState state = $构造器.进行映射(词块.of(StringUtil.removeWhites(placementRaw)));

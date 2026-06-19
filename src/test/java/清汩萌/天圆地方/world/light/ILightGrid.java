@@ -25,36 +25,19 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.world;
+package 清汩萌.天圆地方.world.light;
 
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.EnumSkyBlock;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class MockWorldProvider extends WorldProvider {
-
-    protected @Nonnull DimensionType type = DimensionType.THE_END;
-
+public interface ILightGrid {
     @Nonnull
-    public MockWorldProvider setSkyLight(final boolean has){
-        this.hasSkyLight = has;
-        return this;
-    }
-
-    @Nonnull
-    public MockWorldProvider setDimensionType(final @Nonnull DimensionType type){
-        this.type = Objects.requireNonNull(type);
-        return this;
-    }
-
-    @Nonnull
-    @Override
-    public DimensionType getDimensionType() {
-        return type;
-    }
+    EnumSkyBlock getType();
+    byte getLight(final @Nonnull BlockPos pos);
+    boolean isOutOfRange(final @Nonnull BlockPos pos);
 }

@@ -30,24 +30,19 @@ package 清汩萌.天圆地方.tests.fluidphysics;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
 import 清汩萌.天圆地方.assets.MockBlocks;
-import 清汩萌.天圆地方.util.MessyUtil;
+import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.MockSimpleWorld;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.storage.MockWorldInfo;
 import 清汩萌.造.空间.空间构造器;
-import 清汩萌.造.空间.网格参数;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Set;
 
 import static 清汩萌.天圆地方.assets.MockBlocks.Bases.〇;
 import static 清汩萌.天圆地方.assets.MockBlocks.Bases.曜;
@@ -84,7 +79,7 @@ public class FluidPhysicsTest extends 天圆地方测试 {
     @Nonnull
     public static MockSimpleSandbox initWorldSandbox(final @Nonnull Object[] $打包网格数据,
                                                      final @Nonnull BlockPos beginPos){
-        return initWorldSandbox(恢复网格数据($打包网格数据),beginPos);
+        return initWorldSandbox(网格工具.恢复网格数据($打包网格数据),beginPos);
     }
 
     @Nonnull
@@ -102,36 +97,6 @@ public class FluidPhysicsTest extends 天圆地方测试 {
         world.setSandbox(sandbox);
         $构造器.打印(sandbox.getStructure());
         return sandbox;
-    }
-
-    @Nonnull
-    public static Object[] 打包网格数据(final @Nonnull 词块网格 $网格){
-        return new Object[]{$网格.获取原始网格数据(),
-                $网格.获取参数(),
-                MessyUtil.toNullableString($网格.获取默认填充方块()),
-                $网格.获取默认构造器名称(),
-                $网格.获取默认映射器名称集合()};
-    }
-
-    @Nonnull
-    @SuppressWarnings("unchecked")
-    public static 词块网格 恢复网格数据(final @Nonnull Object[] raw){
-        Assertions.assertEquals(5,raw.length);
-        return 恢复网格数据((List<List<List<String>>>) raw[0], (int[]) raw[1], (String) raw[2],(String) raw[3],(Set<String>) raw[4]);
-    }
-
-    @Nonnull
-    public static 词块网格 恢复网格数据(final @Nonnull List<List<List<String>>> $原始网格数据,
-                                        final int[] $原始尺寸数据,
-                                        final @Nullable String $原始默认方块数据,
-                                        final @Nullable String $默认构造器名称,
-                                        final @Nullable Set<String> $默认构造器名称集合){
-        final 词块网格 $网格 = 词块网格.从原始网格数据恢复($原始网格数据);
-        for(final 网格参数 $参数:网格参数.列表) $网格.期望($原始尺寸数据[$参数.ordinal()],$参数);
-        if($原始默认方块数据 != null) $网格.默认用($原始默认方块数据);
-        if($默认构造器名称 != null) $网格.基于($默认构造器名称);
-        if($默认构造器名称集合 != null) $网格.基于($默认构造器名称集合);
-        return $网格;
     }
 
     @Nonnull

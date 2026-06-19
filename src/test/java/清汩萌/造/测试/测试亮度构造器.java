@@ -25,36 +25,39 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.world;
+package 清汩萌.造.测试;
 
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.WorldProvider;
+import org.junit.jupiter.api.Test;
+import 清汩萌.造.空间.空间假设;
+import 清汩萌.造.空间.词块网格;
 
-import javax.annotation.Nonnull;
-import java.util.Objects;
-
+import static 清汩萌.造.空间.ByteGridBuilder.grid;
+import static 清汩萌.造.空间.亮度构造器.*;
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class MockWorldProvider extends WorldProvider {
-
-    protected @Nonnull DimensionType type = DimensionType.THE_END;
-
-    @Nonnull
-    public MockWorldProvider setSkyLight(final boolean has){
-        this.hasSkyLight = has;
-        return this;
-    }
-
-    @Nonnull
-    public MockWorldProvider setDimensionType(final @Nonnull DimensionType type){
-        this.type = Objects.requireNonNull(type);
-        return this;
-    }
-
-    @Nonnull
-    @Override
-    public DimensionType getDimensionType() {
-        return type;
+public final class 测试亮度构造器 {
+    @Test
+    public void 测试基本构造(){
+        空间假设.假设构造相同(
+                grid().layer()
+                        .row(一,二,三,四)
+                        .row(五,六,七,八)
+                        .row(九,十,B,C).done()
+                        .layer()
+                        .row(零,零,零,零)
+                        .row(D,D,D,D)
+                        .row(E,E,E,E)
+                        .done().build(),
+                $亮度构造器.构造(new 词块网格().层()
+                        .行("一二三四")
+                        .行("五六七八")
+                        .行("九A B C").完成()
+                        .层()
+                        .行("零零零零")
+                        .行("D D D D")
+                        .行("E E E E")
+                        .完成())
+        );
     }
 }

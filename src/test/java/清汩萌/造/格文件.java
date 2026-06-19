@@ -30,10 +30,8 @@ package 清汩萌.造;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import net.minecraft.util.ResourceLocation;
 import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.空间.空间工具;
-import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.网格参数;
 import 清汩萌.造.空间.词块网格;
 import 清汩萌.造.词块.词块;
@@ -167,7 +165,7 @@ public final class 格文件 {
                     $当前层 = null;
                 }
                 line = line.replace("略","L");
-                final @Nonnull List<词块> parsed = 空间构造器.解析行(StringUtil.removeWhitesInCodePoints(line.codePoints()));
+                final @Nonnull List<词块> parsed = 词块网格.解析行(StringUtil.removeWhitesInCodePoints(line.codePoints()));
                 if(parsed.size() != 1) throw new IllegalArgumentException(line);
                 final 词块 $略 = parsed.get(0);
                 final int count = $略.获取下标().isEmpty()?1:Integer.parseInt($略.获取下标());

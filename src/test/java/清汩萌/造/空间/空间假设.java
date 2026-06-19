@@ -48,7 +48,21 @@ public final class 空间假设 {
         for(int y =0;y < A.length; y++){
             Assertions.assertEquals(A[y].length,B[y].length,msg);
             for(int z =0;z < A[y].length; z ++){
-                Assertions.assertArrayEquals(A[y][z],B[y][z],"Mismatch at layer(Y)=" + y + " row(Z)=" + z);
+                Assertions.assertArrayEquals(A[y][z],B[y][z],"Mismatch at layer(Y)=" + (y+1) + " row(Z)=" + (z+1));
+            }
+        }
+    }
+
+    public static void 假设构造相同(final @Nonnull byte[][][] A, final @Nonnull byte[][][] B){
+        假设构造相同(A,B,null);
+    }
+
+    public static void 假设构造相同(final @Nonnull byte[][][] A, final @Nonnull byte[][][] B, final @Nullable String msg){
+        Assertions.assertEquals(A.length,B.length,msg);
+        for(int y =0;y < A.length; y++){
+            Assertions.assertEquals(A[y].length,B[y].length,msg);
+            for(int z =0;z < A[y].length; z ++){
+                Assertions.assertArrayEquals(A[y][z],B[y][z],"Mismatch at layer(Y)=" + (y+1) + " row(Z)=" + (z+1));
             }
         }
     }

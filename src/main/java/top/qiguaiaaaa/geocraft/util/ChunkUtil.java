@@ -73,7 +73,7 @@ public final class ChunkUtil {
         }
         int light = 0;
         for(final @Nonnull EnumFacing facing:EnumFacing.VALUES){
-            light = Math.max(light,world.getLightFor(EnumSkyBlock.SKY,mutable.setPos(x,y,z).offsetM(facing)));
+            light = Math.max(light,world.getLightFor(type,mutable.setPos(x,y,z).offsetM(facing)));
         }
         return light;
     }

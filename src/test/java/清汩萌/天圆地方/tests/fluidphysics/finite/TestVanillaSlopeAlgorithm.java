@@ -38,6 +38,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
+import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
 import 清汩萌.造.工具.StringUtil;
@@ -84,7 +85,7 @@ public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
     @ParameterizedTest
     @MethodSource("pullDataForTestSlopeAlgorithm")
     public void testSingleSlopeAlgorithm(final @Nonnull SlopeAlgorithmTestData data) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        test(new Object[]{打包网格数据(data.$网格),data.beginPosRaw,data.expectedDirections});
+        test(new Object[]{网格工具.打包网格数据(data.$网格),data.beginPosRaw,data.expectedDirections});
     }
 
     public static class SlopeAlgorithmTestData extends SandboxTestCase{

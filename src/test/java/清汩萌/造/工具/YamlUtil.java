@@ -55,6 +55,12 @@ public final class YamlUtil {
                 .orElseThrow(() -> new IllegalArgumentException(key + " not found"));
     }
 
+    public static int getInt(final @Nonnull Map<String,Object> data,final @Nonnull String key){
+        return Optional.ofNullable(Objects.requireNonNull(data).get(Objects.requireNonNull(key)))
+                .map(o -> Integer.parseInt(o.toString()))
+                .orElseThrow(() -> new IllegalArgumentException(key + " not found"));
+    }
+
     @SuppressWarnings("unchecked")
     public static int[] getIntArray(final @Nonnull Map<String,Object> data, final @Nonnull String key){
         return ArrayUtils.toPrimitive(get(data,key,(Class<List<?>>) (Class<?>) List.class)

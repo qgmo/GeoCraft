@@ -33,6 +33,8 @@ import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.映射.映射器;
 import 清汩萌.造.管理.映射局;
 import 清汩萌.造.管理.空间构造局;
+import 清汩萌.造.词块.下标工具;
+import 清汩萌.造.词块.主体工具;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
@@ -70,6 +72,51 @@ public final class 词块网格 {
                 .collect(Collectors.toList()));
         $网格.$层数 = $网格.$层列表.size();
         return $网格;
+    }
+
+    @Nonnull
+    public static List<词块> 解析行(final @Nonnull IntStream $行){
+        final List<词块> $词块列表 = new ArrayList<>();
+        final int[] codePoints = $行.toArray();
+        int i = 0;
+
+        final @Nonnull StringBuilder $当前词块 = new StringBuilder();
+        boolean $处于主体中 = true;
+        boolean $处于括号中 = false;
+
+        while (i < codePoints.length) {
+            final int cp = codePoints[i];
+
+            if ($处于主体中) {
+                if(cp == (int)'['){
+                    $处于括号中 = true;
+                    i++;
+                    continue;
+                }else if($处于括号中 && cp == (int)']'){
+                    $处于括号中 = false;
+                    $处于主体中 = false;
+                    i++;
+                    continue;
+                } else if(下标工具.是下标字符(cp)) throw new IllegalArgumentException(new String(codePoints,0,codePoints.length) +" 主体中不能包含下标字符!");
+                else if(!主体工具.是主体字符(cp))
+                    throw new IllegalArgumentException(new String(codePoints,0,codePoints.length) + " 包含非法主体字符 "+new String(new int[]{cp},0,1));
+                $当前词块.appendCodePoint(cp);
+                if(!$处于括号中) $处于主体中 = false;
+                i++;
+            } else {
+                if (下标工具.是下标字符(cp)) { //下标，属于当前序列化状态
+                    $当前词块.appendCodePoint(cp);
+                    i++;
+                } else {
+                    $词块列表.add(词块.of($当前词块.toString()));
+                    $当前词块.setLength(0);
+                    $处于主体中 = true;
+                }
+            }
+        }
+        if ($当前词块.length() > 0) $词块列表.add(词块.of($当前词块.toString())); //处理最后一个
+
+        return $词块列表;
     }
 
     @Nonnull
@@ -175,7 +222,7 @@ public final class 词块网格 {
     }
 
     @Nonnull
-    private List<一层词块> 处理填充(){
+    List<一层词块> 处理填充(){
         final List<一层词块> $层列表复制 = $层列表.stream()
                 .map(一层词块::new)
                 .peek(一层词块::填充默认)
@@ -243,7 +290,7 @@ public final class 词块网格 {
     }
 
     public final class 一层词块{
-        private final List<List<词块>> $行列表;
+        final List<List<词块>> $行列表;
         private int $最大列数 = 0;
 
         public 一层词块(){
@@ -271,7 +318,7 @@ public final class 词块网格 {
 
         @Nonnull
         public 一层词块 行(final @Nonnull IntStream line) {
-            final @Nonnull List<词块> dat = 空间构造器.解析行(StringUtil.removeWhitesInCodePoints(line));
+            final @Nonnull List<词块> dat = 解析行(StringUtil.removeWhitesInCodePoints(line));
             this.$行列表.add(dat);
             $最大列数 = Math.max($最大列数, dat.size());
             return this;
