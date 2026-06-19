@@ -44,6 +44,8 @@ import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
 import 清汩萌.造.空间.空间工具;
+import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -52,8 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static 清汩萌.天圆地方.assets.MockBlocks.BUILDER;
-import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.getFlowingByMaterial;
+import static 清汩萌.天圆地方.assets.MockBlocks.Liquids.getFlowingByMaterial;
 
 /**
  * @author QGMoe
@@ -101,7 +102,9 @@ public final class TestDrainFluid extends FiniteModeTest{
                                             final @Nonnull int[] $drainPosRaw,
                                             final long expectedDrainedQB){
         final BlockPos drainPos = new BlockPos($drainPosRaw[0],$drainPosRaw[1],$drainPosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(BUILDER,恢复网格数据($打包网格数据),drainPos);
+        final 词块网格 $网格 = 恢复网格数据($打包网格数据);
+        final 空间构造器 $构造器 = 获取或用默认构造器($网格);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,drainPos);
         final @Nonnull IBlockState state = world.getBlockState(drainPos);
         天圆地方测试.LOGGER.info("{} block state is {}",drainPos,state);
 
@@ -109,7 +112,7 @@ public final class TestDrainFluid extends FiniteModeTest{
         final @Nonnull FiniteBlockLiquidWrapper wrapper = new FiniteBlockLiquidWrapper(flowing,world,drainPos);
         final @Nullable FluidStack stack = wrapper.drain(Fluid.BUCKET_VOLUME,true);
         final long drained = QBUtil.toQBFromMB(stack == null?0:stack.amount);
-        BUILDER.打印(sandbox.getStructure());
+        $构造器.打印(sandbox.getStructure());
         Assertions.assertEquals(expectedDrainedQB,drained);
     }
 }

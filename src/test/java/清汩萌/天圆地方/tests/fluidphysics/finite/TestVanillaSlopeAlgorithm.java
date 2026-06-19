@@ -57,7 +57,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.*;
+import static 清汩萌.天圆地方.assets.MockBlocks.Liquids.*;
 
 /**
  * @author QiguaiAAAA
@@ -152,7 +152,7 @@ public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
                                                       final int[] beginPosRaw,
                                                       final @Nonnull String[] expectedDirections){
         final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据(raw),beginPos);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(raw,beginPos);
         final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
         Assertions.assertEquals(7,beginState.getValue(BlockLiquid.LEVEL));
         final @Nonnull FiniteFlowingVanilla flowing = getFlowingByMaterial(beginState.getMaterial());

@@ -38,10 +38,10 @@ import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.storage.SaveHandlerMP;
 import net.minecraft.world.storage.WorldInfo;
 import org.junit.jupiter.api.Assertions;
 import 清汩萌.天圆地方.world.sandbox.IMockSandbox;
-import 清汩萌.天圆地方.world.storage.FakeSaveHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,7 +59,7 @@ public class MockSimpleWorld extends World {
                               final @Nonnull WorldProvider providerIn,
                               final @Nonnull Profiler profilerIn,
                               final boolean client) {
-        super(new FakeSaveHandler(), info, providerIn, profilerIn, client);
+        super(new SaveHandlerMP(), info, providerIn, profilerIn, client);
     }
 
     @Nonnull

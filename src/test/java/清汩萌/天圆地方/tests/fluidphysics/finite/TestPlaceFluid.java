@@ -44,6 +44,8 @@ import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
 import 清汩萌.造.空间.空间工具;
+import 清汩萌.造.空间.空间构造器;
+import 清汩萌.造.空间.词块网格;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
@@ -52,7 +54,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.*;
+import static 清汩萌.天圆地方.assets.MockBlocks.Liquids.*;
 
 /**
  * @author QiguaiAAAA
@@ -97,8 +99,10 @@ public final class TestPlaceFluid extends FiniteModeTest {
                                             final @Nonnull String placementRaw,
                                             final boolean expectedAbleToPlace){
         final BlockPos placePos = new BlockPos(placePosRaw[0],placePosRaw[1],placePosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据($打包网格数据),placePos);
-        final @Nonnull IBlockState state = VANILLA_FLUIDS_BUILDER.进行映射(词块.of(StringUtil.removeWhites(placementRaw)));
+        final 词块网格 $网格 = 恢复网格数据($打包网格数据);
+        final 空间构造器 $构造器 = 获取或用默认构造器($网格);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,placePos);
+        final @Nonnull IBlockState state = $构造器.进行映射(词块.of(StringUtil.removeWhites(placementRaw)));
         Assertions.assertFalse(state.getValue(BlockLiquid.LEVEL)>7);
         天圆地方测试.LOGGER.info("{} block state is {}",placePos,world.getBlockState(placePos));
 
@@ -109,6 +113,6 @@ public final class TestPlaceFluid extends FiniteModeTest {
         final int filledAmount = wrapper.fill(new FluidStack(flowing.fluid,amount),true);
         天圆地方测试.LOGGER.info("Input Amount: {} mB, Filled Amount: {} mB",amount,filledAmount);
         Assertions.assertEquals(expectedAbleToPlace,filledAmount==amount);
-        VANILLA_FLUIDS_BUILDER.打印(sandbox.getStructure());
+        $构造器.打印(sandbox.getStructure());
     }
 }

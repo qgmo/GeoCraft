@@ -31,14 +31,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import top.qiguaiaaaa.geocraft.GeoCraft;
-import top.qiguaiaaaa.geocraft.api.util.debug.IDebug;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IFiniteDebugPressureBFSTask extends IDebug, IFinitePressureBFSTask {
+public interface IFiniteDebugPressureBFSTask extends IFinitePressureBFSTask {
 
     default void isEqualState_Debug(@Nonnull IBlockState curState) {
         GeoCraft.getLogger().info("{} stopped because source state changed to {}",this,curState);

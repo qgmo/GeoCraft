@@ -28,7 +28,10 @@
 package 清汩萌.造.空间;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
 import 清汩萌.造.工具.StringUtil;
+import 清汩萌.造.管理.映射局;
+import 清汩萌.造.管理.空间构造局;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
@@ -36,6 +39,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,6 +48,8 @@ import java.util.stream.IntStream;
  */
 public final class 词块网格 {
     private @Nullable 空间构造器 $构造器;
+    private @Nullable String $默认构造器名;
+    private @Nullable Set<String> $默认映射器名集合;
     private final List<一层词块> $层列表 = new ArrayList<>();
     private 词块 $默认填充方块;
     private int $层数 = 0;
@@ -68,6 +74,18 @@ public final class 词块网格 {
     @Nonnull
     public 词块网格 基于(final @Nonnull 空间构造器 $构造器){
         this.$构造器 = $构造器;
+        return this;
+    }
+
+    @Nonnull
+    public 词块网格 基于(final @Nonnull String $构造器名){
+        this.$默认构造器名 = $构造器名;
+        return this;
+    }
+
+    @Nonnull
+    public 词块网格 基于(final @Nonnull Set<String> $映射器名称集合){
+        this.$默认映射器名集合 = $映射器名称集合;
         return this;
     }
 
@@ -127,12 +145,23 @@ public final class 词块网格 {
 
     @Nonnull
     public IBlockState[][][] 构造() {
+        加载默认构造器();
         return 构造(Objects.requireNonNull(this.$构造器));
     }
 
     @Nonnull
     public IBlockState[][][] 构造(@Nonnull final 空间构造器 $构造器) {
         return $构造器.构造(处理填充().stream().map($单层 -> $单层.$行列表).collect(Collectors.toList()));
+    }
+
+    private void 加载默认构造器(){
+        if(this.$构造器 != null) return;
+        if(this.$默认构造器名 != null){
+            this.$构造器 = 空间构造局.查询(new ResourceLocation(this.$默认构造器名));
+        }else if(this.$默认映射器名集合 != null){
+            this.$构造器 = new 空间构造器();
+            this.$默认映射器名集合.stream().map(映射局::需要).forEach(this.$构造器::添加映射);
+        }
     }
 
     @Nonnull
@@ -164,6 +193,22 @@ public final class 词块网格 {
 
     public int[] 获取参数(){
         return new int[]{$层数,$行数,$列数};
+    }
+
+    @Nullable
+    public 空间构造器 获取当前构造器(){
+        if(this.$构造器 == null) 加载默认构造器();
+        return this.$构造器;
+    }
+
+    @Nullable
+    public String 获取默认构造器名称(){
+        return this.$默认构造器名;
+    }
+
+    @Nullable
+    public Set<String> 获取默认映射器名称集合(){
+        return this.$默认构造器名 != null?null:this.$默认映射器名集合;
     }
 
     public int 获取参数(final @Nonnull 网格参数 $参数){

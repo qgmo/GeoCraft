@@ -31,6 +31,7 @@ import com.google.common.collect.HashBiMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
 import org.junit.jupiter.api.Assertions;
 import 清汩萌.造.词块.主体工具;
 import 清汩萌.造.词块.词块;
@@ -52,6 +53,10 @@ public final class 映射器 {
 
     public 映射器(final @Nonnull String $名称) {
         this.$名称 = $名称;
+    }
+
+    public 映射器(final @Nonnull ResourceLocation $名称) {
+        this.$名称 = $名称.toString();
     }
 
     @Nonnull
@@ -191,5 +196,10 @@ public final class 映射器 {
         主体工具.需要合法主体($主体);
         if(!$单字别名解析表.containsKey($主体)) throw new IllegalArgumentException(new String(new int[]{$主体},0,1) + " 没有一个单字解析器");
         return $单字别名解析表.get($主体);
+    }
+
+    @Nonnull
+    public String 获取名称(){
+        return $名称;
     }
 }

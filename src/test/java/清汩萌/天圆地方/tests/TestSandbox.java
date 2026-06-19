@@ -136,13 +136,13 @@ public class TestSandbox {
                     .行("崗〇 石")
                     .完成().构造();
             空间假设.假设构造相同(A,grid().layer()
-                    .row(石,土0,〇)
-                    .row(〇,土1,崗)
+                    .row(石, MockBlocks.Soils.土0,〇)
+                    .row(〇, MockBlocks.Soils.土1,崗)
                     .row(崗,〇,石).done().build()
             );
             final @Nonnull MockSimpleWorld world = MockSimpleWorld.create(MockWorldInfo.create(b -> b.withGameType(GameType.CREATIVE)),false);
             world.setSandbox(new MockSimpleSandbox(A));
-            Assertions.assertEquals(world.getBlockState(new BlockPos(1,0,1)),土1); //中间
+            Assertions.assertEquals(world.getBlockState(new BlockPos(1,0,1)), MockBlocks.Soils.土1); //中间
             Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,0)),〇); //右上角
             Assertions.assertEquals(world.getBlockState(new BlockPos(2,0,2)),石); //右下角
         }
@@ -170,7 +170,7 @@ public class TestSandbox {
                     .layer()
                     .row(閃,閃,閃)
                     .row(崗,崗,崗)
-                    .row(䒚,粆,砂).done().build()
+                    .row(MockBlocks.Soils.䒚, MockBlocks.Soils.雪砂, MockBlocks.Soils.砂).done().build()
                     ,BUILDER.构造().层()
                     .行("石石石")
                     .行("石石石")
@@ -182,7 +182,7 @@ public class TestSandbox {
                     .层()
                     .行("閃 閃 閃")
                     .行("崗 崗 崗")
-                    .行("䒚0粆0砂0").完成().构造()
+                    .行("䒚0[雪砂]0砂0").完成().构造()
             );
         }
     }

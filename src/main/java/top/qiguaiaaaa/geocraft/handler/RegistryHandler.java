@@ -54,17 +54,22 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class RegistryHandler {
     private static final Map<String, Block> OverrideVanillaBlockRegistry = new HashMap<>();
     private static final Int2ObjectOpenHashMap<IBlockState> missingStatesMap = new Int2ObjectOpenHashMap<>();
 
-    public static void registerVanillaBlockOverride(@Nonnull String blockId,@Nonnull Block newBlock){
+    public static void registerVanillaBlockOverride(@Nonnull final Block newBlock){
+        OverrideVanillaBlockRegistry.put(Objects.requireNonNull(newBlock.getRegistryName()).getPath(),newBlock);
+    }
+
+    public static void registerVanillaBlockOverride(@Nonnull final String blockId,@Nonnull final Block newBlock){
         OverrideVanillaBlockRegistry.put(blockId,newBlock);
     }
 
     @Nullable
-    public static Block queryOverrideVanillaBlock(@Nonnull String blockId){
+    public static Block queryOverrideVanillaBlock(@Nonnull final String blockId){
         return OverrideVanillaBlockRegistry.get(blockId);
     }
 

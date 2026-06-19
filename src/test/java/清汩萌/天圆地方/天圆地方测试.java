@@ -60,7 +60,7 @@ import java.util.Objects;
  */
 @ExtendWith(天圆地方测试.SetupGeoTestExtension.class)
 public class 天圆地方测试 {
-    public static final String MODID = "test";
+    public static final String MODID = "天圆地方";
     private static byte stage = Stage.NO_INIT;
     public static final Logger LOGGER = LogManager.getLogger("GeoTest");
 
@@ -134,8 +134,7 @@ public class 天圆地方测试 {
             }
         }
 
-        LOGGER.info("Initialising Minecraft Blocks");
-        MockBlocks.initMinecraftBlocks();
+        MockBlocks.BUILDER.getClass(); //force Load
 
         LOGGER.info("Initialising Fluids");
         MockFluids.initMinecraftFluids();

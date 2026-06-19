@@ -25,11 +25,35 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package top.qiguaiaaaa.geocraft.api.util.debug;
+package 清汩萌.造.管理;
+
+import 清汩萌.造.映射.映射器;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@Deprecated
-public interface IDebug {
+public final class 映射局 {
+    private static final HashMap<String, 映射器> $映射注册表 = new HashMap<>();
+
+    public static void 注册(final 映射器 $映射器){
+        final 映射器 $旧的 = $映射注册表.put($映射器.获取名称(),$映射器);
+        if($旧的 != null) throw new IllegalArgumentException($映射器.获取名称()+" 已被占用");
+    }
+
+    @Nullable
+    public static 映射器 查询(final @Nonnull String id){
+        return $映射注册表.get(Objects.requireNonNull(id));
+    }
+
+    @Nonnull
+    public static 映射器 需要(final @Nonnull String id){
+        final @Nullable 映射器 $映射器 = $映射注册表.get(id);
+        if ($映射器 == null) throw new IllegalArgumentException("未知的映射器："+id);
+        return $映射器;
+    }
 }

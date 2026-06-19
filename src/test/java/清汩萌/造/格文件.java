@@ -30,6 +30,7 @@ package 清汩萌.造;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import net.minecraft.util.ResourceLocation;
 import 清汩萌.造.工具.StringUtil;
 import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.网格参数;
@@ -43,10 +44,12 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -192,6 +195,15 @@ public final class 格文件 {
                     Optional.ofNullable($头部信息.get("name")).orElse(Optional.ofNullable($头部信息.get("名")).orElse($名称))).map(STRIPE), STRIPE);
             Optional.ofNullable(Optional.ofNullable($头部信息.get("default")).orElse($头部信息.get("默认用")))
                     .ifPresent(o -> $网格.默认用(STRIPE.apply(o)));
+            Optional.ofNullable(Optional.ofNullable($头部信息.get("import")).orElse($头部信息.get("导入")))
+                    .filter(o -> o instanceof Collection<?>)
+                    .map(o -> ((Collection<?>) o).stream()
+                            .map(Object::toString)
+                            .collect(Collectors.toSet()))
+                    .ifPresent(set -> $网格.基于(set));
+            Optional.ofNullable(Optional.ofNullable($头部信息.get("on")).orElse($头部信息.get("基于")))
+                    .map(Object::toString)
+                    .ifPresent(name -> $网格.基于(name));
 
             @Nullable final List<Integer> $大小 = (List<Integer>) Optional.ofNullable($头部信息.get("size")).filter(o -> o instanceof List).orElse($头部信息.get("期望"));
             if($大小 != null)

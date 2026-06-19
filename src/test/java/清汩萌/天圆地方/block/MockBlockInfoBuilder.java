@@ -52,7 +52,7 @@ public class MockBlockInfoBuilder<S extends MockBlockInfoBuilder<S>> {
     @Nonnull
     @SuppressWarnings("unchecked")
     public final S withID(final @Nonnull String id) {
-        this.id = new ResourceLocation(天圆地方测试.MODID, id);
+        this.id = new ResourceLocation(id);
         return (S) this;
     }
 

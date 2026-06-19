@@ -41,6 +41,7 @@ import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
 import 清汩萌.造.空间.空间假设;
 import 清汩萌.造.空间.空间工具;
+import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
@@ -48,7 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static 清汩萌.天圆地方.assets.MockBlocks.VanillaFluids.*;
+import static 清汩萌.天圆地方.assets.MockBlocks.Liquids.*;
 
 /**
  * @author QiguaiAAAA
@@ -91,7 +92,9 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
                                           final @Nonnull int[] beginPosRaw,
                                           final @Nonnull Object[] $打包答案网格数据){
         final BlockPos beginPos = new BlockPos(beginPosRaw[0],beginPosRaw[1],beginPosRaw[2]);
-        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox(VANILLA_FLUIDS_BUILDER,恢复网格数据($打包输入网格数据),beginPos);
+        final 词块网格 $网格 = 恢复网格数据($打包输入网格数据);
+        final 空间构造器 $构造器 = 获取或用默认构造器($网格);
+        final @Nonnull MockSimpleSandbox sandbox = initWorldSandbox($网格,beginPos);
         final @Nonnull IBlockState beginState = world.getBlockState(beginPos);
         final @Nonnull FiniteFlowingVanilla flowing = getFlowingByMaterial(beginState.getMaterial());
         Assertions.assertNotNull(flowing);
@@ -103,7 +106,7 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
                 5
         );
         天圆地方测试.LOGGER.info("output:");
-        VANILLA_FLUIDS_BUILDER.打印(sandbox.getStructure());
-        空间假设.假设构造相同(恢复网格数据($打包答案网格数据).构造(VANILLA_FLUIDS_BUILDER),sandbox.getStructure());
+        $构造器.打印(sandbox.getStructure());
+        空间假设.假设构造相同(恢复网格数据($打包答案网格数据).构造($构造器),sandbox.getStructure());
     }
 }

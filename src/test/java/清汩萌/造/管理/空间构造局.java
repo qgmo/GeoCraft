@@ -25,47 +25,36 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.world.chunk;
+package 清汩萌.造.管理;
 
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.IChunkLoader;
+import net.minecraft.util.ResourceLocation;
+import 清汩萌.造.空间.空间构造器;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Objects;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class FakeChunkLoader implements IChunkLoader {
+public final class 空间构造局 {
+    private static final HashMap<ResourceLocation, 空间构造器> $构造注册表 = new HashMap<>();
+
+    public static void 注册(final ResourceLocation id, final 空间构造器 $空间构造器){
+        final 空间构造器 $旧的 = $构造注册表.put(id,$空间构造器);
+        if($旧的 != null) throw new IllegalArgumentException(id+" 已被占用");
+    }
+
     @Nullable
-    @Override
-    public Chunk loadChunk(@Nonnull World worldIn, int x, int z) {
-        return null;
+    public static 空间构造器 查询(final @Nonnull ResourceLocation id){
+        return $构造注册表.get(Objects.requireNonNull(id));
     }
 
-    @Override
-    public void saveChunk(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void saveExtraChunkData(@Nonnull World worldIn, @Nonnull Chunk chunkIn) {
-
-    }
-
-    @Override
-    public void chunkTick() {
-
-    }
-
-    @Override
-    public void flush() {
-
-    }
-
-    @Override
-    public boolean isChunkGeneratedAt(int x, int z) {
-        return true;
+    @Nonnull
+    public static 空间构造器 需要(final @Nonnull ResourceLocation id){
+        final @Nullable 空间构造器 $器 = $构造注册表.get(id);
+        if ($器 == null) throw new IllegalArgumentException("未知的空间构造器："+id);
+        return $器;
     }
 }
