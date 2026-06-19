@@ -40,18 +40,16 @@ import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
 import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.天圆地方.world.sandbox.TestArg;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.造.工具.StringUtil;
-import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
-import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -71,24 +69,18 @@ public final class TestDrainFluid extends FiniteModeTest{
     }
 
     public static final class DrainFluidTestCase extends SandboxTestCase {
-        final int[] drainPosRaw;
+        @TestArg(value = "drain_at",type = TestArg.Type.BLOCK_POS) int[] drainPosRaw;
+        @TestArg(value = "drained",in = "expected") long drainedValue;
+        @TestArg(in = "expected") String unit;
         final long expectedDrainedQB;
 
         DrainFluidTestCase(final @Nonnull 格文件 $格文件) {
             super($格文件);
-            final Map<String,Object> ext = $格文件.获取附加数据();
-            Assertions.assertNotNull(ext);
-            this.drainPosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"drain_at"));
-            final Map<String,Object> expected = YamlUtil.getMap(ext,"expected");
-            this.expectedDrainedQB = Optional.ofNullable(expected.get("unit"))
-                    .map(o -> StringUtil.removeWhites(o.toString()))
-                    .map(unit -> Optional.ofNullable(expected.get("drained"))
-                            .map(o -> Long.parseLong(o.toString()))
-                            .map(value -> value * ("QB".equalsIgnoreCase(unit) ? 1L :
-                                    "MB".equalsIgnoreCase(unit) ? QBUtil.MB_VOLUME :
-                                            Assertions.<Long>fail("Unknown unit " + unit)))
-                            .orElseGet(() -> Assertions.fail("drained not found")))
-                    .orElseGet(() -> Assertions.fail("unit not found"));
+            this.expectedDrainedQB = Optional.of(unit)
+                    .map(StringUtil::removeWhites)
+                    .map(unit -> drainedValue * ("QB".equalsIgnoreCase(unit) ? 1L :
+                            "MB".equalsIgnoreCase(unit) ? QBUtil.MB_VOLUME :
+                                    Assertions.<Long>fail("Unknown unit " + unit))).get();
         }
     }
 

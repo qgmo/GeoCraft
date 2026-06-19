@@ -35,13 +35,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import 清汩萌.天圆地方.util.网格工具;
+import 清汩萌.天圆地方.world.sandbox.TestArg;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
-import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
 import 清汩萌.造.空间.空间假设;
-import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.词块网格;
 
@@ -65,15 +64,12 @@ public final class TestVanilla直接下落 extends FiniteModeTest {
     }
 
     public static class 直接下落测试数据 extends SandboxTestCase{
-        final @Nonnull int[] beginPosRaw;
+        @TestArg(value = "fall_pos",type = TestArg.Type.BLOCK_POS) int[] beginPosRaw;
         final @Nonnull 词块网格 expected;
 
         private 直接下落测试数据(final @Nonnull 格文件 in,final @Nonnull 格文件 ans) {
             super(in);
             this.expected = ans.获取网格();
-            final Map<String,Object> ext = $格文件.获取附加数据();
-            Assertions.assertNotNull(ext);
-            this.beginPosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"fall_pos"));
         }
     }
 

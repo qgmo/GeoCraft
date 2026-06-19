@@ -62,66 +62,6 @@ public final class BaseUtil {
         return rand.nextDouble() <= possibility;
     }
 
-    /**
-     * 将整个 String 数组转换为 int 数组
-     * @param array 一个 String 数组，里面应该由可以转换为整型的字符串组成
-     * @return 转换后的 int 数组
-     * @see Integer#parseInt(String)
-     * @throws NumberFormatException 存在一个无法转换成 int 的字符串
-     */
-    public static int[] toIntArray(final @Nonnull String[] array){
-        final int[] ints = new int[array.length];
-        for(int i=0;i<array.length;i++){
-            ints[i] = Integer.parseInt(array[i]);
-        }
-        return ints;
-    }
-
-    /**
-     * 将整个 String 数组转换为 long 数组
-     * @param array 一个 String 数组，里面应该由可以转换为长整型的字符串组成
-     * @return 转换后的 long 数组
-     * @see Long#parseLong(String)
-     * @throws NumberFormatException 存在一个无法转换成 long 的字符串
-     */
-    public static long[] toLongArray(final @Nonnull String[] array){
-        final long[] longs = new long[array.length];
-        for(int i=0;i<array.length;i++){
-            longs[i] = Long.parseLong(array[i]);
-        }
-        return longs;
-    }
-
-    /**
-     * 将整个 String 数组转换为 boolean 数组
-     * @param array 一个 String 数组，里面应该全部由 "true" 和 "false" （不区分大小写） 组成
-     * @return 转换后的 boolean 数组
-     * @see BaseUtil#parseBoolean(String)
-     * @throws IllegalArgumentException 存在一个无法转换成 boolean 的字符串
-     */
-    public static boolean[] toBooleanArray(final @Nonnull String[] array){
-        final boolean[] booleans = new boolean[array.length];
-        for(int i=0;i<array.length;i++){
-            booleans[i] = BaseUtil.parseBoolean(array[i]);
-        }
-        return booleans;
-    }
-
-    /**
-     * 将整个 String 数组转换为 double 数组
-     * @param array 一个 String 数组，里面应该由可以转换为 double 的字符串组成
-     * @return 转换后的 double 数组
-     * @see Double#parseDouble(String)
-     * @throws NumberFormatException 存在一个无法转换成 double 的字符串
-     */
-    public static double[] toDoubleArray(final @Nonnull String[] array){
-        double[] doubles = new double[array.length];
-        for(int i=0;i<array.length;i++){
-            doubles[i] = Double.parseDouble(array[i]);
-        }
-        return doubles;
-    }
-
     public static float checkAndReturn(final float num,final float min,final float max) throws IllegalArgumentException{
         if(num>=min && num<=max){
             return num;

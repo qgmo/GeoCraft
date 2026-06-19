@@ -41,10 +41,9 @@ import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingV
 import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.天圆地方.world.sandbox.TestArg;
 import 清汩萌.造.工具.StringUtil;
-import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
-import 清汩萌.造.空间.空间工具;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
@@ -89,15 +88,12 @@ public final class TestVanillaSlopeAlgorithm extends FiniteModeTest {
     }
 
     public static class SlopeAlgorithmTestData extends SandboxTestCase{
-        public final int[] beginPosRaw;
+        @TestArg(value = "begin_at",type = TestArg.Type.BLOCK_POS) int[] beginPosRaw;
         public final String[] expectedDirections;
 
         public SlopeAlgorithmTestData(final @Nonnull 格文件 $格文件,
                                       final @Nonnull String[] expectedDirections) {
             super($格文件);
-            final Map<String,Object> ext = $格文件.获取附加数据();
-            Assertions.assertNotNull(ext);
-            this.beginPosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"begin_at"));
             this.expectedDirections = expectedDirections;
         }
     }

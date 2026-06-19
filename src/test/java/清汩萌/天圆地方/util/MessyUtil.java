@@ -27,6 +27,10 @@
 
 package 清汩萌.天圆地方.util;
 
+import net.minecraft.util.math.BlockPos;
+import org.junit.jupiter.api.Assertions;
+
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -38,5 +42,11 @@ public final class MessyUtil {
     @Nullable
     public static String toNullableString(final @Nullable Object o){
         return o == null? null:o.toString();
+    }
+
+    @Nonnull
+    public static BlockPos toPosFromRaw(final int[] raw){
+        Assertions.assertEquals(3,raw.length);
+        return new BlockPos(raw[0],raw[1],raw[2]);
     }
 }

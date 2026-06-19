@@ -27,8 +27,6 @@
 
 package 清汩萌.造.工具;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +49,8 @@ public final class YamlUtil {
 
     public static boolean getBool(final @Nonnull Map<String,Object> data,final @Nonnull String key){
         return Optional.ofNullable(Objects.requireNonNull(data).get(Objects.requireNonNull(key)))
-                .map(o -> Boolean.parseBoolean(o.toString()))
+                .filter(o -> o instanceof Boolean)
+                .map(o -> (Boolean)o)
                 .orElseThrow(() -> new IllegalArgumentException(key + " not found"));
     }
 
@@ -63,10 +62,10 @@ public final class YamlUtil {
 
     @SuppressWarnings("unchecked")
     public static int[] getIntArray(final @Nonnull Map<String,Object> data, final @Nonnull String key){
-        return ArrayUtils.toPrimitive(get(data,key,(Class<List<?>>) (Class<?>) List.class)
+        return get(data,key,(Class<List<?>>) (Class<?>) List.class)
                 .stream()
-                .map(o -> Integer.parseInt(o.toString()))
-                .toArray(Integer[]::new));
+                .mapToInt(o -> Integer.parseInt(o.toString()))
+                .toArray();
     }
 
     @SuppressWarnings("unchecked")

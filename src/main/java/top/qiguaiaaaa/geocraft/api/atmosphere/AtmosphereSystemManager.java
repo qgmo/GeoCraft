@@ -30,10 +30,8 @@ package top.qiguaiaaaa.geocraft.api.atmosphere;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import top.qiguaiaaaa.geocraft.api.atmosphere.system.IAtmosphereSystem;
 import top.qiguaiaaaa.geocraft.api.event.atmosphere.AtmosphereSystemEvent;
@@ -69,7 +67,7 @@ public final class AtmosphereSystemManager {
      * @return 如果大气不存在或未初始化，则返回null。正常情况下返回大气访问器。
      */
     @Nullable
-    public static IAtmosphereAccessor getAtmosphereAccessor(@Nonnull World world,@Nonnull BlockPos pos,boolean notAir){
+    public static IAtmosphereAccessor getAtmosphereAccessor(@Nonnull final World world,@Nonnull final BlockPos pos,final boolean notAir){
         IAtmosphereSystem system = getAtmosphereSystem(world);
         if(system == null) return null;
         return system.getAccessor(pos,notAir);

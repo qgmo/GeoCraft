@@ -185,14 +185,14 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
         return 0;
     }
 
-    default int onEvaporate(World world,BlockPos pos,IBlockState state,Random random){
-        BlockPos up = pos.up();
-        if(world.isAirBlock(up)) return 0;
-        int humidity = getLayers(world,pos,state,FluidRegistry.WATER);
-        if(humidity ==0) return 0;
-        try(@Nullable IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true)) {
+    default int onEvaporate(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nonnull IBlockState state,final @Nonnull Random random){
+        final @Nonnull BlockPos up = pos.up();
+        if(!world.isAirBlock(up)) return 0;
+        final int humidity = getLayers(world,pos,state,FluidRegistry.WATER);
+        if(humidity == 0) return 0;
+        try(@Nullable final IAtmosphereAccessor accessor = AtmosphereSystemManager.getAtmosphereAccessor(world,pos,true)) {
             if (accessor == null) return 0;
-            int light = ChunkUtil.getNeighborsLightFor(world,EnumSkyBlock.SKY,pos);
+            final int light = ChunkUtil.getNeighborsLightFor(world,EnumSkyBlock.SKY,pos);
             accessor.setSkyLight(light);
 
             if(!accessor.getAtmosphereInfo().canWaterEvaporate()) return 0;

@@ -91,10 +91,10 @@ public final class FluidUtil {
         }
         try{
             return state.getValue(LEVEL) == 0;
-        }catch (Throwable ignore){}
+        }catch (final Exception ignore){}
         try {
             return state.getValue(BlockFluidBase.LEVEL) == 0;
-        }catch (Throwable e){
+        }catch (final Exception e){
             throw new UnsupportedFluidException(state.getBlock());
         }
     }

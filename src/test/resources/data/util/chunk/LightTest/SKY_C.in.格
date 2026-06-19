@@ -1,0 +1,14 @@
+---
+name: 嵌入天花板的天空光照
+ver: 1
+default: 零
+ext:
+  at: [2,2,2]
+  type: sky
+  expected: 14
+---
+E E E
+E E E
+E E E
+
+略2

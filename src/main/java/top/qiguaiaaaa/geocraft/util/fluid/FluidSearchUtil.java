@@ -35,7 +35,6 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -44,7 +43,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import top.qiguaiaaaa.geocraft.GeoCraft;
 import top.qiguaiaaaa.geocraft.api.setting.GeoFluidSetting;
 import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
-import top.qiguaiaaaa.geocraft.api.util.LayeredFluidHostUtil;
 import top.qiguaiaaaa.geocraft.api.util.math.PlaceChoice;
 import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import top.qiguaiaaaa.geocraft.mixin.common.block.BlockFluidBaseAccessor;
@@ -64,15 +62,6 @@ public final class FluidSearchUtil {
     public static final int[][] DIRS6 = {
             {1,0,0},{-1,0,0},{0,0,1},{0,0,-1},{0,1,0},{0,-1,0}
     };
-
-    @Nonnull
-    public static EnumFacing getFacingFromDIRS6(@Nonnull int[] dir){
-        for(EnumFacing facing:EnumFacing.values()){
-            Vec3i vec = facing.getDirectionVec();
-            if(vec.getX() == dir[0] && vec.getY() == dir[1] && vec.getZ() == dir[2]) return facing;
-        }
-        throw new IllegalArgumentException(Arrays.toString(dir));
-    }
 
     /**
      * 广度优先搜索搜寻原版流体源
@@ -396,86 +385,6 @@ public final class FluidSearchUtil {
     }
 
     /**
-     * 寻找放置指定流体的可选位置集合
-     * BFS广度优先搜索，优先水平，其次往上或下
-     * 返回一个PlaceChoice集合，按照水平<垂值，进<远排列
-     * @param world 世界
-     * @param origin 开始搜寻位置
-     * @param fluid 流体
-     * @param maxOptions 最大可选项
-     * @param ignoreBeginPos 是否忽略开始搜索的位置
-     * @param dir 指定垂直搜寻方向，若为null则默认会按照下->上优先级搜寻（负密度流体反之）
-     * @return 一个PlaceChoice集合，按照水平<垂值，进<远排列
-     */
-    @Deprecated
-    @Nonnull
-    public static Set<PlaceChoice> findPlaceableLocationsPermeable(@Nonnull World world,
-                                                          @Nonnull BlockPos origin,
-                                                          @Nonnull Fluid fluid,
-                                                          int maxOptions,
-                                                          boolean ignoreBeginPos,
-                                                          boolean allowAir,
-                                                          @Nullable EnumFacing dir) {
-        Set<PlaceChoice> res = new LinkedHashSet<>();
-        Set<BlockPos> visited = new HashSet<>();
-        Deque<BlockPos> queue = new ArrayDeque<>();
-        if (maxOptions <= 0) return res;
-
-        if (!world.isBlockLoaded(origin)) return res;
-
-        if(!ignoreBeginPos){
-            if (FluidUtil.isFluidPlaceablePermeable(world,origin,fluid,allowAir))
-                res.add(new PlaceChoice(LayeredFluidHostUtil.getFluidLayers(world,origin,world.getBlockState(origin),fluid,allowAir),origin));
-            else if(
-                    LayeredFluidHostUtil.isFluidAccepted(world,origin,world.getBlockState(origin),fluid,allowAir)) return res;
-            if (res.size() >= maxOptions) return res;
-        }
-
-        queue.add(origin);
-        visited.add(origin);
-
-        while (!queue.isEmpty() && res.size() < maxOptions) {
-            BlockPos current = queue.poll();
-
-            for (int[] d : DIRS4) {
-                BlockPos p = current.add(d[0], 0, d[1]);
-                if (visited.contains(p)) continue;
-                visited.add(p);
-
-                if (!world.isBlockLoaded(p)) continue;
-
-                if (FluidUtil.isFluidPlaceablePermeable(world,p,fluid,allowAir)) {
-                    res.add(new PlaceChoice(LayeredFluidHostUtil.getFluidLayers(world,origin,world.getBlockState(p),fluid,allowAir),p));
-                    if (res.size() >= maxOptions) break;
-                    queue.add(p);
-                }else if((LayeredFluidHostUtil.isFluidAccepted(world,p,world.getBlockState(p),fluid,allowAir))) {
-                    queue.add(p);
-                }
-            }
-        }
-        if (res.size() >= maxOptions) return res;
-        if(dir == null && fluid.getDensity() >=0){
-            if(origin.getY() > 0) res.addAll(findPlaceableLocationsPermeable(
-                    world,origin.down(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.DOWN));
-            if (res.size() >= maxOptions) return res;
-            if(origin.getY() < world.getHeight()-1) res.addAll(findPlaceableLocationsPermeable(
-                    world,origin.up(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.UP));
-        }else if(dir == null){
-            if(origin.getY() < world.getHeight()-1) res.addAll(findPlaceableLocationsPermeable(
-                    world,origin.up(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.UP));
-            if (res.size() >= maxOptions) return res;
-            if(origin.getY() > 0) res.addAll(findPlaceableLocationsPermeable(
-                    world,origin.down(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.DOWN));
-        }else if(dir == EnumFacing.DOWN && origin.getY() > 0){
-            res.addAll(findPlaceableLocationsPermeable(world,origin.down(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.DOWN));
-        }else if(dir == EnumFacing.UP && origin.getY() < world.getHeight()-1){
-            res.addAll(findPlaceableLocationsPermeable(world,origin.up(),fluid,maxOptions-res.size(),false,allowAir,EnumFacing.UP));
-        }
-
-        return res;
-    }
-
-    /**
      * 寻找流体方块（广度优先）
      * @param world 所在世界
      * @param startPos 起始位置位置
@@ -499,11 +408,23 @@ public final class FluidSearchUtil {
      * @param maxIterations 最大迭代次数
      * @return 一个流体方块，不一定是流体源
      */
-    public static Optional<BlockPos> findFluid(World world,BlockPos startPos,Fluid fluid,Set<BlockPos> ignoreBlocks,boolean searchInFlat,boolean upwardPriority,int maxIterations){
+    public static Optional<BlockPos> findFluid(@Nonnull final World world,
+                                               @Nonnull final BlockPos startPos,
+                                               @Nullable final Fluid fluid,
+                                               @Nullable final Set<BlockPos> ignoreBlocks,
+                                               final boolean searchInFlat,
+                                               final boolean upwardPriority,
+                                               final int maxIterations){
         return findFluidIterate(world,startPos,fluid,ignoreBlocks,searchInFlat,upwardPriority,maxIterations);
     }
 
-    private static Optional<BlockPos> findFluidIterate(World world, BlockPos startPos, Fluid fluid, Set<BlockPos> ignoreBlocks, boolean searchInFlat, boolean upwardPriority, int maxIterations){
+    private static Optional<BlockPos> findFluidIterate(final @Nonnull World world,
+                                                       final @Nonnull BlockPos startPos,
+                                                       final @Nullable Fluid fluid,
+                                                       @Nullable Set<BlockPos> ignoreBlocks,
+                                                       final boolean searchInFlat,
+                                                       final boolean upwardPriority,
+                                                       final int maxIterations){
         final Queue<FluidSearchNode> queue = SearchQueue.get();
         final Set<BlockPos> visited = SearchVisitedSet.get();
         queue.clear();

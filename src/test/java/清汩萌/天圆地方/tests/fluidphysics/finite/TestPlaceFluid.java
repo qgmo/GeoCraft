@@ -38,20 +38,18 @@ import top.qiguaiaaaa.geocraft.api.util.FluidUtil;
 import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import top.qiguaiaaaa.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
 import 清汩萌.天圆地方.util.网格工具;
+import 清汩萌.天圆地方.world.sandbox.TestArg;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
 import 清汩萌.造.工具.StringUtil;
-import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
-import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.空间.空间构造器;
 import 清汩萌.造.空间.词块网格;
 import 清汩萌.造.词块.词块;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static 清汩萌.天圆地方.assets.MockBlocks.Liquids.*;
@@ -70,18 +68,12 @@ public final class TestPlaceFluid extends FiniteModeTest {
     }
 
     public static final class PlaceFluidTestData extends SandboxTestCase {
-        public final @Nonnull int[] placePosRaw;
-        public final @Nonnull 词块 fluidToPlace;
-        public final boolean expectedAblePlace;
+        @TestArg(value = "at",in = "place",type = TestArg.Type.BLOCK_POS) int[] placePosRaw;
+        @TestArg(value = "fluid",in = "place") 词块 fluidToPlace;
+        @TestArg(value = "expected") boolean expectedAblePlace;
 
         public PlaceFluidTestData(final @Nonnull 格文件 $格文件) {
             super($格文件);
-            final Map<String,Object> ext = $格文件.获取附加数据();
-            Assertions.assertNotNull(ext);
-            final Map<String,Object> place = YamlUtil.getMap(ext,"place");
-            this.placePosRaw = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(place,"at"));
-            this.fluidToPlace = 词块.of(YamlUtil.getString(place,"fluid"));
-            this.expectedAblePlace = YamlUtil.getBool(ext,"expected");
         }
     }
 

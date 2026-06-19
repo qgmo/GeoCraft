@@ -29,7 +29,6 @@ package 清汩萌.天圆地方.tests;
 
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.GameType;
@@ -45,15 +44,13 @@ import 清汩萌.天圆地方.world.MockSimpleWorld;
 import 清汩萌.天圆地方.world.MockWorldProvider;
 import 清汩萌.天圆地方.world.light.SimpleLightGrid;
 import 清汩萌.天圆地方.world.sandbox.MockHashSandbox;
-import 清汩萌.天圆地方.world.sandbox.MockSimpleSandbox;
 import 清汩萌.天圆地方.world.sandbox.SandboxTestCase;
+import 清汩萌.天圆地方.world.sandbox.TestArg;
 import 清汩萌.天圆地方.world.storage.MockWorldInfo;
 import 清汩萌.天圆地方.天圆地方测试;
 import 清汩萌.造.工具.StringUtil;
-import 清汩萌.造.工具.YamlUtil;
 import 清汩萌.造.格文件;
 import 清汩萌.造.空间.亮度构造器;
-import 清汩萌.造.空间.空间工具;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
@@ -197,137 +194,6 @@ public class TestUtils {
      * @see BaseUtil
      */
     public final static class TestBaseUtil{
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void toIntArrayTest() {
-
-            // 正常情况
-            final String[] input1 = {"1","-2","3"};
-            final int[] expected1 = {1,-2,3};
-            Assertions.assertArrayEquals(expected1, BaseUtil.toIntArray(input1));
-
-            // 边界值
-            final String[] input2 = {
-                    String.valueOf(Integer.MAX_VALUE),
-                    String.valueOf(Integer.MIN_VALUE)
-            };
-            final int[] expected2 = {Integer.MAX_VALUE, Integer.MIN_VALUE};
-            Assertions.assertArrayEquals(expected2, BaseUtil.toIntArray(input2));
-
-            // 空数组
-            final String[] input3 = {};
-            Assertions.assertEquals(0, BaseUtil.toIntArray(input3).length);
-
-            // 非法输入
-            Assertions.assertThrows(
-                    NumberFormatException.class,
-                    () -> BaseUtil.toIntArray(new String[]{"a"})
-            );
-
-            Assertions.assertThrows(
-                    NumberFormatException.class,
-                    () -> BaseUtil.toIntArray(new String[]{"1.5"})
-            );
-
-            天圆地方测试.LOGGER.info("toIntArrayTest passed");
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void toLongArrayTest() {
-
-            final String[] input1 = {"1","-2","3"};
-            final long[] expected1 = {1L,-2L,3L};
-            Assertions.assertArrayEquals(expected1, BaseUtil.toLongArray(input1));
-
-            final String[] input2 = {
-                    String.valueOf(Long.MAX_VALUE),
-                    String.valueOf(Long.MIN_VALUE)
-            };
-            final long[] expected2 = {Long.MAX_VALUE, Long.MIN_VALUE};
-            Assertions.assertArrayEquals(expected2, BaseUtil.toLongArray(input2));
-
-            Assertions.assertEquals(0, BaseUtil.toLongArray(new String[]{}).length);
-
-            Assertions.assertThrows(
-                    NumberFormatException.class,
-                    () -> BaseUtil.toLongArray(new String[]{"1.1"})
-            );
-
-            天圆地方测试.LOGGER.info("toLongArrayTest passed");
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void toBooleanArrayTest() {
-
-            // 正常情况
-            final String[] input1 = {"true","false","TRUE","FaLsE"};
-            final boolean[] expected1 = {true,false,true,false};
-            final boolean[] actual1 = BaseUtil.toBooleanArray(input1);
-
-            天圆地方测试.LOGGER.info("toBooleanArray normal result={}", Arrays.toString(actual1));
-            Assertions.assertArrayEquals(expected1, actual1);
-
-            // 单元素
-            final String[] input2 = {"true"};
-            final boolean[] expected2 = {true};
-            Assertions.assertArrayEquals(expected2, BaseUtil.toBooleanArray(input2));
-
-            // 空数组
-            final String[] input3 = {};
-            final boolean[] actual3 = BaseUtil.toBooleanArray(input3);
-            Assertions.assertEquals(0, actual3.length);
-
-            // 非法字符串
-            Assertions.assertThrows(
-                    IllegalArgumentException.class,
-                    () -> BaseUtil.toBooleanArray(new String[]{"true","hello"})
-            );
-
-            // 非法布尔拼写
-            Assertions.assertThrows(
-                    IllegalArgumentException.class,
-                    () -> BaseUtil.toBooleanArray(new String[]{"Truee"})
-            );
-
-            天圆地方测试.LOGGER.info("toBooleanArrayTest passed");
-        }
-
-        /**
-         * ChatGPT Generated
-         */
-        @Test
-        public void toDoubleArrayTest() {
-
-            final String[] input = {"1.5","-2.3","3","1e3","NaN","Infinity"};
-            final double[] actual = BaseUtil.toDoubleArray(input);
-
-            Assertions.assertEquals(6, actual.length);
-            Assertions.assertEquals(1.5, actual[0], EPSILON_DOUBLE);
-            Assertions.assertEquals(-2.3, actual[1], EPSILON_DOUBLE);
-            Assertions.assertEquals(3.0, actual[2], EPSILON_DOUBLE);
-            Assertions.assertEquals(1000.0, actual[3], EPSILON_DOUBLE);
-            Assertions.assertTrue(Double.isNaN(actual[4]));
-            Assertions.assertEquals(Double.POSITIVE_INFINITY, actual[5]);
-
-            Assertions.assertEquals(0, BaseUtil.toDoubleArray(new String[]{}).length);
-
-            Assertions.assertThrows(
-                    NumberFormatException.class,
-                    () -> BaseUtil.toDoubleArray(new String[]{"abc"})
-            );
-
-            天圆地方测试.LOGGER.info("toDoubleArrayTest passed");
-        }
-
         /**
          * ChatGPT Generated
          */
@@ -491,7 +357,7 @@ public class TestUtils {
         public void testGetNeighborsLightFor(final @Nonnull NeighborsLightTestCase c) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
             test(new Object[]{打包网格数据(c.$网格),
                     c.posToTest,
-                    c.type,
+                    c.isBlockLight,
                     c.expected});
         }
 
@@ -500,18 +366,15 @@ public class TestUtils {
                     new String[]{"block","方块","sky","天空"},
                     new boolean[]{true,true,false,false}
             );
-            final @Nonnull int[] posToTest;
-            final boolean type;
-            final int expected;
+            @TestArg(value = "at",type = TestArg.Type.BLOCK_POS) int[] posToTest;
+            @TestArg String type;
+            @TestArg int expected;
+            final boolean isBlockLight;
+
 
             public NeighborsLightTestCase(final @Nonnull 格文件 $格文件) {
                 super($格文件);
-                final Map<String,Object> ext = $格文件.获取附加数据();
-                Assertions.assertNotNull(ext);
-                this.posToTest = 空间工具.转换为游戏坐标(YamlUtil.getIntArray(ext,"at"));
-                this.type = validType.computeIfAbsent(StringUtil.strip(YamlUtil.getString(ext,"type")).toLowerCase(Locale.ROOT),
-                        k -> Assertions.fail("unknown light type "+k));
-                this.expected = YamlUtil.getInt(ext,"expected");
+                this.isBlockLight = validType.computeIfAbsent(StringUtil.strip(type).toLowerCase(Locale.ROOT), k -> Assertions.fail("unknown light type "+k));
             }
         }
 
@@ -520,6 +383,7 @@ public class TestUtils {
             return SandboxTestCase.findInputs("data/util/chunk/LightTest/",NeighborsLightTestCase::new);
         }
 
+        @SuppressWarnings("unused")
         public static void testGetNeighborsLightFor_Inner(final @Nonnull Object[] $打包网格数据,
                                                           final @Nonnull int[] posToTestRaw,
                                                           final boolean typeRaw,

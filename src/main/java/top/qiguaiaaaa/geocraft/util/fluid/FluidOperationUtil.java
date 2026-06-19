@@ -169,7 +169,7 @@ public final class FluidOperationUtil {
      * @param aPos 第一个流体的位置
      * @param bPos 第二个流体的位置
      */
-    public static void swapFluid(World world,BlockPos aPos,BlockPos bPos){
+    public static void swapFluid(final @Nonnull World world,final @Nonnull BlockPos aPos,final @Nonnull BlockPos bPos){
         IBlockState aState = world.getBlockState(aPos);
         IBlockState bState = world.getBlockState(bPos);
         world.setBlockToAir(aPos);
@@ -268,14 +268,14 @@ public final class FluidOperationUtil {
      * @param state 指定液体方块状态
      * @param newLevel 新等级
      */
-    public static void setLevel(World world,BlockPos pos,IBlockState state,int newLevel){
+    public static void setLevel(final @Nonnull World world,final @Nonnull BlockPos pos,@Nonnull IBlockState state,final int newLevel){
         if(newLevel<0) return;
         if(!isFluid(state)) return;
         try {
             state.getValue(LEVEL);
             state = state.withProperty(LEVEL,newLevel);
             world.setBlockState(pos,state);
-        }catch (Throwable e){
+        }catch (final Exception e){
             throw new UnsupportedFluidException(state.getBlock());
         }
     }

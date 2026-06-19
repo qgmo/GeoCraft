@@ -36,8 +36,12 @@ import 清汩萌.造.格文件;
 import 清汩萌.造.空间.词块网格;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -59,6 +63,7 @@ public class SandboxTestCase {
         this.$网格 = $格文件.获取网格();
         final Map<String,Object> ext = $格文件.获取附加数据();
         Assertions.assertNotNull(ext);
+        process(this);
     }
 
     public static <T> Stream<T> findInputs(final @Nonnull String dataDir,
@@ -86,6 +91,29 @@ public class SandboxTestCase {
                         Assertions.fail("error occurred when processing "+in.getPath(),e);
                     }
                 });
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <C extends SandboxTestCase> C process(final @Nonnull C c){
+        final Map<String,Object> ext = c.$格文件.获取附加数据();
+        Assertions.assertNotNull(ext);
+        final Field[] fields = c.getClass().getDeclaredFields();
+        for(final @Nonnull Field field:fields){
+            final int modifiers = field.getModifiers();
+            if(Modifier.isStatic(modifiers) || Modifier.isFinal(modifiers)) continue;
+            if(!field.isAnnotationPresent(TestArg.class)) continue;
+            final @Nonnull TestArg arg = field.getAnnotation(TestArg.class);
+            field.setAccessible(true);
+            final String name = arg.value().isEmpty()?field.getName():arg.value();
+            final @Nullable Optional<Map<String,Object>> parent = arg.in().isEmpty()?Optional.of(ext):
+                    Optional.of(ext.get(arg.in())).filter(o -> o instanceof Map).map(o -> (Map<String, Object>) o);
+            try {
+                arg.type().parse(c,parent,name,field);
+            } catch (final @Nonnull IllegalAccessException e) {
+                Assertions.fail(e);
+            }
+        }
+        return c;
     }
 
     @Nonnull
