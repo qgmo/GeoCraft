@@ -137,7 +137,7 @@ public final class RegistryHandler {
         return missingStatesMap.get(id);
     }
 
-    public static void registerGeographyProperties(RegistryEvent.Register<IGeographyProperty> event){
+    public static void registerGeographyProperties(final @Nonnull RegistryEvent.Register<IGeographyProperty> event){
         IForgeRegistry<IGeographyProperty> registry =event.getRegistry();
         registry.register(DefaultTemperature.TEMPERATURE);
         registry.register(DeepTemperature.DEEP_TEMPERATURE);
@@ -180,6 +180,7 @@ public final class RegistryHandler {
             }
         }
     }
+
     private static void registerMoreRealityEventHandler(){
         FiniteEventHandler finiteEventHandler = new FiniteEventHandler();
         MinecraftForge.EVENT_BUS.register(finiteEventHandler);
