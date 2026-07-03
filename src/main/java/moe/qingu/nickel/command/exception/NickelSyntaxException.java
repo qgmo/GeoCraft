@@ -27,11 +27,10 @@
 
 package moe.qingu.nickel.command.exception;
 
+import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
@@ -40,13 +39,16 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QiguaiAAAA
  */
 public class NickelSyntaxException extends SyntaxErrorException implements INickelException{
     protected final CommandBranch fromBranch;
     protected final IDocumentaryNode fromNode;
-    protected final ITextComponent appendix;
+    protected final TextBuilder<?,?> appendix;
+    protected @Nullable CursorInfo info;
 
     public NickelSyntaxException(@Nonnull final CommandBranch fromBranch,@Nonnull final IDocumentaryNode fromNode) {
         this.fromBranch = fromBranch;
@@ -57,13 +59,13 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
     public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final TextBuilder<?,?> appendix) {
         this.fromBranch = fromBranch;
         this.fromNode = fromNode;
-        this.appendix = appendix.done();
+        this.appendix = appendix;
     }
 
-    public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final ITextComponent appendix) {
-        this.fromBranch = fromBranch;
-        this.fromNode = fromNode;
-        this.appendix = appendix;
+    @Nonnull
+    public NickelSyntaxException withCursor(final @Nonnull InputReader input,final int loc){
+        this.info = new CursorInfo(input,loc);
+        return this;
     }
 
     @Nonnull
@@ -77,28 +79,25 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
     }
 
     @Nonnull
-    public ITextComponent getNodeDocument(){
-        return fromNode.getDocument().done();
+    public TextBuilder<?,?> getNodeDocument(){
+        return fromNode.getDocument();
     }
 
     @Nullable
-    public ITextComponent getDetails() {
+    public TextBuilder<?,?> getDetails() {
         return appendix;
     }
 
     public void feedbackTo(@Nonnull final ICommandSender sender){
-        final ITextComponent node = new TextComponentTranslation("nickel.command.exception.syntax.node.pre")
-                .appendSibling(this.getNodeDocument())
-                .appendSibling(new TextComponentTranslation("nickel.command.exception.syntax.node.sub"));
-        node.getStyle().setColor(TextFormatting.RED);
-        final ITextComponent details = this.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.syntax.details")
-                .appendSibling(this.getDetails());
-        if(details != null) details.getStyle().setColor(TextFormatting.RED);
-        final ITextComponent document = new TextComponentTranslation("nickel.command.exception.syntax.usage")
-                .appendSibling(this.getSourceBranch().getDocument());
-        document.getStyle().setColor(TextFormatting.AQUA);
-        sender.sendMessage(node);
-        if(details != null) sender.sendMessage(details);
-        sender.sendMessage(document);
+        translation("nickel.command.exception.syntax.node",this.getNodeDocument())
+                .color(TextFormatting.RED)
+                .sendTo(sender);
+        if(info != null) info.showInfo(sender);
+        if(this.getDetails()!=null) translation("nickel.command.exception.syntax.details",this.getDetails())
+                .color(TextFormatting.RED)
+                .sendTo(sender);
+        translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
+                .color(TextFormatting.AQUA)
+                .sendTo(sender);
     }
 }

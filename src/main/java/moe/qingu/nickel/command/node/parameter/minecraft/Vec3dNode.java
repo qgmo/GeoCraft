@@ -64,7 +64,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     public static final Suggestor<Vec3d> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,
             (args, context) -> {
                 final List<String> suggests = Lists.newArrayList("~");
-                final int cur = ArrayUtils.lastIndexOf(args,"")+1;
+                final int cur = ArrayUtils.indexOf(args,"")+1;
                 if(context.getTargetPos() == null){
                     final Vec3d pos = context.getSender().getPositionVector();
                     switch (cur){

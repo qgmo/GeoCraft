@@ -28,11 +28,13 @@
 package moe.qingu.nickel.command;
 
 import moe.qingu.nickel.command.builder.parameter.EnumNodeBuilder;
+import moe.qingu.nickel.command.node.parameter.minecraft.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fml.common.registry.EntityEntry;
@@ -58,11 +60,6 @@ import moe.qingu.nickel.command.node.parameter.forge.OreSelectorNode;
 import moe.qingu.nickel.command.node.parameter.generic.BooleanNode;
 import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
 import moe.qingu.nickel.command.node.parameter.generic.number.NumberNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.BlockSelectorNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.BlockStateNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.DimensionNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.ItemSelectorNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.ItemStackNode;
 import moe.qingu.nickel.util.oredict.OreDictionaryEntry;
 
 import javax.annotation.Nonnull;
@@ -149,90 +146,91 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static <N extends Number> NumberNodeBuilder<N,NumberNode<N>> number(@Nonnull final String name, @Nonnull NumberType<N> type){
+    public static <N extends Number> NumberNodeBuilder<N,NumberNode<N>> $number(@Nonnull final String name, @Nonnull NumberType<N> type){
         return type.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Integer,NumberNode<Integer>> integer(@Nonnull final String name){
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> $int(@Nonnull final String name){
         return NumberType.INTEGER.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<BigInteger,NumberNode<BigInteger>> bigInteger(@Nonnull final String name){
+    public static NumberNodeBuilder<BigInteger,NumberNode<BigInteger>> $bigint(@Nonnull final String name){
         return NumberType.BIG_INTEGER.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<BigDecimal,NumberNode<BigDecimal>> bigDecimal(@Nonnull final String name){
+    public static NumberNodeBuilder<BigDecimal,NumberNode<BigDecimal>> $decimal(@Nonnull final String name){
         return NumberType.BIG_DECIMAL.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Double,NumberNode<Double>> doubleArg(@Nonnull final String name){
+    public static NumberNodeBuilder<Double,NumberNode<Double>> $double(@Nonnull final String name){
         return NumberType.DOUBLE.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Long,NumberNode<Long>> longArg(@Nonnull final String name){
+    public static NumberNodeBuilder<Long,NumberNode<Long>> $long(@Nonnull final String name){
         return NumberType.LONG.create(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Long,NumberNode<Long>> longlong(@Nonnull final String name){
-        return longArg(name);
-    }
-
-    @Nonnull
-    public static FastParameterNodeBuilder<Boolean, BooleanNode> bool(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Boolean, BooleanNode> $bool(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BooleanNode::new);
     }
 
     @Nonnull
-    public static StringNodeBuilder string(@Nonnull final String name){
+    public static StringNodeBuilder $string(@Nonnull final String name){
         return new StringNodeBuilder(name);
     }
 
     @Nonnull
-    public static <E extends Enum<E>> EnumNodeBuilder<E> enumArg(@Nonnull final String name, @Nonnull final Class<E> cls){
+    public static StringNodeBuilder $token(@Nonnull final String name){
+        return new StringNodeBuilder(name)
+                .tokenise();
+    }
+
+    @Nonnull
+    public static <E extends Enum<E>> EnumNodeBuilder<E> $enum(@Nonnull final String name, @Nonnull final Class<E> cls){
         return new EnumNodeBuilder<>(name,cls);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<UUID, UUIDNode> uuid(@Nonnull final String name){
+    public static FastParameterNodeBuilder<UUID, UUIDNode> $uuid(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,UUIDNode::new);
     }
 
     // Minecraft
 
     @Nonnull
-    public static MinecraftVec3NodeBuilder.BlockPos blockPos(@Nonnull final String name){
+    public static MinecraftVec3NodeBuilder.BlockPos $blockPos(@Nonnull final String name){
         return new MinecraftVec3NodeBuilder.BlockPos(name);
     }
 
     @Nonnull
-    public static MinecraftVec3NodeBuilder.BlockPos vec3i(@Nonnull final String name){
-        return blockPos(name);
+    public static MinecraftVec3NodeBuilder.BlockPos $vec3i(@Nonnull final String name){
+        return $blockPos(name);
     }
 
     @Nonnull
-    public static MinecraftVec3NodeBuilder.Vec3d vec3d(@Nonnull final String name){
+    public static MinecraftVec3NodeBuilder.Vec3d $vec3d(@Nonnull final String name){
         return new MinecraftVec3NodeBuilder.Vec3d(name);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Item, ItemSelectorNode> item(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Item, ItemSelectorNode> $item(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,ItemSelectorNode::new);
     }
 
     @Nonnull
-    public static ItemStackNodeBuilder itemStack(@Nonnull final String name){
+    public static ItemStackNodeBuilder $itemStack(@Nonnull final String name){
         return new ItemStackNodeBuilder(name);
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$count(@Nonnull final String itemStackNodeName){
-        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"count"))
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> $itemStack$count(@Nonnull final String itemStackNodeName){
+        return $int(ParameterNode.getInnerParameterName(itemStackNodeName,"count"))
                 .min(1)
                 .decorate((count,context) ->{
                     context.get(itemStackNodeName,ItemStackNode.class).setCount(count);
@@ -241,8 +239,8 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Integer,NumberNode<Integer>> itemStack$meta(@Nonnull final String itemStackNodeName){
-        return integer(ParameterNode.getInnerParameterName(itemStackNodeName,"meta"))
+    public static NumberNodeBuilder<Integer,NumberNode<Integer>> $itemStack$meta(@Nonnull final String itemStackNodeName){
+        return $int(ParameterNode.getInnerParameterName(itemStackNodeName,"meta"))
                 .min(0)
                 .max((int) Short.MAX_VALUE)
                 .decorate((meta,context)->{
@@ -252,64 +250,69 @@ public final class Nodes {
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Block, BlockSelectorNode> block(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Block, BlockSelectorNode> $block(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,BlockSelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<IBlockState, BlockStateNode> blockState(@Nonnull final String name){
+    public static FastParameterNodeBuilder<IBlockState, BlockStateNode> $blockState(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name, BlockStateNode::new);
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder entity(@Nonnull final String name){
+    public static EntitySelectorNodeBuilder $entity(@Nonnull final String name){
         return new EntitySelectorNodeBuilder(name).asSingle();
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder entity(@Nonnull final String name, @Nonnull final Class<? extends Entity> targetClass){
+    public static EntitySelectorNodeBuilder $entity(@Nonnull final String name, @Nonnull final Class<? extends Entity> targetClass){
         return new EntitySelectorNodeBuilder(name).asSingle().target(targetClass);
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder entities(@Nonnull final String name){
+    public static EntitySelectorNodeBuilder $entities(@Nonnull final String name){
         return new EntitySelectorNodeBuilder(name);
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder entities(@Nonnull final String name,@Nonnull final Class<? extends Entity> targetClass){
+    public static EntitySelectorNodeBuilder $entities(@Nonnull final String name, @Nonnull final Class<? extends Entity> targetClass){
         return new EntitySelectorNodeBuilder(name).target(targetClass);
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder player(@Nonnull final String name){
-        return entity(name,EntityPlayer.class);
+    public static EntitySelectorNodeBuilder $player(@Nonnull final String name){
+        return $entity(name,EntityPlayer.class);
     }
 
     @Nonnull
-    public static EntitySelectorNodeBuilder players(@Nonnull final String name){
-        return entities(name,EntityPlayer.class);
+    public static EntitySelectorNodeBuilder $players(@Nonnull final String name){
+        return $entities(name,EntityPlayer.class);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<World, DimensionNode> dimension(@Nonnull final String name){
+    public static FastParameterNodeBuilder<World, DimensionNode> $dimension(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,DimensionNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder<NBTTagCompound, NBTCompoundNode> $nbt(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,NBTCompoundNode::new);
     }
 
     // Forge
 
     @Nonnull
-    public static FastParameterNodeBuilder<EntityEntry, EntityEntrySelectorNode> entityEntry(@Nonnull final String name){
+    public static FastParameterNodeBuilder<EntityEntry, EntityEntrySelectorNode> $entityEntry(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,EntityEntrySelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<Fluid, FluidSelectorNode> fluid(@Nonnull final String name){
+    public static FastParameterNodeBuilder<Fluid, FluidSelectorNode> $fluid(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,FluidSelectorNode::new);
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<OreDictionaryEntry, OreSelectorNode> ore(@Nonnull final String name){
+    public static FastParameterNodeBuilder<OreDictionaryEntry, OreSelectorNode> $ore(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,OreSelectorNode::new);
     }
 }

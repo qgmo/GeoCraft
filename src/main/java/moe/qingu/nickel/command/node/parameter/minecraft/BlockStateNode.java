@@ -52,6 +52,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QiguaiAAAA
  */
@@ -100,13 +102,11 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
 
     @Override
     public IBlockState parse(@Nonnull final String arg, @Nonnull final CommandContext context) throws CommandException {
-        if(arg.endsWith("[")) throw new NickelSyntaxException(currentBranch,this,
-                new TextComponentTranslation("nickel.command.parameter.block_state.invalid_end", arg));
+        if(arg.endsWith("[")) throw new NickelSyntaxException(currentBranch,this, translation("nickel.command.parameter.block_state.invalid_end", arg));
         final String[] split = arg.split("\\[",2);
         if(split.length == 0) throw new NickelSyntaxException(currentBranch,this);
         if(split.length == 1) return CommandBase.getBlockByText(context.getSender(), arg).getDefaultState();
-        if(!split[1].endsWith("]")) throw new NickelSyntaxException(currentBranch,this,
-                new TextComponentTranslation("nickel.command.parameter.block_state.invalid_end", arg));
+        if(!split[1].endsWith("]")) throw new NickelSyntaxException(currentBranch,this, translation("nickel.command.parameter.block_state.invalid_end", arg));
         return CommandBase.convertArgToBlockState(CommandBase.getBlockByText(context.getSender(),split[0]),split[1].substring(0,split[1].length()-1));
 
     }

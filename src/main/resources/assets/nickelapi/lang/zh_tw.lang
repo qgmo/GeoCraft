@@ -5,6 +5,7 @@ nickel.command.parameter.generic.double=雙精度浮點數
 nickel.command.parameter.generic.integer=整數型態
 nickel.command.parameter.generic.long=長整數
 nickel.command.parameter.generic.string=字串
+nickel.command.parameter.generic.token=詞元
 nickel.command.parameter.generic.uuid=UUID
 nickel.command.parameter.minecraft.block_pos=方塊座標
 nickel.command.parameter.minecraft.block=方塊
@@ -23,6 +24,11 @@ nickel.command.parameter.smart.checker1=該參數至少需要一個輸入
 nickel.command.parameter.smart.checkers=該參數至少需要 %s 個輸入
 nickel.command.parameter.checker.resource_location.invalid.repeat=命名空間 ID 不能存在兩個及以上的分號『:』
 nickel.command.parameter.checker.resource_location.invalid.slash=命名空間不能存在正斜線『/』
+nickel.command.parameter.num.invalid=无效的 %s 数字 %s
+nickel.command.parameter.string.no_pair=字符串未正确用 %s 闭合
+nickel.command.parameter.string.truncated_escape=转义序列不完整
+nickel.command.parameter.string.truncated_escape.num=转义序列不完整，期望 %s 位数字
+nickel.command.parameter.string.invalid_digit=无效的数字字符 %s，期望基数 %s 的数字
 nickel.command.parameter.string.nonMatch=無效的輸入 %s ，該字串參數的輸入必須符合正規表達式 %s
 nickel.command.parameter.string.invalid.white=無效的輸入 %s ，該字串參數僅允許以下輸入：%s
 nickel.command.parameter.string.invalid.black=無效的輸入 %s ，該字串參數不接受以下輸入： %s
@@ -32,6 +38,28 @@ nickel.command.parameter.block_state.invalid_end=%s 缺少右方括號『[』
 nickel.command.parameter.fluid.invalid=無效的流體 %s
 nickel.command.parameter.ore_directory.invalid=無效的礦物辭典 %s
 nickel.command.parameter.entity_entry.invalid=無效的實體類型 %s
+nickel.command.parameter.nbt.escape=NBT 结构存在多余输入
+nickel.command.parameter.nbt.unexpect=期望是 %s 但实际是 %s
+nickel.command.parameter.nbt.expected_key=这里应当有一个 NBT 键的
+nickel.command.parameter.nbt.empty_key=NBT 键不应为空
+nickel.command.parameter.nbt.expected_value=这里应当有一个 NBT 值的
+nickel.command.parameter.nbt.empty_value=NBT 值不应为空
+nickel.command.parameter.nbt.invalid_num=无效的数字：%s
+nickel.command.parameter.nbt.num.invalid_0=存在非法的前导零
+nickel.command.parameter.nbt.num.invalid_split=存在非法的分隔符
+nickel.command.parameter.nbt.int.invalid_code=在整数中存在无效的字符 %s
+nickel.command.parameter.nbt.int.invalid_escape=整数中存在多余内容 %s
+nickel.command.parameter.nbt.int.invalid_type=无效的整数类型标记 %s
+nickel.command.parameter.nbt.int.too_min=数字 %s 过小，最小值为 %s
+nickel.command.parameter.nbt.int.too_max=数字 %s 过大，最大值为 %s
+nickel.command.parameter.nbt.float.invalid_type=无效的浮点数类型标记 %s
+nickel.command.parameter.nbt.float.infinity=浮点数不能为无穷
+nickel.command.parameter.nbt.array.type_mismatch=期望的数组类型是 %s，但实际上是 %s
+nickel.command.parameter.nbt.list.type_mismatch=期望的列表元素类型是 %s，但实际上是 %s
+nickel.command.parameter.nbt.function.undefined=%s 调用了未定义的函数 %s
+nickel.command.parameter.nbt.function.null_arg=参数不应为空字符串
+nickel.command.parameter.nbt.function.run_exception=函数 %s 执行失败
+nickel.command.parameter.nbt.function.count_mismatch=期望的参数数量是 %s,但实际是 %s
 
 nickel.command.functional.permit.denied=因您的權限不足，該命令無法執行
 nickel.command.functional.literal.non_match=命令預期的字面量是 %s ，但是您輸入了 %s
@@ -44,19 +72,19 @@ nickel.command.context.get.unknown_argument.entities=嘗試從執行上下文獲
 
 nickel.command.literals.exception.default=該字面量節點被設定為可選，但意外地沒有設定任何的預設邏輯
 
-#存在行末空格
-nickel.command.exception.syntax.node.pre=命令節點
-nickel.command.exception.syntax.node.sub= 出現語法錯誤
-#行末空格 開始
-nickel.command.exception.syntax.details=詳細資訊： 
-nickel.command.exception.syntax.usage=用法： 
+nickel.command.exception.cursor.loc=游標在位置 %s 時解析出錯 
+nickel.command.exception.syntax.node=命令節點 %s 出現語法錯誤
+nickel.command.exception.syntax.details=詳細資訊：%s
+nickel.command.exception.syntax.usage=用法：%s
 #行末空格 結束
 nickel.command.exception.base.message=命令執行時出現了一些錯誤
 #存在行末空格
 nickel.command.exception.base.node.pre=命令執行到命令節點 
 nickel.command.exception.base.node.sub= 時發生錯誤
+nickel.command.exception.base.node.unknown=未知命令節點的解析錯誤：%s
 #行末空格 開始
 nickel.command.exception.base.details=詳細資訊： 
 nickel.command.exception.base.branch=分支： 
 #行末空格 結束
 nickel.command.exception.runtime.message=命令執行時出錯：%s
+nickel.command.exception.runtime.unknown=未知上下文的解析錯誤：%s

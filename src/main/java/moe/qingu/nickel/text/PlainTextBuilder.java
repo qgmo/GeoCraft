@@ -47,4 +47,10 @@ public final class PlainTextBuilder extends TextBuilder<TextComponentString,Plai
     protected TextComponentString build() {
         return new TextComponentString(text);
     }
+
+    @Nonnull
+    @Override
+    protected PlainTextBuilder buildCopy() {
+        return new PlainTextBuilder(text);
+    }
 }

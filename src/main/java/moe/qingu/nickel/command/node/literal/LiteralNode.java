@@ -85,7 +85,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
     public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         final @Nonnull String token = input.readToken();
-        if(!literal.equals(token)) context.panic(translation("nickel.command.functional.literal.non_match").arg(this.literal,token));
+        if(!literal.equals(token)) input.panic(translation("nickel.command.functional.literal.non_match").arg(this.literal,token));
         if(childNode != null) context.enter(childNode);
     }
 

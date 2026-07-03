@@ -27,13 +27,22 @@
 
 package moe.qingu.nickel.command.reader;
 
+import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.exception.NickelCommandException;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.exception.NickelSyntaxException;
+import moe.qingu.nickel.command.node.ICommandNode;
+import moe.qingu.nickel.command.node.IDocumentaryNode;
+import moe.qingu.nickel.command.utils.CommandBranch;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import static moe.qingu.nickel.text.Texts.plain;
-import static moe.qingu.nickel.text.Texts.translation;
+import static moe.qingu.nickel.text.Texts.*;
+import static moe.qingu.nickel.util.StringUtils.stringOf;
 
 /**
  * @author QGMoe
@@ -117,6 +126,10 @@ public final class InputReader {
         this.cursor++;
     }
 
+    public void unread(){
+        this.cursor--;
+    }
+
     public void skipIfWhitespace(){
         while (this.canRead() && Character.isWhitespace(this.peek())){
             this.skip();
@@ -138,13 +151,13 @@ public final class InputReader {
     }
 
     @Nonnull
-    public String readString(){
+    public String readString() throws CommandException {
         skipIfWhitespace();
         if (this.canRead() && (this.peek() == '"' || this.peek() == '\'')){
             final int quote = this.read();
             final StringBuilder builder = new StringBuilder();
             while (true){
-                if(!canRead()) throw new IndexOutOfBoundsException();
+                if(!canRead()) return panic(this.getCursor(),translation("nickel.command.parameter.string.no_pair"));
                 int cp = this.read();
                 if(cp == '\\') cp = readEscape();
                 else if(cp == quote) break;
@@ -155,12 +168,14 @@ public final class InputReader {
     }
 
     public boolean readBoolean() throws CommandException {
+        skipIfWhitespace();
+        final int begin = this.cursor;
         final String token = readToken();
         if("true".equals(token) || "1".equals(token)){
             return true;
         }else if("false".equals(token) || "0".equals(token)){
             return false;
-        }else return context.panic(translation("commands.generic.boolean.invalid").arg(token));
+        }else return context.input.panic(begin,translation("commands.generic.boolean.invalid",token));
     }
 
     @Nonnull
@@ -170,7 +185,7 @@ public final class InputReader {
         return last;
     }
 
-    public int readEscape(){
+    public int readEscape() throws CommandException{
         if(this.canRead()){
             final int cp = this.read();
             switch (cp){
@@ -187,18 +202,21 @@ public final class InputReader {
                 case 'v': return '\u000B';
                 case 'u': return readInt(4,4);
                 case 'U': return readInt(8,4);
-                default:return readInt(3,3);
+                default:{
+                    unread();
+                    return readInt(3,3);
+                }
             }
-        }else throw new IndexOutOfBoundsException();
+        }else return panic(this.getCursor(),translation("nickel.command.parameter.string.truncated_escape"));
     }
 
-    public int readInt(int len,final int pow){
+    public int readInt(int len,final int pow) throws CommandException{
         final int radix = 1<<pow;
         int value = 0;
-        if(!this.canRead(len)) throw new IndexOutOfBoundsException();
+        if(!this.canRead(len)) return panic(this.getCursor(),translation("nickel.command.parameter.string.truncated_escape.num",len));
         while (len-->0){
             final int digit = Character.digit(this.read(),radix);
-            if(digit == -1) throw new IllegalArgumentException();
+            if(digit == -1) return panic(this.getCursor()-1,translation("nickel.command.parameter.string.invalid_digit",stringOf(codepoints[this.cursor-1]),radix));
             value = (value << pow) | digit;
         }
         return value;
@@ -213,7 +231,7 @@ public final class InputReader {
             return Integer.parseInt(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.panic(plain(raw));
+            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.INT),raw));
         }
     }
 
@@ -226,7 +244,7 @@ public final class InputReader {
             return Long.parseLong(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.panic(plain(raw));
+            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.LONG) ,raw));
         }
     }
 
@@ -239,8 +257,35 @@ public final class InputReader {
             return Double.parseDouble(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.panic(plain(raw));
+            return context.input.panic(begin,translation("nickel.command.parameter.num.invalid", translation(I18nKeys.DOUBLE) ,raw));
         }
+    }
+
+
+    @Nonnull
+    public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
+        final @Nullable ICommandNode curNode = context.getCurrentNode();
+        final @Nullable CommandBranch curBranch = context.getCurrentBranch();
+        if(curBranch != null){
+            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text);
+            else throw new NickelCommandException(curBranch,translation("nickel.command.exception.base.node.unknown",text));
+        }else throw new NickelRuntimeException(translation("nickel.command.exception.runtime.unknown",text));
+    }
+
+    @Nonnull
+    public <T> T panic(final int loc,final @Nonnull String translationKey) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+        return panic(loc,translation(translationKey));
+    }
+
+    @Nonnull
+    public <T> T panic(final int loc,final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
+        final @Nullable ICommandNode curNode = context.getCurrentNode();
+        final @Nullable CommandBranch curBranch = context.getCurrentBranch();
+        if(curBranch != null){
+            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text)
+                    .withCursor(this,loc);
+            else throw new NickelCommandException(curBranch,translation("nickel.command.exception.base.node.unknown",text));
+        }else throw new NickelRuntimeException(translation("nickel.command.exception.runtime.unknown",text));
     }
 
     public static boolean isNumber(final int c){

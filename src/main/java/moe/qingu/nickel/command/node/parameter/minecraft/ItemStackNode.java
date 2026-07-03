@@ -107,7 +107,7 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
         final String itemId = input.getSubInput(begin,splitLoc);
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),itemId);
 
-        final NBTTagCompound compound = SNBTReader.readNBTFromInput(input);
+        final NBTTagCompound compound = SNBTReader.readSingleNBTFromInput(input);
         final ItemStack stack = new ItemStack(item,count,meta);
         stack.setTagCompound(compound);
         return stack;

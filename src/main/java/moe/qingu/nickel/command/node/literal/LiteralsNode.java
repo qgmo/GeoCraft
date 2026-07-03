@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * 多字面量节点，可以通过不同的字面量做到不同的分支。<br/>
@@ -91,7 +92,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         else node = childNode;
         if(node != null){
             context.enter(node);
-        }else if(isOptional()) throw new NickelCommandException(curBranch,this,new TextComponentTranslation("nickel.command.literals.exception.default"));
+        }else if(isOptional()) throw new NickelCommandException(curBranch,this,translation("nickel.command.literals.exception.default"));
         else throw new NickelSyntaxException(curBranch,this);
     }
 
@@ -146,7 +147,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         final Set<CommandBranch> subBranches = literal2Node.entrySet().stream()
                 .map(entry -> {
                     final CommandBranch branch = entry.getValue().branch();
-                    branch.appendDocument(new TextComponentString(entry.getKey()));
+                    branch.appendDocument(plain(entry.getKey()));
                     return branch;
                 })
                 .collect(Collectors.toSet());

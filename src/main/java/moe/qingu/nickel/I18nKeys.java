@@ -25,32 +25,18 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.util.function;
-
-import javax.annotation.Nonnull;
-import java.util.Objects;
+package moe.qingu.nickel;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@FunctionalInterface
-public interface TriPredicate<T,F,U> {
-    boolean test(T t,F f,U u);
+public final class I18nKeys {
+    public static final String INT = "nickel.command.parameter.generic.integer";
+    public static final String LONG = "nickel.command.parameter.generic.long";
+    public static final String UUID = "nickel.command.parameter.generic.uuid";
+    public static final String STRING = "nickel.command.parameter.generic.string";
+    public static final String TOKEN = "nickel.command.parameter.generic.token";
+    public static final String DOUBLE = "nickel.command.parameter.generic.double";
 
-    @Nonnull
-    default TriPredicate<T,F,U> and(@Nonnull TriPredicate<? super T,? super F, ? super U> other) {
-        Objects.requireNonNull(other);
-        return (T t,F f, U u) -> test(t,f,u) && other.test(t,f,u);
-    }
-
-    @Nonnull
-    default TriPredicate<T,F,U> negate() {
-        return (T t,F f,U u) -> !test(t,f,u);
-    }
-
-    @Nonnull
-    default TriPredicate<T,F,U> or(@Nonnull TriPredicate<? super T,? super F,? super U> other) {
-        Objects.requireNonNull(other);
-        return (T t,F f,U u) -> test(t, f, u) || other.test(t, f, u);
-    }
+    private I18nKeys(){}
 }

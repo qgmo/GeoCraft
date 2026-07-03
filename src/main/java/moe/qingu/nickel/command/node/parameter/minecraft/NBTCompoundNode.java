@@ -25,53 +25,48 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.forge;
+package moe.qingu.nickel.command.node.parameter.minecraft;
 
-import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
-import moe.qingu.nickel.command.suggestor.DirectSuggestor;
-import moe.qingu.nickel.command.suggestor.Suggestor;
-import net.minecraft.command.CommandException;
-import net.minecraftforge.fluids.Fluid;
-import net.minecraftforge.fluids.FluidRegistry;
 import moe.qingu.nickel.command.context.CommandContext;
+import moe.qingu.nickel.command.node.parameter.ParameterNode;
+import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.reader.SNBTReader;
+import moe.qingu.nickel.command.utils.ValidChecker;
+import net.minecraft.command.CommandException;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
 
 import static moe.qingu.nickel.text.Texts.translation;
+import static moe.qingu.nickel.util.StringUtils.stringOf;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class FluidSelectorNode extends TokenizeParameterNode.Single<Fluid> {
-
-    public static final Suggestor<Fluid> DEFAULT_SUGGESTOR = DirectSuggestor.of(FluidRegistry.getRegisteredFluids().keySet());
-
-    public FluidSelectorNode(@Nonnull final String name) {
+public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
+    public NBTCompoundNode(@Nonnull final String name) {
         super(name);
-        setSuggestProvider(DEFAULT_SUGGESTOR);
-    }
-
-    @Override
-    public Fluid parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
-        final Fluid fluid = FluidRegistry.getFluid(token);
-        if(fluid == null) return context.input.panic(translation("nickel.command.parameter.fluid.invalid",token));
-        return fluid;
     }
 
     @Nonnull
     @Override
-    public Class<Fluid> getTypeClass() {
-        return Fluid.class;
-    }
-
-    @Nonnull
-    @Override
-    public String getTypeTranslationKey() {
-        return "nickel.command.parameter.forge.fluid";
+    public Class<NBTTagCompound> getTypeClass() {
+        return NBTTagCompound.class;
     }
 
     @Override
-    public String serialise(@Nonnull final Fluid fluid) {
-        return fluid.getName();
+    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        if(ValidChecker.REQUIRE_ONE_TOKEN.check(this, input)){
+            final int begin = input.getCursor();
+            final String token = input.readToken();
+            if(!token.startsWith("{")) return input.panic(begin,translation("nickel.command.parameter.nbt.unexpect")
+                    .arg("{",token.isEmpty()?"":stringOf(token.codePointAt(0))));
+            return true;
+        }else return false;
+    }
+
+    @Override
+    public NBTTagCompound parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        return SNBTReader.readSingleNBTFromInput(input);
     }
 }

@@ -27,14 +27,9 @@
 
 package moe.qingu.nickel.command.context;
 
-import moe.qingu.nickel.command.exception.NickelCommandException;
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.ICommandNode;
-import moe.qingu.nickel.command.node.IDocumentaryNode;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.utils.CommandBranch;
-import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -49,7 +44,7 @@ import java.util.Stack;
  * @author QiguaiAAAA
  */
 public class CommandContext {
-    protected final InputReader input;
+    public final InputReader input;
     protected final ICommand command;
     protected final ICommandSender sender;
     protected final MinecraftServer server;
@@ -103,14 +98,14 @@ public class CommandContext {
         return input;
     }
 
-    @Nonnull
-    public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
-        final @Nullable ICommandNode curNode = nodeContext.isEmpty()? null:nodeContext.context.peek();
-        final @Nullable CommandBranch curBranch = branchContext.isEmpty()? null:branchContext.context.peek();
-        if(curBranch != null){
-            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text);
-            else throw new NickelCommandException(curBranch,text);
-        }else throw new NickelRuntimeException(text);
+    @Nullable
+    public ICommandNode getCurrentNode(){
+        return nodeContext.isEmpty()? null:nodeContext.context.peek();
+    }
+
+    @Nullable
+    public CommandBranch getCurrentBranch(){
+        return branchContext.isEmpty()? null:branchContext.context.peek();
     }
 
     public static class ContextStack<T> implements AutoCloseable{

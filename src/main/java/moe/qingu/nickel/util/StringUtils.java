@@ -25,23 +25,27 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.util.function;
+package moe.qingu.nickel.util;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@FunctionalInterface
-public interface TriFunction<A,B,C,R> {
-
-    R apply(A a,B b,C c);
+public final class StringUtils {
 
     @Nonnull
-    default <V> TriFunction<A, B, C, V> andThen(@Nonnull final Function<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
-        return (A a, B b, C c) -> after.apply(apply(a,b,c));
+    public static String strip(final @Nonnull String s) {
+        final int[] cps = s.codePoints().toArray();
+        int i=0;
+        int j=cps.length;
+        while (i<cps.length && Character.isWhitespace(cps[i])) i++;
+        while (j>i && Character.isWhitespace(cps[j-1])) j--;
+        return new String(cps,i,j-i);
+    }
+
+    @Nonnull
+    public static String stringOf(final int cp){
+        return new String(Character.toChars(cp));
     }
 }

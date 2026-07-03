@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.parameter.generic;
 
+import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import net.minecraft.command.CommandException;
@@ -46,28 +47,19 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public class StringNode extends ParameterNode<String> {
     public static final ValidChecker CHECK_WHITELIST = (self, input) -> {
-        final StringNode node = (StringNode) self;
-        final String str = input.readString();
-        if(node.whitelist !=null)
-            if(node.whitelist.contains(str)) return true;
-            else return input.getContext().panic(translation("nickel.command.parameter.string.invalid.white").arg(str,String.join(" ", node.whitelist)));
-        else return true;
+        checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).whitelist,false,input.getContext());
+        return true;
     };
     public static final ValidChecker CHECK_BLACKLIST = (self, input) -> {
-        final StringNode node = (StringNode) self;
-        final String str = input.readString();
-        if(node.blacklist != null && node.blacklist.contains(str))
-            return input.getContext().panic(translation("nickel.command.parameter.string.invalid.black").arg(str,String.join(" ",node.blacklist)));
-        else return true;
+        checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).blacklist,true,input.getContext());
+        return true;
     };
     public static final ValidChecker CHECK_PATTERN = (self, input) -> {
-        final StringNode node = (StringNode) self;
-        final String str = input.readString();
-        if(node.pattern != null && !node.pattern.matcher(str).matches())
-            return input.getContext().panic(translation("nickel.command.parameter.string.nonMatch").arg(str,node.pattern.toString()));
-        else return true;
+        checkPattern(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).pattern,input.getContext());
+        return true;
     };
 
+    protected boolean tokenise = false;
     protected Set<String> whitelist = null;
     protected Set<String> blacklist = null;
     protected Pattern pattern = null;
@@ -75,6 +67,23 @@ public class StringNode extends ParameterNode<String> {
 
     public StringNode(@Nonnull final String name) {
         super(name);
+    }
+
+    public static void checkList(final @Nonnull String str, final @Nullable Set<String> list, final boolean isBlackList, final @Nonnull CommandContext context) throws CommandException{
+        if(list == null) return;
+        if(list.contains(str) ^ isBlackList) return;
+        context.input.panic(translation(isBlackList?"nickel.command.parameter.string.invalid.black":"nickel.command.parameter.string.invalid.white")
+                .arg(str,String.join(" ", list)));
+    }
+
+    public static void checkPattern(final @Nonnull String str, final @Nullable Pattern pattern, final @Nonnull CommandContext context) throws CommandException{
+        if(pattern == null) return;
+        if(pattern.matcher(str).matches()) return;
+        context.input.panic(translation("nickel.command.parameter.string.nonMatch",str,pattern.toString()));
+    }
+
+    public void setTokenise(final boolean tokenise) {
+        this.tokenise = tokenise;
     }
 
     public void addAllowValue(@Nonnull final String content){
@@ -109,7 +118,7 @@ public class StringNode extends ParameterNode<String> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return "nickel.command.parameter.generic.string";
+        return tokenise?"nickel.command.parameter.generic.token":"nickel.command.parameter.generic.string";
     }
 
     @Override
@@ -118,7 +127,10 @@ public class StringNode extends ParameterNode<String> {
     }
 
     @Override
-    public String parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) {
-        return input.readString();
+    public String parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        if(tokenise) return input.readToken();
+        final String res = input.readString();
+        if(!Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
+        return res;
     }
 }

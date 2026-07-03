@@ -47,7 +47,7 @@ public interface ValidChecker {
     ValidChecker REQUIRE_ONE_TOKEN = (self, input) -> {
         if(!input.isRemainingEmpty()) return true;
         else if(self.isOptional()) return false;
-        else return input.getContext().panic(translation("nickel.command.parameter.smart.checker1"));
+        else return input.getContext().input.panic(translation("nickel.command.parameter.smart.checker1"));
     };
     ValidChecker MATCH_TWO_PARAMETER = matchMultiTokens(2);
     ValidChecker MATCH_THREE_PARAMETER = matchMultiTokens(3);
@@ -88,16 +88,16 @@ public interface ValidChecker {
             while (num-->0) if(input.readToken().isEmpty()) break check;
             return true;
         }
-        if(num < paraNum-1) return input.getContext().panic(translation("nickel.command.parameter.smart.checkers").arg(paraNum));
+        if(num < paraNum-1) return input.getContext().input.panic(translation("nickel.command.parameter.smart.checkers",paraNum));
         else if (self.isOptional()) return false; //可以用默认值
-        else return input.getContext().panic(translation("nickel.command.parameter.smart.checkers").arg(paraNum));
+        else return input.getContext().input.panic(translation("nickel.command.parameter.smart.checkers",paraNum));
     }
 
     static boolean matchResourceLocation(final @Nonnull String token, final @Nonnull CommandContext context) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
         final String[] split = token.split(":");
-        if(split.length>2) return context.panic(translation("nickel.command.parameter.checker.resource_location.invalid.repeat"));
+        if(split.length>2) return context.input.panic(translation("nickel.command.parameter.checker.resource_location.invalid.repeat"));
         else if(split.length==2&&split[0].contains("/"))
-            return context.panic(translation("nickel.command.parameter.checker.resource_location.invalid.slash"));
+            return context.input.panic(translation("nickel.command.parameter.checker.resource_location.invalid.slash"));
         return true;
     }
 }

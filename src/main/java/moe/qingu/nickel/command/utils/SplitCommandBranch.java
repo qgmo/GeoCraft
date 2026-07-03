@@ -30,7 +30,6 @@ package moe.qingu.nickel.command.utils;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -48,7 +47,7 @@ import java.util.Set;
 public class SplitCommandBranch extends CommandBranch{
 
     protected final Set<CommandBranch> branches;
-    protected final Map<CommandBranch,ITextComponent> splitLocations = new HashMap<>();
+    protected final Map<CommandBranch,TextBuilder<?,?>> splitLocations = new HashMap<>();
 
     public SplitCommandBranch(final @Nonnull Collection<CommandBranch> subBranches){
         branches = new HashSet<>(Objects.requireNonNull(subBranches));
@@ -57,29 +56,25 @@ public class SplitCommandBranch extends CommandBranch{
         }
     }
 
-    public void setEndDocument(@Nonnull final ITextComponent document){
-        super.appendDocument(document);
-    }
-
     public void setEndDocument(@Nonnull final TextBuilder<?,?> document){
-        this.setEndDocument(document.done());
+        super.appendDocument(document);
     }
 
     @Override
-    public void appendDocument(@Nonnull final ITextComponent document) {
+    public void appendDocument(@Nonnull final TextBuilder<?,?> document) {
         super.appendDocument(document);
         for(final @Nonnull CommandBranch branch:branches){
-            branch.appendDocument(document.createCopy());
+            branch.appendDocument(document.copy());
         }
     }
 
     @Override
     public void finish(@Nonnull final ICommand command) {
         super.finish(command);
-        List<ITextComponent> subNodes = null;
+        List<TextBuilder<?,?>> subNodes = null;
         int lengthMax = 0;
         for(final @Nonnull CommandBranch branch:branches){
-            final List<ITextComponent> subDocument = branch.getDocuments();
+            final List<TextBuilder<?,?>> subDocument = branch.getDocuments();
             final int splitIndex = getSplitIndexOf(branch);
             final int splitSize = subDocument.size()-splitIndex;// 相当于从分支点开始（包含）到末尾的长度
             lengthMax = Math.max(splitSize,lengthMax);
@@ -89,15 +84,15 @@ public class SplitCommandBranch extends CommandBranch{
             }
             if(subNodes.isEmpty()) break;  //这意味着一定与其他节点不存在共有节点
             for(int i=0;i<subNodes.size();i++){
-                if(i+1<splitSize && subNodes.get(i).equals(subDocument.get(splitIndex+i+1))) continue; //相同，可以保留
+                if(i+1<splitSize && subNodes.get(i).done().equals(subDocument.get(splitIndex+i+1).done())) continue; //相同，可以保留
                 subNodes = subNodes.subList(0,i); //不相同，或者超过该分支最大长度，截取相同部分
             }
         }
         if(subNodes == null) subNodes = Collections.emptyList();
-        for(final ITextComponent component:subNodes){
-            this.document.appendText(" ").appendSibling(component.createCopy());
+        for(final TextBuilder<?,?> text:subNodes){
+            this.document.then(" ").then(text.copy());
         }
-        if(subNodes.size()+1 < lengthMax) document.appendText(" ..."); //存在省略部分
+        if(subNodes.size()+1 < lengthMax) document.then(" ..."); //存在省略部分
         for (final @Nonnull CommandBranch branch : branches) {
             branch.finish(command);
         }

@@ -36,7 +36,6 @@ import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.event.HoverEvent;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
@@ -231,7 +230,7 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
             putParsedArgument(parsedArg,context);
             return false;
         }
-        throw new NickelCommandException(currentBranch,this,new TextComponentTranslation("nickel.command.parameter.base.default_not_found"));
+        throw new NickelCommandException(currentBranch,this,translation("nickel.command.parameter.base.default_not_found"));
     }
 
     protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context) throws CommandException {

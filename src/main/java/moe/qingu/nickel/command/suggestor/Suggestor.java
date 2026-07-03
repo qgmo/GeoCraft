@@ -50,10 +50,11 @@ public interface Suggestor<P> {
 
     @Nonnull
     static Stream<String> cleanup(final @Nonnull Stream<String> suggestions,final @Nonnull InputReader input,final int beginIndex){
-        final @Nonnull String subInput = input.getSubInput(beginIndex);
+        final @Nonnull String subInput = input.getSubInput(beginIndex).replaceAll("\\s+"," ");
         return suggestions.map(String::trim)
                 .filter(s -> !s.isEmpty() && s.startsWith(subInput))
-                .map(s -> s.substring(s.lastIndexOf(" ")+1))
+                .map(s -> s.substring(subInput.length()).split("\\s+",2)[0])
+                .filter(s -> !s.isEmpty())
                 .distinct()
                 .sorted();
     }

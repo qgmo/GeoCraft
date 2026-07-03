@@ -59,7 +59,7 @@ public class DimensionNode extends TokenizeParameterNode.Single<World> {
     public World parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
         final int dimension = CommandBase.parseInt(token);
         final World world = DimensionManager.getWorld(dimension);
-        if(world == null) return context.panic(translation("nickel.command.parameter.dimension.not_found").arg(dimension));
+        if(world == null) return context.input.panic(translation("nickel.command.parameter.dimension.not_found",dimension));
         return world;
     }
 

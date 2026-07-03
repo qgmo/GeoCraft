@@ -59,9 +59,8 @@ public class NickelRuntimeException extends CommandException implements INickelE
 
     @Override
     public void feedbackTo(@Nonnull final ICommandSender sender) {
-        sender.sendMessage(translation("nickel.command.exception.runtime.message")
-                .arg(information)
+        translation("nickel.command.exception.runtime.message",information)
                 .color(TextFormatting.RED)
-                .done());
+                .sendTo(sender);
     }
 }

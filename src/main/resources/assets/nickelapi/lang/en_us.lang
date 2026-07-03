@@ -5,6 +5,7 @@ nickel.command.parameter.generic.double=Double
 nickel.command.parameter.generic.integer=Integer
 nickel.command.parameter.generic.long=Long
 nickel.command.parameter.generic.string=String
+nickel.command.parameter.generic.token=Token
 nickel.command.parameter.generic.uuid=UUID
 nickel.command.parameter.minecraft.block_pos=BlockPos
 nickel.command.parameter.minecraft.block=Block
@@ -23,6 +24,11 @@ nickel.command.parameter.smart.checker1=This parameter is required to accepted o
 nickel.command.parameter.smart.checkers=This parameter is required to accepted at least %s arguments.
 nickel.command.parameter.checker.resource_location.invalid.repeat=Resource Location Parameter must not contain more than two ':' characters.
 nickel.command.parameter.checker.resource_location.invalid.slash=Namespace of Resource Location Parameter must not contain character '/'.
+nickel.command.parameter.num.invalid=无效的 %s 数字 %s
+nickel.command.parameter.string.no_pair=字符串未正确用 %s 闭合
+nickel.command.parameter.string.truncated_escape=转义序列不完整
+nickel.command.parameter.string.truncated_escape.num=转义序列不完整，期望 %s 位数字
+nickel.command.parameter.string.invalid_digit=无效的数字字符 %s，期望基数 %s 的数字
 nickel.command.parameter.string.nonMatch=Invalid input %s , which requires input to match %s
 nickel.command.parameter.string.invalid.white=Invalid input %s , which only allows the following values: %s
 nickel.command.parameter.string.invalid.black=Invalid input %s , which disallows the following values: %s
@@ -32,6 +38,28 @@ nickel.command.parameter.block_state.invalid_end=%s misses right square bracket 
 nickel.command.parameter.fluid.invalid=Invalid fluid %s
 nickel.command.parameter.ore_directory.invalid=Invalid Ore Directory %s
 nickel.command.parameter.entity_entry.invalid=Invalid Entity Entry %s
+nickel.command.parameter.nbt.escape=NBT 结构存在多余输入
+nickel.command.parameter.nbt.unexpect=期望是 %s 但实际是 %s
+nickel.command.parameter.nbt.expected_key=这里应当有一个 NBT 键的
+nickel.command.parameter.nbt.empty_key=NBT 键不应为空
+nickel.command.parameter.nbt.expected_value=这里应当有一个 NBT 值的
+nickel.command.parameter.nbt.empty_value=NBT 值不应为空
+nickel.command.parameter.nbt.invalid_num=无效的数字：%s
+nickel.command.parameter.nbt.num.invalid_0=存在非法的前导零
+nickel.command.parameter.nbt.num.invalid_split=存在非法的分隔符
+nickel.command.parameter.nbt.int.invalid_code=在整数中存在无效的字符 %s
+nickel.command.parameter.nbt.int.invalid_escape=整数中存在多余内容 %s
+nickel.command.parameter.nbt.int.invalid_type=无效的整数类型标记 %s
+nickel.command.parameter.nbt.int.too_min=数字 %s 过小，最小值为 %s
+nickel.command.parameter.nbt.int.too_max=数字 %s 过大，最大值为 %s
+nickel.command.parameter.nbt.float.invalid_type=无效的浮点数类型标记 %s
+nickel.command.parameter.nbt.float.infinity=浮点数不能为无穷
+nickel.command.parameter.nbt.array.type_mismatch=期望的数组类型是 %s，但实际上是 %s
+nickel.command.parameter.nbt.list.type_mismatch=期望的列表元素类型是 %s，但实际上是 %s
+nickel.command.parameter.nbt.function.undefined=%s 调用了未定义的函数 %s
+nickel.command.parameter.nbt.function.null_arg=参数不应为空字符串
+nickel.command.parameter.nbt.function.run_exception=函数 %s 执行失败
+nickel.command.parameter.nbt.function.count_mismatch=期望的参数数量是 %s,但实际是 %s
 
 nickel.command.functional.permit.denied=Permission denied.
 nickel.command.functional.literal.non_match=Expect literal %s , but found %s
@@ -44,17 +72,17 @@ nickel.command.context.get.unknown_argument.entities=An error occurred when tryi
 
 nickel.command.literals.exception.default=Literals Node is set to be optional but no default logic was set!
 
-#行末空格 开始
-nickel.command.exception.syntax.node.pre=Syntax Error occurred in command node 
-nickel.command.exception.syntax.node.sub= 
-nickel.command.exception.syntax.details=Details: 
-nickel.command.exception.syntax.usage=Usage: 
-#行末空格 结束
+nickel.command.exception.cursor.loc=Error occurred at location %s
+nickel.command.exception.syntax.node=Syntax Error occurred in command node %s
+nickel.command.exception.syntax.details=Details: %s
+nickel.command.exception.syntax.usage=Usage: %s
 nickel.command.exception.base.message=Some problems occurred when the command was running
 #行末空格开始
 nickel.command.exception.base.node.pre=Error occurred in command node 
 nickel.command.exception.base.node.sub= 
+nickel.command.exception.base.node.unknown=未知命令节点的解析错误：%s
 nickel.command.exception.base.details=Details: 
 nickel.command.exception.base.branch=Branch: 
 #行末空格结束
 nickel.command.exception.runtime.message=Error occurred when the command was running: %s
+nickel.command.exception.runtime.unknown=未知上下文的解析错误：%s

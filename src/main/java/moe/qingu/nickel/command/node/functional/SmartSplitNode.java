@@ -31,7 +31,6 @@ import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.text.ITextComponent;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
@@ -50,7 +49,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
-import static moe.qingu.nickel.text.Texts.wrap;
 
 /**
  * 智能分支节点，可以根据{@link ISmartNode#match(InputReader)}自动推断出下一个节点。
@@ -126,7 +124,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
     @Nonnull
     @Override
     public CommandBranch branch() {
-        final List<ITextComponent> choices = new ArrayList<>();
+        final List<TextBuilder<?,?>> choices = new ArrayList<>();
         final CommandBranch defaultBranch = childNode == null?null:childNode.branch();
         final boolean optional = defaultBranch != null && defaultBranch.isEmpty();
         if(defaultBranch != null && !optional){
@@ -145,7 +143,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
         this.curBranch = new SplitCommandBranch(branchMap.values());
         for(int i=0;i<choices.size();i++){
             if(i>0) this.document.then(IDocumentaryNode.SPLIT_NODE_SPLIT);
-            this.document.then(wrap(choices.get(i).createCopy()));
+            this.document.then(choices.get(i));
         }
         this.document.then(IDocumentaryNode.getFormatEnd(optional));
         curBranch.setEndDocument(this.document);

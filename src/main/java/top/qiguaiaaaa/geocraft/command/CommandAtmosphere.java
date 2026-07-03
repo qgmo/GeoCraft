@@ -358,11 +358,11 @@ public final class CommandAtmosphere {
                 .require(ATM_PERMISSION_NODE +".util").allow(DefaultPermissionLevel.OP).register()
                 .smart()
                 .literal("block_info")
-                .then(blockState("blockToQuery")
+                .then($blockState("blockToQuery")
                         .translate("geocraft.command.atmosphere.arg.block_to_query")
                         .asOptional()
                         .defaultAs(((node, context) -> context.getWorld().getBlockState(context.getSender().getPosition().down())))
-                        .then(string("blockProp")
+                        .then($token("blockProp")
                                 .asOptional()
                                 .allow("reflectivity","heat_capacity","*")
                                 .translate("geocraft.command.atmosphere.arg.blockProp")
@@ -380,7 +380,7 @@ public final class CommandAtmosphere {
                                     else if("heat_capacity".equals(prop)) ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,(int)(heatCapacity*multiply));
                                 }))))
                 ).done()
-                .append(string("util_name")
+                .append($token("util_name")
                         .allow("sun","property","storage")
                         .translate("geocraft.command.atmosphere.arg.util_name")
                         .decorate((arg,context)->{
@@ -400,12 +400,12 @@ public final class CommandAtmosphere {
                 .then($property()
                         .suggest(
                                 Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam"))
-                        ).then(integer("time")
+                        ).then($int("time")
                                 .min(1)
                                 .suggest(1)
                                 .translate("geocraft.command.atmosphere.arg.time")
                                 .comment("geocraft.command.atmosphere.comment.time")
-                                .then(string("file_name")
+                                .then($string("file_name")
                                         .translate("geocraft.command.atmosphere.arg.file_name")
                                         .comment("geocraft.command.atmosphere.comment.file_name")
                                         .pattern("[^\\s\\\\/:\\*\\?\\\"<>\\|](\\x20|[^\\s\\\\/:\\*\\?\\\"<>\\|])*[^\\s\\\\/:\\*\\?\\\"<>\\|\\.]$") //过滤正确的文件名

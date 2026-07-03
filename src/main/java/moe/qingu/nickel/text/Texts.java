@@ -57,6 +57,11 @@ public final class Texts {
         return new TranslationTextBuilder(key);
     }
 
+    @Nonnull
+    public static TranslationTextBuilder translation(final @Nonnull String key,final @Nonnull Object... args){
+        return new TranslationTextBuilder(key).arg(args);
+    }
+
     public final static class Shows{
 
         @Nonnull

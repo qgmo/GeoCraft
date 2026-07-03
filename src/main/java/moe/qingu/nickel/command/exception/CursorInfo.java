@@ -25,56 +25,44 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.utils;
+package moe.qingu.nickel.command.exception;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.ICommand;
+import moe.qingu.nickel.command.reader.InputReader;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
 
 import static moe.qingu.nickel.text.Texts.plain;
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class CommandBranch {
+public final class CursorInfo {
+    private final InputReader reader;
+    private final int loc;
 
-    protected final LinkedList<TextBuilder<?,?>> documents = new LinkedList<>();
-
-    protected TextBuilder<?,?> document;
-
-    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.add(Objects.requireNonNull(document));
+    public CursorInfo(final @Nonnull InputReader reader, final int loc) {
+        this.reader = reader;
+        this.loc = loc;
     }
 
-    @Nonnull
-    public List<TextBuilder<?,?>> getDocuments(){
-        return documents;
-    }
+    public void showInfo(final @Nonnull ICommandSender sender){
+        final int begin = Math.max(loc-10,0);
+        final int end = Math.min(loc+15,reader.getLength());
+        final String prefix = (begin>0?"...":"")+reader.getSubInput(begin,loc);
+        final String suffix = reader.getSubInput(loc,Math.min(loc+15,end))+(end<reader.getLength()?"...":"");
+        plain(prefix)
+                .color(TextFormatting.GRAY)
+                .then(plain(suffix)
+                        .color(TextFormatting.RED)
+                        .underlined(true))
+                .hoverTo(HoverEvent.Action.SHOW_TEXT).content(translation("nickel.command.exception.cursor.loc")
+                        .color(TextFormatting.GOLD)
+                        .arg(plain(String.valueOf(loc)).bold(true).color(TextFormatting.AQUA)))
+                .sendTo(sender);
 
-    @Nonnull
-    public TextBuilder<?,?> getDocument() {
-        return document;
-    }
-
-    public boolean isEmpty(){
-        return documents.isEmpty();
-    }
-
-    public void finish(@Nonnull final ICommand command){
-        document = plain("/"+ Objects.requireNonNull(command).getName());
-        for(final @Nonnull TextBuilder<?,?> node:documents){
-            document.then(" ").then(node);
-        }
-    }
-
-    public void print(@Nonnull final ICommandSender sender){
-        sender.sendMessage(document.done());
     }
 }

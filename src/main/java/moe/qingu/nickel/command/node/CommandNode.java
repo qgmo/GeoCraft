@@ -93,7 +93,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     @Override
     public String getUsage(@Nonnull final ICommandSender sender) {
         if(usage == EXAMPLE_USAGE){
-            return branch.getDocument().getFormattedText();
+            return branch.getDocument().done().getFormattedText();
         }
         return usage;
     }

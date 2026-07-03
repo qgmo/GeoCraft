@@ -72,7 +72,7 @@ public class OreSelectorNode extends TokenizeParameterNode.Single<OreDictionaryE
     @Override
     public OreDictionaryEntry parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
         final OreDictionaryEntry entry = OreDictionaryEntry.get(token);
-        if(entry == null) return context.panic(translation("nickel.command.parameter.ore_directory.invalid").arg(token));
+        if(entry == null) return context.input.panic(translation("nickel.command.parameter.ore_directory.invalid",token));
         return entry;
     }
 
@@ -81,7 +81,7 @@ public class OreSelectorNode extends TokenizeParameterNode.Single<OreDictionaryE
      */
     @Override
     public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
-        if("Unknown".equals(token)) return context.panic(translation("nickel.command.parameter.ore_directory.invalid").arg(token));
+        if("Unknown".equals(token)) return context.input.panic(translation("nickel.command.parameter.ore_directory.invalid",token));
         return true;
     }
 }

@@ -25,32 +25,41 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.text;
+package moe.qingu.nickel.command.reader;
 
-import net.minecraft.util.text.ITextComponent;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagIntArray;
+import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
+
+import java.util.UUID;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QGMoe
  */
-public final class WrapTextBuilder extends TextBuilder<ITextComponent,WrapTextBuilder> {
-    private final ITextComponent component;
-
-    public WrapTextBuilder(final @Nonnull ITextComponent component) {
-        this.component = component;
-        this.style.setParentStyle(component.getStyle());
-    }
-
+public final class SNBTFunctions {
     @Nonnull
-    @Override
-    protected ITextComponent build() {
-        return component;
-    }
-
-    @Nonnull
-    @Override
-    protected WrapTextBuilder buildCopy() {
-        return new WrapTextBuilder(component.createCopy());
+    public static NBTBase uuid(final @Nonnull String[] args) throws NickelRuntimeException {
+        if(args.length != 1) throw new NickelRuntimeException(translation("nickel.command.parameter.nbt.function.count_mismatch",1,args.length));
+        try {
+            final UUID uuid = UUID.fromString(args[0]);
+            final long most = uuid.getMostSignificantBits();
+            final long least = uuid.getLeastSignificantBits();
+            return new NBTTagIntArray(new int[]{
+                    (int)(most >> Integer.SIZE),
+                    (int)most,
+                    (int)(least >> Integer.SIZE),
+                    (int)least
+            });
+        }catch (final @Nonnull IllegalArgumentException e){
+            throw new NickelRuntimeException(translation("nickel.command.parameter.uuid.invalid")
+                    .arg(args[0])
+                    .hoverTo(HoverEvent.Action.SHOW_TEXT)
+                    .content(e.getMessage()));
+        }
     }
 }

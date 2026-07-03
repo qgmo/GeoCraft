@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
+import static moe.qingu.nickel.text.Texts.plain;
+
 /**
  * @author QiguaiAAAA
  */
@@ -97,7 +99,7 @@ public class RunCommandNode implements ICommandNode{
     @Override
     public CommandBranch branch() {
         final CommandBranch branch = new CommandBranch();
-        branch.appendDocument(new TextComponentString(String.format(IDocumentaryNode.REQUIRED_FORMAT, "command")));
+        branch.appendDocument(plain(String.format(IDocumentaryNode.REQUIRED_FORMAT, "command")));
         return branch;
     }
 

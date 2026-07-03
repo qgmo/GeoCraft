@@ -65,4 +65,12 @@ public final class TranslationTextBuilder extends TextBuilder<TextComponentTrans
     protected TextComponentTranslation build() {
         return new TextComponentTranslation(key,objs.toArray());
     }
+
+    @Nonnull
+    @Override
+    protected TranslationTextBuilder buildCopy() {
+        final TranslationTextBuilder copy =  new TranslationTextBuilder(key);
+        copy.objs.addAll(this.objs);
+        return copy;
+    }
 }

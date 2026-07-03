@@ -28,6 +28,7 @@
 package moe.qingu.nickel.text;
 
 import moe.qingu.nickel.text.hover.HoverEventBuilder;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
@@ -145,7 +146,29 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
     }
 
     @Nonnull
+    public final S copy(){
+        final @Nonnull S copy = this.buildCopy();
+        copy.style.setHoverEvent(this.style.getHoverEvent());
+        copy.style.setStrikethrough(this.style.getStrikethrough());
+        copy.style.setBold(this.style.getBold());
+        copy.style.setObfuscated(this.style.getObfuscated());
+        copy.style.setUnderlined(this.style.getUnderlined());
+        copy.style.setInsertion(this.style.getInsertion());
+        copy.style.setItalic(this.style.getItalic());
+        copy.style.setClickEvent(this.style.getClickEvent());
+        copy.style.setColor(this.style.getColor());
+        return copy;
+    }
+
+    public final void sendTo(final @Nonnull ICommandSender sender){
+        sender.sendMessage(this.done());
+    }
+
+    @Nonnull
     protected abstract T build();
+
+    @Nonnull
+    protected abstract S buildCopy();
 
     public final class ClickEventBuilder{
         private final @Nonnull ClickEvent.Action action;

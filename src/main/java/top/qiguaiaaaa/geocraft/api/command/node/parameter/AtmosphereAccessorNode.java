@@ -62,8 +62,8 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
         return accessor;
     };
 
-    public static final TokenizeSuggestor<IAtmosphereAccessor> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,(args, context) -> {
-        final int cur = ArrayUtils.lastIndexOf(args,"")+1;
+    public static final TokenizeSuggestor<IAtmosphereAccessor> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(4,(args, context) -> {
+        final int cur = ArrayUtils.indexOf(args,"")+1;
         final List<String> suggests = cur<=3 && cur != 0 ?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
         final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
         switch (cur){

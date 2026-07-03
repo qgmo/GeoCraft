@@ -60,20 +60,20 @@ public final class GeoArguments {
 
     @Nonnull
     public static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> _pos(){
-        return blockPos(POS)
+        return $blockPos(POS)
                 .asOptional()
                 .translate("geocraft.command.common.arg.pos");
     }
 
     @Nonnull
     public static NumberNodeBuilder<Double, NumberNode<Double>> $value(){
-        return doubleArg(VALUE)
+        return $double(VALUE)
                 .translate("geocraft.command.common.arg.value");
     }
 
     @Nonnull
     public static NumberNodeBuilder<Double, NumberNode<Double>> _multiply(){
-        return doubleArg(MULTIPLY)
+        return $double(MULTIPLY)
                 .asOptional()
                 .defaultAs(1d)
                 .suggest(Collections.emptyList())
@@ -83,20 +83,20 @@ public final class GeoArguments {
 
     @Nonnull
     public static StringNodeBuilder $property(){
-        return string(PROPERTY)
+        return $token(PROPERTY)
                 .translate("geocraft.command.common.arg.property");
     }
 
     @Nonnull
     public static FastParameterNodeBuilder<World, DimensionNode> _world(){
-        return dimension(WORLD)
+        return $dimension(WORLD)
                 .asOptional()
                 .translate("geocraft.command.common.arg.world");
     }
 
     @Nonnull
     public static StringNodeBuilder _doit(){
-        return string(DOIT)
+        return $token(DOIT)
                 .asOptional()
                 .defaultAs("")
                 .translate("geocraft.command.common.arg.doit")

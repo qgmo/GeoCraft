@@ -30,8 +30,6 @@ package moe.qingu.nickel.command.exception;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
@@ -40,20 +38,18 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QiguaiAAAA
  */
 public class NickelCommandException extends CommandException implements INickelException{
     protected final CommandBranch fromBranch;
     protected final IDocumentaryNode fromNode;
-    protected final ITextComponent appendix;
+    protected final TextBuilder<?,?> appendix;
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch) {
-        this(fromBranch,null,(ITextComponent) null);
-    }
-
-    public NickelCommandException(@Nonnull final CommandBranch fromBranch,@Nonnull final ITextComponent appendix) {
-        this(fromBranch, null,appendix);
+        this(fromBranch,null,null);
     }
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch,@Nonnull final TextBuilder<?,?> appendix) {
@@ -61,14 +57,10 @@ public class NickelCommandException extends CommandException implements INickelE
     }
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode) {
-        this(fromBranch,fromNode,(ITextComponent) null);
+        this(fromBranch,fromNode, null);
     }
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final TextBuilder<?,?> appendix) {
-        this(fromBranch,fromNode,appendix == null?null: appendix.done());
-    }
-
-    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final ITextComponent appendix) {
         super("nickel.command.exception.base.message");
         this.fromBranch = fromBranch;
         this.fromNode = fromNode;
@@ -86,31 +78,28 @@ public class NickelCommandException extends CommandException implements INickelE
     }
 
     @Nullable
-    public ITextComponent getNodeDocument(){
-        return fromNode == null?null:fromNode.getDocument().done();
+    public TextBuilder<?,?> getNodeDocument(){
+        return fromNode == null?null:fromNode.getDocument();
     }
 
     @Nullable
-    public ITextComponent getDetails() {
+    public TextBuilder<?,?> getDetails() {
         return appendix;
     }
 
     @Override
     public void feedbackTo(@Nonnull final ICommandSender sender){
-        final ITextComponent node;
-        if(this.getNodeDocument() == null) node = new TextComponentTranslation("nickel.command.exception.base.message");
-        else node = new TextComponentTranslation("nickel.command.exception.base.node.pre")
-                .appendSibling(this.getNodeDocument()
-                        .appendSibling(new TextComponentTranslation("nickel.command.exception.base.node.sub")));
-        node.getStyle().setColor(TextFormatting.RED);
-        final ITextComponent details = this.getDetails()==null?null:new TextComponentTranslation("nickel.command.exception.base.details")
-                .appendSibling(this.getDetails());
-        if(details != null) details.getStyle().setColor(TextFormatting.RED);
-        final ITextComponent document = new TextComponentTranslation("nickel.command.exception.base.branch")
-                .appendSibling(this.getSourceBranch().getDocument());
-        document.getStyle().setColor(TextFormatting.AQUA);
-        sender.sendMessage(node);
-        if(details != null) sender.sendMessage(details);
-        sender.sendMessage(document);
+        (this.getNodeDocument() == null?translation("nickel.command.exception.base.message"): translation("nickel.command.exception.base.node.pre")
+                .then(this.getNodeDocument())
+                .then(translation("nickel.command.exception.base.node.sub"))
+        ).color(TextFormatting.RED).sendTo(sender);
+        if(this.getDetails()!=null) translation("nickel.command.exception.base.details")
+                .color(TextFormatting.RED)
+                .then(this.getDetails())
+                .sendTo(sender);
+        translation("nickel.command.exception.base.branch")
+                .color(TextFormatting.AQUA)
+                .then(this.getSourceBranch().getDocument())
+                .sendTo(sender);
     }
 }

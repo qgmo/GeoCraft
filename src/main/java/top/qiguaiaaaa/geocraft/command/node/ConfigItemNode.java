@@ -69,7 +69,7 @@ public final class ConfigItemNode extends TokenizeParameterNode.Single<ConfigIte
                 .stream()
                 .filter(t -> t.getPath().equals(entry))
                 .findFirst()
-                .orElseThrow(() -> new NickelCommandException(this.currentBranch,this, translation("geocraft.command.config_item_not_found").arg(entry).done()));
+                .orElseThrow(() -> new NickelCommandException(this.currentBranch,this, translation("geocraft.command.config_item_not_found",entry)));
         return item;
     }
 
