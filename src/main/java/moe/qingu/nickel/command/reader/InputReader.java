@@ -58,53 +58,13 @@ public final class InputReader {
         this.codepoints = raw.codePoints().toArray();
     }
 
-    public void setContext(final @Nonnull CommandContext context) {
-        this.context = context;
-    }
-
-    public void setCursor(final int cursor) {
-        this.cursor = cursor;
-    }
-
-    @Nonnull
-    public CommandContext getContext() {
-        return context;
-    }
-
-    public int getLength(){
-        return codepoints.length;
-    }
-
-    @Nonnull
-    public String getInput(){
-        return rawStr;
-    }
-
-    @Nonnull
-    public String getSubInput(final int begin){
-        return getSubInput(begin,this.getLength());
-    }
-
-    @Nonnull
-    public String getSubInput(final int begin,final int end){
-        final StringBuilder builder = new StringBuilder();
-        for(int i=begin;i<end;i++){
-            builder.appendCodePoint(codepoints[i]);
-        }
-        return builder.toString();
-    }
-
-    public int getCursor() {
-        return cursor;
-    }
-
     public int peek(){
         return codepoints[this.cursor];
     }
 
     public boolean isRemainingEmpty(){
         final int cur = this.cursor;
-        this.skipIfWhitespace();
+        this.skipWhitespaces();
         final boolean empty = !canRead();
         this.cursor = cur;
         return empty;
@@ -123,28 +83,35 @@ public final class InputReader {
     }
 
     public void skip(){
-        this.cursor++;
+        if(canRead()) this.cursor++;
     }
 
     public void unread(){
         this.cursor--;
     }
 
-    public void skipIfWhitespace(){
-        while (this.canRead() && Character.isWhitespace(this.peek())){
+    public boolean skipIf(final int cp){
+        if (this.canRead() && this.peek() == cp){
             this.skip();
-        }
+            return true;
+        }else return false;
     }
 
-    public void skipIfContent(){
-        while (this.canRead() && !Character.isWhitespace(this.peek())){
-            this.skip();
-        }
+    public void skipCodepoints(final int cp){
+        while (this.canRead() && this.peek() == cp) this.skip();
+    }
+
+    public void skipWhitespaces(){
+        while (this.canRead() && Character.isWhitespace(this.peek())) this.skip();
+    }
+
+    public void skipContents(){
+        while (this.canRead() && !Character.isWhitespace(this.peek())) this.skip();
     }
 
     @Nonnull
     public String readToken() {
-        skipIfWhitespace();
+        skipWhitespaces();
         final int begin = this.cursor;
         while (this.canRead() && !Character.isWhitespace(this.peek())) this.skip();
         return this.getSubInput(begin,this.cursor);
@@ -152,7 +119,7 @@ public final class InputReader {
 
     @Nonnull
     public String readString() throws CommandException {
-        skipIfWhitespace();
+        skipWhitespaces();
         if (this.canRead() && (this.peek() == '"' || this.peek() == '\'')){
             final int quote = this.read();
             final StringBuilder builder = new StringBuilder();
@@ -167,8 +134,20 @@ public final class InputReader {
         }else return this.readToken();
     }
 
+    public void scanString() {
+        skipWhitespaces();
+        if (this.canRead() && (this.peek() == '"' || this.peek() == '\'')){
+            final int quote = this.read();
+            while (canRead()) {
+                int cp = this.read();
+                if (cp == '\\') this.skip();
+                else if (cp == quote) break;
+            }
+        }else this.skipContents();
+    }
+
     public boolean readBoolean() throws CommandException {
-        skipIfWhitespace();
+        skipWhitespaces();
         final int begin = this.cursor;
         final String token = readToken();
         if("true".equals(token) || "1".equals(token)){
@@ -200,6 +179,7 @@ public final class InputReader {
                 case '0': return '\0';
                 case 'a': return '\u0007';
                 case 'v': return '\u000B';
+                case 'x': return readInt(2,4);
                 case 'u': return readInt(4,4);
                 case 'U': return readInt(8,4);
                 default:{
@@ -223,7 +203,7 @@ public final class InputReader {
     }
 
     public int readInt() throws CommandException{
-        skipIfWhitespace();
+        skipWhitespaces();
         final int begin = this.cursor;
         while (this.canRead() && isNumber(this.peek())) this.skip();
         final String raw = getSubInput(begin,this.cursor);
@@ -236,7 +216,7 @@ public final class InputReader {
     }
 
     public long readLong() throws CommandException{
-        skipIfWhitespace();
+        skipWhitespaces();
         final int begin = this.cursor;
         while (this.canRead() && isNumber(this.peek())) this.skip();
         final String raw = getSubInput(begin,this.cursor);
@@ -249,7 +229,7 @@ public final class InputReader {
     }
 
     public double readDouble() throws CommandException{
-        skipIfWhitespace();
+        skipWhitespaces();
         final int begin = this.cursor;
         while (this.canRead() && isNumber(this.peek())) this.skip();
         final String raw = getSubInput(begin,this.cursor);
@@ -267,8 +247,8 @@ public final class InputReader {
         final @Nullable ICommandNode curNode = context.getCurrentNode();
         final @Nullable CommandBranch curBranch = context.getCurrentBranch();
         if(curBranch != null){
-            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text);
-            else throw new NickelCommandException(curBranch,translation("nickel.command.exception.base.node.unknown",text));
+            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode).withAppendix(text);
+            else throw new NickelCommandException(curBranch).withAppendix(translation("nickel.command.exception.base.node.unknown",text));
         }else throw new NickelRuntimeException(translation("nickel.command.exception.runtime.unknown",text));
     }
 
@@ -279,14 +259,65 @@ public final class InputReader {
 
     @Nonnull
     public <T> T panic(final int loc,final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
-        final @Nullable ICommandNode curNode = context.getCurrentNode();
-        final @Nullable CommandBranch curBranch = context.getCurrentBranch();
-        if(curBranch != null){
-            if(curNode instanceof IDocumentaryNode) throw new NickelSyntaxException(curBranch, (IDocumentaryNode) curNode,text)
-                    .withCursor(this,loc);
-            else throw new NickelCommandException(curBranch,translation("nickel.command.exception.base.node.unknown",text));
-        }else throw new NickelRuntimeException(translation("nickel.command.exception.runtime.unknown",text));
+        try{
+            panic(text);
+        }catch (final NickelSyntaxException e){
+            throw e.withCursor(this,loc);
+        }
+        throw new RuntimeException();//Won't and shouldn't arrive here
     }
+
+    /*
+     * -------------------
+     *  Getter and Setter
+     * -------------------
+     */
+
+    public void setContext(final @Nonnull CommandContext context) {
+        this.context = context;
+    }
+
+    public void setCursor(final int cursor) {
+        this.cursor = cursor;
+    }
+
+    @Nonnull
+    public CommandContext getContext() {
+        return context;
+    }
+
+    public int getLength(){
+        return codepoints.length;
+    }
+
+    @Nonnull
+    public String getInput(){
+        return rawStr;
+    }
+
+    public int getCursor() {
+        return cursor;
+    }
+
+    @Nonnull
+    public String getSubInput(final int begin){
+        return getSubInput(begin,this.getLength());
+    }
+
+    @Nonnull
+    public String getSubInput(final int begin,final int end){
+        final StringBuilder builder = new StringBuilder();
+        for(int i=begin;i<end;i++){
+            builder.appendCodePoint(codepoints[i]);
+        }
+        return builder.toString();
+    }
+
+    /*
+     * -------------------
+     *     Static
+     * -------------------
+     */
 
     public static boolean isNumber(final int c){
         return c >= '0' && c <='9' || c == '+' || c == '-' || c == '.';

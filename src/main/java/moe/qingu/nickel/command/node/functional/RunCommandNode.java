@@ -37,7 +37,6 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.common.MinecraftForge;
@@ -51,10 +50,11 @@ import moe.qingu.nickel.event.NickelCommandEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static moe.qingu.nickel.text.Texts.plain;
 
@@ -80,14 +80,14 @@ public class RunCommandNode implements ICommandNode{
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         final String commandName = input.readToken();
         if(commandName.isEmpty()){
-            return context.getServer().getCommandManager().getCommands().keySet().stream().sorted();
+            return new ArrayList<>(context.getServer().getCommandManager().getCommands().keySet());
         }else if(input.isRemainingEmpty()){
             return context.getServer().getCommandManager().getCommands().keySet().stream()
                     .filter(s -> s.startsWith(commandName))
-                    .sorted();
+                    .collect(Collectors.toList());
         }else{
             final ICommand icommand = context.getServer().getCommandManager().getCommands().get(commandName);
             if(icommand == null) return null;
@@ -147,12 +147,11 @@ public class RunCommandNode implements ICommandNode{
     }
 
     @Nullable
-    protected static Stream<String> getCommandSuggest(@Nonnull final ICommand command,@Nonnull final InputReader input, @Nonnull final SuggestContext context){
+    protected static List<String> getCommandSuggest(@Nonnull final ICommand command,@Nonnull final InputReader input, @Nonnull final SuggestContext context){
         if(command instanceof ICommandNode){
             return ((ICommandNode)command).suggest(input,context);
         }else {
-            return command.getTabCompletions(context.getServer(),context.getSender(),input.getInput().split(" "),context.getTargetPos())
-                    .stream();
+            return command.getTabCompletions(context.getServer(),context.getSender(),input.getInput().split(" "),context.getTargetPos());
         }
     }
 

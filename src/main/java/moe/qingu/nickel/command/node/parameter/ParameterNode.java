@@ -27,10 +27,9 @@
 
 package moe.qingu.nickel.command.node.parameter;
 
-import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.ISmartNode;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.command.suggestor.Suggestor;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
@@ -45,12 +44,12 @@ import moe.qingu.nickel.command.node.IOptionalNode;
 import moe.qingu.nickel.command.node.NoSplitNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.BlockPosNode;
 import moe.qingu.nickel.command.utils.CommandBranch;
+import top.qiguaiaaaa.geocraft.GeoCraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
@@ -67,20 +66,118 @@ import static moe.qingu.nickel.text.Texts.translation;
 public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalNode, IDocumentaryNode, ISmartNode {
     public static final String PARAMETER_INNER_NAME_SPLIT = "￥";
     protected final String name;
-    protected String localizedName = null;
-    protected String comment = null;
+    protected @Nullable String localizedName = null;
+    protected @Nullable String comment = null;
     protected boolean optional;
 
-    protected DefaultParser<P> defaultParser;
-    protected Suggestor<P> suggestProvider;
-    protected Decorator<P> decorator;
-    protected @Nullable Matcher matchChecker;
+    protected @Nullable DefaultParser<P> defaultParser;
+    protected @Nullable Suggestor<P> suggestProvider;
+    protected @Nullable Decorator<P> decorator;
+    protected @Nullable Claimer claimer;
 
     protected CommandBranch currentBranch;
 
     public ParameterNode(@Nonnull final String name) {
         this.name = name;
     }
+
+    /*
+     * ------------------
+     *       功能区
+     * ------------------
+     */
+
+    @Override
+    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
+        if(childNode == null) return;
+        bindArgument(input,context);
+        this.executeChild(context);
+    }
+
+    protected void executeChild(@Nonnull final ExecuteContext context) throws CommandException{
+        context.enter(this.childNode);
+    }
+
+    @Nullable
+    @Override
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        input.skipWhitespaces();
+//        GeoCraft.getLogger().warn(this.getDocument().done().getUnformattedText()+": \""+input.getSubInput(input.getCursor())+'"');
+        final int begin = input.getCursor();
+        if(!input.canRead()) if(suggestProvider!=null) return suggestProvider.provide(this,input,begin,context); else return null;
+        try{
+            parse(input,false);
+        }catch (final CommandException e){ //存在严重语法错误，无法判断输入范围，因此难以继续建议
+            return null;
+        }
+
+        if(input.canRead()) return this.childNode != null ? context.enter(childNode):null; //存在之后的节点内容
+
+        input.setCursor(begin);
+        if(suggestProvider != null) return suggestProvider.provide(this,input,begin,context);
+        else return null;
+    }
+
+    protected final boolean bindArgument(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException{
+        final P parsedArg;
+        final boolean valid;
+
+        final int cur = input.getCursor();
+        try {
+            valid = accepts(input);
+        }finally {
+            input.setCursor(cur);
+        }
+
+        if(valid){
+            parsedArg = parse(input,true);
+            putParsedArgument(parsedArg,context);
+            return true;
+        }else if(defaultParser!=null){
+            parsedArg = defaultParser.parser(this,context);
+            putParsedArgument(parsedArg,context);
+            return false;
+        }
+        throw new NickelCommandException(currentBranch).withSource(this).withAppendix(translation("nickel.command.parameter.base.default_not_found"));
+    }
+
+    protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context) throws CommandException {
+        context.put(name,decorator==null?parsedArgument:decorator.decorate(parsedArgument,context));
+    }
+
+    /**
+     * 检查当前的命令参数是否符合当前参数的语法格式。
+     * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parseParameter(List, ExecuteContext)} 中检查。
+     * @param input 提供的输入（内含上下文）
+     * @return 返回 true 表示参数合法，可以解析。返回 false 表示参数非法，但可以使用默认值，仅当 {@link #isOptional()} 为 true 时使用。
+     * @throws SyntaxErrorException 当参数非法，且 {@link #isOptional()} 为 false 时，抛出该错误，以说明命令语法错误。此时命令解析会中断。
+     * 当然如果{@link #isOptional()} 为 true 时也可以使用，例如对于多参数节点，比如对于 {@link BlockPosNode}
+     * 如果玩家输入 3 4 却没有输入 Z 坐标，这时候用默认值就不太合适了，应当告诉玩家输错了。
+     * @throws NumberInvalidException 同上
+     */
+    public abstract boolean accepts(@Nonnull final InputReader input) throws CommandException;
+
+    public abstract P parse(@Nonnull final InputReader input,final boolean resolve) throws CommandException;
+
+    public String serialise(@Nonnull final P p){
+        return p.toString();
+    }
+
+    @Nonnull
+    @Override
+    public CommandBranch branch() {
+        this.currentBranch = super.branch();
+        currentBranch.appendDocument(getDocument());
+        return currentBranch;
+    }
+
+    /*
+     * ---------------------------
+     *
+     *    Getter And Setter
+     *
+     * ---------------------------
+     */
 
     public static String getInnerParameterName(@Nonnull final String parent,@Nonnull final String child){
         return parent+PARAMETER_INNER_NAME_SPLIT+child;
@@ -99,15 +196,15 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
         this.optional = optional;
     }
 
-    public void setDefaultParser(final DefaultParser<P> defaultParser) {
+    public void setDefaultParser(@Nullable final DefaultParser<P> defaultParser) {
         this.defaultParser = defaultParser;
     }
 
-    public void setSuggestProvider(final Suggestor<P> suggestProvider) {
+    public void setSuggestProvider(@Nullable final Suggestor<P> suggestProvider) {
         this.suggestProvider = suggestProvider;
     }
 
-    public void setDecorator(final Decorator<P> decorator) {
+    public void setDecorator(@Nullable final Decorator<P> decorator) {
         this.decorator = decorator;
     }
 
@@ -169,121 +266,25 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     }
 
     /*
-     * ------------------
-     *       功能区
-     * ------------------
-     */
-
-    @Override
-    public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
-        if(childNode == null) return;
-        checkAndParse(input,context);
-        this.executeChild(context);
-    }
-
-    protected void executeChild(@Nonnull final ExecuteContext context) throws CommandException{
-        context.enter(this.childNode);
-    }
-
-    @Nullable
-    @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
-        input.skipIfWhitespace();
-        final int begin = input.getCursor();
-        if(!input.canRead()) if(suggestProvider!=null) return suggestProvider.provide(this,input,begin,context); else return null;
-        try{
-            final boolean valid;
-            try {
-                valid = checkValid(input,context);
-            }finally {
-                input.setCursor(begin);
-            }
-            if(valid) parse(input,context);
-            else return null;
-        }catch (final CommandException e){
-            input.skipIfContent();//结束当前token
-        }
-
-        if(input.canRead()) return this.childNode != null ? context.enter(childNode):null; //存在之后的节点内容
-
-        if(suggestProvider != null) return suggestProvider.provide(this,input,begin,context);
-        else return null;
-    }
-
-    protected final boolean checkAndParse(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException{
-        final P parsedArg;
-        final boolean valid;
-
-        final int cur = input.getCursor();
-        try {
-            valid = checkValid(input,context);
-        }finally {
-            input.setCursor(cur);
-        }
-
-        if(valid){
-            parsedArg = parse(input,context);
-            putParsedArgument(parsedArg,context);
-            return true;
-        }else if(defaultParser!=null){
-            parsedArg = defaultParser.parser(this,context);
-            putParsedArgument(parsedArg,context);
-            return false;
-        }
-        throw new NickelCommandException(currentBranch,this,translation("nickel.command.parameter.base.default_not_found"));
-    }
-
-    protected final void putParsedArgument(final P parsedArgument,final @Nonnull ExecuteContext context) throws CommandException {
-        context.put(name,decorator==null?parsedArgument:decorator.decorate(parsedArgument,context));
-    }
-
-    /**
-     * 检查当前的命令参数是否符合当前参数的语法格式。
-     * 请注意，最好仅检查语法以保证命令的确定性。例如，物品参数应当只检查是否有至少一个参数，至于参数内写的 ID 对应的物品是否存在，应在 {@link #parseParameter(List, ExecuteContext)} 中检查。
-     * @param input 提供的输入
-     * @param context 执行时上下文
-     * @return 返回 true 表示参数合法，可以解析。返回 false 表示参数非法，但可以使用默认值，仅当 {@link #isOptional()} 为 true 时使用。
-     * @throws SyntaxErrorException 当参数非法，且 {@link #isOptional()} 为 false 时，抛出该错误，以说明命令语法错误。此时命令解析会中断。
-     * 当然如果{@link #isOptional()} 为 true 时也可以使用，例如对于多参数节点，比如对于 {@link BlockPosNode}
-     * 如果玩家输入 3 4 却没有输入 Z 坐标，这时候用默认值就不太合适了，应当告诉玩家输错了。
-     * @throws NumberInvalidException 同上
-     */
-    public abstract boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException;
-
-    public abstract P parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException;
-
-    public String serialise(@Nonnull final P p){
-        return p.toString();
-    }
-
-    @Nonnull
-    @Override
-    public CommandBranch branch() {
-        this.currentBranch = super.branch();
-        currentBranch.appendDocument(getDocument());
-        return currentBranch;
-    }
-
-    /*
      * ----------------------------
      *          Smart Node
      * ----------------------------
      */
 
     @Override
-    public void setMatcher(@Nullable final Matcher matcher) {
-        this.matchChecker = matcher;
+    public void setClaimer(@Nullable final Claimer claimer) {
+        this.claimer = claimer;
     }
 
     @Override
-    public boolean match(@Nonnull final InputReader input) {
-        if(matchChecker==null){
+    public boolean claims(@Nonnull final InputReader input) {
+        if(claimer ==null){
             try {
-                return checkValid(input,input.getContext());
+                return accepts(input);
             }catch (final CommandException ignore){
                 return false;
             }
-        }else return matchChecker.test(input);
+        }else return claimer.test(input);
     }
 
     @FunctionalInterface

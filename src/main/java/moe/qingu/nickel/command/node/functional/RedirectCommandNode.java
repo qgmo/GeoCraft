@@ -35,7 +35,7 @@ import moe.qingu.nickel.command.context.SuggestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -56,7 +56,7 @@ public class RedirectCommandNode extends RunCommandNode{
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         final ICommand icommand = context.getServer().getCommandManager().getCommands().get(targetCommandName);
         if(icommand == null) return null;
         return getCommandSuggest(icommand,input,context);

@@ -35,6 +35,7 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -45,7 +46,7 @@ public interface ICommandNode {
     void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException;
 
     @Nullable
-    Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context);
+    List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context);
 
     @Nonnull
     CommandBranch branch();

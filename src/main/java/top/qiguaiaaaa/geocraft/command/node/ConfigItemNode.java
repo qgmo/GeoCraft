@@ -59,7 +59,7 @@ public final class ConfigItemNode extends TokenizeParameterNode.Single<ConfigIte
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String arg, @Nonnull final CommandContext context){
+    public boolean accepts(@Nonnull final String arg, @Nonnull final CommandContext context){
         return true;
     }
 
@@ -69,7 +69,9 @@ public final class ConfigItemNode extends TokenizeParameterNode.Single<ConfigIte
                 .stream()
                 .filter(t -> t.getPath().equals(entry))
                 .findFirst()
-                .orElseThrow(() -> new NickelCommandException(this.currentBranch,this, translation("geocraft.command.config_item_not_found",entry)));
+                .orElseThrow(() -> new NickelCommandException(this.currentBranch)
+                        .withSource(this)
+                        .withAppendix(translation("geocraft.command.config_item_not_found",entry)));
         return item;
     }
 

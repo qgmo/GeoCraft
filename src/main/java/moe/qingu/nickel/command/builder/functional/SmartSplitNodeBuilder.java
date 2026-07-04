@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.builder.functional;
 
 import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -157,7 +157,7 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
         final INodeBuilder<? extends T> child;
         final T bakedChild;
 
-        Matcher checker;
+        Claimer checker;
 
         SmartNodeInnerBuilder(@Nonnull final INodeBuilder<? extends T> nodeBuilder){
             this.child = nodeBuilder;
@@ -171,12 +171,12 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
 
         /**
          * 设置当前智能节点的匹配函数。
-         * @see ISmartNode#match(InputReader)
+         * @see ISmartNode#claims(InputReader)
          * @param checker 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
          * @return {@link SmartNodeInnerBuilder} 自身
          */
         @Nonnull
-        public SmartNodeInnerBuilder<T> matchIf(@Nonnull final Matcher checker){
+        public SmartNodeInnerBuilder<T> matchIf(@Nonnull final Claimer checker){
             this.checker = checker;
             return this;
         }
@@ -195,7 +195,7 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
         T build() {
             final T bakedNode = bakedChild==null?Objects.requireNonNull(child).build():bakedChild;
             if(checker != null){
-                bakedNode.setMatcher(checker);
+                bakedNode.setClaimer(checker);
             }
             return bakedNode;
         }
@@ -268,7 +268,7 @@ public abstract class SmartSplitNodeBuilder<S extends SmartSplitNodeBuilder<S>> 
          */
         @Nonnull
         @Override
-        public LiteralNodeInnerBuilder matchIf(@Nonnull final Matcher checker) {
+        public LiteralNodeInnerBuilder matchIf(@Nonnull final Claimer checker) {
             return (LiteralNodeInnerBuilder) super.matchIf(checker);
         }
 

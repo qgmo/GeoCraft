@@ -38,7 +38,7 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.utils.Matchers;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
 
@@ -48,12 +48,12 @@ import javax.annotation.Nonnull;
 public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends TokenizeParameterNode.Single<E> {
     public ForgeRegistryEntryNode(@Nonnull final String name) {
         super(name);
-        setMatcher(Matchers.RESOURCE_LOCATION);
+        setClaimer(Matchers.RESOURCE_LOCATION);
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws NickelCommandException, NickelRuntimeException, NickelSyntaxException {
-        return ValidChecker.matchResourceLocation(token,context);
+    public boolean accepts(@Nonnull final String token, @Nonnull final CommandContext context) throws NickelCommandException, NickelRuntimeException, NickelSyntaxException {
+        return Acceptor.matchResourceLocation(token,context);
     }
 
     @Nonnull

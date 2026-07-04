@@ -43,41 +43,41 @@ import static moe.qingu.nickel.text.Texts.translation;
  * @author QiguaiAAAA
  */
 @FunctionalInterface
-public interface ValidChecker {
-    ValidChecker REQUIRE_ONE_TOKEN = (self, input) -> {
+public interface Acceptor {
+    Acceptor REQUIRE_ONE_TOKEN = (self, input) -> {
         if(!input.isRemainingEmpty()) return true;
         else if(self.isOptional()) return false;
         else return input.getContext().input.panic(translation("nickel.command.parameter.smart.checker1"));
     };
-    ValidChecker MATCH_TWO_PARAMETER = matchMultiTokens(2);
-    ValidChecker MATCH_THREE_PARAMETER = matchMultiTokens(3);
-    ValidChecker MATCH_FOUR_PARAMETER = matchMultiTokens(4);
-    ValidChecker MATCH_RESOURCE_LOCATION = REQUIRE_ONE_TOKEN.and((self, input) ->
+    Acceptor MATCH_TWO_PARAMETER = matchMultiTokens(2);
+    Acceptor MATCH_THREE_PARAMETER = matchMultiTokens(3);
+    Acceptor MATCH_FOUR_PARAMETER = matchMultiTokens(4);
+    Acceptor MATCH_RESOURCE_LOCATION = REQUIRE_ONE_TOKEN.and((self, input) ->
             matchResourceLocation(input.readToken(),input.getContext()));
 
     default boolean check(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException{
         final int cur = input.getCursor();
         try{
-            return run(self,input);
+            return test(self,input);
         }finally {
             input.setCursor(cur);
         }
     }
 
-    boolean run(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException;
+    boolean test(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException;
 
     @Nonnull
-    default ValidChecker and(@Nonnull final ValidChecker after) {
+    default Acceptor and(@Nonnull final Acceptor after) {
         return (self, input) -> this.check(self, input) && after.check(self, input);
     }
 
     @Nonnull
-    default ValidChecker or(@Nonnull final ValidChecker condition) {
+    default Acceptor or(@Nonnull final Acceptor condition) {
         return (self, input) -> this.check(self, input) || condition.check(self, input);
     }
 
     @Nonnull
-    static ValidChecker matchMultiTokens(final int paraNum) {
+    static Acceptor matchMultiTokens(final int paraNum) {
         if (paraNum < 2) throw new IllegalArgumentException();
         return (self, input) -> matchMultiTokens(self,input,paraNum);
     }

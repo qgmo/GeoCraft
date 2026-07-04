@@ -32,6 +32,8 @@ import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -40,23 +42,28 @@ import java.util.stream.Stream;
 @FunctionalInterface
 public interface Suggestor<P> {
     @Nonnull
-    Stream<String> provide(final @Nonnull ParameterNode<P> node, final @Nonnull InputReader inputReader,final int beginIndex ,final @Nonnull SuggestContext suggestContext);
+    List<String> provide(final @Nonnull ParameterNode<P> node, final @Nonnull InputReader inputReader, final int beginIndex, final @Nonnull SuggestContext suggestContext);
 
     @Nonnull
     default Suggestor<P> with(final @Nonnull Suggestor<P> suggestor){
         return ((node, inputReader, beginIndex, suggestContext) ->
-                Stream.concat(this.provide(node,inputReader,beginIndex,suggestContext),suggestor.provide(node,inputReader,beginIndex,suggestContext)));
+                Stream.concat(this.provide(node,inputReader,beginIndex,suggestContext).stream(),
+                        suggestor.provide(node,inputReader,beginIndex,suggestContext).stream())
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.toList()));
     }
 
     @Nonnull
-    static Stream<String> cleanup(final @Nonnull Stream<String> suggestions,final @Nonnull InputReader input,final int beginIndex){
+    static List<String> cleanup(final @Nonnull Stream<String> suggestions,final @Nonnull InputReader input,final int beginIndex){
         final @Nonnull String subInput = input.getSubInput(beginIndex).replaceAll("\\s+"," ");
         return suggestions.map(String::trim)
                 .filter(s -> !s.isEmpty() && s.startsWith(subInput))
                 .map(s -> s.substring(subInput.length()).split("\\s+",2)[0])
                 .filter(s -> !s.isEmpty())
                 .distinct()
-                .sorted();
+                .sorted()
+                .collect(Collectors.toList());
     }
 
 }

@@ -37,21 +37,21 @@ import java.util.function.Predicate;
  * @author QiguaiAAAA
  */
 public final class Matchers {
-    public static final Matcher ANY = input-> !input.isRemainingEmpty();
-    public static final Matcher INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
-    public static final Matcher LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
-    public static final Matcher DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
-    public static final Matcher RESOURCE_LOCATION = matchOnlyFirstToken(Matchers::isResourceLocation);
+    public static final Claimer ANY = input-> !input.isRemainingEmpty();
+    public static final Claimer INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
+    public static final Claimer LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
+    public static final Claimer DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
+    public static final Claimer RESOURCE_LOCATION = matchOnlyFirstToken(Matchers::isResourceLocation);
 
     private Matchers(){}
 
     @Nonnull
-    public static Matcher matchOnlyFirstToken(@Nonnull final Predicate<String> simpleMatcher){
+    public static Claimer matchOnlyFirstToken(@Nonnull final Predicate<String> simpleMatcher){
         return ANY.and(input-> simpleMatcher.test(input.readToken()));
     }
 
     @Nonnull
-    public static Matcher matchInteger(final int min,final int max){
+    public static Claimer matchInteger(final int min, final int max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseInt(arg,min,max);
@@ -63,7 +63,7 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static Matcher matchLong(final long min,final long max){
+    public static Claimer matchLong(final long min, final long max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseLong(arg,min,max);
@@ -75,7 +75,7 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static Matcher matchDouble(final double min, final double max){
+    public static Claimer matchDouble(final double min, final double max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseDouble(arg,min,max);

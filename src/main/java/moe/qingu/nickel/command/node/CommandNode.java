@@ -119,9 +119,9 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
         final InputReader input = new InputReader(String.join(" ",args));
         final SuggestContext context = new SuggestContext(input,this,server,sender);
         context.setTargetPos(targetPos);
-        final Stream<String> suggests = context.enter(childNode);
+        final List<String> suggests = context.enter(childNode);
         if(suggests == null) return Collections.emptyList();
-        return suggests.collect(Collectors.toList());
+        return suggests;
     }
 
     @Override
@@ -160,7 +160,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         return childNode == null?null:context.enter(childNode);
     }
 }

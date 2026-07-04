@@ -45,26 +45,24 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public class NickelCommandException extends CommandException implements INickelException{
     protected final CommandBranch fromBranch;
-    protected final IDocumentaryNode fromNode;
-    protected final TextBuilder<?,?> appendix;
+    protected IDocumentaryNode fromNode;
+    protected TextBuilder<?,?> appendix;
 
     public NickelCommandException(@Nonnull final CommandBranch fromBranch) {
-        this(fromBranch,null,null);
-    }
-
-    public NickelCommandException(@Nonnull final CommandBranch fromBranch,@Nonnull final TextBuilder<?,?> appendix) {
-        this(fromBranch, null,appendix);
-    }
-
-    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode) {
-        this(fromBranch,fromNode, null);
-    }
-
-    public NickelCommandException(@Nonnull final CommandBranch fromBranch, @Nullable final IDocumentaryNode fromNode, @Nullable final TextBuilder<?,?> appendix) {
         super("nickel.command.exception.base.message");
         this.fromBranch = fromBranch;
-        this.fromNode = fromNode;
+    }
+
+    @Nonnull
+    public NickelCommandException withSource(final @Nonnull IDocumentaryNode node){
+        this.fromNode = node;
+        return this;
+    }
+
+    @Nonnull
+    public NickelCommandException withAppendix(final @Nonnull TextBuilder<?,?> appendix){
         this.appendix = appendix;
+        return this;
     }
 
     @Nonnull

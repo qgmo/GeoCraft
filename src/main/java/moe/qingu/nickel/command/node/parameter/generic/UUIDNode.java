@@ -30,11 +30,13 @@ package moe.qingu.nickel.command.node.parameter.generic;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.CommandContext;
 import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -46,7 +48,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 public class UUIDNode extends TokenizeParameterNode.Single<UUID> {
     public static final DefaultParser<UUID> DEFAULT_PARSER = (node, context) -> UUID.randomUUID();
     public static final SerialiseSuggestor<UUID> DEFAULT_SUGGESTOR =
-            (args, context) -> Stream.of(UUID.randomUUID());
+            (args, context) -> Collections.singletonList(UUID.randomUUID());
 
     public UUIDNode(@Nonnull String name) {
         super(name);
@@ -59,10 +61,7 @@ public class UUIDNode extends TokenizeParameterNode.Single<UUID> {
         try {
             return UUID.fromString(token);
         }catch (final @Nonnull IllegalArgumentException e){
-            throw new NickelSyntaxException(currentBranch,this,translation("nickel.command.parameter.uuid.invalid")
-                    .arg(token)
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT)
-                    .content(e.getMessage()));
+            throw new NickelSyntaxException(currentBranch,this).withAppendix(buildUUIDFormatErrorInfo(e,token));
         }
     }
 
@@ -76,5 +75,13 @@ public class UUIDNode extends TokenizeParameterNode.Single<UUID> {
     @Override
     public String getTypeTranslationKey() {
         return "nickel.command.parameter.generic.uuid";
+    }
+
+    @Nonnull
+    public static TextBuilder<?,?> buildUUIDFormatErrorInfo(final @Nonnull IllegalArgumentException e,final @Nonnull String token){
+        return translation("nickel.command.parameter.uuid.invalid")
+                .arg(token)
+                .hoverTo(HoverEvent.Action.SHOW_TEXT)
+                .content(e.getMessage());
     }
 }

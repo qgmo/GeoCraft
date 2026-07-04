@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.builder.literal;
 
 import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.server.permission.DefaultPermissionLevel;
 import net.minecraftforge.server.permission.PermissionAPI;
@@ -41,11 +41,9 @@ import moe.qingu.nickel.command.node.literal.LiteralNode;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -58,7 +56,7 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
     @SuppressWarnings("deprecation")
     protected static final BiConsumer<LiteralNodeBuilder,SmartSplitNodeBuilder.Inner<LiteralNodeBuilder>> ON_SMART_DONE =
             (self, smart) -> self.bakedChildNode = smart.build();
-    protected @Nullable Matcher matchChecker;
+    protected @Nullable Claimer matchChecker;
     private final @Nonnull String name;
     protected Predicate<CommandContext> funcCheckPermission = PERMIT_ALL;
     protected int requiredPermissionLevel = 0;
@@ -110,13 +108,13 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
 
     /**
      * 设置该字面量节点作为智能节点的匹配函数。
-     * @see ISmartNode#match(InputReader)
-     * @param matcher 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
+     * @see ISmartNode#claims(InputReader)
+     * @param claimer 一个匹配函数，用于智能分支节点根据尚未解析的参数和命令上下文匹配当前节点
      * @return {@link LiteralNodeBuilder} 自身
      */
     @Nonnull
-    public LiteralNodeBuilder matchIf(@Nullable final Matcher matcher) {
-        this.matchChecker = matcher;
+    public LiteralNodeBuilder matchIf(@Nullable final Claimer claimer) {
+        this.matchChecker = claimer;
         return this;
     }
 
@@ -131,7 +129,7 @@ public class LiteralNodeBuilder extends NoSplitNodeBuilder<LiteralNode,LiteralNo
         final LiteralNode node = new LiteralNode(name);
         node.setChecker(buildPermitPredicate());
         node.setChildNode(buildChildNode());
-        node.setMatcher(matchChecker);
+        node.setClaimer(matchChecker);
         return node;
     }
 

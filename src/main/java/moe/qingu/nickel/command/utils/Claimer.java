@@ -37,7 +37,7 @@ import java.util.function.Predicate;
  * @author QGMoe
  */
 @FunctionalInterface
-public interface Matcher extends Predicate<InputReader> {
+public interface Claimer extends Predicate<InputReader> {
     @Override
     default boolean test(@Nonnull final InputReader inputReader){
         final int cur = inputReader.getCursor();
@@ -48,25 +48,25 @@ public interface Matcher extends Predicate<InputReader> {
         }
     }
 
-    default @Nonnull Matcher and(final @Nonnull Matcher other) {
+    default @Nonnull Claimer and(final @Nonnull Claimer other) {
         Objects.requireNonNull(other);
         return input -> test(input) && other.test(input);
     }
 
-    default @Nonnull Matcher or(final @Nonnull Matcher other) {
+    default @Nonnull Claimer or(final @Nonnull Claimer other) {
         Objects.requireNonNull(other);
         return input -> test(input) || other.test(input);
     }
 
     @Nonnull
     @Override
-    default Matcher and(final @Nonnull Predicate<? super InputReader> other) {
+    default Claimer and(final @Nonnull Predicate<? super InputReader> other) {
         return and(other::test);
     }
 
     @Nonnull
     @Override
-    default Matcher negate() {
+    default Claimer negate() {
         return t -> !this.test(t);
     }
 

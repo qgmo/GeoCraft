@@ -25,34 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node;
-
-import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.Claimer;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
+package moe.qingu.nickel.command.exception;
 
 /**
- * 智能节点，可以实现智能分支。
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public interface ISmartNode extends ICommandNode{
-    /**
-     * 当前提供的参数是否与该节点匹配，如果匹配则会走当前节点。
-     * @implSpec  不应当有副作用。
-     * @param input 当前命令的输入。
-     * @return 是否匹配。
-     */
-    boolean claims(@Nonnull final InputReader input);
-
-    /**
-     * 设置匹配器，用于自定义节点匹配。
-     * @see #claims(InputReader)
-     * @param checker 一个匹配器，是一个传入了{@link List<String>}和{@link CommandContext}并返回{@link Boolean}的函数，相当于一个{@link #claims(InputReader)}函数。
-     * @throws UnsupportedOperationException 若不支持设置自定义的匹配器则抛出。
-     */
-    void setClaimer(@Nullable final Claimer checker);
+public final class NickelScanEOFSignal extends Exception{
+    public static final NickelScanEOFSignal INSTANCE = new NickelScanEOFSignal();
+    private NickelScanEOFSignal(){
+        super(null,null,false,false);
+    }
 }

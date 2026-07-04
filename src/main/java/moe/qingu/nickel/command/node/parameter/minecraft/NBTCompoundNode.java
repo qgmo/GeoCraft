@@ -27,11 +27,10 @@
 
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
-import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.reader.SNBTReader;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -55,8 +54,8 @@ public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        if(ValidChecker.REQUIRE_ONE_TOKEN.check(this, input)){
+    public boolean accepts(@Nonnull final InputReader input) throws CommandException {
+        if(Acceptor.REQUIRE_ONE_TOKEN.check(this, input)){
             final int begin = input.getCursor();
             final String token = input.readToken();
             if(!token.startsWith("{")) return input.panic(begin,translation("nickel.command.parameter.nbt.unexpect")
@@ -66,7 +65,11 @@ public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
     }
 
     @Override
-    public NBTTagCompound parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        return SNBTReader.readSingleNBTFromInput(input);
+    public NBTTagCompound parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+        if(resolve) return SNBTReader.readSingleNBTFromInput(input);
+        else {
+            SNBTReader.scanSingleNBTFromInput(input);
+            return null;
+        }
     }
 }

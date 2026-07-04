@@ -33,10 +33,8 @@ import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -53,14 +51,19 @@ interface SerialiseSuggestor<P> extends Suggestor<P> {
     }
 
     @Nonnull
-    static <P> Static<P> of(final @Nonnull Stream<P> data) {
+    static <P> Static<P> of(final @Nonnull List<P> data) {
         return new Static<>(data);
+    }
+
+    @Nonnull
+    static <P> Static<P> of(final @Nonnull Stream<P> data) {
+        return new Static<>(data.collect(Collectors.toList()));
     }
 
     @Nonnull
     @SafeVarargs
     static <P> Static<P> of(final @Nonnull P... data) {
-        return of(Arrays.stream(data));
+        return of(Arrays.asList(data));
     }
 
     @Nonnull
@@ -75,36 +78,40 @@ interface SerialiseSuggestor<P> extends Suggestor<P> {
 
     @Nonnull
     @Override
-    default Stream<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
-        return Suggestor.cleanup(this.provideRaw(inputReader, suggestContext).map(node::serialise), inputReader, beginIndex);
+    default List<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
+        return Suggestor.cleanup(this.provideRaw(inputReader, suggestContext).stream().map(node::serialise), inputReader, beginIndex);
     }
 
     @Nonnull
-    Stream<P> provideRaw(final @Nonnull InputReader input, final @Nonnull SuggestContext context);
+    List<P> provideRaw(final @Nonnull InputReader input, final @Nonnull SuggestContext context);
 
     final class Static<P> implements SerialiseSuggestor<P> {
 
-        private final @Nonnull Stream<P> data;
-        private @Nullable Stream<String> serialisedData;
+        private final @Nonnull List<P> data;
+        private @Nullable List<String> serialisedData;
 
-        private Static(@Nonnull final Stream<P> data) {
+        private Static(@Nonnull final List<P> data) {
             this.data = data;
         }
 
         @Nonnull
         @Override
-        public Stream<String> provide(@Nonnull final ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
-            return Suggestor.cleanup(serialisedData == null ? serialisedData = this.provideRaw(inputReader, suggestContext).map(node::serialise) : serialisedData, inputReader, beginIndex);
+        public List<String> provide(@Nonnull final ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
+            if(serialisedData == null) serialisedData = this.provideRaw(inputReader, suggestContext)
+                    .stream()
+                    .map(node::serialise)
+                    .collect(Collectors.toList());
+            return Suggestor.cleanup(serialisedData.stream(), inputReader, beginIndex);
         }
 
         @Nonnull
         @Override
-        public Stream<P> provideRaw(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        public List<P> provideRaw(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
             return data;
         }
 
         @Nonnull
-        public Stream<P> getData() {
+        public List<P> getData() {
             return data;
         }
     }

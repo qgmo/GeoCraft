@@ -39,18 +39,13 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentTranslation;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.translation;
 
@@ -68,17 +63,17 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
                     .map(property -> arg+property.getName()+"=")
                     .collect(Collectors.toList());
             suggests.add(arg+"default]");
-            return suggests.stream();
+            return suggests;
         }else if(arg.endsWith("]")){
-            return Stream.empty();
+            return Collections.emptyList();
         }else if(arg.endsWith("[default")){
-            return Stream.of(arg+"]");
+            return Collections.singletonList(arg+"]");
         }else if(arg.contains("[")){
             return suggestProperties(arg);
         }else if(Block.REGISTRY.containsKey(new ResourceLocation(arg))){
             final List<String> suggests = Block.REGISTRY.getKeys().stream().map(Objects::toString).collect(Collectors.toList());
             suggests.add(arg+"[");
-            return suggests.stream();
+            return suggests;
         }
         return BlockSelectorNode.DEFAULT_SUGGESTOR.getData();
     });
@@ -102,22 +97,22 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
 
     @Override
     public IBlockState parse(@Nonnull final String arg, @Nonnull final CommandContext context) throws CommandException {
-        if(arg.endsWith("[")) throw new NickelSyntaxException(currentBranch,this, translation("nickel.command.parameter.block_state.invalid_end", arg));
+        if(arg.endsWith("[")) throw new NickelSyntaxException(currentBranch,this).withAppendix(translation("nickel.command.parameter.block_state.invalid_end", arg));
         final String[] split = arg.split("\\[",2);
         if(split.length == 0) throw new NickelSyntaxException(currentBranch,this);
         if(split.length == 1) return CommandBase.getBlockByText(context.getSender(), arg).getDefaultState();
-        if(!split[1].endsWith("]")) throw new NickelSyntaxException(currentBranch,this, translation("nickel.command.parameter.block_state.invalid_end", arg));
+        if(!split[1].endsWith("]")) throw new NickelSyntaxException(currentBranch,this).withAppendix(translation("nickel.command.parameter.block_state.invalid_end", arg));
         return CommandBase.convertArgToBlockState(CommandBase.getBlockByText(context.getSender(),split[0]),split[1].substring(0,split[1].length()-1));
 
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+    public boolean accepts(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return true;
     }
 
     @Nullable
-    protected static Stream<String> suggestProperties(final @Nonnull String input){
+    protected static List<String> suggestProperties(final @Nonnull String input){
         final String[] split = input.split("\\[",2);
         final Block block = Block.REGISTRY.getObject(new ResourceLocation(split[0]));
         if(block == Blocks.AIR) return null;
@@ -130,7 +125,8 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
             }
             return block.getBlockState().getProperties().stream()
                     .filter(property -> !inputProperties.contains(property.getName()))
-                    .map(property -> input+property.getName()+"=");
+                    .map(property -> input+property.getName()+"=")
+                    .collect(Collectors.toList());
         }else if(!states[states.length-1].contains("=")){
             final Set<String> inputProperties = new HashSet<>();
             for(int i=0;i<states.length-1;i++){
@@ -147,7 +143,7 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
             if(block.getBlockState().getProperty(curInputProperty) != null){
                 suggests.add(input+"=");
             }
-            return suggests.stream();
+            return suggests;
         }else {
             final String[] propertyPair = states[states.length-1].split("=",2);
             final IProperty<?> property = block.getBlockState().getProperty(propertyPair[0]);
@@ -161,7 +157,7 @@ public class BlockStateNode extends TokenizeParameterNode.Single<IBlockState> {
                 suggests.add(input+"]");
                 suggests.add(input+",");
             }
-            return suggests.stream();
+            return suggests;
         }
     }
 }

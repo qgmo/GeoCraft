@@ -81,7 +81,7 @@ public class DimensionNode extends TokenizeParameterNode.Single<World> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+    public boolean accepts(@Nonnull final String arg, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         CommandBase.parseInt(arg);
         return true;
     }

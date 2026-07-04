@@ -45,13 +45,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
 
 /**
- * 智能分支节点，可以根据{@link ISmartNode#match(InputReader)}自动推断出下一个节点。
+ * 智能分支节点，可以根据{@link ISmartNode#claims(InputReader)}自动推断出下一个节点。
  * @see ISmartNode
  * @author QiguaiAAAA
  */
@@ -75,7 +75,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
         for(final @Nonnull ISmartNode node:nodeList){
             final int cur = input.getCursor();
             try {
-                if(node.match(input)){
+                if(node.claims(input)){
                     return node;
                 }
             }finally {
@@ -99,7 +99,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         //GeoCraft.getLogger().info("[Smart] Provide Suggest For [len={}] : {}",args.size(),String.join(" ",args));
         if(!input.isRemainingEmpty()){ //Smart 的位置不需要建议
             final ICommandNode node = findNextNode(input);
@@ -114,11 +114,12 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
         return (childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
                 .map(context::enter)
                 .filter(Objects::nonNull)
-                .flatMap(Function.identity())
+                .flatMap(List::stream)
                 .map(String::trim)
                 .distinct() //去重
 //                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
-                .sorted();
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     @Nonnull

@@ -28,11 +28,9 @@
 package moe.qingu.nickel.command.node.literal;
 
 import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextComponentTranslation;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
@@ -48,9 +46,7 @@ import moe.qingu.nickel.command.utils.SplitCommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -59,7 +55,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * 多字面量节点，可以通过不同的字面量做到不同的分支。<br/>
- * 其作为智能节点时，不可以自定义{@link #match(InputReader)}，使用{@link #setMatcher(Matcher)}会抛出{@link UnsupportedOperationException}。
+ * 其作为智能节点时，不可以自定义{@link #claims(InputReader)}，使用{@link #setClaimer(Claimer)}会抛出{@link UnsupportedOperationException}。
  * 当提供的参数（args的首个 String）满足以下条件时，匹配会成功：<br/>
  * - 提供的参数是该节点的字面量之一<br/>
  * - 没有提供参数，且当前节点可选<br/>
@@ -81,7 +77,6 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         literal2Node.put(literal,node);
     }
 
-
     @Override
     public void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException {
         if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
@@ -92,20 +87,22 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         else node = childNode;
         if(node != null){
             context.enter(node);
-        }else if(isOptional()) throw new NickelCommandException(curBranch,this,translation("nickel.command.literals.exception.default"));
+        }else if(isOptional()) throw new NickelCommandException(curBranch)
+                .withSource(this)
+                .withAppendix(translation("nickel.command.literals.exception.default"));
         else throw new NickelSyntaxException(curBranch,this);
     }
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         if(!checkPermission(context)) return null;
         if(!input.isRemainingEmpty()){
             final String token = input.readToken();
             if(input.isRemainingEmpty()){
                 return literal2Node.keySet().stream()
                         .filter(literal -> literal.startsWith(token))
-                        .sorted();
+                        .collect(Collectors.toList());
             }else {
                 ICommandNode nextNode = literal2Node.get(token);
                 if(nextNode == null && isOptional()) nextNode = childNode;
@@ -113,7 +110,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
             }
 
         }else {
-            return literal2Node.keySet().stream();
+            return new ArrayList<>(literal2Node.keySet());
         }
     }
 
@@ -128,16 +125,16 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     }
 
     @Override
-    public boolean match(@Nonnull final InputReader input) {
+    public boolean claims(@Nonnull final InputReader input) {
         if(!input.isRemainingEmpty()) return literal2Node.containsKey(input.readToken());
         else if(isOptional() && childNode != null)
-            if(childNode instanceof ISmartNode) return ((ISmartNode) childNode).match(input);//检查默认节点是否匹配，注意这时候已经没有还未解析的参数了
+            if(childNode instanceof ISmartNode) return ((ISmartNode) childNode).claims(input);//检查默认节点是否匹配，注意这时候已经没有还未解析的参数了
             else return true;//否则认为始终匹配
         else return false;
     }
 
     @Override
-    public void setMatcher(@Nullable final Matcher checker) {
+    public void setClaimer(@Nullable final Claimer checker) {
         throw new UnsupportedOperationException();
     }
 

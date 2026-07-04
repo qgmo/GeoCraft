@@ -409,7 +409,7 @@ public final class CommandAtmosphere {
                                         .translate("geocraft.command.atmosphere.arg.file_name")
                                         .comment("geocraft.command.atmosphere.comment.file_name")
                                         .pattern("[^\\s\\\\/:\\*\\?\\\"<>\\|](\\x20|[^\\s\\\\/:\\*\\?\\\"<>\\|])*[^\\s\\\\/:\\*\\?\\\"<>\\|\\.]$") //过滤正确的文件名
-                                        .suggest((strings, context) -> Stream.of("track_"+new Date().getTime()+".csv"))
+                                        .suggest(() -> Collections.singletonList("track_"+new Date().getTime()+".csv"))
                                         .then(_pos().then(process(CommandAtmosphere::track)))
                         )
                 )

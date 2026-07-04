@@ -37,8 +37,8 @@ import moe.qingu.nickel.command.context.CommandContext;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -61,16 +61,16 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
             case 0: //不存在，用户在输入最后一个
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
-            default: return Stream.empty();
+            default: return Collections.emptyList();
         }
-        return suggests.stream();
+        return suggests;
     });
 
     public BlockPosNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(Vec3dNode.DEFAULT_MATCHER);
+        setClaimer(Vec3dNode.DEFAULT_CLAIMER);
     }
 
     @Override

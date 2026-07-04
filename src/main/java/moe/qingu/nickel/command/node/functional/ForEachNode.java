@@ -35,8 +35,8 @@ import moe.qingu.nickel.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -82,7 +82,7 @@ public class ForEachNode<T extends Iterable<P>,P> extends NoSplitNode{
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         return childNode==null?null:context.enter(childNode);
     }
 }

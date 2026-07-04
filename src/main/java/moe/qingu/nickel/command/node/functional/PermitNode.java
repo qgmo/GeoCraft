@@ -37,6 +37,7 @@ import moe.qingu.nickel.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -67,7 +68,7 @@ public class PermitNode extends NoSplitNode {
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         if(!checkPermission(context)) return null;
         return childNode==null?null:context.enter(childNode);
     }

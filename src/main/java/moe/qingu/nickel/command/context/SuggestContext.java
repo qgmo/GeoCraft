@@ -36,7 +36,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -57,11 +57,11 @@ public final class SuggestContext extends CommandContext{
     }
 
     @Nullable
-    public Stream<String> enter(final @Nonnull ICommandNode node) {
+    public List<String> enter(final @Nonnull ICommandNode node) {
         this.nodeContext.context.push(node);
         try(@Nonnull final ContextStack<?> ignored = this.nodeContext){
             final int begin = input.getCursor();
-            final @Nullable Stream<String> res = node.suggest(input,this);
+            final @Nullable List<String> res = node.suggest(input,this);
             input.setCursor(begin);
             return res;
         }

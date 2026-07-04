@@ -47,7 +47,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 public class NickelSyntaxException extends SyntaxErrorException implements INickelException{
     protected final CommandBranch fromBranch;
     protected final IDocumentaryNode fromNode;
-    protected final TextBuilder<?,?> appendix;
+    protected TextBuilder<?,?> appendix;
     protected @Nullable CursorInfo info;
 
     public NickelSyntaxException(@Nonnull final CommandBranch fromBranch,@Nonnull final IDocumentaryNode fromNode) {
@@ -56,10 +56,10 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
         this.appendix = null;
     }
 
-    public NickelSyntaxException(@Nonnull final CommandBranch fromBranch, @Nonnull final IDocumentaryNode fromNode, @Nonnull final TextBuilder<?,?> appendix) {
-        this.fromBranch = fromBranch;
-        this.fromNode = fromNode;
+    @Nonnull
+    public NickelSyntaxException withAppendix(final @Nonnull TextBuilder<?,?> appendix){
         this.appendix = appendix;
+        return this;
     }
 
     @Nonnull

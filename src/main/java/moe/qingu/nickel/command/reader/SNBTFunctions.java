@@ -28,12 +28,21 @@
 package moe.qingu.nickel.command.reader;
 
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.command.node.parameter.generic.UUIDNode;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagIntArray;
-import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.nbt.NBTTagLong;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.invoke.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.UUID;
 
 import static moe.qingu.nickel.text.Texts.translation;
@@ -41,10 +50,14 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
+@SuppressWarnings("unused")
 public final class SNBTFunctions {
+    private static final MethodHandles.Lookup PERMISSION = MethodHandles.lookup();
+
     @Nonnull
+    @SNBTFunc(require = 1)
     public static NBTBase uuid(final @Nonnull String[] args) throws NickelRuntimeException {
-        if(args.length != 1) throw new NickelRuntimeException(translation("nickel.command.parameter.nbt.function.count_mismatch",1,args.length));
+        expectedArgCount(1,args);
         try {
             final UUID uuid = UUID.fromString(args[0]);
             final long most = uuid.getMostSignificantBits();
@@ -56,10 +69,65 @@ public final class SNBTFunctions {
                     (int)least
             });
         }catch (final @Nonnull IllegalArgumentException e){
-            throw new NickelRuntimeException(translation("nickel.command.parameter.uuid.invalid")
-                    .arg(args[0])
-                    .hoverTo(HoverEvent.Action.SHOW_TEXT)
-                    .content(e.getMessage()));
+            throw new NickelRuntimeException(UUIDNode.buildUUIDFormatErrorInfo(e,args[0]));
         }
+    }
+
+    @Nonnull
+    @SNBTFunc(require = 1)
+    public static NBTBase uuid_m(final @Nonnull String[] args) throws NickelRuntimeException {
+        expectedArgCount(1,args);
+        try {
+            return new NBTTagLong(UUID.fromString(args[0]).getMostSignificantBits());
+        }catch (final @Nonnull IllegalArgumentException e){
+            throw new NickelRuntimeException(UUIDNode.buildUUIDFormatErrorInfo(e,args[0]));
+        }
+    }
+
+    @Nonnull
+    @SNBTFunc(require = 1)
+    public static NBTBase uuid_l(final @Nonnull String[] args) throws NickelRuntimeException {
+        expectedArgCount(1,args);
+        try {
+            return new NBTTagLong(UUID.fromString(args[0]).getLeastSignificantBits());
+        }catch (final @Nonnull IllegalArgumentException e){
+            throw new NickelRuntimeException(UUIDNode.buildUUIDFormatErrorInfo(e,args[0]));
+        }
+    }
+
+    public static void expectedArgCount(final int expected,final @Nonnull String[] args) throws NickelRuntimeException {
+        if(args.length != expected) throw new NickelRuntimeException(translation("nickel.command.parameter.nbt.function.count_mismatch",expected,args.length));
+    }
+
+    public static void loadFuncs(){
+        final Method[] methods = SNBTFunctions.class.getDeclaredMethods();
+        for(final Method method:methods){
+            if(!Modifier.isStatic(method.getModifiers())) continue;
+            if(!method.isAnnotationPresent(SNBTFunc.class)) continue;
+            final SNBTFunc annotation = method.getAnnotation(SNBTFunc.class);
+            method.setAccessible(true);
+            try{
+                final MethodHandle handle = PERMISSION.unreflect(method);
+
+                final @Nonnull CallSite site = LambdaMetafactory.metafactory(
+                        PERMISSION,
+                        "invoke",
+                        MethodType.methodType(SNBTReader.NBTFunction.class),
+                        SNBTReader.NBTFunction.METHOD_TYPE,
+                        handle,
+                        SNBTReader.NBTFunction.METHOD_TYPE
+                );
+                final SNBTReader.NBTFunction func = (SNBTReader.NBTFunction) site.getTarget().invoke();
+                SNBTReader.registerSNBTFunc(Pair.of(method.getName(),annotation.require()),func);
+            } catch (final @Nonnull Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    private @interface SNBTFunc{
+        int require();
     }
 }

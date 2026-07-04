@@ -28,7 +28,7 @@
 package moe.qingu.nickel.command.node.literal;
 
 import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -40,15 +40,16 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * 单字面量节点，可以通过匹配对应的字面量来确定下一步的执行节点，该节点不是一个可选节点。
- * 其作为智能节点时，可以通过 {@link #setMatcher(Matcher)} 设置自己的匹配逻辑。其默认逻辑就是检查传入的参数长度是否大于 0，且第一个参数是否等于字面量。
+ * 其作为智能节点时，可以通过 {@link #setClaimer(Claimer)} 设置自己的匹配逻辑。其默认逻辑就是检查传入的参数长度是否大于 0，且第一个参数是否等于字面量。
  * @see LiteralsNode
  * @author QiguaiAAAA
  */
@@ -56,7 +57,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     protected final @Nonnull String literal;
 
-    protected @Nullable Matcher matchChecker;
+    protected @Nullable Claimer matchChecker;
 
     protected CommandBranch currentBranch;
 
@@ -70,14 +71,14 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
     }
 
     @Override
-    public boolean match(@Nonnull final InputReader input) {
+    public boolean claims(@Nonnull final InputReader input) {
         if(matchChecker!=null) return matchChecker.test(input);
         if(!input.isRemainingEmpty()) return literal.equals(input.readToken());
         else return false;
     }
 
     @Override
-    public void setMatcher(@Nullable final Matcher checker) {
+    public void setClaimer(@Nullable final Claimer checker) {
         this.matchChecker = checker;
     }
 
@@ -91,12 +92,12 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     @Nullable
     @Override
-    public Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         if(!input.isRemainingEmpty()){
             final @Nonnull String token = input.readToken();
-            if(input.isRemainingEmpty()) return literal.startsWith(token)?Stream.of(literal):null;
+            if(input.isRemainingEmpty()) return literal.startsWith(token)? Collections.singletonList(literal):null;
             return childNode == null? null : context.enter(childNode);
-        }else return Stream.of(literal);
+        }else return Collections.singletonList(literal);
     }
 
     @Nonnull

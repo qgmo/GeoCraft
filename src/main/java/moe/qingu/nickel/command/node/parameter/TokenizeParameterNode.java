@@ -29,7 +29,7 @@ package moe.qingu.nickel.command.node.parameter;
 
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 import net.minecraft.command.CommandException;
 
 import javax.annotation.Nonnull;
@@ -50,19 +50,26 @@ public abstract class TokenizeParameterNode<P> extends ParameterNode<P>{
         }
 
         @Override
-        public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-            if(ValidChecker.matchMultiTokens(this,input,getTokenCount())) return checkValid(readMultiTokens(input,getTokenCount()),context);
-            else return false;
+        public boolean accepts(@Nonnull final InputReader input) throws CommandException {
+            final int begin = input.getCursor();
+            try {
+                if(!Acceptor.matchMultiTokens(this,input,getTokenCount())) return false;
+            }finally {
+                input.setCursor(begin);
+            }
+            return accepts(readMultiTokens(input,getTokenCount()),input.getContext());
         }
 
-        public boolean checkValid(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException {
+        public boolean accepts(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException {
             parse(tokens,context);
             return true;
         }
 
         @Override
-        public final P parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-            return parse(readMultiTokens(input,getTokenCount()),context);
+        public final P parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+            final String[] tokens = readMultiTokens(input,getTokenCount());
+            if(resolve) return parse(tokens,input.getContext());
+            else return null;
         }
 
         public abstract P parse(@Nonnull final String[] tokens, @Nonnull final CommandContext context) throws CommandException;
@@ -82,19 +89,21 @@ public abstract class TokenizeParameterNode<P> extends ParameterNode<P>{
         }
 
         @Override
-        public final boolean checkValid(@Nonnull InputReader input, @Nonnull CommandContext context) throws CommandException {
-            if(ValidChecker.REQUIRE_ONE_TOKEN.check(this,input)) return checkValid(input.readToken(),context);
+        public final boolean accepts(@Nonnull final InputReader input) throws CommandException {
+            if(Acceptor.REQUIRE_ONE_TOKEN.check(this,input)) return accepts(input.readToken(),input.getContext());
             else return false;
         }
 
-        public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        public boolean accepts(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
             parse(token,context);
             return true;
         }
 
         @Override
-        public P parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-            return parse(input.readToken(),context);
+        public P parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+            final String token = input.readToken();
+            if(resolve) return parse(token,input.getContext());
+            else return null;
         }
 
         public abstract P parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException;

@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static moe.qingu.nickel.text.Texts.plain;
+import static moe.qingu.nickel.text.Texts.wrap;
 
 /**
  * @author QGMoe
@@ -135,6 +136,11 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
         if(then != null) then.then(builder);
         else then = builder;
         return (S) this;
+    }
+
+    @Nonnull
+    public final S then(@Nonnull final ITextComponent component){
+        return then(wrap(component));
     }
 
     @Nonnull

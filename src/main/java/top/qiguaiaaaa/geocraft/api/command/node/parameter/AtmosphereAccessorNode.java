@@ -80,14 +80,14 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
             case 0: break;
             default:return null;
         }
-        return suggests.stream();
+        return suggests;
     });
 
     public AtmosphereAccessorNode(@Nonnull final String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(Vec3dNode.DEFAULT_MATCHER);
+        setClaimer(Vec3dNode.DEFAULT_CLAIMER);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String[] args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+    public boolean accepts(@Nonnull final String[] args, @Nonnull final CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         return true;
     }
 

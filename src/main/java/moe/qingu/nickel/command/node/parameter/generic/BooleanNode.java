@@ -30,10 +30,9 @@ package moe.qingu.nickel.command.node.parameter.generic;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.command.CommandException;
-import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
 
@@ -42,7 +41,7 @@ import javax.annotation.Nonnull;
  */
 public class BooleanNode extends ParameterNode<Boolean> {
     public static final DefaultParser<Boolean> DEFAULT_PARSER = (node, context) -> Boolean.FALSE;
-    public static final Matcher DEFAULT_MATCHER = input -> {
+    public static final Claimer DEFAULT_CLAIMER = input -> {
         try {
             input.readBoolean();
             return true;
@@ -57,7 +56,7 @@ public class BooleanNode extends ParameterNode<Boolean> {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(DEFAULT_MATCHER);
+        setClaimer(DEFAULT_CLAIMER);
     }
 
     @Nonnull
@@ -73,13 +72,17 @@ public class BooleanNode extends ParameterNode<Boolean> {
     }
 
     @Override
-    public Boolean parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        return input.readBoolean();
+    public Boolean parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+        if(resolve) return input.readBoolean();
+        else {
+            input.readToken();
+            return null;
+        }
     }
 
     @Override
-    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        if(!ValidChecker.REQUIRE_ONE_TOKEN.check(this,input)) return false;
+    public boolean accepts(@Nonnull final InputReader input) throws CommandException {
+        if(!Acceptor.REQUIRE_ONE_TOKEN.check(this,input)) return false;
         input.readBoolean();
         return true;
     }

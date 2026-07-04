@@ -35,10 +35,11 @@ import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
 import moe.qingu.nickel.command.suggestor.Suggestor;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.*;
 import java.util.stream.Stream;
 
@@ -64,7 +65,7 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
     @SuppressWarnings("unchecked")
     protected Suggestor<P> suggestProvider = (Suggestor<P>) USE_DEFAULT_SUGGESTOR;
     protected Decorator<P> decorator;
-    protected Matcher matcher;
+    protected Claimer claimer;
 
     public ParameterNodeBuilder(@Nonnull final String name) {
         this.name = name;
@@ -117,13 +118,18 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
     }
 
     @Nonnull
-    public S suggest(final Function<SuggestContext, Stream<P>> suggestProvider) {
+    public S suggest(final Function<SuggestContext, List<P>> suggestProvider) {
         return suggest((input,ctx)->suggestProvider.apply(ctx));
     }
 
     @Nonnull
-    public S suggest(final Supplier<Stream<P>> suggestProvider) {
+    public S suggest(final Supplier<List<P>> suggestProvider) {
         return suggest((input,ctx)->suggestProvider.get());
+    }
+
+    @Nonnull
+    public S suggest(final List<P> suggests) {
+        return suggest(SerialiseSuggestor.of(suggests));
     }
 
     @Nonnull
@@ -155,13 +161,18 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
     }
 
     @Nonnull
-    public S suggestRaw(final Function<SuggestContext, Stream<String>> suggestProvider) {
+    public S suggestRaw(final Function<SuggestContext, List<String>> suggestProvider) {
         return suggestRaw((input,ctx)->suggestProvider.apply(ctx));
     }
 
     @Nonnull
-    public S suggestRaw(final Supplier<Stream<String>> suggestProvider) {
+    public S suggestRaw(final Supplier<List<String>> suggestProvider) {
         return suggestRaw((input,ctx)->suggestProvider.get());
+    }
+
+    @Nonnull
+    public S suggestRaw(final List<String> suggests) {
+        return suggestRaw(DirectSuggestor.of(suggests));
     }
 
     @Nonnull
@@ -223,8 +234,8 @@ public abstract class ParameterNodeBuilder<P, T extends ParameterNode<P>, S exte
 
     @Nonnull
     @SuppressWarnings("unchecked")
-    public S matchIf(@Nonnull final Matcher matcher){
-        this.matcher = matcher;
+    public S matchIf(@Nonnull final Claimer claimer){
+        this.claimer = claimer;
         return (S) this;
     }
 

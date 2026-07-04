@@ -31,7 +31,7 @@ import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.reader.SNBTReader;
 import moe.qingu.nickel.command.suggestor.DirectSuggestor;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.init.Items;
@@ -40,7 +40,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.utils.Matchers;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
 
@@ -49,7 +49,7 @@ import javax.annotation.Nonnull;
  */
 public class ItemStackNode extends ParameterNode<ItemStack> {
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
-    public static final Matcher MATCHER_WITH_NBT = Matchers.matchOnlyFirstToken(arg->{
+    public static final Claimer CLAIMER_WITH_NBT = Matchers.matchOnlyFirstToken(arg->{
         final String[] split = arg.split("\\{",2);
         return split.length == 1 && Matchers.isResourceLocation(arg) || split.length == 2 && Matchers.isResourceLocation(split[0]);
     });
@@ -63,7 +63,7 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
-        setMatcher(MATCHER_WITH_NBT);
+        setClaimer(CLAIMER_WITH_NBT);
     }
 
     public void setAllowNBT(final boolean allowNBT) {
@@ -91,30 +91,41 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
     }
 
     @Override
-    public ItemStack parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+    public ItemStack parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+        if(!resolve){
+            if(!allowNBT) input.skipContents();
+            else scanStackWithNBT(input);
+        }
+        final CommandContext context = input.getContext();
         if(!allowNBT){
             final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),input.readToken());
             return new ItemStack(item,count,meta);
-        }else return parseStackWithNBT(input,context);
+        }else return readStackWithNBT(input,context);
     }
 
     @Nonnull
-    public ItemStack parseStackWithNBT(@Nonnull final InputReader input,@Nonnull final CommandContext context) throws CommandException {
-        input.skipIfWhitespace();
+    public ItemStack readStackWithNBT(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+        input.skipWhitespaces();
         final int begin = input.getCursor();
         int splitLoc = begin;
         while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') splitLoc++;
         final String itemId = input.getSubInput(begin,splitLoc);
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),itemId);
 
-        final NBTTagCompound compound = SNBTReader.readSingleNBTFromInput(input);
+        final NBTTagCompound compound = !input.canRead() || Character.isWhitespace(input.peek())?null:SNBTReader.readSingleNBTFromInput(input);
         final ItemStack stack = new ItemStack(item,count,meta);
         stack.setTagCompound(compound);
         return stack;
     }
 
+    public static void scanStackWithNBT(@Nonnull final InputReader input) throws CommandException {
+        input.skipWhitespaces();
+        while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') input.skip();
+        if(input.canRead() && !Character.isWhitespace(input.peek())) SNBTReader.readSingleNBTFromInput(input);
+    }
+
     @Override
-    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        return ValidChecker.REQUIRE_ONE_TOKEN.check(this, input); //由于具体检查比较复杂，这里就简单检查一下
+    public boolean accepts(@Nonnull final InputReader input) throws CommandException {
+        return Acceptor.REQUIRE_ONE_TOKEN.check(this, input); //由于具体检查比较复杂，这里就简单检查一下
     }
 }

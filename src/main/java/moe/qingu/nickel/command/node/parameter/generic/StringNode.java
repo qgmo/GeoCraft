@@ -32,7 +32,7 @@ import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.utils.ValidChecker;
+import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,15 +46,15 @@ import static moe.qingu.nickel.text.Texts.translation;
  * @author QiguaiAAAA
  */
 public class StringNode extends ParameterNode<String> {
-    public static final ValidChecker CHECK_WHITELIST = (self, input) -> {
+    public static final Acceptor CHECK_WHITELIST = (self, input) -> {
         checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).whitelist,false,input.getContext());
         return true;
     };
-    public static final ValidChecker CHECK_BLACKLIST = (self, input) -> {
+    public static final Acceptor CHECK_BLACKLIST = (self, input) -> {
         checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).blacklist,true,input.getContext());
         return true;
     };
-    public static final ValidChecker CHECK_PATTERN = (self, input) -> {
+    public static final Acceptor CHECK_PATTERN = (self, input) -> {
         checkPattern(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).pattern,input.getContext());
         return true;
     };
@@ -63,7 +63,7 @@ public class StringNode extends ParameterNode<String> {
     protected Set<String> whitelist = null;
     protected Set<String> blacklist = null;
     protected Pattern pattern = null;
-    protected ValidChecker checker = ValidChecker.REQUIRE_ONE_TOKEN;
+    protected Acceptor checker = Acceptor.REQUIRE_ONE_TOKEN;
 
     public StringNode(@Nonnull final String name) {
         super(name);
@@ -102,7 +102,7 @@ public class StringNode extends ParameterNode<String> {
 
     @Nonnull
     public StringNode refresh(){
-        checker = ValidChecker.REQUIRE_ONE_TOKEN;
+        checker = Acceptor.REQUIRE_ONE_TOKEN;
         if(whitelist != null && !whitelist.isEmpty()) checker = checker.and(CHECK_WHITELIST);
         if(blacklist != null && !blacklist.isEmpty()) checker = checker.and(CHECK_BLACKLIST);
         if(pattern != null) checker = checker.and(CHECK_PATTERN);
@@ -122,15 +122,27 @@ public class StringNode extends ParameterNode<String> {
     }
 
     @Override
-    public boolean checkValid(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
+    public boolean accepts(@Nonnull final InputReader input) throws CommandException {
         return checker.check(this,input);
     }
 
     @Override
-    public String parse(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
-        if(tokenise) return input.readToken();
-        final String res = input.readString();
-        if(!Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
-        return res;
+    public String parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+        if(tokenise) {
+            if(resolve) return input.readToken();
+            else{
+                input.skipContents();
+                return null;
+            }
+        }else{
+            final String res;
+            if(resolve) res = input.readString();
+            else {
+                input.scanString();
+                res = null;
+            }
+            if(!Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
+            return res;
+        }
     }
 }

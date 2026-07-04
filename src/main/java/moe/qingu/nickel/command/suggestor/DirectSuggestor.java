@@ -32,10 +32,8 @@ import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -52,8 +50,13 @@ interface DirectSuggestor<P> extends Suggestor<P> {
     }
 
     @Nonnull
-    static <P> Static<P> of(final @Nonnull Stream<String> data) {
+    static <P> Static<P> of(final @Nonnull List<String> data) {
         return new Static<>(data);
+    }
+
+    @Nonnull
+    static <P> Static<P> of(final @Nonnull Stream<String> data) {
+        return new Static<>(data.collect(Collectors.toList()));
     }
 
     @Nonnull
@@ -73,29 +76,29 @@ interface DirectSuggestor<P> extends Suggestor<P> {
 
     @Nonnull
     @Override
-    default Stream<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
-        return Suggestor.cleanup(this.provideStr(inputReader, suggestContext), inputReader, beginIndex);
+    default List<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
+        return Suggestor.cleanup(this.provideStr(inputReader, suggestContext).stream(), inputReader, beginIndex);
     }
 
     @Nonnull
-    Stream<String> provideStr(final @Nonnull InputReader input, final @Nonnull SuggestContext context);
+    List<String> provideStr(final @Nonnull InputReader input, final @Nonnull SuggestContext context);
 
     final class Static<P> implements DirectSuggestor<P> {
 
-        private final @Nonnull Stream<String> data;
+        private final @Nonnull List<String> data;
 
-        private Static(@Nonnull final Stream<String> data) {
+        private Static(@Nonnull final List<String> data) {
             this.data = data;
         }
 
         @Nonnull
         @Override
-        public Stream<String> provideStr(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+        public List<String> provideStr(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
             return data;
         }
 
         @Nonnull
-        public Stream<String> getData() {
+        public List<String> getData() {
             return data;
         }
     }

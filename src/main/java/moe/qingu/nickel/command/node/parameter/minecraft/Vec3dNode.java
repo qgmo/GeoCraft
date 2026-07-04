@@ -29,7 +29,7 @@ package moe.qingu.nickel.command.node.parameter.minecraft;
 
 import com.google.common.collect.Lists;
 import moe.qingu.nickel.command.suggestor.TokenizeSuggestor;
-import moe.qingu.nickel.command.utils.Matcher;
+import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -41,8 +41,8 @@ import moe.qingu.nickel.command.utils.Matchers;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -52,7 +52,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     /**
      *  若第一个参数为数字，则说明为坐标。不会检查参数长度是否满足条件，因为若检查则会导致歧义。
      */
-    public static final Matcher DEFAULT_MATCHER = Matchers.matchOnlyFirstToken(arg->{
+    public static final Claimer DEFAULT_CLAIMER = Matchers.matchOnlyFirstToken(arg->{
         try {
             CommandBase.parseDouble(0d,arg,false);
         }catch (final NumberInvalidException e) {
@@ -78,7 +78,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                         case 0:
                             suggests.add(String.valueOf(pos.z));
                             break;
-                        default:return Stream.empty();
+                        default:return Collections.emptyList();
                     }
                 }else {
                     final Vec3i pos = context.getTargetPos();
@@ -93,16 +93,16 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                         case 0:
                             suggests.add(String.valueOf(pos.getZ()));
                             break;
-                        default:return Stream.empty();
+                        default:return Collections.emptyList();
                     }
                 }
-                return suggests.stream();
+                return suggests;
             });
 
     public Vec3dNode(@Nonnull String name) {
         super(name);
         setDefaultParser(DEFAULT_PARSER);
-        setMatcher(DEFAULT_MATCHER);
+        setClaimer(DEFAULT_CLAIMER);
         setSuggestProvider(DEFAULT_SUGGESTOR);
     }
 

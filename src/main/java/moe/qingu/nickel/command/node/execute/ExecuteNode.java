@@ -37,7 +37,7 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.stream.Stream;
+import java.util.List;
 
 /**
  * @author QiguaiAAAA
@@ -52,7 +52,7 @@ public interface ExecuteNode extends ICommandNode {
 
     @Nullable
     @Override
-    default Stream<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context){
+    default List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context){
         return null;
     }
 

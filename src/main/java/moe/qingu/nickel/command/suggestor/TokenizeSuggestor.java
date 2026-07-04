@@ -32,8 +32,9 @@ import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
-import java.util.stream.Stream;
 
 /**
  * @author QGMoe
@@ -41,39 +42,39 @@ import java.util.stream.Stream;
 public final class TokenizeSuggestor<P> implements Suggestor<P> {
 
     private final int counts;
-    private final @Nonnull BiFunction<String[], SuggestContext, Stream<String>> provider;
+    private final @Nonnull BiFunction<String[], SuggestContext, List<String>> provider;
 
-    private TokenizeSuggestor(final int counts, @Nonnull BiFunction<String[], SuggestContext, Stream<String>> provider) {
+    private TokenizeSuggestor(final int counts, @Nonnull BiFunction<String[], SuggestContext, List<String>> provider) {
         this.counts = counts;
         this.provider = provider;
     }
 
     @Nonnull
-    public static <P> TokenizeSuggestor<P> of(final int counts, final @Nonnull BiFunction<String[], SuggestContext, Stream<String>> provider) {
+    public static <P> TokenizeSuggestor<P> of(final int counts, final @Nonnull BiFunction<String[], SuggestContext, List<String>> provider) {
         return new TokenizeSuggestor<>(counts, provider);
     }
 
     @Nonnull
-    public static <P> TokenizeSuggestor<P> of(final @Nonnull BiFunction<String, SuggestContext, Stream<String>> provider) {
+    public static <P> TokenizeSuggestor<P> of(final @Nonnull BiFunction<String, SuggestContext, List<String>> provider) {
         return new TokenizeSuggestor<>(1, (tokens, context) -> provider.apply(tokens[0], context));
     }
 
     @Nonnull
     @Override
-    public Stream<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
+    public List<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
         try {
             inputReader.setCursor(beginIndex);
             final String[] tokens = new String[counts];
             int lastTokenBeginIndex = beginIndex;
             for (int i = 0; i < counts; i++) {
                 if (i == counts - 1) {
-                    inputReader.skipIfWhitespace();
+                    inputReader.skipWhitespaces();
                     lastTokenBeginIndex = inputReader.getCursor();
                 }
                 tokens[i] = inputReader.readToken();
             }
-            if (inputReader.canRead()) return Stream.empty();
-            return Suggestor.cleanup(this.provider.apply(tokens, suggestContext), inputReader, lastTokenBeginIndex);
+            if (inputReader.canRead()) return Collections.emptyList();
+            return Suggestor.cleanup(this.provider.apply(tokens, suggestContext).stream(), inputReader, lastTokenBeginIndex);
         } finally {
             inputReader.setCursor(inputReader.getLength());
         }

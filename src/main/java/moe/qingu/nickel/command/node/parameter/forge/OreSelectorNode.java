@@ -80,7 +80,7 @@ public class OreSelectorNode extends TokenizeParameterNode.Single<OreDictionaryE
      * @see OreDictionary#registerOreImpl(String, ItemStack)
      */
     @Override
-    public boolean checkValid(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+    public boolean accepts(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
         if("Unknown".equals(token)) return context.input.panic(translation("nickel.command.parameter.ore_directory.invalid",token));
         return true;
     }

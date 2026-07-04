@@ -49,7 +49,7 @@ public class EntitySelectorNode extends TokenizeParameterNode.Single<List<Entity
 
     public static final DefaultParser<List<Entity>> DEFAULT_PARSER = (node, context) -> Collections.singletonList(context.getSenderAsPlayer());
     public static final DirectSuggestor<List<Entity>> DEFAULT_SUGGESTOR = ((args, context) ->
-            Stream.of("@s", "@a", "@p", "@r", "@e", context.getSender().getName()));
+            Arrays.asList("@s", "@a", "@p", "@r", "@e", context.getSender().getName()));
 
     protected static final TypeToken<List<Entity>> Token = new TypeToken<List<Entity>>(List.class) {};
     protected boolean allowPlayerName = true;
@@ -122,7 +122,7 @@ public class EntitySelectorNode extends TokenizeParameterNode.Single<List<Entity
     }
 
     @Override
-    public boolean checkValid(@Nonnull final String arg, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
+    public boolean accepts(@Nonnull final String arg, @Nonnull CommandContext context) throws SyntaxErrorException, NumberInvalidException {
         if(isPlayerNameAllowed()) return true;
 
         if(arg.startsWith("@")) return true;
