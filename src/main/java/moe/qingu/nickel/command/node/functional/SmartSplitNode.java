@@ -90,7 +90,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
         final ICommandNode node = findNextNode(input);
         if(node == null) throw new NickelSyntaxException(curBranch,this);
         final CommandBranch branch = branchMap.get(node);
-        if(branch == null) context.enter(node);
+        if(branch == null || branch == curBranch) context.enter(node);
         else try (final @Nonnull CommandContext.ContextStack<?> ignored = context.enter(branch)){
             context.enter(node);
         }
@@ -105,7 +105,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
             final ICommandNode node = findNextNode(input);
             if (node == null) return null;
             final CommandBranch branch = branchMap.get(node);
-            if(branch == null) return context.enter(node);
+            if(branch == null || branch == curBranch) return context.enter(node);
             try (final @Nonnull CommandContext.ContextStack<?> ignored = context.enter(branch)){
                 return context.enter(node);
             }
@@ -116,8 +116,8 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
                 .filter(Objects::nonNull)
                 .flatMap(List::stream)
                 .map(String::trim)
+                .filter(s -> !s.isEmpty())
                 .distinct() //去重
-//                .filter(s->s.startsWith(args.isEmpty()?"":args.getLast().trim()))
                 .sorted()
                 .collect(Collectors.toList());
     }
@@ -137,6 +137,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
                 .filter(pair -> !pair.getValue().isEmpty())
                 .forEach(pair -> {
                     choices.add(pair.getValue().getDocuments().get(0));
+                    if(branchMap.containsKey(pair.getKey())) return;
                     branchMap.put(pair.getKey(),pair.getValue());
                 });
 
@@ -144,7 +145,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
         this.curBranch = new SplitCommandBranch(branchMap.values());
         for(int i=0;i<choices.size();i++){
             if(i>0) this.document.then(IDocumentaryNode.SPLIT_NODE_SPLIT);
-            this.document.then(choices.get(i));
+            this.document.then(choices.get(i).copy());
         }
         this.document.then(IDocumentaryNode.getFormatEnd(optional));
         curBranch.setEndDocument(this.document);

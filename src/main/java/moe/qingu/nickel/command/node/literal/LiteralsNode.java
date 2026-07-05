@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.node.literal;
 
+import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
@@ -48,7 +49,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
@@ -69,6 +69,7 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNode, IDocumentaryNode {
     protected final Map<String, ICommandNode> literal2Node = new LinkedHashMap<>();
+    protected final Map<ICommandNode, CommandBranch> literal2Branch = new HashMap<>();
 
     protected boolean optional;
     protected SplitCommandBranch curBranch;
@@ -86,6 +87,11 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         }else if(!isOptional()) throw new NickelSyntaxException(curBranch,this);
         else node = childNode;
         if(node != null){
+            final CommandBranch branch = literal2Branch.get(node);
+            if(branch == null || branch == curBranch) context.enter(node);
+            else try(final CommandContext.ContextStack<?> ignored = context.enter(literal2Branch.get(node))){
+                context.enter(node);
+            }
             context.enter(node);
         }else if(isOptional()) throw new NickelCommandException(curBranch)
                 .withSource(this)
@@ -99,16 +105,20 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
         if(!checkPermission(context)) return null;
         if(!input.isRemainingEmpty()){
             final String token = input.readToken();
-            if(input.isRemainingEmpty()){
+            if(!input.canRead()){
                 return literal2Node.keySet().stream()
                         .filter(literal -> literal.startsWith(token))
                         .collect(Collectors.toList());
             }else {
                 ICommandNode nextNode = literal2Node.get(token);
                 if(nextNode == null && isOptional()) nextNode = childNode;
-                return nextNode == null?null:context.enter(nextNode);
+                if(nextNode == null) return null;
+                final CommandBranch branch = literal2Branch.get(nextNode);
+                if(branch == null || branch == curBranch) return context.enter(nextNode);
+                else try(final CommandContext.ContextStack<?> ignored = context.enter(literal2Branch.get(nextNode))){
+                    return context.enter(nextNode);
+                }
             }
-
         }else {
             return new ArrayList<>(literal2Node.keySet());
         }
@@ -141,17 +151,16 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
     @Nonnull
     @Override
     public CommandBranch branch() {
-        final Set<CommandBranch> subBranches = literal2Node.entrySet().stream()
-                .map(entry -> {
-                    final CommandBranch branch = entry.getValue().branch();
-                    branch.appendDocument(plain(entry.getKey()));
-                    return branch;
-                })
-                .collect(Collectors.toSet());
-        if(childNode != null) Stream.of(childNode).map(ICommandNode::branch)
+        literal2Node.forEach((key, value) -> {
+            if(literal2Branch.containsKey(value)) return;
+            final CommandBranch branch = value.branch();
+            branch.appendDocument(plain(key));
+            literal2Branch.put(value, branch);
+        });
+        if(!literal2Branch.containsKey(childNode)) Optional.ofNullable(childNode).map(ICommandNode::branch)
                 .filter(branch -> !branch.isEmpty())
-                .forEach(subBranches::add);
-        this.curBranch = new SplitCommandBranch(subBranches);
+                .ifPresent(b -> literal2Branch.put(childNode,b));
+        this.curBranch = new SplitCommandBranch(literal2Branch.values());
         curBranch.setEndDocument(getDocument());
         return curBranch;
     }

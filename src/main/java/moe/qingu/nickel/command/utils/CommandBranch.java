@@ -50,7 +50,7 @@ public class CommandBranch {
     protected TextBuilder<?,?> document;
 
     public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.add(Objects.requireNonNull(document));
+        this.documents.addFirst(Objects.requireNonNull(document));
     }
 
     @Nonnull

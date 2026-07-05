@@ -57,7 +57,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     protected final @Nonnull String literal;
 
-    protected @Nullable Claimer matchChecker;
+    protected @Nullable Claimer claimer;
 
     protected CommandBranch currentBranch;
 
@@ -72,14 +72,14 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     @Override
     public boolean claims(@Nonnull final InputReader input) {
-        if(matchChecker!=null) return matchChecker.test(input);
+        if(claimer !=null) return claimer.test(input);
         if(!input.isRemainingEmpty()) return literal.equals(input.readToken());
         else return false;
     }
 
     @Override
     public void setClaimer(@Nullable final Claimer checker) {
-        this.matchChecker = checker;
+        this.claimer = checker;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
     public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         if(!input.isRemainingEmpty()){
             final @Nonnull String token = input.readToken();
-            if(input.isRemainingEmpty()) return literal.startsWith(token)? Collections.singletonList(literal):null;
+            if(!input.canRead()) return literal.startsWith(token)? Collections.singletonList(literal):null;
             return childNode == null? null : context.enter(childNode);
         }else return Collections.singletonList(literal);
     }

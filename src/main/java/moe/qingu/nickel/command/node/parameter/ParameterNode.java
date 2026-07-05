@@ -44,7 +44,6 @@ import moe.qingu.nickel.command.node.IOptionalNode;
 import moe.qingu.nickel.command.node.NoSplitNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.BlockPosNode;
 import moe.qingu.nickel.command.utils.CommandBranch;
-import top.qiguaiaaaa.geocraft.GeoCraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,7 +101,6 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
     @Override
     public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
         input.skipWhitespaces();
-//        GeoCraft.getLogger().warn(this.getDocument().done().getUnformattedText()+": \""+input.getSubInput(input.getCursor())+'"');
         final int begin = input.getCursor();
         if(!input.canRead()) if(suggestProvider!=null) return suggestProvider.provide(this,input,begin,context); else return null;
         try{

@@ -163,6 +163,7 @@ public abstract class TextBuilder<T extends ITextComponent,S extends TextBuilder
         copy.style.setItalic(this.style.getItalic());
         copy.style.setClickEvent(this.style.getClickEvent());
         copy.style.setColor(this.style.getColor());
+        if(then != null) copy.then = then.copy();
         return copy;
     }
 

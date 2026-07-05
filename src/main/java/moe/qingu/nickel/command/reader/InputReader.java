@@ -64,10 +64,12 @@ public final class InputReader {
 
     public boolean isRemainingEmpty(){
         final int cur = this.cursor;
-        this.skipWhitespaces();
-        final boolean empty = !canRead();
-        this.cursor = cur;
-        return empty;
+        try{
+            this.skipWhitespaces();
+            return !canRead();
+        }finally {
+            this.cursor = cur;
+        }
     }
 
     public boolean canRead(){
@@ -124,7 +126,7 @@ public final class InputReader {
             final int quote = this.read();
             final StringBuilder builder = new StringBuilder();
             while (true){
-                if(!canRead()) return panic(this.getCursor(),translation("nickel.command.parameter.string.no_pair"));
+                if(!canRead()) return panic(this.getCursor(),translation("nickel.command.parameter.string.no_pair",stringOf(quote)));
                 int cp = this.read();
                 if(cp == '\\') cp = readEscape();
                 else if(cp == quote) break;
@@ -169,6 +171,7 @@ public final class InputReader {
             final int cp = this.read();
             switch (cp){
                 case '\\': return '\\';
+                case 's': return ' ';
                 case 'b': return '\b';
                 case 'f': return '\f';
                 case 'n': return '\n';

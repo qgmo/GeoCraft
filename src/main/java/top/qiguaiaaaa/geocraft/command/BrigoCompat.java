@@ -120,7 +120,7 @@ public final class BrigoCompat {
                         .then(literal("storage")))
                 .then(literal("track", Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam")).collect(Collectors.toList()),
                         builder -> builder.then(argument("duration",integer(1))
-                                .then(pos(argument("file name",StringArgumentType.word()),Function.identity())
+                                .then(pos(argument("file name",StringArgumentType.string()),Function.identity())
                                         .executes(DO_NOTHING))))
                         .then(compatArgs(PROPERTY,"duration","file name","x","y","z")))
                 .then(literal("stop")
@@ -154,11 +154,7 @@ public final class BrigoCompat {
                                 .then(argument("scale",DoubleArgumentType.doubleArg()))
                                 .executes(DO_NOTHING))
                         .then(literal("set")
-                                .then(argument("bool", BoolArgumentType.bool()))
-                                .then(argument("int", IntegerArgumentType.integer()))
-                                .then(argument("long", LongArgumentType.longArg()))
-                                .then(argument("double",DoubleArgumentType.doubleArg()))
-                                .then(argument("value",StringArgumentType.greedyString())))
+                                .then(argument("value",StringArgumentType.string())))
                         .then(literal("reset")
                                 .then(argument("request_id",StringArgumentType.word()))
                                 .executes(DO_NOTHING))));
