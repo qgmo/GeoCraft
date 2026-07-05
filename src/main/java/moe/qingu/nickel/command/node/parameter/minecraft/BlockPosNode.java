@@ -49,8 +49,7 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
     public static final Suggestor<BlockPos> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,(args, context) -> {
         final List<String> suggests = Lists.newArrayList("~");
         final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
-        final int cur = ArrayUtils.indexOf(args,"")+1;
-        switch (cur){
+        switch (args.length){
             case 1:
                 suggests.add(String.valueOf(pos.getX()));
                 break;
@@ -58,7 +57,6 @@ public class BlockPosNode extends MinecraftVec3Node<BlockPos> {
                 suggests.add(String.valueOf(pos.getY()));
                 break;
             case 3:
-            case 0: //不存在，用户在输入最后一个
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
             default: return Collections.emptyList();

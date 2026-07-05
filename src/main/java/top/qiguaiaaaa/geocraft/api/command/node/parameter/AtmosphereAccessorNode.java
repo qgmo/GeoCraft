@@ -36,7 +36,6 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.SyntaxErrorException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.ArrayUtils;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemManager;
 import top.qiguaiaaaa.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.nickel.command.context.CommandContext;
@@ -44,6 +43,7 @@ import moe.qingu.nickel.command.node.parameter.minecraft.MinecraftVec3Node;
 import moe.qingu.nickel.command.node.parameter.minecraft.Vec3dNode;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -63,10 +63,9 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
     };
 
     public static final TokenizeSuggestor<IAtmosphereAccessor> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(4,(args, context) -> {
-        final int cur = ArrayUtils.indexOf(args,"")+1;
-        final List<String> suggests = cur<=3 && cur != 0 ?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
+        final List<String> suggests = args.length<=3?Lists.newArrayList("~"):Lists.newArrayList("default","false","true");
         final BlockPos pos = context.getTargetPos()==null?context.getPosition():context.getTargetPos();
-        switch (cur){
+        switch (args.length){
             case 1:
                 suggests.add(String.valueOf(pos.getX()));
                 break;
@@ -76,9 +75,8 @@ public class AtmosphereAccessorNode extends MinecraftVec3Node<IAtmosphereAccesso
             case 3:
                 suggests.add(String.valueOf(pos.getZ()));
                 break;
-            case 4:
-            case 0: break;
-            default:return null;
+            case 4: break;
+            default:return Collections.emptyList();
         }
         return suggests;
     });

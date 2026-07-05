@@ -29,7 +29,7 @@ package moe.qingu.nickel.command.node.parameter.minecraft;
 
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
-import moe.qingu.nickel.command.reader.SNBTReader;
+import moe.qingu.nickel.nbt.SNBTReader;
 import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import moe.qingu.nickel.command.utils.Claimer;
 import net.minecraft.command.CommandBase;

@@ -64,10 +64,9 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     public static final Suggestor<Vec3d> DEFAULT_SUGGESTOR = TokenizeSuggestor.of(3,
             (args, context) -> {
                 final List<String> suggests = Lists.newArrayList("~");
-                final int cur = ArrayUtils.indexOf(args,"")+1;
                 if(context.getTargetPos() == null){
                     final Vec3d pos = context.getSender().getPositionVector();
-                    switch (cur){
+                    switch (args.length){
                         case 1:
                             suggests.add(String.valueOf(pos.x));
                             break;
@@ -75,14 +74,13 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                             suggests.add(String.valueOf(pos.y));
                             break;
                         case 3:
-                        case 0:
                             suggests.add(String.valueOf(pos.z));
                             break;
                         default:return Collections.emptyList();
                     }
                 }else {
                     final Vec3i pos = context.getTargetPos();
-                    switch (cur){
+                    switch (args.length){
                         case 1:
                             suggests.add(String.valueOf(pos.getX()));
                             break;
@@ -90,7 +88,6 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
                             suggests.add(String.valueOf(pos.getY()));
                             break;
                         case 3:
-                        case 0:
                             suggests.add(String.valueOf(pos.getZ()));
                             break;
                         default:return Collections.emptyList();

@@ -25,26 +25,23 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.reader;
+package moe.qingu.nickel.nbt;
 
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
+import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.util.StringUtils;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.*;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraftforge.common.util.Constants;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-import java.lang.invoke.MethodType;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static moe.qingu.nickel.text.Texts.plain;
@@ -55,19 +52,11 @@ import static moe.qingu.nickel.util.StringUtils.stringOf;
  * @author QGMoe
  */
 public final class SNBTReader {
-    private static final Map<Pair<String,Integer>, NBTFunction> functions = new HashMap<>();
+
     private final InputReader input;
 
     public SNBTReader(final @Nonnull InputReader input) {
         this.input = input;
-    }
-
-    static {
-        SNBTFunctions.loadFuncs();
-    }
-
-    public static void registerSNBTFunc(final @Nonnull Pair<String,Integer> id,final @Nonnull NBTFunction function){
-        functions.put(id,function);
     }
 
     @Nonnull
@@ -114,6 +103,7 @@ public final class SNBTReader {
             this.scanKey();
             input.skipWhitespaces();
             expectOrEnd(':');
+            this.scanValue();
             if(this.shouldExit('}')) break;
         }
         expectOrEnd('}');
@@ -276,7 +266,7 @@ public final class SNBTReader {
                 input.scanString();
                 break;
             }
-            default: this.scanUnquotedString();
+            default: this.scanTypedValue();
         }
     }
 
@@ -314,34 +304,38 @@ public final class SNBTReader {
         }else return new NBTTagString(raw);
     }
 
+    public void scanTypedValue() throws CommandException, NickelScanEOFSignal {
+        this.scanUnquotedString();
+        if(input.peek() == '(') scanFunction();
+    }
+
     @Nonnull
+    @SuppressWarnings("unchecked")
     public NBTBase readFunction(final int begin,final @Nonnull String name) throws CommandException {
         expect('(');
-        final List<String> args = new ArrayList<>();
-        while (input.peek() != ')'){
+        final List<NBTBase> args = new ArrayList<>();
+        boolean beforeAnyArgs = true;
+        while (input.canRead() && input.peek() != ')'){
             input.skipWhitespaces();
-            final int cur = input.getCursor();
-            final String arg;
-            boolean isQuoted = true;
-            if(input.peek() == '"' || input.peek() == '\'') arg = input.readString();
-            else{
-                arg = readUnquotedString();
-                if(!args.isEmpty() && arg.isEmpty()) return input.panic(cur,"nickel.command.parameter.nbt.function.null_arg");
-                isQuoted = false;
-            }
-            args.add(arg);
+            if(beforeAnyArgs && input.peek() == ')') break; // func()
+            beforeAnyArgs = false;
+            args.add(this.readValue('i'));
             if(shouldExit(')')) break;
-            if(!isQuoted && arg.isEmpty()) return input.panic(cur,"nickel.command.parameter.nbt.function.null_arg");
         }
         expect(')');
-        final Pair<String,Integer> funcId = Pair.of(name,args.size());
-        final NBTFunction func = functions.get(funcId);
+        final NBTBase[] argsArr = args.toArray(new NBTBase[0]);
+        final @Nullable SNBTOperation func = SNBTOperations.resolve(name,argsArr);
         if(func == null) return input.panic(begin,translation("nickel.command.parameter.nbt.function.undefined")
-                .arg(plain(name+'('+ args.stream().map(s -> '"'+StringEscapeUtils.escapeJava(s)+'"').collect(Collectors.joining(",")) +')')
-                        .color(TextFormatting.GOLD).underlined(true))
-                .arg(plain(name+'('+args.size()+')').color(TextFormatting.AQUA).underlined(true)));
+                .arg(plain(name+'('+ args.stream()
+                        .map(NBTBase::toString)
+                        .collect(Collectors.joining(",")) +')'
+                ).color(TextFormatting.GOLD).underlined(true))
+                .arg(plain(name+new SNBTOperation.OperationType(args.stream()
+                        .map(Object::getClass)
+                        .toArray(Class[]::new))
+                ).color(TextFormatting.AQUA).underlined(true)));
         try{
-            return func.invoke(args.toArray(new String[0]));
+            return func.invoke(argsArr);
         }catch (final NickelRuntimeException e){
             return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",name+'('+args.size()+')')
                     .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
@@ -349,6 +343,19 @@ public final class SNBTReader {
             return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",name+'('+args.size()+')')
                     .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
         }
+    }
+
+    public void scanFunction() throws CommandException, NickelScanEOFSignal {
+        input.skipIf('(');
+        boolean beforeAnyArgs = true;
+        while (input.canRead() && input.peek() != ')'){
+            input.skipWhitespaces();
+            if(beforeAnyArgs && input.peek() == ')') break; // func()
+            beforeAnyArgs = false;
+            this.scanValue();
+            if(shouldExit(')')) break;
+        }
+        expectOrEnd(')');
     }
 
     @Nonnull
@@ -510,10 +517,4 @@ public final class SNBTReader {
         return cp >= '0' && cp <= '9' || cp >= 'A' && cp <= 'Z' || cp >= 'a' && cp <= 'z' || cp == '_' || cp == '-' || cp == '.' || cp == '+';
     }
 
-    @FunctionalInterface
-    public interface NBTFunction{
-        MethodType METHOD_TYPE = MethodType.methodType(NBTBase.class,String[].class);
-
-        @Nonnull NBTBase invoke(final @Nonnull String[] args) throws NickelRuntimeException;
-    }
 }

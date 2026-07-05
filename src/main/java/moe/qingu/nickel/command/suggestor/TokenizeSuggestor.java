@@ -32,6 +32,7 @@ import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -64,17 +65,21 @@ public final class TokenizeSuggestor<P> implements Suggestor<P> {
     public List<String> provide(final @Nonnull ParameterNode<P> node, @Nonnull final InputReader inputReader, final int beginIndex, @Nonnull final SuggestContext suggestContext) {
         try {
             inputReader.setCursor(beginIndex);
-            final String[] tokens = new String[counts];
+            final ArrayList<String> tokens = new ArrayList<>();
             int lastTokenBeginIndex = beginIndex;
             for (int i = 0; i < counts; i++) {
-                if (i == counts - 1) {
-                    inputReader.skipWhitespaces();
-                    lastTokenBeginIndex = inputReader.getCursor();
+                inputReader.skipWhitespaces();
+                lastTokenBeginIndex = inputReader.getCursor();
+                tokens.add(inputReader.readToken());
+                if(!inputReader.canRead()) break;
+                else if(inputReader.isRemainingEmpty()){
+                    lastTokenBeginIndex = inputReader.getLength();
+                    tokens.add("");
+                    break;
                 }
-                tokens[i] = inputReader.readToken();
             }
-            if (inputReader.canRead()) return Collections.emptyList();
-            return Suggestor.cleanup(this.provider.apply(tokens, suggestContext).stream(), inputReader, lastTokenBeginIndex);
+            if (tokens.size() > counts) return Collections.emptyList();
+            return Suggestor.cleanup(this.provider.apply(tokens.toArray(new String[0]), suggestContext).stream(), inputReader, lastTokenBeginIndex);
         } finally {
             inputReader.setCursor(inputReader.getLength());
         }

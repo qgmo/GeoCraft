@@ -42,7 +42,7 @@ import java.util.stream.Stream;
  * @author QiguaiAAAA
  */
 public class StringNodeBuilder extends ParameterNodeBuilder<String, StringNode,StringNodeBuilder> {
-    protected boolean tokenise;
+    protected StringNode.Mode mode = StringNode.Mode.STRING;
     protected Pattern pattern;
     protected Set<String> whitelist;
     protected Set<String> blacklist;
@@ -56,14 +56,8 @@ public class StringNodeBuilder extends ParameterNodeBuilder<String, StringNode,S
     }
 
     @Nonnull
-    public StringNodeBuilder tokenise(){
-        this.tokenise = true;
-        return this;
-    }
-
-    @Nonnull
-    public StringNodeBuilder distokenise(){
-        this.tokenise = false;
+    public StringNodeBuilder mode(final @Nonnull StringNode.Mode mode){
+        this.mode = Objects.requireNonNull(mode);
         return this;
     }
 
@@ -127,7 +121,7 @@ public class StringNodeBuilder extends ParameterNodeBuilder<String, StringNode,S
     protected StringNode buildInstance() {
         final StringNode node = new StringNode(name);
         node.setPattern(pattern);
-        node.setTokenise(tokenise);
+        node.setMode(mode);
         if(whitelist != null) whitelist.forEach(node::addAllowValue);
         if(blacklist != null) blacklist.forEach(node::addDisallowedValue);
         if(suggestProvider == USE_DEFAULT_SUGGESTOR && whitelist != null){

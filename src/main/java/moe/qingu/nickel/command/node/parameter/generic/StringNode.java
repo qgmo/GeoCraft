@@ -47,19 +47,19 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public class StringNode extends ParameterNode<String> {
     public static final Acceptor CHECK_WHITELIST = (self, input) -> {
-        checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).whitelist,false,input.getContext());
+        checkList(((StringNode)self).readContent(input),((StringNode) self).whitelist,false,input.getContext());
         return true;
     };
     public static final Acceptor CHECK_BLACKLIST = (self, input) -> {
-        checkList(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).blacklist,true,input.getContext());
+        checkList(((StringNode)self).readContent(input),((StringNode) self).blacklist,true,input.getContext());
         return true;
     };
     public static final Acceptor CHECK_PATTERN = (self, input) -> {
-        checkPattern(((StringNode)self).tokenise?input.readToken():input.readString(),((StringNode) self).pattern,input.getContext());
+        checkPattern(((StringNode)self).readContent(input),((StringNode) self).pattern,input.getContext());
         return true;
     };
 
-    protected boolean tokenise = false;
+    protected Mode mode = Mode.STRING;
     protected Set<String> whitelist = null;
     protected Set<String> blacklist = null;
     protected Pattern pattern = null;
@@ -82,8 +82,17 @@ public class StringNode extends ParameterNode<String> {
         context.input.panic(translation("nickel.command.parameter.string.nonMatch",str,pattern.toString()));
     }
 
-    public void setTokenise(final boolean tokenise) {
-        this.tokenise = tokenise;
+    @Nonnull
+    public String readContent(final @Nonnull InputReader input) throws CommandException {
+        switch (mode){
+            case GREED:return input.readRemaining();
+            case TOKEN:return input.readToken();
+            default:return input.readString();
+        }
+    }
+
+    public void setMode(final @Nonnull Mode mode) {
+        this.mode = mode;
     }
 
     public void addAllowValue(@Nonnull final String content){
@@ -118,7 +127,11 @@ public class StringNode extends ParameterNode<String> {
     @Nonnull
     @Override
     public String getTypeTranslationKey() {
-        return tokenise?"nickel.command.parameter.generic.token":"nickel.command.parameter.generic.string";
+        switch (mode){
+            case TOKEN:return "nickel.command.parameter.generic.token";
+            case GREED:return "nickel.command.parameter.generic.greed";
+            default:return "nickel.command.parameter.generic.string";
+        }
     }
 
     @Override
@@ -128,21 +141,32 @@ public class StringNode extends ParameterNode<String> {
 
     @Override
     public String parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
-        if(tokenise) {
-            if(resolve) return input.readToken();
+        switch (mode){
+            case TOKEN: if(resolve) return input.readToken();
             else{
                 input.skipContents();
                 return null;
             }
-        }else{
-            final String res;
-            if(resolve) res = input.readString();
+            case GREED: if(resolve) return input.readRemaining();
             else {
-                input.scanString();
-                res = null;
+                input.setCursor(input.getLength());
+                return null;
+            } default:{
+                final String res;
+                if(resolve) res = input.readString();
+                else {
+                    input.scanString();
+                    res = null;
+                }
+                if(input.canRead() && !Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
+                return res;
             }
-            if(!Character.isWhitespace(input.peek())) throw new NickelSyntaxException(this.currentBranch,this);
-            return res;
         }
+    }
+
+    public enum Mode{
+        STRING,
+        TOKEN,
+        GREED
     }
 }

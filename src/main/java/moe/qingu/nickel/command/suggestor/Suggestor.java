@@ -57,13 +57,13 @@ public interface Suggestor<P> {
     @Nonnull
     static List<String> cleanup(final @Nonnull Stream<String> suggestions,final @Nonnull InputReader input,final int beginIndex){
         final @Nonnull String subInput = input.getSubInput(beginIndex).replaceAll("\\s+"," ");
+        final int lastTokenBegin = subInput.lastIndexOf(' ')+1;
         return suggestions.map(String::trim)
                 .filter(s -> !s.isEmpty() && s.startsWith(subInput))
-                .map(s -> s.substring(subInput.length()).split("\\s+",2)[0])
+                .map(s -> s.substring(lastTokenBegin).split("\\s+",2)[0])
                 .filter(s -> !s.isEmpty())
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
     }
-
 }

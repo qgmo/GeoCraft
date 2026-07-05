@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command;
 
 import moe.qingu.nickel.command.builder.parameter.EnumNodeBuilder;
+import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -188,7 +189,13 @@ public final class Nodes {
     @Nonnull
     public static StringNodeBuilder $token(@Nonnull final String name){
         return new StringNodeBuilder(name)
-                .tokenise();
+                .mode(StringNode.Mode.TOKEN);
+    }
+
+    @Nonnull
+    public static StringNodeBuilder $greed(@Nonnull final String name){
+        return new StringNodeBuilder(name)
+                .mode(StringNode.Mode.GREED);
     }
 
     @Nonnull

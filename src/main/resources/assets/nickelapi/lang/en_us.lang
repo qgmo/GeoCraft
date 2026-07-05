@@ -6,6 +6,7 @@ nickel.command.parameter.generic.integer=Integer
 nickel.command.parameter.generic.long=Long
 nickel.command.parameter.generic.string=String
 nickel.command.parameter.generic.token=Token
+nickel.command.parameter.generic.greed=Greedy String
 nickel.command.parameter.generic.uuid=UUID
 nickel.command.parameter.minecraft.block_pos=BlockPos
 nickel.command.parameter.minecraft.block=Block
@@ -57,9 +58,7 @@ nickel.command.parameter.nbt.float.infinity=浮点数不能为无穷
 nickel.command.parameter.nbt.array.type_mismatch=期望的数组类型是 %s，但实际上是 %s
 nickel.command.parameter.nbt.list.type_mismatch=期望的列表元素类型是 %s，但实际上是 %s
 nickel.command.parameter.nbt.function.undefined=%s 调用了未定义的函数 %s
-nickel.command.parameter.nbt.function.null_arg=参数不应为空字符串
 nickel.command.parameter.nbt.function.run_exception=函数 %s 执行失败
-nickel.command.parameter.nbt.function.count_mismatch=期望的参数数量是 %s,但实际是 %s
 
 nickel.command.functional.permit.denied=Permission denied.
 nickel.command.functional.literal.non_match=Expect literal %s , but found %s
