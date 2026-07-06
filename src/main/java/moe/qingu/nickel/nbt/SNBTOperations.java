@@ -43,9 +43,8 @@ import java.lang.annotation.Target;
 import java.lang.invoke.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.LongStream;
 
 /**
  * @author QGMoe
@@ -53,6 +52,7 @@ import java.util.UUID;
 @SuppressWarnings("unused")
 public final class SNBTOperations {
     private static final Table<String, SNBTOperation.OperationType,SNBTOperation> functions = HashBasedTable.create();
+    private static final Map<SNBTOperation,String> signatures = new HashMap<>();
     private static final MethodHandles.Lookup PERMISSION = MethodHandles.lookup();
 
     static {
@@ -61,6 +61,13 @@ public final class SNBTOperations {
 
     public static void register(final @Nonnull String name, final @Nonnull SNBTOperation.OperationType type, final @Nonnull SNBTOperation function){
         functions.put(name,type,function);
+        signatures.put(function,name+type);
+    }
+
+    @Nonnull
+    @SNBTFunc
+    public static NBTTagByte bool(final @Nonnull NBTPrimitive num){
+        return new NBTTagByte((byte) (num.getLong()==0?0:1));
     }
 
     @Nonnull
@@ -125,6 +132,13 @@ public final class SNBTOperations {
 
     @Nonnull
     @SNBTFunc
+    public static NBTTagLongArray concat(final @Nonnull NBTTagLongArray a,final @Nonnull NBTTagLongArray b){
+        return new NBTTagLongArray(LongStream.concat(NBTUtils.streamOf(a),NBTUtils.streamOf(b))
+                .toArray());
+    }
+
+    @Nonnull
+    @SNBTFunc
     public static NBTTagList concat(final @Nonnull NBTTagList a,final @Nonnull NBTTagList b){
         final NBTTagList list = new NBTTagList();
         for(final NBTBase nbt:a) list.appendTag(nbt);
@@ -167,6 +181,21 @@ public final class SNBTOperations {
         }
         if(ambiguous) return null;
         return bestOpt;
+    }
+
+    @Nonnull
+    public static String signatureOf(final @Nonnull SNBTOperation operation){
+        final String sign = signatures.get(operation);
+        if(sign == null) throw new IllegalArgumentException();
+        return sign;
+    }
+
+    @Nonnull
+    @SuppressWarnings("unchecked")
+    public static String signatureOf(final @Nonnull String name,final @Nonnull List<NBTBase> args){
+        return name + new SNBTOperation.OperationType(args.stream()
+                .map(Object::getClass)
+                .toArray(Class[]::new));
     }
 
     @SuppressWarnings("unchecked")

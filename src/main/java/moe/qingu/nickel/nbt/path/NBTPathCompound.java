@@ -25,56 +25,32 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.utils;
+package moe.qingu.nickel.nbt.path;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
+import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-
-import static moe.qingu.nickel.text.Texts.plain;
+import java.util.*;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class CommandBranch {
+public final class NBTPathCompound extends NBTPathNode{
+    private final NBTCompoundMatcher matcher;
 
-    protected final LinkedList<TextBuilder<?,?>> documents = new LinkedList<>();
-
-    protected TextBuilder<?,?> document;
-
-    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.addFirst(Objects.requireNonNull(document.copy()));
+    public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
+        this.matcher = matcher;
     }
 
     @Nonnull
-    public List<TextBuilder<?,?>> getDocuments(){
-        return documents;
+    public NBTCompoundMatcher getMatcher() {
+        return matcher;
     }
 
-    @Nonnull
-    public TextBuilder<?,?> getDocument() {
-        return document;
-    }
-
-    public boolean isEmpty(){
-        return documents.isEmpty();
-    }
-
-    public void finish(@Nonnull final ICommand command){
-        document = plain("/"+ Objects.requireNonNull(command).getName());
-        for(final @Nonnull TextBuilder<?,?> node:documents){
-            document.then(" ").then(node);
-        }
-    }
-
-    public void print(@Nonnull final ICommandSender sender){
-        sender.sendMessage(document.done());
+    @Override
+    public Collection<NBTBase> apply(final NBTBase nbtBase) {
+        if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
+        else return Collections.emptyList();
     }
 }

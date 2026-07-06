@@ -112,7 +112,7 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
                 .then(this.getDetails());
         return msg.hoverTo(HoverEvent.Action.SHOW_TEXT)
                 .content((info == null ? plain(""): info.getInfo()
-                        .then(" <-- \n"))
+                        .then(" <-- \n"+TextFormatting.RESET))
                         .then(translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
                                 .color(TextFormatting.AQUA)));
     }

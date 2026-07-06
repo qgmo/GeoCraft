@@ -51,9 +51,9 @@ import static moe.qingu.nickel.util.StringUtils.stringOf;
 /**
  * @author QGMoe
  */
-public final class SNBTReader {
+public class SNBTReader {
 
-    private final InputReader input;
+    protected final InputReader input;
 
     public SNBTReader(final @Nonnull InputReader input) {
         this.input = input;
@@ -64,12 +64,6 @@ public final class SNBTReader {
         return new SNBTReader(input).readCompound();
     }
 
-    public static void scanNBTFromInput(final @Nonnull InputReader input) throws CommandException {
-        try{
-            new SNBTReader(input).scanCompound();
-        } catch (final NickelScanEOFSignal ignored) {}
-    }
-
     @Nonnull
     public static NBTTagCompound readSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException {
         final NBTTagCompound compound =  new SNBTReader(input).readCompound();
@@ -77,13 +71,8 @@ public final class SNBTReader {
         return compound;
     }
 
-    public static void scanSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException {
-        scanNBTFromInput(input);
-        if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),"nickel.command.parameter.nbt.escape");
-    }
-
     @Nonnull
-    public NBTTagCompound readCompound() throws CommandException {
+    public final NBTTagCompound readCompound() throws CommandException {
         expect('{');
         final NBTTagCompound compound = new NBTTagCompound();
         while (input.canRead() && input.peek() != '}'){
@@ -97,59 +86,30 @@ public final class SNBTReader {
         return compound;
     }
 
-    public void scanCompound() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('{');
-        while (input.canRead() && input.peek() != '}'){
-            this.scanKey();
-            input.skipWhitespaces();
-            expectOrEnd(':');
-            this.scanValue();
-            if(this.shouldExit('}')) break;
-        }
-        expectOrEnd('}');
-    }
-
     @Nonnull
-    public NBTBase readListOrArray() throws CommandException {
+    public final NBTBase readListOrArray() throws CommandException {
         expect('[');
         input.skipWhitespaces();
         final int begin = input.getCursor();
         if(!input.canRead()) return input.panic(begin,translation("nickel.command.parameter.nbt.expected_value"));
-        try{
-            switch (input.peek()){
-                case 'B':
-                case 'I':
-                case 'L':{
-                    if(!input.canRead(2)) break;
-                    final int cp = input.read();
-                    if(input.read() != ';') break;
-                    return readArray((char) Character.toLowerCase(cp));
-                }
-            }
-        }finally {
-            input.setCursor(begin);
-        }
-        return readList();
-    }
 
-    public void scanListOrArray() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('[');
-        input.skipWhitespaces();
-        if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
-        switch (input.read()){
+        switch (input.peek()){
             case 'B':
             case 'I':
             case 'L':{
-                if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
-                if(input.read() != ';') input.unread();
-            } default:input.unread();
+                if(!input.canRead(2)) break;
+                final int cp;
+                try{
+                    cp = input.read();
+                    if(input.read() != ';') break;
+                }finally {
+                    input.setCursor(begin);
+                }
+                return readArray((char) Character.toLowerCase(cp));
+            }
         }
-        while (input.canRead() && input.peek() != ']'){
-            input.skipWhitespaces();
-            this.scanValue();
-            if(shouldExit(']')) break;
-        }
-        expectOrEnd(']');
+
+        return readList();
     }
 
     @Nonnull
@@ -205,7 +165,7 @@ public final class SNBTReader {
     }
 
     @Nonnull
-    public String readKey() throws CommandException {
+    public final String readKey() throws CommandException {
         input.skipWhitespaces();
         final int begin = input.getCursor();
         final String key;
@@ -214,13 +174,6 @@ public final class SNBTReader {
         else key = readUnquotedString();
         if(begin == input.getCursor() || key.isEmpty()) return input.panic(begin,translation("nickel.command.parameter.nbt.empty_key"));
         return key;
-    }
-
-    public void scanKey() throws NickelScanEOFSignal {
-        input.skipWhitespaces();
-        if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
-        if(input.peek() == '"' || input.peek() == '\'') input.scanString();
-        else this.scanUnquotedString();
     }
 
     @Nonnull
@@ -249,27 +202,6 @@ public final class SNBTReader {
         }
     }
 
-    public void scanValue() throws CommandException, NickelScanEOFSignal {
-        input.skipWhitespaces();
-        if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
-        switch (input.peek()){
-            case '{': {
-                scanCompound();
-                break;
-            }
-            case '[': {
-                scanListOrArray();
-                break;
-            }
-            case '\'':
-            case '"': {
-                input.scanString();
-                break;
-            }
-            default: this.scanTypedValue();
-        }
-    }
-
     @Nonnull
     public NBTBase readTypedValue(final char defaultNumType) throws CommandException {
         input.skipWhitespaces();
@@ -283,7 +215,7 @@ public final class SNBTReader {
             case "false":
                 return new NBTTagByte((byte) 0);
         }
-        if(input.peek() == '(') return readFunction(begin,raw);
+        if(input.canRead() && input.peek() == '(') return readFunction(begin,raw);
         if(InputReader.isNumber(raw.charAt(0))){
             try{
                 if(raw.startsWith("0x")) return parseInt(begin+2,raw.substring(2),16,false,false,defaultNumType);
@@ -304,13 +236,7 @@ public final class SNBTReader {
         }else return new NBTTagString(raw);
     }
 
-    public void scanTypedValue() throws CommandException, NickelScanEOFSignal {
-        this.scanUnquotedString();
-        if(input.peek() == '(') scanFunction();
-    }
-
     @Nonnull
-    @SuppressWarnings("unchecked")
     public NBTBase readFunction(final int begin,final @Nonnull String name) throws CommandException {
         expect('(');
         final List<NBTBase> args = new ArrayList<>();
@@ -330,32 +256,17 @@ public final class SNBTReader {
                         .map(NBTBase::toString)
                         .collect(Collectors.joining(",")) +')'
                 ).color(TextFormatting.GOLD).underlined(true))
-                .arg(plain(name+new SNBTOperation.OperationType(args.stream()
-                        .map(Object::getClass)
-                        .toArray(Class[]::new))
-                ).color(TextFormatting.AQUA).underlined(true)));
+                .arg(plain(SNBTOperations.signatureOf(name,args)))
+                .color(TextFormatting.AQUA).underlined(true));
         try{
             return func.invoke(argsArr);
         }catch (final NickelRuntimeException e){
-            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",name+'('+args.size()+')')
+            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",SNBTOperations.signatureOf(func))
                     .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getInformation()));
         }catch (final Exception e){
-            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",name+'('+args.size()+')')
+            return input.panic(begin,translation("nickel.command.parameter.nbt.function.run_exception",SNBTOperations.signatureOf(func))
                     .hoverTo(HoverEvent.Action.SHOW_TEXT).content(e.getLocalizedMessage()));
         }
-    }
-
-    public void scanFunction() throws CommandException, NickelScanEOFSignal {
-        input.skipIf('(');
-        boolean beforeAnyArgs = true;
-        while (input.canRead() && input.peek() != ')'){
-            input.skipWhitespaces();
-            if(beforeAnyArgs && input.peek() == ')') break; // func()
-            beforeAnyArgs = false;
-            this.scanValue();
-            if(shouldExit(')')) break;
-        }
-        expectOrEnd(')');
     }
 
     @Nonnull
@@ -503,14 +414,7 @@ public final class SNBTReader {
 
     public void expect(final int cp) throws CommandException {
         if(input.skipIf(cp)) return;
-        input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.unexpect",stringOf(cp),stringOf(input.peek())));
-    }
-
-    public void expectOrEnd(final int cp) throws CommandException, NickelScanEOFSignal{
-        if(input.canRead()){
-            if(input.peek() != cp) input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.unexpect",stringOf(cp),stringOf(input.peek())));
-            else input.skip();
-        }else throw NickelScanEOFSignal.INSTANCE;
+        input.panic(input.getCursor(),translation("nickel.command.parameter.nbt.unexpect",stringOf(cp),input.canRead()?stringOf(input.peek()):"null"));
     }
 
     public static boolean isAllowedUnquoted(final int cp) {

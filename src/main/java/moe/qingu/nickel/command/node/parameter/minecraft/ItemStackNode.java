@@ -95,6 +95,7 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
         if(!resolve){
             if(!allowNBT) input.skipContents();
             else scanStackWithNBT(input);
+            return null;
         }
         final CommandContext context = input.getContext();
         if(!allowNBT){
@@ -107,9 +108,8 @@ public class ItemStackNode extends ParameterNode<ItemStack> {
     public ItemStack readStackWithNBT(@Nonnull final InputReader input, @Nonnull final CommandContext context) throws CommandException {
         input.skipWhitespaces();
         final int begin = input.getCursor();
-        int splitLoc = begin;
-        while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') splitLoc++;
-        final String itemId = input.getSubInput(begin,splitLoc);
+        while (input.canRead() && !Character.isWhitespace(input.peek()) && input.peek() != '{') input.skip();
+        final String itemId = input.getSubInput(begin,input.getCursor());
         final @Nonnull Item item = CommandBase.getItemByText(context.getSender(),itemId);
 
         final NBTTagCompound compound = !input.canRead() || Character.isWhitespace(input.peek())?null:SNBTReader.readSingleNBTFromInput(input);

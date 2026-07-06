@@ -311,6 +311,7 @@ public final class InputReader {
 
     @Nonnull
     public String getSubInput(final int begin,final int end){
+        if(end<begin) throw new IllegalArgumentException("Invalid subinput: "+begin+" "+end);
         final StringBuilder builder = new StringBuilder();
         for(int i=begin;i<end;i++){
             builder.appendCodePoint(codepoints[i]);

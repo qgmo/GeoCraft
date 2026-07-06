@@ -25,56 +25,38 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.utils;
+package moe.qingu.nickel.nbt.path;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-
-import static moe.qingu.nickel.text.Texts.plain;
+import java.util.stream.Collectors;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class CommandBranch {
+public final class NBTPath {
+    private final List<NBTPathNode> nodes = new ArrayList<>();
 
-    protected final LinkedList<TextBuilder<?,?>> documents = new LinkedList<>();
+    public void append(final @Nonnull NBTPathNode node){
+        this.nodes.add(node);
+    }
 
-    protected TextBuilder<?,?> document;
-
-    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.addFirst(Objects.requireNonNull(document.copy()));
+    public int length(){
+        return this.nodes.size();
     }
 
     @Nonnull
-    public List<TextBuilder<?,?>> getDocuments(){
-        return documents;
-    }
-
-    @Nonnull
-    public TextBuilder<?,?> getDocument() {
-        return document;
-    }
-
-    public boolean isEmpty(){
-        return documents.isEmpty();
-    }
-
-    public void finish(@Nonnull final ICommand command){
-        document = plain("/"+ Objects.requireNonNull(command).getName());
-        for(final @Nonnull TextBuilder<?,?> node:documents){
-            document.then(" ").then(node);
-        }
-    }
-
-    public void print(@Nonnull final ICommandSender sender){
-        sender.sendMessage(document.done());
+    public Collection<NBTBase> match(final @Nonnull NBTTagCompound compound){
+        Collection<NBTBase> c = Collections.singleton(compound);
+        for(final NBTPathNode node:nodes) c = c.stream()
+                .flatMap(e -> node.apply(e).stream())
+                .collect(Collectors.toList());
+        return c;
     }
 }

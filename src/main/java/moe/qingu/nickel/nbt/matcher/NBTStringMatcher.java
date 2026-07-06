@@ -25,56 +25,36 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.utils;
+package moe.qingu.nickel.nbt.matcher;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.nbt.NBTTagString;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-
-import static moe.qingu.nickel.text.Texts.plain;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class CommandBranch {
+public final class NBTStringMatcher extends NBTMatcher<NBTTagString> {
 
-    protected final LinkedList<TextBuilder<?,?>> documents = new LinkedList<>();
+    private final String expectation;
 
-    protected TextBuilder<?,?> document;
-
-    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.addFirst(Objects.requireNonNull(document.copy()));
+    public NBTStringMatcher(final @Nonnull String expectation) {
+        this.expectation = expectation;
     }
 
     @Nonnull
-    public List<TextBuilder<?,?>> getDocuments(){
-        return documents;
+    public String getExpected() {
+        return expectation;
     }
 
     @Nonnull
-    public TextBuilder<?,?> getDocument() {
-        return document;
+    @Override
+    public Class<NBTTagString> getMatchType() {
+        return NBTTagString.class;
     }
 
-    public boolean isEmpty(){
-        return documents.isEmpty();
-    }
-
-    public void finish(@Nonnull final ICommand command){
-        document = plain("/"+ Objects.requireNonNull(command).getName());
-        for(final @Nonnull TextBuilder<?,?> node:documents){
-            document.then(" ").then(node);
-        }
-    }
-
-    public void print(@Nonnull final ICommandSender sender){
-        sender.sendMessage(document.done());
+    @Override
+    protected boolean _match(@Nonnull final NBTTagString nbtTagString) {
+        return expectation.equals(nbtTagString.getString());
     }
 }

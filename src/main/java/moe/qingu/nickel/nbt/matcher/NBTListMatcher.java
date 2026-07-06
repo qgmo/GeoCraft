@@ -25,56 +25,40 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.utils;
+package moe.qingu.nickel.nbt.matcher;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagList;
 
 import javax.annotation.Nonnull;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-
-import static moe.qingu.nickel.text.Texts.plain;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class CommandBranch {
+public final class NBTListMatcher extends NBTMatcher<NBTTagList> {
 
-    protected final LinkedList<TextBuilder<?,?>> documents = new LinkedList<>();
+    private final Set<NBTMatcher<?>> matchers = new HashSet<>();
 
-    protected TextBuilder<?,?> document;
-
-    public void appendDocument(@Nonnull final TextBuilder<?,?> document){
-        this.documents.addFirst(Objects.requireNonNull(document.copy()));
+    public void expect(final @Nonnull NBTMatcher<?> matcher){
+        matchers.add(matcher);
     }
 
     @Nonnull
-    public List<TextBuilder<?,?>> getDocuments(){
-        return documents;
+    @Override
+    public Class<NBTTagList> getMatchType() {
+        return NBTTagList.class;
     }
 
-    @Nonnull
-    public TextBuilder<?,?> getDocument() {
-        return document;
-    }
-
-    public boolean isEmpty(){
-        return documents.isEmpty();
-    }
-
-    public void finish(@Nonnull final ICommand command){
-        document = plain("/"+ Objects.requireNonNull(command).getName());
-        for(final @Nonnull TextBuilder<?,?> node:documents){
-            document.then(" ").then(node);
-        }
-    }
-
-    public void print(@Nonnull final ICommandSender sender){
-        sender.sendMessage(document.done());
+    @Override
+    public boolean _match(final @Nonnull NBTTagList list) {
+        if(matchers.isEmpty()) return list.isEmpty();
+        for(final NBTMatcher<?> matcher:matchers)
+            match:{
+                for(final NBTBase nbt: list) if(matcher.match(nbt)) break match;
+                return false;
+            }
+        return true;
     }
 }

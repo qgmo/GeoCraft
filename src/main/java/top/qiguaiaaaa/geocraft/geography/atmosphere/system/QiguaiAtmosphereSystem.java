@@ -56,6 +56,7 @@ import top.qiguaiaaaa.geocraft.util.BaseUtil;
 import top.qiguaiaaaa.geocraft.util.WaterUtil;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -145,10 +146,10 @@ public abstract class QiguaiAtmosphereSystem extends BaseAtmosphereSystem {
     /**
      * 处理下雨等事件
      */
-    protected void weatherTick(Chunk chunk){
-        AtmosphereData data = getChunkLoadedAtmosphereData(chunk);
+    protected void weatherTick(final @Nonnull Chunk chunk){
+        final @Nullable AtmosphereData data = getChunkLoadedAtmosphereData(chunk);
         if(data == null) return;
-        Atmosphere atmosphere = data.getAtmosphere();
+        final Atmosphere atmosphere = data.getAtmosphere();
 
         int x = chunk.x<<4;
         int z = chunk.z<<4;

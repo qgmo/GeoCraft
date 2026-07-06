@@ -31,6 +31,7 @@ import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.nbt.SNBTReader;
 import moe.qingu.nickel.command.utils.Acceptor;
+import moe.qingu.nickel.nbt.SNBTScanner;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -66,9 +67,10 @@ public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
 
     @Override
     public NBTTagCompound parse(@Nonnull final InputReader input, final boolean resolve) throws CommandException {
+        input.skipWhitespaces();
         if(resolve) return SNBTReader.readSingleNBTFromInput(input);
         else {
-            SNBTReader.scanSingleNBTFromInput(input);
+            SNBTScanner.scanSingleNBTFromInput(input);
             return null;
         }
     }
