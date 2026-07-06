@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.command.exception;
 
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 
 import javax.annotation.Nonnull;
@@ -37,4 +38,7 @@ import java.io.Serializable;
  */
 public interface INickelException extends Serializable {
     void feedbackTo(@Nonnull final ICommandSender sender);
+
+    @Nonnull
+    TextBuilder<?,?> getSuggestInfo();
 }

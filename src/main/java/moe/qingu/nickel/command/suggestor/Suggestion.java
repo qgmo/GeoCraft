@@ -25,48 +25,33 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.exception;
+package moe.qingu.nickel.command.suggestor;
 
-import moe.qingu.nickel.text.TextBuilder;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextFormatting;
+import moe.qingu.nickel.command.node.IDocumentaryNode;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
-import static moe.qingu.nickel.text.Texts.*;
 /**
  * @author QGMoe
  */
-public class NickelRuntimeException extends CommandException implements INickelException{
-    protected final ITextComponent information;
+public final class Suggestion {
+    private final IDocumentaryNode from;
+    private final List<String> suggestions;
 
-    public NickelRuntimeException(final @Nonnull ITextComponent information) {
-        super("nickel.command.exception.base.message");
-        this.information = information;
+    public Suggestion(final @Nullable IDocumentaryNode from, @Nonnull List<String> suggestions) {
+        this.from = from;
+        this.suggestions = suggestions;
     }
 
-    public NickelRuntimeException(final @Nonnull TextBuilder<?,?> information) {
-        super("nickel.command.exception.base.message");
-        this.information = information.done();
-    }
-
-    @Nonnull
-    public ITextComponent getInformation() {
-        return information;
-    }
-
-    @Override
-    public void feedbackTo(@Nonnull final ICommandSender sender) {
-        translation("nickel.command.exception.runtime.message",information)
-                .color(TextFormatting.RED)
-                .sendTo(sender);
+    @Nullable
+    public IDocumentaryNode getFrom() {
+        return from;
     }
 
     @Nonnull
-    @Override
-    public TextBuilder<?, ?> getSuggestInfo() {
-        return wrap(information);
+    public List<String> getSuggestions() {
+        return suggestions;
     }
 }

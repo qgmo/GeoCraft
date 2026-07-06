@@ -78,8 +78,7 @@ nickel.command.exception.syntax.usage=用法：%s
 #行末空格 結束
 nickel.command.exception.base.message=命令執行時出現了一些錯誤
 #存在行末空格
-nickel.command.exception.base.node.pre=命令執行到命令節點 
-nickel.command.exception.base.node.sub= 時發生錯誤
+nickel.command.exception.base.node=命令執行到命令節點 %s 時發生錯誤
 nickel.command.exception.base.node.unknown=未知命令節點的解析錯誤：%s
 #行末空格 開始
 nickel.command.exception.base.details=詳細資訊： 

@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.functional;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import net.minecraft.entity.player.EntityPlayer;
 import moe.qingu.nickel.command.context.CommandContext;
@@ -37,10 +38,8 @@ import moe.qingu.nickel.command.node.NoSplitNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * @author QiguaiAAAA
@@ -68,8 +67,8 @@ public class PermitNode extends NoSplitNode {
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
-        if(!checkPermission(context)) return null;
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
+        if(!checkPermission(context)) throw new CommandException("nickel.command.functional.permit.denied");
         return childNode==null?null:context.enter(childNode);
     }
 }

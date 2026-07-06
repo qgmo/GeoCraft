@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.functional;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -56,7 +57,7 @@ public class RedirectCommandNode extends RunCommandNode{
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         final ICommand icommand = context.getServer().getCommandManager().getCommands().get(targetCommandName);
         if(icommand == null) return null;
         return getCommandSuggest(icommand,input,context);

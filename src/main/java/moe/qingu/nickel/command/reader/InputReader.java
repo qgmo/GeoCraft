@@ -172,12 +172,14 @@ public final class InputReader {
             switch (cp){
                 case '\\': return '\\';
                 case 's': return ' ';
+                case 'e': return '\u001B';
                 case 'b': return '\b';
                 case 'f': return '\f';
                 case 'n': return '\n';
                 case 't': return '\t';
                 case 'r': return '\r';
                 case '\'': return '\'';
+                case '/': return '/';
                 case '"': return '"';
                 case '0': return '\0';
                 case 'a': return '\u0007';

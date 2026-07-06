@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.exception;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.HoverEvent;
@@ -49,20 +50,33 @@ public final class CursorInfo {
         this.loc = loc;
     }
 
+    public int getLocation() {
+        return loc;
+    }
+
+    @Nonnull
+    public InputReader getInput() {
+        return reader;
+    }
+
     public void showInfo(final @Nonnull ICommandSender sender){
+        getInfo().hoverTo(HoverEvent.Action.SHOW_TEXT)
+                .content(translation("nickel.command.exception.cursor.loc")
+                        .color(TextFormatting.GOLD)
+                        .arg(plain(String.valueOf(loc)).bold(true).color(TextFormatting.AQUA)))
+                .sendTo(sender);
+    }
+
+    @Nonnull
+    public TextBuilder<?,?> getInfo(){
         final int begin = Math.max(loc-10,0);
         final int end = Math.min(loc+15,reader.getLength());
         final String prefix = (begin>0?"...":"")+reader.getSubInput(begin,loc);
         final String suffix = reader.getSubInput(loc,Math.min(loc+15,end))+(end<reader.getLength()?"...":"");
-        plain(prefix)
+        return plain(prefix)
                 .color(TextFormatting.GRAY)
                 .then(plain(suffix)
                         .color(TextFormatting.RED)
-                        .underlined(true))
-                .hoverTo(HoverEvent.Action.SHOW_TEXT).content(translation("nickel.command.exception.cursor.loc")
-                        .color(TextFormatting.GOLD)
-                        .arg(plain(String.valueOf(loc)).bold(true).color(TextFormatting.AQUA)))
-                .sendTo(sender);
-
+                        .underlined(true));
     }
 }

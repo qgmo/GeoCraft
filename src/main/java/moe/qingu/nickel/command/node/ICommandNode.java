@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
@@ -46,7 +47,7 @@ public interface ICommandNode {
     void execute(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException;
 
     @Nullable
-    List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context);
+    Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException;
 
     @Nonnull
     CommandBranch branch();

@@ -29,6 +29,7 @@ package moe.qingu.nickel.command.node.functional;
 
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -99,7 +100,7 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         //GeoCraft.getLogger().info("[Smart] Provide Suggest For [len={}] : {}",args.size(),String.join(" ",args));
         if(!input.isRemainingEmpty()){ //Smart 的位置不需要建议
             final ICommandNode node = findNextNode(input);
@@ -111,15 +112,22 @@ public class SmartSplitNode extends NoSplitNode implements IDocumentaryNode {
             }
         }
 
-        return (childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
-                .map(context::enter)
+        return new Suggestion(this,(childNode==null?nodeList.stream():Stream.concat(nodeList.stream(),Stream.of(childNode)))
+                .map(node ->{
+                    try{
+                        return context.enter(node);
+                    } catch (CommandException e) {
+                        return null;
+                    }
+                })
                 .filter(Objects::nonNull)
+                .map(Suggestion::getSuggestions)
                 .flatMap(List::stream)
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
                 .distinct() //去重
                 .sorted()
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Nonnull

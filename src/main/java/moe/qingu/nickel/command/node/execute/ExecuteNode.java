@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.execute;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.SyntaxErrorException;
 import moe.qingu.nickel.command.context.ExecuteContext;
@@ -52,7 +53,8 @@ public interface ExecuteNode extends ICommandNode {
 
     @Nullable
     @Override
-    default List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context){
+    default Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws SyntaxErrorException {
+        throwIfShouldNotHaveArguments(input,keepArguments());
         return null;
     }
 

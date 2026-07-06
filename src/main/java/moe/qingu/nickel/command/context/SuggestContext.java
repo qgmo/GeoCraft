@@ -29,6 +29,8 @@ package moe.qingu.nickel.command.context;
 
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
@@ -57,13 +59,13 @@ public final class SuggestContext extends CommandContext{
     }
 
     @Nullable
-    public List<String> enter(final @Nonnull ICommandNode node) {
+    public Suggestion enter(final @Nonnull ICommandNode node) throws CommandException {
         this.nodeContext.context.push(node);
+        final int begin = input.getCursor();
         try(@Nonnull final ContextStack<?> ignored = this.nodeContext){
-            final int begin = input.getCursor();
-            final @Nullable List<String> res = node.suggest(input,this);
+            return node.suggest(input,this);
+        }finally {
             input.setCursor(begin);
-            return res;
         }
     }
 

@@ -77,8 +77,7 @@ nickel.command.exception.syntax.details=Details: %s
 nickel.command.exception.syntax.usage=Usage: %s
 nickel.command.exception.base.message=Some problems occurred when the command was running
 #行末空格开始
-nickel.command.exception.base.node.pre=Error occurred in command node 
-nickel.command.exception.base.node.sub= 
+nickel.command.exception.base.node=Error occurred in command node %s
 nickel.command.exception.base.node.unknown=未知命令节点的解析错误：%s
 nickel.command.exception.base.details=Details: 
 nickel.command.exception.base.branch=Branch: 

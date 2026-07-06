@@ -27,26 +27,34 @@
 
 package moe.qingu.nickel.command.node;
 
+import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
+import moe.qingu.nickel.network.PacketSuggestionReminder;
+import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
 import moe.qingu.nickel.command.utils.CommandBranch;
+import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QiguaiAAAA
@@ -114,12 +122,30 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
                                           @Nonnull final String[] args,
                                           @Nullable final BlockPos targetPos) {
         if(childNode == null) return Collections.emptyList();
-        final InputReader input = new InputReader(String.join(" ",args));
+        final InputReader input = new InputReader(this.name + " " +String.join(" ",args));
+        input.skipContents();
         final SuggestContext context = new SuggestContext(input,this,server,sender);
         context.setTargetPos(targetPos);
-        final List<String> suggests = context.enter(childNode);
-        if(suggests == null) return Collections.emptyList();
-        return suggests;
+        final boolean isPlayer = sender instanceof EntityPlayerMP;
+        TextBuilder<?,?> msg = null;
+        Suggestion suggests = null;
+        try {
+            suggests = context.enter(childNode);
+            if(suggests == null) return Collections.emptyList();
+            return suggests.getSuggestions();
+        }catch (final NickelSyntaxException | NickelRuntimeException | NickelCommandException e){
+            if(isPlayer) msg = e.getSuggestInfo();
+        } catch (final CommandException e) {
+            if(isPlayer) msg = translation(e.getMessage(),e.getErrorObjects()).color(TextFormatting.RED);
+        }finally {
+            if(isPlayer) NickelAPI.CHANNEL.sendTo(
+                    new PacketSuggestionReminder(msg==null?
+                            suggests == null || suggests.getFrom() == null?null:suggests.getFrom().getDocument()
+                                    .color(TextFormatting.AQUA)
+                                    .done():
+                            msg.done()),(EntityPlayerMP) sender);
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -130,7 +156,8 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
     @Override
     public void execute(@Nonnull final MinecraftServer server, @Nonnull final ICommandSender sender, @Nonnull final String[] args) throws CommandException {
         if(childNode == null) return;
-        final InputReader input = new InputReader(String.join(" ",args));
+        final InputReader input = new InputReader(this.name + " " + String.join(" ",args));
+        input.skipContents();
         final ExecuteContext context = new ExecuteContext(input,this,server,sender);
         try (@Nonnull final CommandContext.ContextStack<?> ignored = context.enter(this.branch)){
             context.enter(this.childNode);
@@ -158,7 +185,7 @@ public class CommandNode extends NoSplitNode implements ICommand,ICommandNode {
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException{
         return childNode == null?null:context.enter(childNode);
     }
 }

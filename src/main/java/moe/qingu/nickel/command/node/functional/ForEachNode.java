@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.functional;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.context.SuggestContext;
@@ -82,7 +83,7 @@ public class ForEachNode<T extends Iterable<P>,P> extends NoSplitNode{
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         return childNode==null?null:context.enter(childNode);
     }
 }

@@ -29,6 +29,7 @@ package moe.qingu.nickel.command.node.parameter;
 
 import moe.qingu.nickel.command.reader.InputReader;
 import moe.qingu.nickel.command.node.ISmartNode;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.command.suggestor.Suggestor;
 import moe.qingu.nickel.text.TextBuilder;
@@ -48,6 +49,7 @@ import moe.qingu.nickel.command.utils.CommandBranch;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.List;
 
 import static moe.qingu.nickel.text.Texts.plain;
@@ -99,21 +101,18 @@ public abstract class ParameterNode<P> extends NoSplitNode implements IOptionalN
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         input.skipWhitespaces();
         final int begin = input.getCursor();
-        if(!input.canRead()) if(suggestProvider!=null) return suggestProvider.provide(this,input,begin,context); else return null;
-        try{
-            parse(input,false);
-        }catch (final CommandException e){ //存在严重语法错误，无法判断输入范围，因此难以继续建议
-            return null;
-        }
+        if(!input.canRead()) if(suggestProvider!=null) return new Suggestion(this,suggestProvider.provide(this,input,begin,context));
+        else return new Suggestion(this, Collections.emptyList());
 
+        parse(input,false);
         if(input.canRead()) return this.childNode != null ? context.enter(childNode):null; //存在之后的节点内容
 
         input.setCursor(begin);
-        if(suggestProvider != null) return suggestProvider.provide(this,input,begin,context);
-        else return null;
+        if(suggestProvider != null) return new Suggestion(this,suggestProvider.provide(this,input,begin,context));
+        else return new Suggestion(this,Collections.emptyList());
     }
 
     protected final boolean bindArgument(@Nonnull final InputReader input, @Nonnull final ExecuteContext context) throws CommandException{

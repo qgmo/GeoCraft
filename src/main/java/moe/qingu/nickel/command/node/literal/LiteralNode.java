@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.literal;
 
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
@@ -92,12 +93,12 @@ public class LiteralNode extends PermitNode implements ISmartNode, IDocumentaryN
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         if(!input.isRemainingEmpty()){
             final @Nonnull String token = input.readToken();
-            if(!input.canRead()) return literal.startsWith(token)? Collections.singletonList(literal):null;
+            if(!input.canRead()) return literal.startsWith(token)? new Suggestion(this,Collections.singletonList(literal)):null;
             return childNode == null? null : context.enter(childNode);
-        }else return Collections.singletonList(literal);
+        }else return new Suggestion(this,Collections.singletonList(literal));
     }
 
     @Nonnull

@@ -34,6 +34,7 @@ import net.minecraft.util.text.TextFormatting;
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
 import moe.qingu.nickel.command.utils.CommandBranch;
+import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -87,9 +88,8 @@ public class NickelCommandException extends CommandException implements INickelE
 
     @Override
     public void feedbackTo(@Nonnull final ICommandSender sender){
-        (this.getNodeDocument() == null?translation("nickel.command.exception.base.message"): translation("nickel.command.exception.base.node.pre")
-                .then(this.getNodeDocument())
-                .then(translation("nickel.command.exception.base.node.sub"))
+        (this.getNodeDocument() == null?translation("nickel.command.exception.base.message"): translation("nickel.command.exception.base.node")
+                .arg(this.getNodeDocument())
         ).color(TextFormatting.RED).sendTo(sender);
         if(this.getDetails()!=null) translation("nickel.command.exception.base.details")
                 .color(TextFormatting.RED)
@@ -99,5 +99,18 @@ public class NickelCommandException extends CommandException implements INickelE
                 .color(TextFormatting.AQUA)
                 .then(this.getSourceBranch().getDocument())
                 .sendTo(sender);
+    }
+
+    @Nonnull
+    @Override
+    public TextBuilder<?, ?> getSuggestInfo() {
+        final TextBuilder<?,?> msg = (this.getNodeDocument() == null?translation("nickel.command.exception.base.message"): translation("nickel.command.exception.base.node")
+                .arg(this.getNodeDocument()))
+                .color(TextFormatting.RED);
+        if(this.getDetails() != null) msg.then(": ")
+                .then(this.getDetails());
+        return msg.hoverTo(HoverEvent.Action.SHOW_TEXT)
+                .content(translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
+                                .color(TextFormatting.AQUA));
     }
 }

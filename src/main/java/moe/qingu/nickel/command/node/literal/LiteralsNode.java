@@ -29,6 +29,7 @@ package moe.qingu.nickel.command.node.literal;
 
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import moe.qingu.nickel.command.utils.Claimer;
 import moe.qingu.nickel.text.TextBuilder;
 import net.minecraft.command.CommandException;
@@ -92,7 +93,6 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
             else try(final CommandContext.ContextStack<?> ignored = context.enter(literal2Branch.get(node))){
                 context.enter(node);
             }
-            context.enter(node);
         }else if(isOptional()) throw new NickelCommandException(curBranch)
                 .withSource(this)
                 .withAppendix(translation("nickel.command.literals.exception.default"));
@@ -101,14 +101,14 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         if(!checkPermission(context)) return null;
         if(!input.isRemainingEmpty()){
             final String token = input.readToken();
             if(!input.canRead()){
-                return literal2Node.keySet().stream()
+                return new Suggestion(this,literal2Node.keySet().stream()
                         .filter(literal -> literal.startsWith(token))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             }else {
                 ICommandNode nextNode = literal2Node.get(token);
                 if(nextNode == null && isOptional()) nextNode = childNode;
@@ -120,7 +120,7 @@ public class LiteralsNode extends PermitNode implements IOptionalNode, ISmartNod
                 }
             }
         }else {
-            return new ArrayList<>(literal2Node.keySet());
+            return new Suggestion(this, new ArrayList<>(literal2Node.keySet()));
         }
     }
 

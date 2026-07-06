@@ -27,9 +27,13 @@
 
 package moe.qingu.nickel;
 
+import moe.qingu.nickel.network.PacketSuggestionReminder;
 import net.minecraftforge.fml.common.DummyModContainer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ModMetadata;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -40,6 +44,11 @@ public final class NickelAPI extends DummyModContainer {
     public final static String MODID = "nickelapi";
     public final static String NAME = "NickelAPI";
     public final static Logger LOGGER = LogManager.getLogger(NAME);
+    public final static SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(MODID+":network");
+
+    static {
+        CHANNEL.registerMessage(PacketSuggestionReminder.Handler.class, PacketSuggestionReminder.class,0, Side.CLIENT);
+    }
 
     public NickelAPI(){
         super(new ModMetadata());

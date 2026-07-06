@@ -29,6 +29,7 @@ package moe.qingu.nickel.command.node.functional;
 
 import com.google.common.base.Throwables;
 import moe.qingu.nickel.command.reader.InputReader;
+import moe.qingu.nickel.command.suggestor.Suggestion;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandNotFoundException;
 import net.minecraft.command.EntitySelector;
@@ -80,14 +81,14 @@ public class RunCommandNode implements ICommandNode{
 
     @Nullable
     @Override
-    public List<String> suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) {
+    public Suggestion suggest(@Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         final String commandName = input.readToken();
         if(commandName.isEmpty()){
-            return new ArrayList<>(context.getServer().getCommandManager().getCommands().keySet());
+            return new Suggestion(null,new ArrayList<>(context.getServer().getCommandManager().getCommands().keySet()));
         }else if(input.isRemainingEmpty()){
-            return context.getServer().getCommandManager().getCommands().keySet().stream()
+            return new Suggestion(null,context.getServer().getCommandManager().getCommands().keySet().stream()
                     .filter(s -> s.startsWith(commandName))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toList()));
         }else{
             final ICommand icommand = context.getServer().getCommandManager().getCommands().get(commandName);
             if(icommand == null) return null;
@@ -147,11 +148,11 @@ public class RunCommandNode implements ICommandNode{
     }
 
     @Nullable
-    protected static List<String> getCommandSuggest(@Nonnull final ICommand command,@Nonnull final InputReader input, @Nonnull final SuggestContext context){
+    protected static Suggestion getCommandSuggest(@Nonnull final ICommand command, @Nonnull final InputReader input, @Nonnull final SuggestContext context) throws CommandException {
         if(command instanceof ICommandNode){
             return ((ICommandNode)command).suggest(input,context);
         }else {
-            return command.getTabCompletions(context.getServer(),context.getSender(),input.getInput().split(" "),context.getTargetPos());
+            return new Suggestion(null,command.getTabCompletions(context.getServer(),context.getSender(),input.getInput().split(" "),context.getTargetPos()));
         }
     }
 

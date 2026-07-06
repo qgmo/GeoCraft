@@ -35,10 +35,12 @@ import net.minecraft.util.text.TextFormatting;
 import moe.qingu.nickel.command.node.ICommandNode;
 import moe.qingu.nickel.command.node.IDocumentaryNode;
 import moe.qingu.nickel.command.utils.CommandBranch;
+import net.minecraft.util.text.event.HoverEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static moe.qingu.nickel.text.Texts.plain;
 import static moe.qingu.nickel.text.Texts.translation;
 
 /**
@@ -99,5 +101,19 @@ public class NickelSyntaxException extends SyntaxErrorException implements INick
         translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
                 .color(TextFormatting.AQUA)
                 .sendTo(sender);
+    }
+
+    @Nonnull
+    @Override
+    public TextBuilder<?, ?> getSuggestInfo() {
+        final TextBuilder<?,?> msg = translation("nickel.command.exception.syntax.node",this.getNodeDocument())
+                .color(TextFormatting.RED);
+        if(this.getDetails() != null) msg.then(": ")
+                .then(this.getDetails());
+        return msg.hoverTo(HoverEvent.Action.SHOW_TEXT)
+                .content((info == null ? plain(""): info.getInfo()
+                        .then(" <-- \n"))
+                        .then(translation("nickel.command.exception.syntax.usage",this.getSourceBranch().getDocument())
+                                .color(TextFormatting.AQUA)));
     }
 }
