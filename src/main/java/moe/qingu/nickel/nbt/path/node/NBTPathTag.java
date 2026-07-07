@@ -28,6 +28,7 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -37,10 +38,12 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QGMoe
  */
-public final class NBTPathTag extends NBTPathNode {
+public final class NBTPathTag extends NBTPathModifiableNode {
 
     private final String key;
     private final NBTCompoundMatcher valueFilter;
@@ -50,8 +53,9 @@ public final class NBTPathTag extends NBTPathNode {
         this.valueFilter = valueFilter;
     }
 
+    @Nonnull
     @Override
-    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagCompound){
             final NBTTagCompound compound = (NBTTagCompound) nbtBase;
             if(!compound.hasKey(key)) return Collections.emptyList();
@@ -60,9 +64,29 @@ public final class NBTPathTag extends NBTPathNode {
         }else return Collections.emptyList();
     }
 
+    @Override
+    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+        if(base instanceof NBTTagCompound){
+            final NBTTagCompound compound = (NBTTagCompound) base;
+            if(!compound.hasKey(key)){
+                compound.setTag(key,replacement);
+                return;
+            }
+            final @Nonnull NBTBase tag = compound.getTag(key);
+            if(valueFilter != null && !valueFilter.match(tag)) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISVALUE));
+            compound.setTag(key,replacement);
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISMATCH));
+    }
+
     @Nonnull
     @Override
     public String getLocalName() {
         return valueFilter == null?I18nKeys.NBTPath.NODE_TAG:I18nKeys.NBTPath.NODE_TAG_COMPOUND;
+    }
+
+    @Override
+    @Nonnull
+    public String toString() {
+        return valueFilter == null?key:key+valueFilter;
     }
 }

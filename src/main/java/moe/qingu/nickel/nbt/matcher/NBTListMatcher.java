@@ -61,4 +61,28 @@ public final class NBTListMatcher extends NBTMatcher<NBTTagList> {
             }
         return true;
     }
+
+    @Override
+    public int hashCode() {
+        return matchers.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTListMatcher){
+            return this.matchers.equals(((NBTListMatcher) obj).matchers);
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for(final NBTMatcher<?> matcher:matchers){
+            if(first) first = false;
+            else builder.append(',');
+            builder.append(matcher);
+        }
+        return builder.append(']').toString();
+    }
 }

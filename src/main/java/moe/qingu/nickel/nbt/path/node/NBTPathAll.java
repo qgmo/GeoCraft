@@ -49,7 +49,14 @@ public final class NBTPathAll extends NBTPathNode {
     }
 
     @Override
-    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
+    @Nonnull
+    public String toString() {
+        return "[]";
+    }
+
+    @Nonnull
+    @Override
+    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             return Lists.newArrayList((NBTTagList) nbtBase);
         }else if(nbtBase instanceof NBTTagByteArray){

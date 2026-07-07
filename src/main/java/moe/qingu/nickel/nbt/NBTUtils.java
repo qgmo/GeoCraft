@@ -27,19 +27,47 @@
 
 package moe.qingu.nickel.nbt;
 
+import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import net.minecraft.nbt.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.stream.LongStream;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QGMoe
  */
 public final class NBTUtils {
+    private static final Field longArrField;
     private NBTUtils(){}
+
+    static {
+        longArrField = getLongArrField();
+        longArrField.setAccessible(true);
+    }
+
+    private static @Nonnull Field getLongArrField(){
+        final Field[] fields = NBTTagLongArray.class.getDeclaredFields();
+        for(final Field field:fields)
+            if(field.getType() == long[].class)
+                return field;
+        throw new RuntimeException("Couldn't get long[] field in NBTTagLongArray!");
+    }
+
+    @Nonnull
+    public static long[] getLongArray(final @Nonnull NBTTagLongArray longs) throws NickelRuntimeException {
+        try {
+            return (long[]) longArrField.get(longs);
+        } catch (final @Nonnull IllegalAccessException e) {
+            throw new NickelRuntimeException(translation(I18nKeys.NBT.R_CT_LONG_ARR,longs));
+        }
+    }
 
     @Nonnull
     public static LongStream streamOf(final @Nonnull NBTTagLongArray longs){
@@ -50,7 +78,7 @@ public final class NBTUtils {
     }
 
     @Nullable
-    public static String escape(final @Nonnull String str){
+    public static String escapeIfQuoted(final @Nonnull String str){
 
         for(int i=0;i<str.length();){
             final int cp = str.codePointAt(i);
@@ -58,6 +86,16 @@ public final class NBTUtils {
             i += Character.charCount(cp);
         }
         return null;
+    }
+
+    @Nonnull
+    public static String escape(final @Nonnull String str){
+        for(int i=0;i<str.length();){
+            final int cp = str.codePointAt(i);
+            if(!SNBTReader.isAllowedUnquoted(cp)) return String.format("\"%s\"", StringNode.escape(str));
+            i += Character.charCount(cp);
+        }
+        return str;
     }
 
     public static int sizeOf(final @Nonnull NBTTagCompound compound){

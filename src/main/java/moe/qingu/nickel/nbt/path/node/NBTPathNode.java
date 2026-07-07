@@ -31,12 +31,19 @@ import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
-import java.util.function.Function;
 
 /**
  * @author QGMoe
  */
-public abstract class NBTPathNode implements Function<NBTBase, Collection<NBTBase>> {
+public abstract class NBTPathNode{
+
+    @Nonnull
+    public abstract Collection<NBTBase> filter(final @Nonnull NBTBase base);
 
     public abstract @Nonnull String getLocalName();
+
+    @Override
+    public abstract @Nonnull String toString();
+
+
 }

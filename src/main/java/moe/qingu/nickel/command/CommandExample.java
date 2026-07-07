@@ -30,8 +30,8 @@ package moe.qingu.nickel.command;
 import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.builder.CommandBuilder;
 import moe.qingu.nickel.command.node.parameter.minecraft.ItemStackNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.NBTCompoundNode;
-import moe.qingu.nickel.command.node.parameter.minecraft.NBTPathNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.nbt.NBTCompoundNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.nbt.NBTPathNode;
 import moe.qingu.nickel.nbt.path.NBTPath;
 import moe.qingu.nickel.network.PackageNBTInfo;
 import net.minecraft.command.ICommand;
@@ -46,8 +46,8 @@ import net.minecraftforge.server.permission.DefaultPermissionLevel;
 
 import javax.annotation.Nonnull;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
@@ -86,7 +86,7 @@ public final class CommandExample {
                                         .then(execute(ctx->{
                                             final @Nonnull NBTPath path = ctx.get("path", NBTPathNode.class);
                                             final @Nonnull Entity entity = ctx.getEntity("target");
-                                            final Collection<NBTBase> nbt = path.match(entity.writeToNBT(new NBTTagCompound()));
+                                            final List<NBTBase> nbt = path.match(entity.writeToNBT(new NBTTagCompound()));
                                             final ICommandSender sender = ctx.getSender();
                                             plain("Target ")
                                                     .color(TextFormatting.AQUA)
@@ -98,8 +98,7 @@ public final class CommandExample {
                                                             .color(TextFormatting.AQUA))
                                                     .sendTo(sender);
                                             if(sender instanceof EntityPlayerMP)
-                                                for(final NBTBase dat : nbt)
-                                                    NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(dat),(EntityPlayerMP) sender);
+                                                NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(nbt),(EntityPlayerMP) sender);
                                         })))))
                 .build();
     }

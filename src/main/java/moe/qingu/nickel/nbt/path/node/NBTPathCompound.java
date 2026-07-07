@@ -49,8 +49,9 @@ public final class NBTPathCompound extends NBTPathNode{
         return matcher;
     }
 
+    @Nonnull
     @Override
-    public Collection<NBTBase> apply(final NBTBase nbtBase) {
+    public Collection<NBTBase> filter(@Nonnull final NBTBase nbtBase) {
         if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
         else return Collections.emptyList();
     }
@@ -59,5 +60,11 @@ public final class NBTPathCompound extends NBTPathNode{
     @Override
     public String getLocalName() {
         return I18nKeys.NBTPath.NODE_COMPOUND;
+    }
+
+    @Override
+    @Nonnull
+    public String toString() {
+        return matcher.toString();
     }
 }

@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.nbt.matcher;
 
+import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -81,5 +82,29 @@ public final class NBTCompoundMatcher extends NBTMatcher<NBTTagCompound> {
             if(!entry.getValue().match(v)) return false;
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return map.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTCompoundMatcher){
+            return this.map.equals(((NBTCompoundMatcher)obj).map);
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder("{");
+        boolean first = true;
+        for(final Map.Entry<String,NBTMatcher<?>> entry:map.entrySet()){
+            if(first) first = false;
+            else builder.append(',');
+            builder.append(NBTUtils.escape(entry.getKey())).append(':').append(entry.getValue());
+        }
+        return builder.append('}').toString();
     }
 }

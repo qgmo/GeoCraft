@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
 /**
  * @author QGMoe
  */
-public final class NBTFloatMatcher extends NBTMatcher<NBTTagFloat> {
+public strictfp final class NBTFloatMatcher extends NBTMatcher<NBTTagFloat> {
 
     private final float num;
 
@@ -44,6 +44,23 @@ public final class NBTFloatMatcher extends NBTMatcher<NBTTagFloat> {
 
     public float getExpectedFloat() {
         return num;
+    }
+
+    @Override
+    public int hashCode() {
+        return Float.hashCode(num);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTFloatMatcher){
+            return ((NBTFloatMatcher) obj).num == this.num;
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        return num+"f";
     }
 
     @Nonnull

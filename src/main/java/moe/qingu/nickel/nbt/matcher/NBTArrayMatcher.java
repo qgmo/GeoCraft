@@ -53,6 +53,35 @@ public final class NBTArrayMatcher extends NBTMatcher<NBTBase> {
         expectations.add(num);
     }
 
+    @Override
+    public int hashCode() {
+        return expectations.hashCode() ^ arrayType.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTArrayMatcher){
+            final NBTArrayMatcher matcher = (NBTArrayMatcher) obj;
+            return this.arrayType == matcher.arrayType && this.expectations.equals(matcher.expectations);
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder("[");
+        if(arrayType == NBTTagByteArray.class) builder.append('B');
+        else if(arrayType == NBTTagIntArray.class) builder.append('I');
+        else builder.append('L');
+        builder.append(';');
+        boolean first = true;
+        for(final long l:expectations){
+            if(first) first = false;
+            else builder.append(',');
+            builder.append(l);
+        }
+        return builder.append(']').toString();
+    }
+
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
@@ -71,6 +100,7 @@ public final class NBTArrayMatcher extends NBTMatcher<NBTBase> {
             NBTUtils.streamOf((NBTTagLongArray) nbt)
                     .forEach(nbts::add);
         }
+        if(nbts.size() < expectations.size()) return false;
         final LongIterator iterator = expectations.iterator();
         while (iterator.hasNext()) if(!nbts.contains(iterator.nextLong())) return false;
         return true;

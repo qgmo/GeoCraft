@@ -27,7 +27,6 @@
 
 package moe.qingu.nickel.nbt.matcher;
 
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagShort;
 
 import javax.annotation.Nonnull;
@@ -44,5 +43,10 @@ public final class NBTShortMatcher extends NBTPrimitiveMatcher<NBTTagShort> {
     @Override
     public Class<NBTTagShort> getMatchType() {
         return NBTTagShort.class;
+    }
+
+    @Override
+    public char getSuffix() {
+        return 's';
     }
 }

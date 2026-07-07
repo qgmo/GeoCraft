@@ -28,17 +28,21 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.*;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QGMoe
  */
-public final class NBTPathIndex extends NBTPathNode{
+public final class NBTPathIndex extends NBTPathModifiableNode{
     private final int index;
 
     public NBTPathIndex(final int index) {
@@ -49,8 +53,9 @@ public final class NBTPathIndex extends NBTPathNode{
         return index;
     }
 
+    @Nonnull
     @Override
-    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) nbtBase;
             final int i = index<0?list.tagCount()+index:index;
@@ -74,9 +79,45 @@ public final class NBTPathIndex extends NBTPathNode{
         }else return Collections.emptyList();
     }
 
+    @Override
+    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            final int i = index<0?list.tagCount()+index:index;
+            if(i<0 || i >= list.tagCount()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_LIST_OUT,i));
+            list.set(i,replacement);
+        }else if(base instanceof NBTTagByteArray){
+            final byte[] array = ((NBTTagByteArray) base).getByteArray();
+            final int i = index<0?array.length+index:index;
+            if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
+            if(replacement.getId() != Constants.NBT.TAG_BYTE) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_BYTE));
+            array[i] = ((NBTTagByte)replacement).getByte();
+        }else if(base instanceof NBTTagIntArray){
+            final int[] array = ((NBTTagIntArray) base).getIntArray();
+            final int i = index<0?array.length+index:index;
+            if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
+            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_INT)
+                throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_INT));
+            array[i] = ((NBTPrimitive)replacement).getInt();
+        }else if(base instanceof NBTTagLongArray){
+            final long[] array = NBTUtils.getLongArray((NBTTagLongArray) base);
+            final int i = index<0?array.length+index:index;
+            if(i<0 || i >= array.length) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_ARR_OUT,i));
+            if(replacement.getId() != 0 && replacement.getId() <= Constants.NBT.TAG_LONG)
+                throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_LONG));
+            array[i] = ((NBTPrimitive)replacement).getLong();
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_MISMATCH));
+    }
+
     @Nonnull
     @Override
     public String getLocalName() {
         return I18nKeys.NBTPath.NODE_INDEX;
+    }
+
+    @Override
+    @Nonnull
+    public String toString() {
+        return "["+index+"]";
     }
 }

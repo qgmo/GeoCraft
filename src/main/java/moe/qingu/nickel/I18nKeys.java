@@ -108,6 +108,8 @@ public final class I18nKeys {
         public static final String OPT_UNDEFINED = "nickel.command.nbt.operation.undefined";
         public static final String OPT_FAILED = "nickel.command.nbt.operation.exception";
 
+        public static final String R_CT_LONG_ARR = "nickel.command.nbt.runtime.critical.long_arr";
+
 
         public static @Nonnull TextBuilder<?,?> unexpected(final int need, final int fact){
             return translation(UNEXPECTED,stringOf(need),stringOf(fact));
@@ -163,6 +165,19 @@ public final class I18nKeys {
         public static final String LIST_OR_ARR_NO_CLOSE = "nickel.command.nbt.path.syntax.array_not_close";
         public static final String EXPECT_TAG_NAME = "nickel.command.nbt.path.syntax.expect_name";
         public static final String EMPTY_TAG_NAME = "nickel.command.nbt.path.syntax.empty_name";
+
+        public static final String SET_INDEX_MISMATCH = "nickel.command.nbt.path.set.index.mismatch";
+        public static final String SET_INDEX_LIST_OUT = "nickel.command.nbt.path.set.index.out_of_index.list";
+        public static final String SET_INDEX_ARR_OUT = "nickel.command.nbt.path.set.index.out_of_index.arr";
+        public static final String SET_INDEX_NO_BYTE = "nickel.command.nbt.path.set.index.not_byte";
+        public static final String SET_INDEX_NO_INT = "nickel.command.nbt.path.set.index.not_int";
+        public static final String SET_INDEX_NO_LONG = "nickel.command.nbt.path.set.index.not_long";
+        public static final String SET_TAG_MISMATCH = "nickel.command.nbt.path.set.tag.mismatch";
+        public static final String SET_TAG_MISVALUE = "nickel.command.nbt.path.set.tag.misvalue";
+        public static final String SET_EMPTY = "nickel.command.nbt.path.set.empty";
+        public static final String SET_UNSUPPORTED = "nickel.command.nbt.path.set.unsupported";
+        public static final String SET_NOT_FOUND = "nickel.command.nbt.path.set.not_found";
+        public static final String SET_FOUND_MULTI = "nickel.command.nbt.path.set.multi_found";
 
         public static @Nonnull TextBuilder<?,?> compoundMisplace(final int fact){
             return translation(COMPOUND_MISPLACE,translation(NODE_COMPOUND),fact);

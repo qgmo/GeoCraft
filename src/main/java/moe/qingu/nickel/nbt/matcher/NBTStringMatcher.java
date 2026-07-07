@@ -27,6 +27,7 @@
 
 package moe.qingu.nickel.nbt.matcher;
 
+import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.nbt.NBTTagString;
 
 import javax.annotation.Nonnull;
@@ -45,6 +46,23 @@ public final class NBTStringMatcher extends NBTMatcher<NBTTagString> {
     @Nonnull
     public String getExpected() {
         return expectation;
+    }
+
+    @Override
+    public int hashCode() {
+        return expectation.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTStringMatcher){
+            return this.expectation.equals(((NBTStringMatcher) obj).expectation);
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        return NBTUtils.escape(expectation);
     }
 
     @Nonnull

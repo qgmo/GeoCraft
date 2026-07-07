@@ -33,6 +33,7 @@ import moe.qingu.nickel.nbt.SNBTFormatter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -40,6 +41,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
 import static moe.qingu.nickel.text.Texts.plain;
@@ -48,12 +50,17 @@ import static moe.qingu.nickel.text.Texts.plain;
  * @author QGMoe
  */
 public final class PackageNBTInfo implements IMessage {
-    private NBTBase nbt;
+    private NBTBase[] nbt;
 
     public PackageNBTInfo(){}
 
-    public PackageNBTInfo(final @Nonnull NBTBase nbt){
+    public PackageNBTInfo(final @Nonnull NBTBase... nbt){
         this.nbt = nbt;
+    }
+
+    public PackageNBTInfo(final @Nonnull List<NBTBase> tags){
+        this.nbt = new NBTBase[tags.size()];
+        for(int i=0;i<this.nbt.length;i++) this.nbt[i] = tags.get(i);
     }
 
     @Override
@@ -61,7 +68,12 @@ public final class PackageNBTInfo implements IMessage {
         if(buf.readBoolean()){
             final NBTTagCompound compound = ByteBufUtils.readTag(buf);
             if(compound == null) return;
-            nbt = compound.getTag("d");
+            final NBTBase tag = compound.getTag("d");
+            if(tag instanceof NBTTagList){
+                final NBTTagList list = (NBTTagList) tag;
+                nbt = new NBTBase[list.tagCount()];
+                for(int i=0;i<nbt.length;i++) nbt[i] = list.get(i);
+            }
         }
     }
 
@@ -70,7 +82,9 @@ public final class PackageNBTInfo implements IMessage {
         buf.writeBoolean(nbt != null);
         if(nbt == null) return;
         final NBTTagCompound compound = new NBTTagCompound();
-        compound.setTag("d",nbt);
+        final NBTTagList list = new NBTTagList();
+        for(final NBTBase tag:nbt) list.appendTag(tag);
+        compound.setTag("d",list);
         ByteBufUtils.writeTag(buf,compound);
     }
 
@@ -80,11 +94,13 @@ public final class PackageNBTInfo implements IMessage {
         public IMessage onMessage(final @Nonnull PackageNBTInfo info,final @Nonnull MessageContext ctx) {
             if(info.nbt != null){
                 ForkJoinPool.commonPool().execute(()->{
-                    final ITextComponent component;
-                    if(NBTUtils.sizeOf(info.nbt) > 200) component = plain(info.nbt.toString()).done();
-                    else component = SNBTFormatter.format(info.nbt).done();
-                    Minecraft.getMinecraft().addScheduledTask(()-> Minecraft.getMinecraft().ingameGUI.getChatGUI()
-                            .printChatMessage(component));
+                    final ITextComponent[] components = new ITextComponent[info.nbt.length];
+                    for(int i=0;i<info.nbt.length;i++)
+                        if(NBTUtils.sizeOf(info.nbt[i]) > 200) components[i] = plain(info.nbt[i].toString()).done();
+                        else components[i] = SNBTFormatter.format(info.nbt[i]).done();
+                    Minecraft.getMinecraft().addScheduledTask(()->{
+                        for(final ITextComponent component:components) Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(component);
+                    });
                 });
             }
             return null;

@@ -48,7 +48,7 @@ public class SNBTScanner extends SNBTReader{
 
     public static void scanSingleNBTFromInput(final @Nonnull InputReader input) throws CommandException, NickelScanEOFSignal {
         scanNBTFromInput(input);
-        if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),"nickel.command.parameter.nbt.escape");
+        if(input.canRead() && !Character.isWhitespace(input.peek())) input.panic(input.getCursor(),I18nKeys.Syntax.NO_SPLIT);
     }
 
     public final void scanCompound() throws CommandException, NickelScanEOFSignal {

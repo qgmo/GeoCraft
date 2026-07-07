@@ -49,7 +49,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public class SNBTReader {
+public strictfp class SNBTReader {
 
     protected final InputReader input;
 

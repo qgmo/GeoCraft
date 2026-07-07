@@ -53,8 +53,9 @@ public final class NBTPathListCompound extends NBTPathNode{
         return filter;
     }
 
+    @Nonnull
     @Override
-    public Collection<NBTBase> apply(final @Nonnull NBTBase nbtBase) {
+    public Collection<NBTBase> filter(final @Nonnull NBTBase nbtBase) {
         if(nbtBase instanceof NBTTagList){
             final NBTTagList list = (NBTTagList) nbtBase;
             return StreamSupport.stream(list.spliterator(),false)
@@ -67,5 +68,11 @@ public final class NBTPathListCompound extends NBTPathNode{
     @Override
     public String getLocalName() {
         return I18nKeys.NBTPath.NODE_LIST_COMPOUND;
+    }
+
+    @Override
+    @Nonnull
+    public String toString() {
+        return "["+filter+"]";
     }
 }

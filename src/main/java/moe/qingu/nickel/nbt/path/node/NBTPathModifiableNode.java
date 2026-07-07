@@ -25,47 +25,17 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.minecraft;
+package moe.qingu.nickel.nbt.path.node;
 
-import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
-import moe.qingu.nickel.command.node.parameter.ParameterNode;
-import moe.qingu.nickel.reader.InputReader;
-import moe.qingu.nickel.command.utils.Acceptor;
-import moe.qingu.nickel.nbt.path.NBTPathReader;
-import moe.qingu.nickel.nbt.path.NBTPathScanner;
-import moe.qingu.nickel.nbt.path.NBTPath;
-import net.minecraft.command.CommandException;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public class NBTPathNode extends ParameterNode<NBTPath> {
-    public NBTPathNode(@Nonnull final String name) {
-        super(name);
-    }
+public abstract class NBTPathModifiableNode extends NBTPathNode{
 
-    @Override
-    public boolean accepts(@Nonnull final InputReader input) throws CommandException {
-        return Acceptor.REQUIRE_ONE_TOKEN.check(this,input);
-    }
-
-    @Override
-    public NBTPath parse(@Nonnull final InputReader input) throws CommandException {
-        input.skipWhitespaces();
-        return NBTPathReader.readPathFromInput(input);
-    }
-
-    @Override
-    public void scan(@Nonnull final InputReader input) throws CommandException, NickelScanEOFSignal {
-        input.skipWhitespaces();
-        NBTPathScanner.scanPathFromInput(input);
-    }
-
-    @Nonnull
-    @Override
-    public Class<NBTPath> getTypeClass() {
-        return NBTPath.class;
-    }
+    public abstract void set(final @Nonnull NBTBase base,final @Nonnull NBTBase replacement) throws NickelRuntimeException;
 }

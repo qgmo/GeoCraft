@@ -45,8 +45,13 @@ public final class SNBTFormatter {
     public static final TextFormatting COLOR_SUFFIX = TextFormatting.RED;
 
     @Nonnull
+    public static TextBuilder<?,?> formatKey(final String str){
+        return format(str,COLOR_KEY);
+    }
+
+    @Nonnull
     public static TextBuilder<?,?> format(final String str,final TextFormatting contentColor){
-        final String escape = NBTUtils.escape(str);
+        final String escape = NBTUtils.escapeIfQuoted(str);
         if(escape == null) return plain(str).color(contentColor);
         else return plain("\"").color(TextFormatting.WHITE)
                 .then(plain(escape).color(contentColor))

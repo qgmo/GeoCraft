@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.command.node.parameter.minecraft;
+package moe.qingu.nickel.command.node.parameter.minecraft.nbt;
 
 import moe.qingu.nickel.command.exception.NickelScanEOFSignal;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
@@ -53,6 +53,12 @@ public class NBTCompoundNode extends ParameterNode<NBTTagCompound> {
     @Override
     public Class<NBTTagCompound> getTypeClass() {
         return NBTTagCompound.class;
+    }
+
+    @Nonnull
+    @Override
+    public String getTypeTranslationKey() {
+        return "nickel.command.parameter.minecraft.nbt.compound";
     }
 
     @Override

@@ -27,16 +27,21 @@
 
 package moe.qingu.nickel.nbt.path;
 
+import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.path.node.NBTPathModifiableNode;
 import moe.qingu.nickel.nbt.path.node.NBTPathNode;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QGMoe
@@ -53,10 +58,48 @@ public final class NBTPath {
     }
 
     @Nonnull
-    public Collection<NBTBase> match(final @Nonnull NBTTagCompound compound){
+    public NBTPath subPath(final int subLen){
+        if(subLen > length()) throw new IllegalArgumentException();
+        final NBTPath path = new NBTPath();
+        for(int i=0;i<subLen;i++){
+            path.append(nodes.get(i));
+        }
+        return path;
+    }
+
+    @Nonnull
+    public List<NBTBase> match(final @Nonnull NBTTagCompound compound){
         Stream<NBTBase> c = Stream.of(compound);
         for(final NBTPathNode node:nodes) c = c
-                .flatMap(e -> node.apply(e).stream());
+                .flatMap(e -> node.filter(e).stream());
         return c.collect(Collectors.toList());
+    }
+
+    public void set(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException {
+        if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_EMPTY));
+        Stream<NBTBase> c = Stream.of(compound);
+        for(int i=0;i<length()-1;i++){
+            final int cur = i;
+            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
+        }
+        final List<NBTBase> nbt = c.collect(Collectors.toList());
+        if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_NOT_FOUND));
+        else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_FOUND_MULTI));
+        final NBTPathNode last = nodes.get(nodes.size()-1);
+        if(last instanceof NBTPathModifiableNode){
+            for(final NBTBase n:nbt) ((NBTPathModifiableNode) last).set(n,tag);
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder builder = new StringBuilder();
+        boolean first = true;
+        for(final NBTPathNode node:nodes){
+            if(first) first = false;
+            else builder.append('.');
+            builder.append(node.toString());
+        }
+        return builder.toString();
     }
 }

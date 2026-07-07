@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
  * @author QGMoe
  */
 public abstract class NBTPrimitiveMatcher<T extends NBTPrimitive> extends NBTMatcher<T>{
-    private final long num;
+    protected final long num;
 
     protected NBTPrimitiveMatcher(final long num) {
         this.num = num;
@@ -46,7 +46,27 @@ public abstract class NBTPrimitiveMatcher<T extends NBTPrimitive> extends NBTMat
     }
 
     @Override
+    public int hashCode() {
+        return Long.hashCode(num) ^ this.getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if(obj instanceof NBTPrimitiveMatcher<?>){
+            final NBTPrimitiveMatcher<?> matcher = (NBTPrimitiveMatcher<?>) obj;
+            return this.getSuffix() == matcher.getSuffix() && this.num == matcher.num;
+        }else return false;
+    }
+
+    @Override
+    public String toString() {
+        return getSuffix()==0?String.valueOf(num):String.valueOf(num)+getSuffix();
+    }
+
+    @Override
     protected final boolean _match(@Nonnull final T t) {
         return t.getLong() == num;
     }
+
+    public abstract char getSuffix();
 }

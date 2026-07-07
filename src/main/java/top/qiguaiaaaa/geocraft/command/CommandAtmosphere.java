@@ -27,13 +27,16 @@
 
 package top.qiguaiaaaa.geocraft.command;
 
+import moe.qingu.nickel.NickelAPI;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.path.NBTPath;
+import moe.qingu.nickel.network.PackageNBTInfo;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.CommandResultStats;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.NumberInvalidException;
+import net.minecraft.command.*;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -101,6 +104,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static moe.qingu.nickel.command.Nodes.*;
+import static moe.qingu.nickel.text.Texts.translation;
 import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.AtmosphereCommandContext.*;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
@@ -274,6 +278,7 @@ public final class CommandAtmosphere {
                 .append(buildAddCommand()).done()
                 .append(buildQueryCommand()).done()
                 .append(buildUtilCommand()).done()
+                .append(buildDataCommand()).done()
                 .append(buildTrackCommand()).done()
                 .execute(buildDefaultExecutor()).done()
                 .usage("geocraft.command.atmosphere.usage")
@@ -389,6 +394,24 @@ public final class CommandAtmosphere {
                         }).then(process(CommandAtmosphere::util))
                 ).done()
                 .done();
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildDataCommand(){
+        return literal("data")
+                .require(ATM_PERMISSION_NODE +".data").allow(DefaultPermissionLevel.OP).register()
+                .then(literals()
+                        .when("query")
+                        .then($NBTPath("nbt_path")
+                                .translate("geocraft.command.atmosphere.arg.nbt_path")
+                                .suggestRaw("{}")
+                                .then(_pos().then(_multiply().then(process(CommandAtmosphere::queryData)))))
+                        .when("modify")
+                        .then($NBTPath("nbt_path")
+                                .translate("geocraft.command.atmosphere.arg.nbt_path")
+                                .then($NBTTag("nbt_tag")
+                                        .translate("geocraft.command.atmosphere.arg.nbt_tag")
+                                        .then(_pos().then(process(CommandAtmosphere::modifyData))))));
     }
 
     @Nonnull
@@ -565,6 +588,45 @@ public final class CommandAtmosphere {
         if("storage".equalsIgnoreCase(util)){
             final @Nonnull Collection<AtmosphereData> data = accessor.getDataProvider().getLoadedAtmosphereDataCollection();
             context.notifyCommandListener("geocraft.command.atmosphere.util.storage",data.size());
+        }
+    }
+
+    static void queryData(@Nonnull final ExecuteContext context) {
+        final IAtmosphereAccessor accessor = context.get(ACCESSOR);
+        final AtmosphereData data = accessor.getAtmosphereDataHere();
+        assert data != null;
+        final NBTPath path = context.get("nbt_path");
+        final double multiply = context.getDouble(MULTIPLY);
+        final List<NBTBase> nbt = path.match(data.getSaveCompound());
+        final ICommandSender sender = context.getSender();
+        if(nbt.size() == 1){
+            final NBTBase tag = nbt.get(0);
+            if(tag instanceof NBTTagFloat) sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (int) (((NBTTagFloat) tag).getFloat()*multiply));
+            else if(tag instanceof NBTTagDouble) sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (int) (((NBTTagDouble) tag).getDouble()*multiply));
+            else if(tag instanceof NBTPrimitive) sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, (int) (((NBTPrimitive) tag).getLong()*multiply));
+            else if(tag instanceof NBTTagCompound) sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,((NBTTagCompound) tag).getSize());
+            else if(tag instanceof NBTTagList) sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT,((NBTTagList) tag).tagCount());
+        }
+        if(sender instanceof EntityPlayerMP){
+            sender.sendMessage(translation("geocraft.command.atmosphere.data.query").done());
+            NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(nbt),(EntityPlayerMP) sender);
+        }
+    }
+
+    static void modifyData(@Nonnull final ExecuteContext context) throws NickelRuntimeException {
+        final IAtmosphereAccessor accessor = context.get(ACCESSOR);
+        final AtmosphereData data = accessor.getAtmosphereDataHere();
+        assert data != null;
+        final NBTPath path = context.get("nbt_path");
+        final NBTBase tag= context.get("nbt_tag");
+        final NBTTagCompound compound = data.getSaveCompound();
+        path.set(compound,tag,false);
+        final ICommandSender sender = context.getSender();
+        translation("geocraft.command.atmosphere.data.set").color(TextFormatting.GREEN).sendTo(sender);
+        if(sender instanceof EntityPlayerMP){
+            final NBTPath subPath = path.subPath(path.length()-1);
+            final NBTBase parent = subPath.match(compound).get(0);
+            NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(parent),(EntityPlayerMP) sender);
         }
     }
 

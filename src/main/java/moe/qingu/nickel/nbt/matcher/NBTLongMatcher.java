@@ -39,6 +39,11 @@ public final class NBTLongMatcher extends NBTPrimitiveMatcher<NBTTagLong> {
         super(num);
     }
 
+    @Override
+    public char getSuffix() {
+        return 'L';
+    }
+
     @Nonnull
     @Override
     public Class<NBTTagLong> getMatchType() {

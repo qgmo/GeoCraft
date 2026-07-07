@@ -30,12 +30,16 @@ package moe.qingu.nickel.command;
 import moe.qingu.nickel.command.builder.parameter.EnumNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.*;
+import moe.qingu.nickel.command.node.parameter.minecraft.nbt.NBTCompoundNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.nbt.NBTPathNode;
+import moe.qingu.nickel.command.node.parameter.minecraft.nbt.NBTTagNode;
 import moe.qingu.nickel.nbt.path.NBTPath;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
@@ -72,6 +76,7 @@ import java.util.UUID;
 /**
  * @author QiguaiAAAA
  */
+@SuppressWarnings("unused")
 public final class Nodes {
 
     private Nodes(){}
@@ -305,6 +310,11 @@ public final class Nodes {
     @Nonnull
     public static FastParameterNodeBuilder<NBTTagCompound, NBTCompoundNode> $NBT(@Nonnull final String name){
         return new FastParameterNodeBuilder<>(name,NBTCompoundNode::new);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder<NBTBase, NBTTagNode> $NBTTag(@Nonnull final String name){
+        return new FastParameterNodeBuilder<>(name,NBTTagNode::new);
     }
 
     @Nonnull
