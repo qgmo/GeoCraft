@@ -46,7 +46,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathAll implements NBTPathModifiableNode,NBTPathInitableNode {
+public final class NBTPathAll implements NBTPathModifiableNode, NBTPathProvidableNode, NBTPathInitableNode {
     public static final NBTPathAll ALL = new NBTPathAll();
 
     private NBTPathAll(){}
@@ -112,7 +112,16 @@ public final class NBTPathAll implements NBTPathModifiableNode,NBTPathInitableNo
 
     @Nonnull
     @Override
-    public NBTBase init() {
+    public NBTBase provide() {
         return new NBTTagList();
+    }
+
+    @Override
+    public void init(@Nonnull final NBTBase base, @Nonnull final NBTPathProvidableNode next) {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            if(!list.isEmpty()) return;
+            list.appendTag(next.provide());
+        }
     }
 }

@@ -45,7 +45,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathListCompound implements NBTPathModifiableNode,NBTPathInitableNode{
+public final class NBTPathListCompound implements NBTPathModifiableNode, NBTPathProvidableNode {
     final NBTCompoundMatcher filter;
 
     public NBTPathListCompound(final @Nonnull NBTCompoundMatcher filter) {
@@ -93,7 +93,7 @@ public final class NBTPathListCompound implements NBTPathModifiableNode,NBTPathI
 
     @Nonnull
     @Override
-    public NBTBase init() {
+    public NBTBase provide() {
         final NBTTagList list = new NBTTagList();
         list.appendTag(this.filter.toNBT());
         return list;

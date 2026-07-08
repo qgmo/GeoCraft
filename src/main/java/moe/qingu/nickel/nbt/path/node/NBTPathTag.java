@@ -43,7 +43,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathTag implements NBTPathModifiableNode,NBTPathInitableNode {
+public final class NBTPathTag implements NBTPathModifiableNode, NBTPathProvidableNode, NBTPathInitableNode {
 
     final String key;
     final NBTCompoundMatcher valueFilter;
@@ -91,6 +91,20 @@ public final class NBTPathTag implements NBTPathModifiableNode,NBTPathInitableNo
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_TAG_MISMATCH));
     }
 
+    @Override
+    public void init(@Nonnull final NBTBase base, @Nonnull final NBTPathProvidableNode next) {
+        if(!(base instanceof NBTTagCompound)) return;
+        final NBTTagCompound compound = (NBTTagCompound) base;
+        if(compound.hasKey(key)) return;
+        compound.setTag(key,next.provide());
+    }
+
+    @Nonnull
+    @Override
+    public NBTBase provide() {
+        return valueFilter==null?new NBTTagCompound():valueFilter.toNBT();
+    }
+
     @Nonnull
     @Override
     public String getLocalName() {
@@ -111,11 +125,5 @@ public final class NBTPathTag implements NBTPathModifiableNode,NBTPathInitableNo
     @Nonnull
     public String toString() {
         return valueFilter == null?key:key+valueFilter;
-    }
-
-    @Nonnull
-    @Override
-    public NBTBase init() {
-        return valueFilter==null?new NBTTagCompound():valueFilter.toNBT();
     }
 }

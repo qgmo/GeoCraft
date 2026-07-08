@@ -597,7 +597,7 @@ public final class CommandAtmosphere {
         assert data != null;
         final NBTPath path = context.get("nbt_path");
         final double multiply = context.getDouble(MULTIPLY);
-        final List<NBTBase> nbt = path.match(data.getSaveCompound());
+        final List<NBTBase> nbt = path.resolve(data.getSaveCompound());
         final ICommandSender sender = context.getSender();
         if(nbt.size() == 1){
             final NBTBase tag = nbt.get(0);
@@ -625,7 +625,7 @@ public final class CommandAtmosphere {
         translation("geocraft.command.atmosphere.data.set").color(TextFormatting.GREEN).sendTo(sender);
         if(sender instanceof EntityPlayerMP){
             final NBTPath subPath = path.subPath(path.length()-1);
-            final NBTBase parent = subPath.match(compound).get(0);
+            final NBTBase parent = subPath.resolve(compound).get(0);
             NickelAPI.CHANNEL.sendTo(new PackageNBTInfo(parent),(EntityPlayerMP) sender);
         }
     }

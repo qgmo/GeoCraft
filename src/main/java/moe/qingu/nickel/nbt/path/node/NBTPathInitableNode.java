@@ -34,6 +34,6 @@ import javax.annotation.Nonnull;
 /**
  * @author QGMoe
  */
-public interface NBTPathInitableNode extends NBTPathNode {
-    @Nonnull NBTBase init();
+public interface NBTPathInitableNode extends NBTPathNode{
+    void init(final @Nonnull NBTBase base,final @Nonnull NBTPathProvidableNode next);
 }

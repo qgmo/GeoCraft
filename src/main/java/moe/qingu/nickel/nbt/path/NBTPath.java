@@ -67,7 +67,7 @@ public final class NBTPath {
     }
 
     @Nonnull
-    public List<NBTBase> match(final @Nonnull NBTTagCompound compound){
+    public List<NBTBase> resolve(final @Nonnull NBTTagCompound compound){
         Stream<NBTBase> c = Stream.of(compound);
         for(final NBTPathNode node:nodes) c = c
                 .flatMap(e -> node.filter(e).stream());
@@ -76,7 +76,7 @@ public final class NBTPath {
 
     public void set(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_EMPTY));
-        final List<NBTBase> nbt = matchParent(compound);
+        final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
@@ -92,7 +92,7 @@ public final class NBTPath {
 
     public void insert(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException{
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_EMPTY));
-        final List<NBTBase> nbt = matchParent(compound);
+        final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
@@ -108,7 +108,7 @@ public final class NBTPath {
 
     public void remove(final @Nonnull NBTTagCompound compound,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_EMPTY));
-        final List<NBTBase> nbt = matchParent(compound);
+        final List<NBTBase> nbt = resolveParents(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_MULTI_FOUND));
         final NBTPathNode last = nodes.get(nodes.size()-1);
@@ -130,34 +130,29 @@ public final class NBTPath {
         }
     }
 
-    private void init(final @Nonnull NBTBase base,final int cur) {
-        if(!(base instanceof NBTTagCompound)) return;
-        final NBTTagCompound compound = (NBTTagCompound) base;
-        switch (this.nodes.size()-cur){
-            case 0:
-            case 1: return;
-            default:{
-                final NBTPathNode node = this.nodes.get(cur);
-                if(node instanceof NBTPathTag){
-                    final NBTPathTag tag = (NBTPathTag) node;
-                    if(compound.hasKey(tag.getKey())) return;
-                    final NBTPathNode next = this.nodes.get(cur+1);
-                    final NBTBase content;
-                    if(next instanceof NBTPathInitableNode) content = ((NBTPathInitableNode) next).init();
-                    else return;
-                    compound.setTag(tag.getKey(),content);
-                }
-            }
-        }
-    }
 
-    private @Nonnull List<NBTBase> matchParent(final @Nonnull NBTTagCompound compound){
+    public @Nonnull List<NBTBase> resolveParents(final @Nonnull NBTTagCompound compound){
         Stream<NBTBase> c = Stream.of(compound);
         for(int i=0;i<length()-1;i++){
             final int cur = i;
             c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
         }
         return c.collect(Collectors.toList());
+    }
+
+    private void init(final @Nonnull NBTBase base,final int cur) {
+        switch (this.nodes.size()-cur){
+            case 0:
+            case 1: return;
+            default:{
+                final NBTPathNode node = this.nodes.get(cur);
+                if(node instanceof NBTPathInitableNode){
+                    final NBTPathInitableNode init = (NBTPathInitableNode) base;
+                    final NBTPathNode next = this.nodes.get(cur+1);
+                    if(next instanceof NBTPathProvidableNode) init.init(base,(NBTPathProvidableNode) next);
+                }
+            }
+        }
     }
 
     @Override

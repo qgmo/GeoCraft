@@ -86,7 +86,7 @@ public final class CommandExample {
                                         .then(execute(ctx->{
                                             final @Nonnull NBTPath path = ctx.get("path", NBTPathNode.class);
                                             final @Nonnull Entity entity = ctx.getEntity("target");
-                                            final List<NBTBase> nbt = path.match(entity.writeToNBT(new NBTTagCompound()));
+                                            final List<NBTBase> nbt = path.resolve(entity.writeToNBT(new NBTTagCompound()));
                                             final ICommandSender sender = ctx.getSender();
                                             plain("Target ")
                                                     .color(TextFormatting.AQUA)

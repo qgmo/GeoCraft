@@ -27,50 +27,13 @@
 
 package moe.qingu.nickel.nbt.path.node;
 
-import moe.qingu.nickel.I18nKeys;
-import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
-import java.util.*;
 
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound implements NBTPathProvidableNode {
-    final NBTCompoundMatcher matcher;
-
-    public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
-        this.matcher = matcher;
-    }
-
-    @Nonnull
-    public NBTCompoundMatcher getMatcher() {
-        return matcher;
-    }
-
-    @Nonnull
-    @Override
-    public Collection<NBTBase> filter(@Nonnull final NBTBase nbtBase) {
-        if(matcher.match(nbtBase)) return Collections.singletonList(nbtBase);
-        else return Collections.emptyList();
-    }
-
-    @Nonnull
-    @Override
-    public String getLocalName() {
-        return I18nKeys.NBTPath.NODE_COMPOUND;
-    }
-
-    @Override
-    @Nonnull
-    public String toString() {
-        return matcher.toString();
-    }
-
-    @Nonnull
-    @Override
-    public NBTBase provide() {
-        return matcher.toNBT();
-    }
+public interface NBTPathProvidableNode extends NBTPathNode {
+    @Nonnull NBTBase provide();
 }
