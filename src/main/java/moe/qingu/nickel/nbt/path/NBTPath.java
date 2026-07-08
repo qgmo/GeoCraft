@@ -122,12 +122,13 @@ public final class NBTPath {
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
     }
 
-    public void init(final @Nonnull NBTTagCompound compound) throws NickelRuntimeException {
+    public @Nonnull List<NBTBase> init(final @Nonnull NBTTagCompound compound) throws NickelRuntimeException {
         Stream<NBTBase> c = Stream.of(compound);
-        for(int i=0;i<nodes.size()-1;i++){
+        for(int i=0;i<nodes.size();i++){
             final int cur = i;
             c = c.peek(e -> init(e,cur)).flatMap(e -> nodes.get(cur).filter(e).stream());
         }
+        return c.collect(Collectors.toList());
     }
 
 
