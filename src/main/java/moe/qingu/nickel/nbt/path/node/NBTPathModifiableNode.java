@@ -35,7 +35,9 @@ import javax.annotation.Nonnull;
 /**
  * @author QGMoe
  */
-public abstract class NBTPathModifiableNode extends NBTPathNode{
+public interface NBTPathModifiableNode extends NBTPathNode{
 
-    public abstract void set(final @Nonnull NBTBase base,final @Nonnull NBTBase replacement) throws NickelRuntimeException;
+    void set(final @Nonnull NBTBase base,final @Nonnull NBTBase replacement) throws NickelRuntimeException;
+
+    void remove(final @Nonnull NBTBase base) throws NickelRuntimeException;
 }

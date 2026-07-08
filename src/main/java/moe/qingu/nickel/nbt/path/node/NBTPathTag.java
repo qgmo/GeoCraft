@@ -43,7 +43,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathTag extends NBTPathModifiableNode {
+public final class NBTPathTag implements NBTPathModifiableNode {
 
     private final String key;
     private final NBTCompoundMatcher valueFilter;
@@ -76,6 +76,19 @@ public final class NBTPathTag extends NBTPathModifiableNode {
             if(valueFilter != null && !valueFilter.match(tag)) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISVALUE));
             compound.setTag(key,replacement);
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_TAG_MISMATCH));
+    }
+
+    @Override
+    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+        if(base instanceof NBTTagCompound){
+            final NBTTagCompound compound = (NBTTagCompound) base;
+            if(!compound.hasKey(key)){
+                return;
+            }
+            final @Nonnull NBTBase tag = compound.getTag(key);
+            if(valueFilter != null && !valueFilter.match(tag)) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_TAG_MISVALUE));
+            compound.removeTag(key);
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_TAG_MISMATCH));
     }
 
     @Nonnull

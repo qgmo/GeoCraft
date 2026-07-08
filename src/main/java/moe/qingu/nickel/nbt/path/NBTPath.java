@@ -86,9 +86,35 @@ public final class NBTPath {
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
-        if(last instanceof NBTPathModifiableNode){
-            for(final NBTBase n:nbt) ((NBTPathModifiableNode) last).set(n,tag);
-        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+        if(last instanceof NBTPathModifiableNode)
+            for(final NBTBase n:nbt)
+                try {
+                    ((NBTPathModifiableNode) last).set(n,tag);
+                }catch (final NickelRuntimeException e){
+                    if(!allowMulti) throw e;
+                }
+        else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+    }
+
+    public void remove(final @Nonnull NBTTagCompound compound,final boolean allowMulti) throws NickelRuntimeException {
+        if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_EMPTY));
+        Stream<NBTBase> c = Stream.of(compound);
+        for(int i=0;i<length()-1;i++){
+            final int cur = i;
+            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
+        }
+        final List<NBTBase> nbt = c.collect(Collectors.toList());
+        if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_NOT_FOUND));
+        else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_MULTI_FOUND));
+        final NBTPathNode last = nodes.get(nodes.size()-1);
+        if(last instanceof NBTPathModifiableNode)
+            for(final NBTBase n:nbt)
+                try {
+                    ((NBTPathModifiableNode) last).remove(n);
+                }catch (final NickelRuntimeException e){
+                    if(!allowMulti) throw e;
+                }
+        else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
     }
 
     @Override

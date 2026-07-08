@@ -1,0 +1,16 @@
+---
+ver: 1
+default: 石
+ext:
+  begin_at: [1,2,2]
+  flat: true
+  max_iter: 100
+  expected: false
+---
+石石石
+石〇石
+石石石
+
+石石石
+石水石
+石石石

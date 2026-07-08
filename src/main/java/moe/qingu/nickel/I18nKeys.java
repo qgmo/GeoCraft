@@ -109,6 +109,7 @@ public final class I18nKeys {
         public static final String OPT_FAILED = "nickel.command.nbt.operation.exception";
 
         public static final String R_CT_LONG_ARR = "nickel.command.nbt.runtime.critical.long_arr";
+        public static final String R_CT_LIST = "nickel.command.nbt.runtime.critical.list";
 
 
         public static @Nonnull TextBuilder<?,?> unexpected(final int need, final int fact){
@@ -169,15 +170,33 @@ public final class I18nKeys {
         public static final String SET_INDEX_MISMATCH = "nickel.command.nbt.path.set.index.mismatch";
         public static final String SET_INDEX_LIST_OUT = "nickel.command.nbt.path.set.index.out_of_index.list";
         public static final String SET_INDEX_ARR_OUT = "nickel.command.nbt.path.set.index.out_of_index.arr";
+        public static final String SET_INDEX_NO_TYPE = "nickel.command.nbt.path.set.index.not_type";
         public static final String SET_INDEX_NO_BYTE = "nickel.command.nbt.path.set.index.not_byte";
         public static final String SET_INDEX_NO_INT = "nickel.command.nbt.path.set.index.not_int";
         public static final String SET_INDEX_NO_LONG = "nickel.command.nbt.path.set.index.not_long";
         public static final String SET_TAG_MISMATCH = "nickel.command.nbt.path.set.tag.mismatch";
         public static final String SET_TAG_MISVALUE = "nickel.command.nbt.path.set.tag.misvalue";
+        public static final String SET_ALL_MISMATCH = "nickel.command.nbt.path.set.all.mismatch";
+        public static final String SET_ALL_NO_BYTE = "nickel.command.nbt.path.set.all.not_byte";
+        public static final String SET_ALL_NO_INT = "nickel.command.nbt.path.set.all.not_int";
+        public static final String SET_ALL_NO_LONG = "nickel.command.nbt.path.set.all.not_long";
+        public static final String SET_LIST_COM_MISMATCH = "nickel.command.nbt.path.set.list_com.mismatch";
+        public static final String SET_LIST_COM_NO_COMPOUND = "nickel.command.nbt.path.set.list_com.not_compound";
+        public static final String SET_LIST_COM_NO_LIST_COM = "nickel.command.nbt.path.set.list_com.not_list_com";
         public static final String SET_EMPTY = "nickel.command.nbt.path.set.empty";
         public static final String SET_UNSUPPORTED = "nickel.command.nbt.path.set.unsupported";
         public static final String SET_NOT_FOUND = "nickel.command.nbt.path.set.not_found";
         public static final String SET_FOUND_MULTI = "nickel.command.nbt.path.set.multi_found";
+
+        public static final String REMOVE_INDEX_MISMATCH = "nickel.command.nbt.path.remove.index.mismatch";
+        public static final String REMOVE_TAG_MISMATCH = "nickel.command.nbt.path.remove.tag.mismatch";
+        public static final String REMOVE_TAG_MISVALUE = "nickel.command.nbt.path.remove.tag.misvalue";
+        public static final String REMOVE_ALL_MISMATCH = "nickel.command.nbt.path.remove.all.mismatch";
+        public static final String REMOVE_LIST_COM_MISMATCH = "nickel.command.nbt.path.remove.list_com.mismatch";
+        public static final String REMOVE_EMPTY = "nickel.command.nbt.path.remove.empty";
+        public static final String REMOVE_UNSUPPORTED = "nickel.command.nbt.path.remove.unsupported";
+        public static final String REMOVE_NOT_FOUND = "nickel.command.nbt.path.remove.not_found";
+        public static final String REMOVE_MULTI_FOUND = "nickel.command.nbt.path.remove.multi_found";
 
         public static @Nonnull TextBuilder<?,?> compoundMisplace(final int fact){
             return translation(COMPOUND_MISPLACE,translation(NODE_COMPOUND),fact);

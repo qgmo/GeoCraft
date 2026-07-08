@@ -102,7 +102,7 @@ public class NBTPathReader extends SNBTReader {
                 break;
             } case ']':{
                 input.skip();
-                path.append(new NBTPathAll());
+                path.append(NBTPathAll.ALL);
                 break;
             } default:{
                 final NBTPathIndex index = new NBTPathIndex(input.readInt());

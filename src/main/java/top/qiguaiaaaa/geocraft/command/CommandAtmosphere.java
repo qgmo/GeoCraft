@@ -171,7 +171,7 @@ public final class CommandAtmosphere {
                 context.exception = new NumberInvalidException("commands.generic.num.tooSmall", value, -steam.getFluidAmount());
                 return;
             }
-            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.water",context.x,context.y,context.z,steam);
+            context.execute.notifyCommandListener("geocraft.command.atmosphere.add.steam",context.x,context.y,context.z,steam);
         });
         AddConsumer.put("water",(context,value)->{
             final FluidState water = context.layer.getWater();
@@ -511,13 +511,13 @@ public final class CommandAtmosphere {
         if(state instanceof FluidState){
             final FluidState gas = (FluidState) state;
             gas.setAmount((int) value);
-            context.notifyCommandListener("geocraft.command.atmosphere.set.gas",pos.getX(),pos.getY(),pos.getZ(),gas.getFluidAmount());
+            context.notifyCommandListener("geocraft.command.atmosphere.set.gas",pos.getX(),pos.getY(),pos.getZ(),state.getProperty().getRegistryName(),gas.getFluidAmount());
             return;
         }
         if(state instanceof TemperatureState){
             final TemperatureState temperature = (TemperatureState) state;
             temperature.set((float) value);
-            context.notifyCommandListener("geocraft.command.atmosphere.set.temp2",pos.getX(),pos.getY(),pos.getZ(),temperature.get());
+            context.notifyCommandListener("geocraft.command.atmosphere.set.temp2",pos.getX(),pos.getY(),pos.getZ(),state.getProperty().getRegistryName(),temperature.get());
             return;
         }
         throw new CommandException("geocraft.command.atmosphere.property.unknown");
@@ -542,13 +542,13 @@ public final class CommandAtmosphere {
         if(state instanceof FluidState){
             FluidState gas = (FluidState) state;
             gas.fill((int) value,true);
-            context.notifyCommandListener("geocraft.command.atmosphere.add.gas",x,pos.getY(),z,gas.getFluidAmount());
+            context.notifyCommandListener("geocraft.command.atmosphere.add.gas",x,pos.getY(),z,state.getProperty().getRegistryName(),gas.getFluidAmount());
             return;
         }
         if(state instanceof TemperatureState){
             TemperatureState temperature = (TemperatureState) state;
             temperature.add(value);
-            context.notifyCommandListener("geocraft.command.atmosphere.add.temp2",x,pos.getY(),z,temperature.get());
+            context.notifyCommandListener("geocraft.command.atmosphere.add.temp2",x,pos.getY(),z,state.getProperty().getRegistryName(),temperature.get());
             return;
         }
         throw new CommandException("geocraft.command.atmosphere.property.unknown");

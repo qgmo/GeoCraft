@@ -91,13 +91,11 @@ public class NickelCommandException extends CommandException implements INickelE
         (this.getNodeDocument() == null?translation("nickel.command.exception.base.message"): translation("nickel.command.exception.base.node")
                 .arg(this.getNodeDocument())
         ).color(TextFormatting.RED).sendTo(sender);
-        if(this.getDetails()!=null) translation("nickel.command.exception.base.details")
+        if(this.getDetails()!=null) translation("nickel.command.exception.base.details",this.getDetails())
                 .color(TextFormatting.RED)
-                .then(this.getDetails())
                 .sendTo(sender);
-        translation("nickel.command.exception.base.branch")
+        translation("nickel.command.exception.base.branch",this.getSourceBranch().getDocument())
                 .color(TextFormatting.AQUA)
-                .then(this.getSourceBranch().getDocument())
                 .sendTo(sender);
     }
 

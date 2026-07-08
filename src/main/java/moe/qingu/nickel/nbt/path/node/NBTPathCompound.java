@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound extends NBTPathNode{
+public final class NBTPathCompound implements NBTPathNode{
     private final NBTCompoundMatcher matcher;
 
     public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {

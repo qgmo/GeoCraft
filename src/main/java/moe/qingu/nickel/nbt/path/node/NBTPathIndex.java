@@ -42,7 +42,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathIndex extends NBTPathModifiableNode{
+public final class NBTPathIndex implements NBTPathModifiableNode{
     private final int index;
 
     public NBTPathIndex(final int index) {
@@ -85,6 +85,9 @@ public final class NBTPathIndex extends NBTPathModifiableNode{
             final NBTTagList list = (NBTTagList) base;
             final int i = index<0?list.tagCount()+index:index;
             if(i<0 || i >= list.tagCount()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_LIST_OUT,i));
+            if(list.getTagType() != 0 && replacement.getId() != list.getTagType())
+                throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_TYPE)
+                        .arg(NBTBase.NBT_TYPES[replacement.getId()],NBTBase.NBT_TYPES[list.getTagType()]));
             list.set(i,replacement);
         }else if(base instanceof NBTTagByteArray){
             final byte[] array = ((NBTTagByteArray) base).getByteArray();
@@ -107,6 +110,16 @@ public final class NBTPathIndex extends NBTPathModifiableNode{
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_LONG));
             array[i] = ((NBTPrimitive)replacement).getLong();
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_MISMATCH));
+    }
+
+    @Override
+    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            final int i = index<0?list.tagCount()+index:index;
+            if(i<0 || i >= list.tagCount()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_LIST_OUT,i));
+            list.removeTag(i);
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_INDEX_MISMATCH));
     }
 
     @Nonnull

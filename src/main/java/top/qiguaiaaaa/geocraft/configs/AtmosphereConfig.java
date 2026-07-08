@@ -56,7 +56,7 @@ public final class AtmosphereConfig {
     public static final ConfigCategory CATEGORY_ATMOSPHERE = new ConfigCategory("atmosphere");
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("开启详细的大气日志记录")
+    @Config.Comment("开启详细的大气日志记录\nEnable detailed atmosphere logging.")
     @Config.LangKey("geocraft.config.comment.atmosphere.enable_detailed_logging")
     public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging", false){
         @Override
@@ -129,7 +129,8 @@ public final class AtmosphereConfig {
     }.setKeyClass(Integer.class).setValueClass(AtmosphereSystemInfo.class);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)")
+    @Config.Comment("方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)\n" +
+            "Volumetric heat capacity per cubic decimeter of a block, default 2000, in FE/(dm^3·K). Can be calculated as specificHeatCapacity * density / 1000 (SI units).")
     @Config.RequiresMcRestart
     private static final ConfigMap<ConfigurableBlockState,Integer> SPECIFIC_HEAT_CAPACITIES =
             new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"specificHeatCapacities",ConfigurableBlockState::getInstanceByString, Integer::parseInt,
@@ -275,7 +276,7 @@ public final class AtmosphereConfig {
             };
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("下垫面方块的反射率，默认为12%，单位为%")
+    @Config.Comment("下垫面方块的反射率，默认为12%，单位为%\nUnderlying surface block reflectivity (albedo), default 12%, in percent.")
     @Config.RequiresMcRestart
     public static final ConfigMap<ConfigurableBlockState,Integer> UNDERLYING_REFLECTIVITY =
             new ConfigMap<ConfigurableBlockState,Integer>(CATEGORY_ATMOSPHERE,"underlyingReflectivity", ConfigurableBlockState::getInstanceByString,Integer::parseInt,
@@ -444,12 +445,14 @@ public final class AtmosphereConfig {
             };
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("是否允许炼药锅接无限量的水，即在接水时不会消耗大气水")
+    @Config.Comment("是否允许炼药锅接无限量的水，即在接水时不会消耗大气水\n" +
+            "Whether to allow cauldrons to receive unlimited water, i.e. collecting water does not consume atmospheric moisture.")
     public static final ConfigBoolean ALLOW_CAULDRON_GET_INFINITE_WATER = new ConfigBoolean(CATEGORY_ATMOSPHERE,"allowCauldronGetInfiniteWater", false);
 
     @Config.RangeInt(min = 2)
     @GeoConfig.Since("0.1")
-    @Config.Comment("大气重新计算下垫面性质的间隔时间，单位为大气刻")
+    @Config.Comment("大气重新计算下垫面性质的间隔时间，单位为大气刻\n" +
+            "Interval for the atmosphere to recalculate underlying surface properties, in atmosphere ticks.")
     public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE, "atmosphereUnderlyingRecalculateGap",400){
         @Override
         public void load(@Nonnull final Configuration config) {

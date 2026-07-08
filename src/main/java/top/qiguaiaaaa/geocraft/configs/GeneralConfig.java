@@ -59,13 +59,13 @@ public final class GeneralConfig {
             "Whether to allow the client to read mod-extended data. Default is disabled. When disabled, the mod will modify network communication between the server and client to remove data that cannot be correctly interpreted by vanilla clients, such as soil moisture information. The principle is similar to anti-X-ray mechanisms.\n" +
             "If you encounter compatibility issues and wish to disable the mod's network modifications, you can change this option to true. In this case, the mod will no longer modify network communication, and you can use other more specialized mods to prevent clients from accessing this extended data, thereby providing compatibility with vanilla clients.\n" +
             "Please note that after enabling client access to extended data, if the client does not have this mod installed, the display of soil-related blocks (such as podzol) or snow may appear abnormal. You can address this by using other mods with network modification capabilities, prohibiting connections from clients without this mod, or simply leaving it as is.\n" +
-            "This configuration item does noting to Client Side.")
+            "This configuration item has no effect on the client side.")
     public static final ConfigBoolean COMPATIBLE_FOR_VANILLA_CLIENT = new ConfigBoolean(GENERAL, "compatibilityForVanillaClient",true);
 
     @Config.RequiresWorldRestart
     @GeoConfig.Since("0.2.6")
     @Config.Comment({"是否允许天圆地方在进入存档前检查各系统当前状态是否匹配存档状态，例如流体物理模式是否匹配，并在不匹配时警告并阻碍存档加载。",
-    "Allow GeoCraft to warn status mismatches when current status of all GeoCraft's systems doesn't fully match with the status of a save. "})
+    "Whether to allow GeoCraft to check if all system states match the save's states before entering a world (e.g. fluid physics mode), and warn and block loading when mismatched."})
     @Config.LangKey("geocraft.config.comment.general.enable_security_check")
     public static final ConfigBoolean ENABLE_SECURE_CHECK = new ConfigBoolean(GENERAL,"enableSecurityCheck",true);
 
@@ -122,16 +122,16 @@ public final class GeneralConfig {
     //*********************
 
     @Config.Comment({
-            "模组性能调整。注意这里的“警告”是对游戏内的逻辑来说，不会真的打印日志。",
-            "Mod Performance Tuning"})
+            "模组性能调整。注意这里的”警告”是对游戏内的逻辑来说，不会真的打印日志。",
+            "Mod performance tuning. Note that \"warnings\" here refer to in-game logic, not actual log output."})
     public static final ConfigCategory CATEGORY_PERFORMANCE = GENERAL.getChildCategory("performance");
 
-    @Config.Comment("开启延迟警告。")
+    @Config.Comment("开启延迟警告。\nEnable lag warnings.")
     @GeoConfig.Since("0.1")
     public static final ConfigBoolean ENABLE_PERFORMANCE_WARNING =
             new ConfigBoolean(CATEGORY_PERFORMANCE, "enableWarning",true);
 
-    @Config.Comment("开启延迟检测。")
+    @Config.Comment("开启延迟检测。\nEnable lag detection.")
     @GeoConfig.Since("0.1")
     public static final ConfigBoolean ENABLE_PERFORMANCE_DELAY_DETECT =
             new ConfigBoolean(CATEGORY_PERFORMANCE, "enableDelayDetect",true);

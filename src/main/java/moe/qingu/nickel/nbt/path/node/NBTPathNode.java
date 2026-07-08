@@ -35,15 +35,15 @@ import java.util.Collection;
 /**
  * @author QGMoe
  */
-public abstract class NBTPathNode{
+public interface NBTPathNode{
 
     @Nonnull
-    public abstract Collection<NBTBase> filter(final @Nonnull NBTBase base);
+    Collection<NBTBase> filter(final @Nonnull NBTBase base);
 
-    public abstract @Nonnull String getLocalName();
+    @Nonnull String getLocalName();
 
     @Override
-    public abstract @Nonnull String toString();
+    @Nonnull String toString();
 
 
 }

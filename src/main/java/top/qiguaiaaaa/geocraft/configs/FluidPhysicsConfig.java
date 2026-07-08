@@ -60,13 +60,14 @@ import javax.annotation.Nonnull;
  */
 @SuppressWarnings("unused")
 public final class FluidPhysicsConfig {
-    @Config.Comment("流体物理配置项")
+    @Config.Comment("流体物理配置项\nFluid physics configurations")
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_FLUID_PHYSICS = new ConfigCategory("fluid_physics");
 
     @Config.RangeInt(min = 0)
     @GeoConfig.Since("0.1")
-    @Config.Comment("在流体流动过程中，完全摧毁可摧毁方块（即不会留下掉落物）的最低流体温度，单位为开尔文（K）。")
+    @Config.Comment("在流体流动过程中，完全摧毁可摧毁方块（即不会留下掉落物）的最低流体温度，单位为开尔文（K）。\n" +
+            "The minimum fluid temperature (in Kelvin) required to completely destroy destructible blocks (without leaving drops) during fluid flow.")
     public static final ConfigInteger leastTemperatureForFluidToCompletelyDestroyBlock =
             new ConfigInteger(CATEGORY_FLUID_PHYSICS,"leastTemperatureForFluidToCompletelyDestroyBlock",1237);
 
@@ -82,7 +83,7 @@ public final class FluidPhysicsConfig {
      */
     @GeoConfig.Since("0.2.0")
     @Config.Comment("每个维度的全局单独流体物理配置，注意某些配置目前不会在所有物理模式生效。\n" +
-            "Dimensional configurations.Note that some parameters won't take effects for all physics modes currently. ")
+            "Per-dimension fluid physics configurations. Note that some parameters may not take effect in all physics modes.")
     @GeoConfig.KeyComment("维度ID Dimension ID")
     public static final ConfigMap<Integer, FluidPhysicsInfo.FluidPhysicsInfoJSONWrapper> FLUID_PHYSICS_INFO =
             new ConfigMap<>(CATEGORY_FLUID_PHYSICS,"fluidPhysicsInfoForEachWorld",
@@ -104,7 +105,7 @@ public final class FluidPhysicsConfig {
     // Fluid Updater Config
     //********************************
 
-    @Config.Comment("流体更新任务相关\n")
+    @Config.Comment("流体更新任务相关\nFluid update task configurations")
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_FLUID_UPDATER = CATEGORY_FLUID_PHYSICS.getChildCategory("fluid_updater");
 
@@ -122,7 +123,8 @@ public final class FluidPhysicsConfig {
     public static final ConfigLong FLUID_UPDATER_MAX_TIME_USAGE = new ConfigLong(CATEGORY_FLUID_UPDATER, "maxTimeUsage",200L*1000L*1000L);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("是否在完成任务更新后，丢弃超额的流体更新任务")
+    @Config.Comment("是否在完成任务更新后，丢弃超额的流体更新任务\n" +
+            "Whether to discard excess fluid update tasks after completing the current update batch.")
     public static final ConfigBoolean FLUID_UPDATER_DROP_EXCESS_TASKS = new ConfigBoolean(CATEGORY_FLUID_UPDATER, "dropExcessTasks",true);
 
     @Config.RangeInt(min = 1)
@@ -154,7 +156,7 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     @Config.Comment("压强系统以多线程模式执行，这可以有效提高性能，但可能导致潜在的多线程并发异常。默认启用，若异步执行的压强系统导致了诸如游戏崩溃的异常，请尝试将此选项改为false以使压强系统同步运行。\n" +
             "Allow Pressure System running as async, which can greatly improve performance. This option is enabled by default." +
-            "However,if async caused some strange problems such as GAME CRASH, you can try to disable it to make Pressure System run as sync.")
+            "However, if async mode causes issues such as game crashes, you can try disabling it to run the Pressure System synchronously.")
     public static final ConfigBoolean RUN_PRESSURE_SYSTEM_AS_ASYNC = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM, "async",true);
 
     // ********************
@@ -186,7 +188,11 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.2.0-beta.4")
     @Config.Comment("使用线程池压强系统时，压强系统在获取一次锁时可更新的最大任务数。\n" +
             "该值过小可能会因为频繁释放丢弃锁而影响压强系统的性能，但能让服务器线程及时获取锁以保存区块。该值过大可能会导致服务器线程不能及时获取锁以保存区块，导致服务器线程浪费大量的时间在获取锁上。\n" +
-            "应随numberOfThreadsInTheThreadPool的大小而变化。")
+            "应随numberOfThreadsInTheThreadPool的大小而变化。\n" +
+            "Maximum number of tasks the thread-pool pressure system can process per lock acquisition.\n" +
+            "Too small: frequent lock release/acquire hurts pressure system throughput, but allows the server thread to acquire the lock in time for chunk saving.\n" +
+            "Too large: the server thread may be unable to acquire the lock in time for chunk saving.\n" +
+            "Should scale with numberOfThreadsInTheThreadPool.")
     public static final ConfigInteger MINIMUM_GRANULARITY_OF_TASK_EXECUTION_VOLUME_WHEN_POOLS = new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM_THREAD_POOL,
             "minimumGranularityOfTaskExecutionVolume",Math.min(1024,Runtime.getRuntime().availableProcessors()*10));
 
@@ -212,7 +218,7 @@ public final class FluidPhysicsConfig {
     @Config.RequiresWorldRestart
     @GeoConfig.Since("0.1")
     @Config.Comment("压强系统在一游戏刻内通知已完成压强任务的方块的最大数量，若总需要通知的方块数量超过该值，则多余的方块会被放弃更新。\n" +
-            "Max number of blocks to be notified within a Game Tick. If the total number of blocks to notify excesses this value, the left part whill be ignored.")
+            "Max number of blocks to notify within a single game tick. If the total exceeds this value, the remainder will be discarded.")
     public static final ConfigInteger PRESSURE_MAX_UPDATES_PER_TICK =
             new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM, "maxUpdatesPerGameTick",65536*4);
 
@@ -226,16 +232,15 @@ public final class FluidPhysicsConfig {
     @Config.RangeInt(min = 2)
     @GeoConfig.Since("0.1")
     @Config.Comment("压强系统清理并丢弃过量的压强任务的周期，单位为压强刻。过高的值可能导致内存泄漏。注意，若此值过低，由于压强系统采用的队列的size()方法的时间复杂度为O(n)，频繁的清理也会导致性能下降。\n" +
-            "The period for Pressure System to clean up excess tasks in Pressure Tick." +
-            "Much higher value may cause potentially memory leak. If the value is too low, the performance may also drop.")
+            "The period (in pressure ticks) for the Pressure System to clean up excess tasks. " +
+            "Too high may cause memory leaks. Too low may hurt performance because the queue's size() is O(n).")
     public static final ConfigInteger PRESSURE_DROP_EXCESS_TASKS_PERIOD =
             new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM, "dropExcessTasksPeriod",200);
 
     @Config.RangeInt(min = 2)
     @GeoConfig.Since("0.1")
     @Config.Comment("清理压强计算结果的周期，单位游戏刻。过高的值可能导致内存泄漏，过低可能导致压强计算的结果来不及被获取就被清理。\n" +
-            "The period to clean up calculated results in Game Tick. Much higher value may cause potentially memory leak, and much lower value may cause" +
-            "the result is being cleaned up before being received.")
+            "The period (in game ticks) to clean up calculated pressure results. Too high may cause memory leaks; too low may cause results to be cleaned up before they are consumed.")
     public static final ConfigInteger PRESSURE_EMPTY_RESULTS_PERIOD =
             new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM, "cleanTaskResultsPeriod",60);
 
@@ -257,7 +262,10 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.2.0-beta.4")
     @Config.Comment("当启用 pausePressureSystemWhileChunkSaving 时，使用 MixinExtras 提供的 WrapMethod 功能保证区块保存的整个方法执行时都持有锁。\n" +
             "相比于默认的 Mixin 实现，WrapMethod 的实现可能会导致服务器线程获取锁的频率增加，略微降低游戏性能，但好处是侵入性更低，兼容性更好。\n" +
-            "请注意该功能需要确保你的游戏环境支持 MixinExtras。")
+            "请注意该功能需要确保你的游戏环境支持 MixinExtras。\n" +
+            "When pausePressureSystemWhileChunkSaving is enabled, use WrapMethod from MixinExtras to hold the lock for the entire chunk-saving method.\n" +
+            "Compared to the default Mixin implementation, WrapMethod may slightly increase lock acquisition frequency on the server thread, but is less intrusive and more compatible.\n" +
+            "Requires MixinExtras support in your environment.")
     public static final ConfigBoolean WRAP_MODIFIED_CHUNK_SAVING_METHOD = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "wrapModifiedChunkSavingMethod",false);
 
@@ -276,7 +284,8 @@ public final class FluidPhysicsConfig {
 
     @GeoConfig.Since("0.2.0-beta.4")
     @Config.RequiresMcRestart
-    @Config.Comment("控制压强系统暂停机制使用的锁是否公平。默认为 true，因为使用公平锁能够保证服务器线程能够及时阻止压强系统运行。")
+    @Config.Comment("控制压强系统暂停机制使用的锁是否公平。默认为 true，因为使用公平锁能够保证服务器线程能够及时阻止压强系统运行。\n" +
+            "Whether the lock used by the pressure system pause mechanism is fair. Default is true, as a fair lock ensures the server thread can stop the pressure system in time.")
     public static final ConfigBoolean USE_FAIR_LOCK_FOR_PRESSURE_SYSTEM = new ConfigBoolean(CATEGORY_FLUID_PRESSURE_SYSTEM,
             "useFairLock",true);
 
@@ -284,7 +293,10 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.2.0-beta.4")
     @Config.Comment("使用非线程池压强系统时，压强系统在获取一次锁时一次性可更新的最大任务数。\n" +
             "请注意该配置项在单线程压强系统下尽管也有作用，但对于控制锁被持有的时长没有作用，因为单线程没有锁的问题。\n" +
-            "该值过小可能会因为频繁释放丢弃锁而影响压强系统的性能，但能让服务器线程及时获取锁以保存区块。该值过大可能会导致服务器线程不能及时获取锁以保存区块，导致服务器线程浪费大量的时间在获取锁上。")
+            "该值过小可能会因为频繁释放丢弃锁而影响压强系统的性能，但能让服务器线程及时获取锁以保存区块。该值过大可能会导致服务器线程不能及时获取锁以保存区块，导致服务器线程浪费大量的时间在获取锁上。\n" +
+            "Maximum number of tasks the non-thread-pool pressure system can process per lock acquisition.\n" +
+            "Note: this setting still takes effect in single-threaded mode, but has no effect on lock hold duration since there is no lock contention.\n" +
+            "Too small: frequent lock release/acquire hurts throughput. Too large: the server thread may fail to acquire the lock in time for chunk saving.")
     public static final ConfigInteger MINIMUM_GRANULARITY_OF_TASK_EXECUTION_VOLUME =
             new ConfigInteger(CATEGORY_FLUID_PRESSURE_SYSTEM, "minimumGranularityOfTaskExecutionVolume",25);
 
@@ -364,7 +376,7 @@ public final class FluidPhysicsConfig {
     public static final ConfigList<ConfigurableFluid,?> fluidsNotToSimulateInVanillaLike =
             ConfigList.create(CATEGORY_FLUID_PHYSICS_VANILLA_LIKE,"fluidBlackList", new ConfigurableList<>(), ConfigurableFluid::new);
 
-    @Config.Comment("设置流体垂直流动时的参数")
+    @Config.Comment("设置流体垂直流动时的参数\nParameters for vertical fluid flow")
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_VANILLA_LIKE_VERTICAL_FLOWING =
             CATEGORY_FLUID_PHYSICS_VANILLA_LIKE.getChildCategory("vertical_flowing");
@@ -383,7 +395,7 @@ public final class FluidPhysicsConfig {
     public static final ConfigInteger findSourceMaxSameLevelIterationsWhenVerticalFlowing =
             new ConfigInteger(CATEGORY_SIMULATION_VANILLA_LIKE_VERTICAL_FLOWING,"maxSameLevelIterations",0);
 
-    @Config.Comment("设置流体水平流动时的参数")
+    @Config.Comment("设置流体水平流动时的参数\nParameters for horizontal fluid flow")
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_SIMULATION_VANILLA_LIKE_HORIZONTAL_FLOWING =
             CATEGORY_FLUID_PHYSICS_VANILLA_LIKE.getChildCategory("horizontal_flowing");
@@ -391,7 +403,7 @@ public final class FluidPhysicsConfig {
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
     @Config.Comment("流体水平流动时，寻找可被移动的流体源的最大迭代次数。\n" +
-            "Maximum iterations to find a fluid source block when vertically flowing.")
+            "Maximum iterations to find a fluid source block when horizontally flowing.")
     public static final ConfigInteger findSourceMaxIterationsWhenHorizontalFlowing =
             new ConfigInteger(CATEGORY_SIMULATION_VANILLA_LIKE_HORIZONTAL_FLOWING,"maxIterations",17);
 
@@ -412,7 +424,7 @@ public final class FluidPhysicsConfig {
 
     // ********************
     // Pressure System
-    @Config.Comment("压强系统参数")
+    @Config.Comment("压强系统参数\nPressure system parameters")
     @GeoConfig.Since("0.1")
     public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("pressure_system");
 
@@ -431,7 +443,7 @@ public final class FluidPhysicsConfig {
     @Config.RangeDouble(min = 0,max = 0.9999)
     @GeoConfig.Since("0.1")
     @Config.Comment("继承自BlockFluidClassic的模组流体处于静止状态时，创建压强任务的可能性。过高的值可能导致压强任务的频繁创建，从而导致卡顿。\n" +
-            "Possibility for Vanilla static liquids to create a pressure task. Higher value may cause the pressure tasks to be created frequently and then cause lagging.")
+            "Possibility for BlockFluidClassic mod fluids in a static state to create a pressure task. Higher value may cause pressure tasks to be created frequently, resulting in lag.")
     public static final ConfigDouble POSSIBILITY_FOR_CLASSIC_FLUIDS_TO_CREATE_PRESSURE_TASK =
             new ConfigDouble(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "possibilityForModClassicFluidsToCreatePressureTask",0.4);
 
@@ -449,7 +461,11 @@ public final class FluidPhysicsConfig {
             "4 -> 75%\n" +
             "5 -> 4%\n" +
             "6 -> 1%\n" +
-            "压强搜寻具体范围，即广度优先搜索的迭代最大次数，等于2^(范围等级+5)。例如，范围等级为2表示迭代最大次数为128。本列表支持的最小范围等级为-1，表示迭代最大次数为16。")
+            "压强搜寻具体范围，即广度优先搜索的迭代最大次数，等于2^(范围等级+5)。例如，范围等级为2表示迭代最大次数为128。本列表支持的最小范围等级为-1，表示迭代最大次数为16。\n" +
+            "Probability distribution of pressure search range levels. The first element is the weight for range level -1, the second for level 0, and so on.\n" +
+            "For example, [0,0,0,10,10,75,4,1] represents:\n" +
+            "Range Level -> Probability: -1->0%, 0->0%, 1->0%, 2->10%, 3->10%, 4->75%, 5->4%, 6->1%\n" +
+            "The actual search range (max BFS iterations) equals 2^(range level + 5). E.g. range level 2 means max 128 iterations. The minimum supported range level is -1, meaning max 16 iterations.")
     public static final ConfigIntegerWeightDistribution WEIGHT_DISTRIBUTION_FOR_PRESSURE_SEARCH_RANGE =
             new ConfigIntegerWeightDistribution(CATEGORY_FLUIDPHYSICS_FINITE_PRESSURE, "pressureSearchRangeWeights",
                     new ConfigurableList<>(0,0,0,10,10,75,4,1))
@@ -489,41 +505,45 @@ public final class FluidPhysicsConfig {
     public static final ConfigCategory CATEGORY_MORE_REALITY_SLOPE = CATEGORY_FLUIDPHYSICS_FINITE.getChildCategory("slope_algorithm");
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("当单层液体下方也为该液体的时候，为原版液体使用坡度流动算法。")
+    @Config.Comment("当单层液体下方也为该液体的时候，为原版液体使用坡度流动算法。\nUse slope flow algorithm for vanilla liquids when a single-layer liquid sits on top of the same liquid.")
     public static final ConfigBoolean slopeModeForVanillaWhenOnLiquidsAndQuantaIs1 =
             new ConfigBoolean(CATEGORY_MORE_REALITY_SLOPE,"enableSlopeModeForVanillaLiquidsWhenOnLiquidAndQuantaIs1",false);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("当多层液体下方也为该液体的时候，为原版液体使用坡度流动算法。")
+    @Config.Comment("当多层液体下方也为该液体的时候，为原版液体使用坡度流动算法。\nUse slope flow algorithm for vanilla liquids when a multi-layer liquid sits on top of the same liquid.")
     public static final ConfigBoolean slopeModeForVanillaWhenOnLiquidsAndQuantaAbove1 =
             new ConfigBoolean(CATEGORY_MORE_REALITY_SLOPE,"enableSlopeModeForVanillaLiquidsWhenOnLiquidAndQuantaAbove1",false);
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
-    @Config.Comment("在原版水液体量大于1，且周围无液体量低于其超过1的方块时，寻找可流动方位的最大曼哈顿距离。该值越大，液体越稀，对性能的要求越高。")
+    @Config.Comment("在原版水液体量大于1，且周围无液体量低于其超过1的方块时，寻找可流动方位的最大曼哈顿距离。该值越大，液体越稀，对性能的要求越高。\n" +
+            "Max Manhattan distance to search for a flow direction when vanilla water quanta > 1 and no adjacent block has quanta lower by more than 1. Higher values spread liquid thinner and cost more performance.")
     public static final ConfigInteger slopeFindDistanceForWaterWhenQuantaAbove1 =
             new ConfigInteger(CATEGORY_MORE_REALITY_SLOPE,"slopeFindDistanceForWaterWhenQuantaAbove1",6);
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
-    @Config.Comment("在原版岩浆液体量大于1，且周围无液体量低于其超过1的方块时，寻找可流动方位的最大曼哈顿距离。该值越大，液体越稀，对性能的要求越高。")
+    @Config.Comment("在原版岩浆液体量大于1，且周围无液体量低于其超过1的方块时，寻找可流动方位的最大曼哈顿距离。该值越大，液体越稀，对性能的要求越高。\n" +
+            "Max Manhattan distance to search for a flow direction when vanilla lava quanta > 1 and no adjacent block has quanta lower by more than 1. Higher values spread liquid thinner and cost more performance.")
     public static final ConfigInteger slopeFindDistanceForLavaWhenQuantaAbove1 =
             new ConfigInteger(CATEGORY_MORE_REALITY_SLOPE,"slopeFindDistanceForLavaWhenQuantaAbove1",4);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("当单层流体下方也为该流体的时候，为模组流体使用坡度流动算法。")
+    @Config.Comment("当单层流体下方也为该流体的时候，为模组流体使用坡度流动算法。\nUse slope flow algorithm for mod fluids when a single-layer fluid sits on top of the same fluid.")
     public static final ConfigBoolean slopeModeForModsWhenOnFluidsAndQuantaIs1 =
             new ConfigBoolean(CATEGORY_MORE_REALITY_SLOPE,"enableSlopeModeForModFluidsWhenOnFluidAndQuantaIs1",false);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("当多层流体下方也为该流体的时候，为模组流体使用坡度流动算法。")
+    @Config.Comment("当多层流体下方也为该流体的时候，为模组流体使用坡度流动算法。\nUse slope flow algorithm for mod fluids when a multi-layer fluid sits on top of the same fluid.")
     public static final ConfigBoolean slopeModeForModsWhenOnFluidsAndQuantaAbove1 =
             new ConfigBoolean(CATEGORY_MORE_REALITY_SLOPE,"enableSlopeModeForModFluidsWhenOnFluidAndQuantaAbove1",false);
 
     @Config.RangeDouble(min = 0.1)
     @GeoConfig.Since("0.1")
     @Config.Comment("当流体量大于1，且周围无流体量低于其超过1的方块时，其他模组所添加的流体寻找可流动方位的最大曼哈顿距离乘数。该值越大，液体越稀，对性能的要求越高。\n" +
-            "实际流体寻找可流动方位的最大曼哈顿距离 = ( (满液体方块液体量 * 该乘数) / 2 ) 向下取整")
+            "实际流体寻找可流动方位的最大曼哈顿距离 = ( (满液体方块液体量 * 该乘数) / 2 ) 向下取整\n" +
+            "Manhattan distance multiplier for mod fluids to search for a flow direction when quanta > 1 and no adjacent block has quanta lower by more than 1. Higher values spread liquid thinner and cost more performance.\n" +
+            "Actual max Manhattan distance = floor((full block quanta * this multiplier) / 2)")
     public static final ConfigDouble slopeFindDistanceMultiplierForModFluidWhenQuantaAbove1 =
             new ConfigDouble(CATEGORY_MORE_REALITY_SLOPE,"slopeFindDistanceMultiplierForModFluidWhenQuantaAbove1",1.5d);
 
@@ -532,12 +552,14 @@ public final class FluidPhysicsConfig {
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
-    @Config.Comment("空桶装流体时的寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）。")
+    @Config.Comment("空桶装流体时的寻找流体的最大范围（即从起点到范围边界的曼哈顿距离）。\n" +
+            "Max search range (Manhattan distance from the origin to the boundary) when picking up fluid with an empty bucket.")
     public static final ConfigInteger bucketFindFluidMaxDistance =
             new ConfigInteger(CATEGORY_FLUIDPHYSICS_FINITE,"bucketFindFluidMaxDistance",5);
 
     @GeoConfig.Since("0.1")
-    @Config.Comment("允许空桶在地上流体少于1000mB时装入流体，注意这时候你不会获得一个装满流体的桶，地上的流体会直接消失。")
+    @Config.Comment("允许空桶在地上流体少于1000mB时装入流体，注意这时候你不会获得一个装满流体的桶，地上的流体会直接消失。\n" +
+            "Allow an empty bucket to pick up fluid when the amount on the ground is less than 1000 mB. Note that you will not get a full bucket; the fluid on the ground will simply vanish.")
     public static final ConfigBoolean allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB =
             new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE,"allowBucketToDrainFluidWhenAmountIsSmallerThan1000mB",false);
 
@@ -565,12 +587,13 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Since("0.1")
     public static final ConfigList<ConfigurableFluid,?> fluidsNotToSimulate =
             ConfigList.create(CATEGORY_FLUIDPHYSICS_FINITE,"fluidBlackList", new ConfigurableList<>(), ConfigurableFluid::new)
-                    .setComment("不受此模式影响的流体。在下方填入的流体也相当于在"+fluidsWhoseBucketsBehavesAsVanillaBuckets.getPath()+"内填入对应流体，即流体对应的桶行为同样也会变为原版的情况。");
+                    .setComment("不受此模式影响的流体。在下方填入的流体也相当于在"+fluidsWhoseBucketsBehavesAsVanillaBuckets.getPath()+"内填入对应流体，即流体对应的桶行为同样也会变为原版的情况。\n" +
+                            "Fluids not affected by this mode. Fluids listed here are also implicitly added to " + fluidsWhoseBucketsBehavesAsVanillaBuckets.getPath() + ", meaning their bucket behavior will also revert to vanilla.");
 
     @Config.RequiresMcRestart
     @GeoConfig.Since("0.1")
-    @Config.Comment("当在世界中设置不应该出现的原版液体状态时，打印WARN日志。这有助于在出现bug时调试。\n" +
-            "Print WARN-level logs when vanilla liquid states that should not appear in the world are detected. This aids in debugging when issues occur.")
+    @Config.Comment("当在世界中检测到不应该出现的原版液体状态时，打印WARN日志。这有助于在出现bug时调试。\n" +
+            "Log a WARN when invalid vanilla liquid states are detected in the world. Useful for debugging.")
     public static final ConfigBoolean ENABLE_INVALID_LIQUID_STATE_REPORT =
             new ConfigBoolean(CATEGORY_FLUIDPHYSICS_FINITE, "enableInvalidLiquidStateReport",false);
 
@@ -647,7 +670,7 @@ public final class FluidPhysicsConfig {
 
     @Config.RangeInt(min = 1)
     @GeoConfig.Since("0.1")
-    @Config.Comment("控制泵搜寻流体的迭代次数。")
+    @Config.Comment("控制泵搜寻流体的迭代次数。\nMax iterations for the IC2 pump to search for fluid.")
     public static final ConfigInteger IC2PumpFluidSearchMaxIterations =
             new ConfigInteger(CATEGORY_SIMULATION_MORE_REALITY_MOD_SUPPORT_IC2,"pumpSearchFluidMaxIterations",8);
     // ** IE Config

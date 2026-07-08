@@ -74,17 +74,35 @@ nickel.command.nbt.path.syntax.empty_name=NBT 标签名称不能是空字符串
 nickel.command.nbt.path.set.index.mismatch=无法操作，目标既不是列表也不是数组
 nickel.command.nbt.path.set.index.out_of_index.list=索引 %s 在目标列表的范围之外
 nickel.command.nbt.path.set.index.out_of_index.arr=索引 %s 在目标数组的范围之外
+nickel.command.nbt.path.set.index.not_type=替换用标签类型 %s 不适配目标列表的类型 %s
 nickel.command.nbt.path.set.index.not_byte=替换用标签不适配字节型数组的数据
 nickel.command.nbt.path.set.index.not_int=替换用标签不适配整型数组的数据
 nickel.command.nbt.path.set.index.not_long=替换用标签不适配长整型数组的数据
 nickel.command.nbt.path.set.tag.mismatch=无法操作，因为目标不是 NBT 复合标签
 nickel.command.nbt.path.set.tag.misvalue=无法操作，因为标签值不匹配
+nickel.command.nbt.path.set.all.mismatch=无法操作，目标既不是列表也不是数组
+nickel.command.nbt.path.set.all.not_byte=替换用标签不适配字节型数组的数据
+nickel.command.nbt.path.set.all.not_int=替换用标签不适配整型数组的数据
+nickel.command.nbt.path.set.all.not_long=替换用标签不适配长整型数组的数据
+nickel.command.nbt.path.set.list_com.mismatch=无法操作,目标不是列表
+nickel.command.nbt.path.set.list_com.not_compound=替换用标签不适配复合标签类型
+nickel.command.nbt.path.set.list_com.not_list_com=目标列表不是复合标签类型
 nickel.command.nbt.path.set.empty=无法操作，因为路径为空
 nickel.command.nbt.path.set.unsupported=%s不支持修改操作
 nickel.command.nbt.path.set.not_found=无法操作，因为路径未匹配到任何标签
 nickel.command.nbt.path.set.multi_found=无法操作，因为路径匹配到了多个可能的标签
+nickel.command.nbt.path.remove.index.mismatch=无法删除，因为目标不是列表
+nickel.command.nbt.path.remove.tag.mismatch=无法删除，因为目标不是 NBT 复合标签
+nickel.command.nbt.path.remove.tag.misvalue=无法删除，因为标签值不匹配
+nickel.command.nbt.path.remove.all.mismatch=无法删除，因为目标不是列表
+nickel.command.nbt.path.remove.list_com.mismatch=无法删除,目标不是列表
+nickel.command.nbt.path.remove.empty=无法删除，因为路径为空
+nickel.command.nbt.path.remove.unsupported=%s不支持删除操作
+nickel.command.nbt.path.remove.not_found=无法删除，因为路径未匹配到任何标签
+nickel.command.nbt.path.remove.multi_found=无法删除，因为路径匹配到了多个可能的标签
 
 nickel.command.nbt.runtime.critical.long_arr=无法通过反射获取 %s 的 long[] 数组
+nickel.command.nbt.runtime.critical.list=无法通过反射设置 %s 的列表类型
 
 nickel.command.nbt.path.node.compound=根复合标签过滤节点
 nickel.command.nbt.path.node.all=全部元素节点
@@ -108,14 +126,10 @@ nickel.command.exception.cursor.loc=游标在位置 %s 时解析出错
 nickel.command.exception.syntax.node=命令节点 %s 出现语法错误
 nickel.command.exception.syntax.details=详细信息：%s
 nickel.command.exception.syntax.usage=用法：%s
-#行末空格 结束
 nickel.command.exception.base.message=命令运行时出现了一些错误
-#存在行末空格
 nickel.command.exception.base.node=命令运行到命令节点 %s 时发生错误
 nickel.command.exception.base.node.unknown=未知命令节点的解析错误：%s
-#行末空格 开始
-nickel.command.exception.base.details=详细信息： 
-nickel.command.exception.base.branch=分支： 
-#行末空格 结束
+nickel.command.exception.base.details=详细信息： %s
+nickel.command.exception.base.branch=分支： %s
 nickel.command.exception.runtime.message=命令运行时出错：%s
 nickel.command.exception.runtime.unknown=未知上下文的解析错误：%s

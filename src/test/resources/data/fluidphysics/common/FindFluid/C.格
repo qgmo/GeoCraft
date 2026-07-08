@@ -1,0 +1,16 @@
+---
+ver: 1
+default: 石
+ext:
+  begin_at: [2,2,2]
+  target: 火
+  max_iter: 100
+  expected: false
+---
+略
+
+石石石石
+石〇水石
+石石石石
+
+略

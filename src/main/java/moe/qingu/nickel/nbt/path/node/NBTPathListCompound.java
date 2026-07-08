@@ -28,9 +28,11 @@
 package moe.qingu.nickel.nbt.path.node;
 
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.nbt.matcher.NBTCompoundMatcher;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -38,10 +40,12 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static moe.qingu.nickel.text.Texts.translation;
+
 /**
  * @author QGMoe
  */
-public final class NBTPathListCompound extends NBTPathNode{
+public final class NBTPathListCompound implements NBTPathModifiableNode{
     private final NBTCompoundMatcher filter;
 
     public NBTPathListCompound(final @Nonnull NBTCompoundMatcher filter) {
@@ -62,6 +66,29 @@ public final class NBTPathListCompound extends NBTPathNode{
                     .filter(filter::match)
                     .collect(Collectors.toList());
         }else return Collections.emptyList();
+    }
+
+    @Override
+    public void set(@Nonnull final NBTBase base, @Nonnull final NBTBase replacement) throws NickelRuntimeException {
+        if(replacement.getId() != Constants.NBT.TAG_COMPOUND) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_NO_COMPOUND));
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            if(list.getTagType() != 0 && list.getTagType() != Constants.NBT.TAG_COMPOUND)
+                throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_NO_LIST_COM));
+            for(int i=0;i<list.tagCount();i++)
+                if(filter.match(list.get(i))) list.set(i,replacement);
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_LIST_COM_MISMATCH));
+    }
+
+    @Override
+    public void remove(@Nonnull final NBTBase base) throws NickelRuntimeException {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            if(list.getTagType() != 0 && list.getTagType() != Constants.NBT.TAG_COMPOUND) return;
+            for(int i=0;i<list.tagCount();)
+                if(filter.match(list.get(i))) list.removeTag(i);
+                else i++;
+        }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_LIST_COM_MISMATCH));
     }
 
     @Nonnull

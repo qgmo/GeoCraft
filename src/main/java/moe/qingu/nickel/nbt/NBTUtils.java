@@ -35,6 +35,7 @@ import net.minecraft.nbt.*;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.stream.LongStream;
 
@@ -45,19 +46,41 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public final class NBTUtils {
     private static final Field longArrField;
+    private static final Field listTypeField;
     private NBTUtils(){}
 
     static {
         longArrField = getLongArrField();
+        listTypeField = getListTypeField();
         longArrField.setAccessible(true);
     }
 
     private static @Nonnull Field getLongArrField(){
         final Field[] fields = NBTTagLongArray.class.getDeclaredFields();
         for(final Field field:fields)
-            if(field.getType() == long[].class)
+            if(!Modifier.isStatic(field.getModifiers()) && field.getType() == long[].class)
                 return field;
         throw new RuntimeException("Couldn't get long[] field in NBTTagLongArray!");
+    }
+
+    private static @Nonnull Field getListTypeField(){
+        final Field[] fields = NBTTagList.class.getDeclaredFields();
+        for(final Field field:fields)
+            if(!Modifier.isStatic(field.getModifiers()) && field.getType() == byte.class)
+                return field;
+        throw new RuntimeException("Couldn't get byte field in NBTTagList!");
+    }
+
+    public static int empty(final @Nonnull NBTTagList list) throws NickelRuntimeException {
+        final int size = list.tagCount();
+        if(list.isEmpty()) return size;
+        while (!list.isEmpty()) list.removeTag(0);
+        try{
+            listTypeField.setByte(list,(byte) 0);
+        } catch (final @Nonnull IllegalAccessException e) {
+            throw new NickelRuntimeException(translation(I18nKeys.NBT.R_CT_LIST,list));
+        }
+        return size;
     }
 
     @Nonnull

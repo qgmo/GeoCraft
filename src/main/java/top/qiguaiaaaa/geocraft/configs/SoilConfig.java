@@ -118,7 +118,8 @@ public final class SoilConfig {
 
     @Config.RequiresMcRestart
     @GeoConfig.Since("0.1")
-    @Config.Comment("每个生物群系用于阻止水下落而生成的方块。默认为石头。")
+    @Config.Comment("每个生物群系用于阻止水下落而生成的方块。默认为石头。\n" +
+            "The block generated per biome to prevent water from falling. Defaults to stone.")
     public static final ConfigMap<ConfigurableBiome, ConfigurableBlockState> WATER_PROTECTION_BLOCK =
             new ConfigMap<>(CATEGORY_SOIL_GENERATION, "preProtectionOfWaterFallingBlocks" ,
                     ConfigurableBiome::new,ConfigurableBlockState::getFixedInstanceByString,
@@ -136,8 +137,9 @@ public final class SoilConfig {
     @GeoConfig.Since("0.1")
     @GeoConfig.Fixed
     @Config.RequiresMcRestart
-    @Config.Comment("各种土壤的最大持水量")
-    @GeoConfig.ValueComment("土壤的最大持水量。含水量超过该值时，土壤中的水分将有流动的趋势。这还会使得部分种类的土壤受重力影响而下落。")
+    @Config.Comment("各种土壤的最大持水量\nMax water-holding capacity for each soil type.")
+    @GeoConfig.ValueComment("土壤的最大持水量。含水量超过该值时，土壤中的水分将有流动的趋势。这还会使得部分种类的土壤受重力影响而下落。\n" +
+            "Max water-holding capacity. When moisture exceeds this value, water in the soil tends to flow. This also causes certain soil types to fall under gravity.")
     public static final ConfigMap<BlockSoilType,Integer> STABLE_HUMIDITY =
             new ConfigMap<>(CATEGORY_SOIL_WATER, "stableHumidityValues",BlockSoilType::getInstanceByString,Integer::parseInt,
                     new ConfigEntry<>(BlockSoilType.DIRT,2),
@@ -154,8 +156,8 @@ public final class SoilConfig {
     @GeoConfig.Since("0.1")
     @GeoConfig.Fixed
     @Config.RequiresMcRestart
-    @Config.Comment("地表径流在一次下渗尝试中下渗到指定土壤类型的概率")
-    @GeoConfig.ValueComment("一个概率,取值范围[0,1]。")
+    @Config.Comment("地表径流在一次下渗尝试中下渗到指定土壤类型的概率\nProbability of surface runoff infiltrating into the specified soil type per infiltration attempt.")
+    @GeoConfig.ValueComment("一个概率,取值范围[0,1]。\nA probability value in the range [0, 1].")
     public static final ConfigMap<BlockSoilType,Double> FLOW_IN_POSSIBILITY =
             new ConfigMap<>(CATEGORY_SOIL_WATER, "possibilityForCurrentsToInfiltrate",BlockSoilType::getInstanceByString,Double::parseDouble,
                     new ConfigEntry<>(BlockSoilType.DIRT,0.3),
@@ -172,8 +174,8 @@ public final class SoilConfig {
     @GeoConfig.Since("0.1")
     @Config.RequiresMcRestart
     @GeoConfig.Fixed
-    @Config.Comment("大气降雨在一次下渗尝试中下渗到指定土壤类型的概率")
-    @GeoConfig.ValueComment("一个概率,取值范围[0,1]。")
+    @Config.Comment("大气降雨在一次下渗尝试中下渗到指定土壤类型的概率\nProbability of rainfall infiltrating into the specified soil type per infiltration attempt.")
+    @GeoConfig.ValueComment("一个概率,取值范围[0,1]。\nA probability value in the range [0, 1].")
     public static final ConfigMap<BlockSoilType,Double> RAIN_IN_POSSIBILITY =
             new ConfigMap<>(CATEGORY_SOIL_WATER,
                     "possibilityForRainToInfiltrate",BlockSoilType::getInstanceByString,Double::parseDouble,
