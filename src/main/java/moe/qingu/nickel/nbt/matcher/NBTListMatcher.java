@@ -51,9 +51,18 @@ public final class NBTListMatcher extends NBTMatcher<NBTTagList> {
         return NBTTagList.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagList toNBT() {
+        final NBTTagList list = new NBTTagList();
+        for(final NBTMatcher<?> matcher:matchers) list.appendTag(matcher.toNBT());
+        return list;
+    }
+
     @Override
     public boolean _match(final @Nonnull NBTTagList list) {
         if(matchers.isEmpty()) return list.isEmpty();
+        if(list.tagCount() < matchers.size()) return false;
         for(final NBTMatcher<?> matcher:matchers)
             match:{
                 for(final NBTBase nbt: list) if(matcher.match(nbt)) break match;

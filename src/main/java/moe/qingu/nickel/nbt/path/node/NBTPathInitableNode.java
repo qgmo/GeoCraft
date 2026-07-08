@@ -25,57 +25,15 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.nickel.nbt.matcher;
+package moe.qingu.nickel.nbt.path.node;
 
-import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTBase;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public strictfp final class NBTDoubleMatcher extends NBTMatcher<NBTTagDouble> {
-    private final double num;
-
-    public NBTDoubleMatcher(final double num) {
-        this.num = num;
-    }
-
-    public double getExpectedDouble() {
-        return num;
-    }
-
-    @Override
-    public int hashCode() {
-        return Double.hashCode(num);
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if(obj instanceof NBTDoubleMatcher){
-            return this.num == ((NBTDoubleMatcher) obj).num;
-        }else return false;
-    }
-
-    @Override
-    public String toString() {
-        return num+"d";
-    }
-
-    @Nonnull
-    @Override
-    public Class<NBTTagDouble> getMatchType() {
-        return NBTTagDouble.class;
-    }
-
-    @Nonnull
-    @Override
-    public NBTTagDouble toNBT() {
-        return new NBTTagDouble(num);
-    }
-
-    @Override
-    protected boolean _match(@Nonnull final NBTTagDouble nbtTagDouble) {
-        return nbtTagDouble.getDouble() == num;
-    }
+public interface NBTPathInitableNode extends NBTPathNode {
+    @Nonnull NBTBase init();
 }

@@ -34,6 +34,7 @@ import net.minecraft.nbt.*;
 import net.minecraftforge.common.util.Constants;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -43,7 +44,8 @@ import static moe.qingu.nickel.text.Texts.translation;
  * @author QGMoe
  */
 public final class NBTPathIndex implements NBTPathModifiableNode{
-    private final int index;
+    private final static ThreadLocal<ArrayList<NBTBase>> cache = ThreadLocal.withInitial(ArrayList::new);
+    final int index;
 
     public NBTPathIndex(final int index) {
         this.index = index;
@@ -110,6 +112,21 @@ public final class NBTPathIndex implements NBTPathModifiableNode{
                 throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_NO_LONG));
             array[i] = ((NBTPrimitive)replacement).getLong();
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_INDEX_MISMATCH));
+    }
+
+    public void insert(@Nonnull final NBTBase base, @Nonnull final NBTBase tag) throws NickelRuntimeException {
+        if(base instanceof NBTTagList){
+            final NBTTagList list = (NBTTagList) base;
+            final int i = index<0?list.tagCount()+index:index;
+            if(i<0 || i > list.tagCount()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_INDEX_OUT,i));
+            if(list.getTagType() != 0 && tag.getId() != list.getTagType())
+                throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_INDEX_NO_TYPE)
+                        .arg(NBTBase.NBT_TYPES[tag.getId()],NBTBase.NBT_TYPES[list.getTagType()]));
+            final ArrayList<NBTBase> ca = cache.get();
+            while (list.tagCount()>=i) ca.add(list.removeTag(list.tagCount()-1));
+            list.appendTag(tag);
+            for(int j=ca.size()-1;j>=0;j--) list.appendTag(ca.get(j));
+        } else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_INDEX_MISMATCH));
     }
 
     @Override

@@ -45,6 +45,12 @@ public final class NBTShortMatcher extends NBTPrimitiveMatcher<NBTTagShort> {
         return NBTTagShort.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagShort toNBT() {
+        return new NBTTagShort((short) num);
+    }
+
     @Override
     public char getSuffix() {
         return 's';

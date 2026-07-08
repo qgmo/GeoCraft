@@ -69,6 +69,12 @@ public strictfp final class NBTFloatMatcher extends NBTMatcher<NBTTagFloat> {
         return NBTTagFloat.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagFloat toNBT() {
+        return new NBTTagFloat(num);
+    }
+
     @Override
     protected boolean _match(@Nonnull final NBTTagFloat nbtTagFloat) {
         return nbtTagFloat.getFloat() == num;

@@ -43,10 +43,10 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathTag implements NBTPathModifiableNode {
+public final class NBTPathTag implements NBTPathModifiableNode,NBTPathInitableNode {
 
-    private final String key;
-    private final NBTCompoundMatcher valueFilter;
+    final String key;
+    final NBTCompoundMatcher valueFilter;
 
     public NBTPathTag(final @Nonnull String key,final @Nullable NBTCompoundMatcher valueFilter) {
         this.key = key;
@@ -97,9 +97,25 @@ public final class NBTPathTag implements NBTPathModifiableNode {
         return valueFilter == null?I18nKeys.NBTPath.NODE_TAG:I18nKeys.NBTPath.NODE_TAG_COMPOUND;
     }
 
+    @Nonnull
+    public String getKey() {
+        return key;
+    }
+
+    @Nullable
+    public NBTCompoundMatcher getValueFilter() {
+        return valueFilter;
+    }
+
     @Override
     @Nonnull
     public String toString() {
         return valueFilter == null?key:key+valueFilter;
+    }
+
+    @Nonnull
+    @Override
+    public NBTBase init() {
+        return valueFilter==null?new NBTTagCompound():valueFilter.toNBT();
     }
 }

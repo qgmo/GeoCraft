@@ -89,6 +89,26 @@ public final class NBTArrayMatcher extends NBTMatcher<NBTBase> {
         return (Class<NBTBase>) arrayType;
     }
 
+    @Nonnull
+    @Override
+    public NBTBase toNBT() {
+        if(arrayType == NBTTagByteArray.class){
+            final LongIterator iterator = expectations.iterator();
+            final byte[] arr = new byte[expectations.size()];
+            int i=0;
+            while (iterator.hasNext()) arr[i++] = (byte) iterator.nextLong();
+            return new NBTTagByteArray(arr);
+        }else if(arrayType == NBTTagIntArray.class){
+            final LongIterator iterator = expectations.iterator();
+            final int[] arr = new int[expectations.size()];
+            int i=0;
+            while (iterator.hasNext()) arr[i++] = (int) iterator.nextLong();
+            return new NBTTagIntArray(arr);
+        }else {
+            return new NBTTagLongArray(expectations.toLongArray());
+        }
+    }
+
     @Override
     protected boolean _match(@Nonnull final NBTBase nbt) {
         final LongOpenHashSet nbts = new LongOpenHashSet();

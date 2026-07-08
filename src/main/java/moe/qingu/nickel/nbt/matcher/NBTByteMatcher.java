@@ -45,6 +45,12 @@ public final class NBTByteMatcher extends NBTPrimitiveMatcher<NBTTagByte> {
         return NBTTagByte.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagByte toNBT() {
+        return new NBTTagByte((byte) num);
+    }
+
     @Override
     public char getSuffix() {
         return 'b';

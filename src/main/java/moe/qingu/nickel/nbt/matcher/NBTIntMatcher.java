@@ -44,6 +44,12 @@ public final class NBTIntMatcher extends NBTPrimitiveMatcher<NBTTagInt> {
         return NBTTagInt.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagInt toNBT() {
+        return new NBTTagInt((int) num);
+    }
+
     @Override
     public char getSuffix() {
         return 0;

@@ -49,4 +49,10 @@ public final class NBTLongMatcher extends NBTPrimitiveMatcher<NBTTagLong> {
     public Class<NBTTagLong> getMatchType() {
         return NBTTagLong.class;
     }
+
+    @Nonnull
+    @Override
+    public NBTTagLong toNBT() {
+        return new NBTTagLong(num);
+    }
 }

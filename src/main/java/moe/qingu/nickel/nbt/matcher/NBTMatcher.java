@@ -49,6 +49,9 @@ public abstract class NBTMatcher<T extends NBTBase> {
     @Nonnull
     public abstract Class<T> getMatchType();
 
+    @Nonnull
+    public abstract T toNBT();
+
     public final boolean match(final @Nonnull NBTBase nbt){
         if(nbt.getClass() != getMatchType()) return false;
         else return _match(getMatchType().cast(nbt));

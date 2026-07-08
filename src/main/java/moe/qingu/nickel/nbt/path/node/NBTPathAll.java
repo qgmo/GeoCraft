@@ -46,7 +46,7 @@ import static moe.qingu.nickel.text.Texts.translation;
 /**
  * @author QGMoe
  */
-public final class NBTPathAll implements NBTPathModifiableNode {
+public final class NBTPathAll implements NBTPathModifiableNode,NBTPathInitableNode {
     public static final NBTPathAll ALL = new NBTPathAll();
 
     private NBTPathAll(){}
@@ -108,5 +108,11 @@ public final class NBTPathAll implements NBTPathModifiableNode {
         if(base instanceof NBTTagList){
             NBTUtils.empty((NBTTagList) base);
         }else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_ALL_MISMATCH));
+    }
+
+    @Nonnull
+    @Override
+    public NBTBase init() {
+        return new NBTTagList();
     }
 }

@@ -73,6 +73,14 @@ public final class NBTCompoundMatcher extends NBTMatcher<NBTTagCompound> {
         return NBTTagCompound.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagCompound toNBT() {
+        final NBTTagCompound compound = new NBTTagCompound();
+        for(final Map.Entry<String,NBTMatcher<?>> entry:map.entrySet()) compound.setTag(entry.getKey(),entry.getValue().toNBT());
+        return compound;
+    }
+
     @Override
     protected boolean _match(final @Nonnull NBTTagCompound compound) {
         for(final Map.Entry<String,NBTMatcher<?>> entry:map.entrySet()){

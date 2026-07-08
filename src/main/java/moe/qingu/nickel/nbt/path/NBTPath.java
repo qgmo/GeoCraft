@@ -29,8 +29,7 @@ package moe.qingu.nickel.nbt.path;
 
 import moe.qingu.nickel.I18nKeys;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.nbt.path.node.NBTPathModifiableNode;
-import moe.qingu.nickel.nbt.path.node.NBTPathNode;
+import moe.qingu.nickel.nbt.path.node.*;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextFormatting;
@@ -77,12 +76,7 @@ public final class NBTPath {
 
     public void set(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_EMPTY));
-        Stream<NBTBase> c = Stream.of(compound);
-        for(int i=0;i<length()-1;i++){
-            final int cur = i;
-            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
-        }
-        final List<NBTBase> nbt = c.collect(Collectors.toList());
+        final List<NBTBase> nbt = matchParent(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_FOUND_MULTI));
         final NBTPathNode last = nodes.get(nodes.size()-1);
@@ -96,14 +90,25 @@ public final class NBTPath {
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.SET_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
     }
 
+    public void insert(final @Nonnull NBTTagCompound compound,final @Nonnull NBTBase tag,final boolean allowMulti) throws NickelRuntimeException{
+        if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_EMPTY));
+        final List<NBTBase> nbt = matchParent(compound);
+        if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_NOT_FOUND));
+        else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_FOUND_MULTI));
+        final NBTPathNode last = nodes.get(nodes.size()-1);
+        if(last instanceof NBTPathIndex)
+            for(final NBTBase n:nbt)
+                try {
+                    ((NBTPathIndex) last).insert(n,tag);
+                }catch (final NickelRuntimeException e){
+                    if(!allowMulti) throw e;
+                }
+        else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.INSERT_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+    }
+
     public void remove(final @Nonnull NBTTagCompound compound,final boolean allowMulti) throws NickelRuntimeException {
         if(this.nodes.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_EMPTY));
-        Stream<NBTBase> c = Stream.of(compound);
-        for(int i=0;i<length()-1;i++){
-            final int cur = i;
-            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
-        }
-        final List<NBTBase> nbt = c.collect(Collectors.toList());
+        final List<NBTBase> nbt = matchParent(compound);
         if(nbt.isEmpty()) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_NOT_FOUND));
         else if(!allowMulti && nbt.size() >1) throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_MULTI_FOUND));
         final NBTPathNode last = nodes.get(nodes.size()-1);
@@ -115,6 +120,44 @@ public final class NBTPath {
                     if(!allowMulti) throw e;
                 }
         else throw new NickelRuntimeException(translation(I18nKeys.NBTPath.REMOVE_UNSUPPORTED,translation(last.getLocalName()).color(TextFormatting.GOLD)));
+    }
+
+    public void init(final @Nonnull NBTTagCompound compound) throws NickelRuntimeException {
+        Stream<NBTBase> c = Stream.of(compound);
+        for(int i=0;i<nodes.size()-1;i++){
+            final int cur = i;
+            c = c.peek(e -> init(e,cur)).flatMap(e -> nodes.get(cur).filter(e).stream());
+        }
+    }
+
+    private void init(final @Nonnull NBTBase base,final int cur) {
+        if(!(base instanceof NBTTagCompound)) return;
+        final NBTTagCompound compound = (NBTTagCompound) base;
+        switch (this.nodes.size()-cur){
+            case 0:
+            case 1: return;
+            default:{
+                final NBTPathNode node = this.nodes.get(cur);
+                if(node instanceof NBTPathTag){
+                    final NBTPathTag tag = (NBTPathTag) node;
+                    if(compound.hasKey(tag.getKey())) return;
+                    final NBTPathNode next = this.nodes.get(cur+1);
+                    final NBTBase content;
+                    if(next instanceof NBTPathInitableNode) content = ((NBTPathInitableNode) next).init();
+                    else return;
+                    compound.setTag(tag.getKey(),content);
+                }
+            }
+        }
+    }
+
+    private @Nonnull List<NBTBase> matchParent(final @Nonnull NBTTagCompound compound){
+        Stream<NBTBase> c = Stream.of(compound);
+        for(int i=0;i<length()-1;i++){
+            final int cur = i;
+            c = c.flatMap(e -> nodes.get(cur).filter(e).stream());
+        }
+        return c.collect(Collectors.toList());
     }
 
     @Override

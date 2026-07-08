@@ -37,8 +37,8 @@ import java.util.*;
 /**
  * @author QGMoe
  */
-public final class NBTPathCompound implements NBTPathNode{
-    private final NBTCompoundMatcher matcher;
+public final class NBTPathCompound implements NBTPathInitableNode{
+    final NBTCompoundMatcher matcher;
 
     public NBTPathCompound(final @Nonnull NBTCompoundMatcher matcher) {
         this.matcher = matcher;
@@ -66,5 +66,11 @@ public final class NBTPathCompound implements NBTPathNode{
     @Nonnull
     public String toString() {
         return matcher.toString();
+    }
+
+    @Nonnull
+    @Override
+    public NBTBase init() {
+        return matcher.toNBT();
     }
 }

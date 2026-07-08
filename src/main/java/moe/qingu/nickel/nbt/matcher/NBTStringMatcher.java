@@ -71,6 +71,12 @@ public final class NBTStringMatcher extends NBTMatcher<NBTTagString> {
         return NBTTagString.class;
     }
 
+    @Nonnull
+    @Override
+    public NBTTagString toNBT() {
+        return new NBTTagString(expectation);
+    }
+
     @Override
     protected boolean _match(@Nonnull final NBTTagString nbtTagString) {
         return expectation.equals(nbtTagString.getString());

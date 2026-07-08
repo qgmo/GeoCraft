@@ -188,6 +188,14 @@ public final class I18nKeys {
         public static final String SET_NOT_FOUND = "nickel.command.nbt.path.set.not_found";
         public static final String SET_FOUND_MULTI = "nickel.command.nbt.path.set.multi_found";
 
+        public static final String INSERT_INDEX_MISMATCH = "nickel.command.nbt.path.insert.index.mismatch";
+        public static final String INSERT_INDEX_OUT = "nickel.command.nbt.path.insert.index.out_of_index";
+        public static final String INSERT_INDEX_NO_TYPE = "nickel.command.nbt.path.insert.index.not_type";
+        public static final String INSERT_EMPTY = "nickel.command.nbt.path.insert.empty";
+        public static final String INSERT_UNSUPPORTED = "nickel.command.nbt.path.insert.unsupported";
+        public static final String INSERT_NOT_FOUND = "nickel.command.nbt.path.insert.not_found";
+        public static final String INSERT_FOUND_MULTI = "nickel.command.nbt.path.insert.multi_found";
+
         public static final String REMOVE_INDEX_MISMATCH = "nickel.command.nbt.path.remove.index.mismatch";
         public static final String REMOVE_TAG_MISMATCH = "nickel.command.nbt.path.remove.tag.mismatch";
         public static final String REMOVE_TAG_MISVALUE = "nickel.command.nbt.path.remove.tag.misvalue";
