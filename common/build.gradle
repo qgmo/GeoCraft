@@ -285,6 +285,10 @@ jar {
     from(project(':cleanroom').sourceSets.main.output)
 }
 
+tasks.named('sourcesJar').configure {
+    from(project(':cleanroom').sourceSets.main.allSource)
+}
+
 idea {
     module {
         inheritOutputDirs = true

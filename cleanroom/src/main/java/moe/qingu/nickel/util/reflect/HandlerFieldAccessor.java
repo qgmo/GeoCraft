@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 /**
  * @author QGMoe
@@ -38,60 +39,63 @@ import java.lang.reflect.Field;
 @SuppressWarnings("unused")
 public final class HandlerFieldAccessor extends FieldAccessor{
     private final VarHandle handle;
+    private final boolean isStatic;
 
     public HandlerFieldAccessor(@Nonnull final Field field) throws IllegalAccessException {
         super(field);
         this.handle = MethodHandles.privateLookupIn(field.getDeclaringClass(),MethodHandles.lookup()).unreflectVarHandle(field);
+        this.isStatic = Modifier.isStatic(field.getModifiers());
     }
 
     @Override
     public Object get(final Object obj) {
-        return handle.get(obj);
+        return isStatic?handle.get():handle.get(obj);
     }
 
     @Override
     public byte getByte(final Object obj) {
-        return (byte) handle.get(obj);
+        return (byte) get(obj);
     }
 
     @Override
     public short getShort(final Object obj) {
-        return (short) handle.get(obj);
+        return (short) get(obj);
     }
 
     @Override
     public int getInt(final Object obj) {
-        return (int) handle.get(obj);
+        return (int) get(obj);
     }
 
     @Override
     public long getLong(final Object obj) {
-        return (long) handle.get(obj);
+        return (long) get(obj);
     }
 
     @Override
     public float getFloat(final Object obj) {
-        return (float) handle.get(obj);
+        return (float) get(obj);
     }
 
     @Override
     public double getDouble(final Object obj) {
-        return (double) handle.get(obj);
+        return (double) get(obj);
     }
 
     @Override
     public char getChar(final Object obj) {
-        return (char) handle.get(obj);
+        return (char) get(obj);
     }
 
     @Override
     public boolean getBoolean(final Object obj) {
-        return (boolean) handle.get(obj);
+        return (boolean) get(obj);
     }
 
     @Override
     public void set(final Object obj,final Object replacement) {
-        handle.set(obj,replacement);
+        if(isStatic) handle.set(replacement);
+        else handle.set(obj,replacement);
     }
 
     @Override
