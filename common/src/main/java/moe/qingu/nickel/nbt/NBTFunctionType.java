@@ -27,19 +27,20 @@
 
 package moe.qingu.nickel.nbt;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import net.minecraft.nbt.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author QGMoe
  */
 public final class NBTFunctionType {
-    public static final Map<Class<? extends NBTBase>, String> TYPES = new HashMap<>();
+    public static final BiMap<Class<? extends NBTBase>, String> TYPES = HashBiMap.create();
     private final Class<? extends NBTBase>[] inputs;
 
     static {

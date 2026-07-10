@@ -32,6 +32,7 @@ import com.google.common.collect.Table;
 import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.nbt.NBTFunctionType;
+import moe.qingu.nickel.nbt.matcher.NBTMatcher;
 import net.minecraft.nbt.*;
 import net.minecraftforge.fml.common.discovery.ASMDataTable;
 
@@ -42,13 +43,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QGMoe
@@ -85,6 +85,29 @@ public final class NBTPathMethods {
             if(pattern.matcher(s).matches()) return Collections.singleton(tag);
             else return Collections.emptyList();
         };
+    }
+
+    @Nonnull
+    @NBTPathFunction(processor = true)
+    public static Function<NBTBase,Collection<NBTBase>> match(final @Nonnull NBTBase raw){
+        final NBTMatcher<?> matcher = NBTMatcher.toMatcher(raw);
+        return tag -> matcher.match(tag)?Collections.singleton(tag):Collections.emptyList();
+    }
+
+    @Nonnull
+    @NBTPathFunction(processor = true)
+    public static Function<NBTBase,Collection<NBTBase>> type(final @Nonnull NBTPrimitive num) throws NickelRuntimeException{
+        final int id = num.getInt();
+        if(id>= 0 && id < NBTBase.NBT_TYPES.length) return type(new NBTTagString(NBTBase.NBT_TYPES[id]));
+        else throw new NickelRuntimeException(translation("nickel.command.nbt.path.method.type.undefined",id));
+    }
+
+    @Nonnull
+    @NBTPathFunction(processor = true)
+    public static Function<NBTBase,Collection<NBTBase>> type(final @Nonnull NBTTagString str) throws NickelRuntimeException {
+        final Class<?> type = NBTFunctionType.TYPES.inverse().get(str.getString().toUpperCase(Locale.ROOT));
+        if(type == null) throw new NickelRuntimeException(translation("nickel.command.nbt.path.method.type.undefined",str.getString().toUpperCase(Locale.ROOT)));
+        return tag -> type.isAssignableFrom(tag.getClass())?Collections.singleton(tag):Collections.emptyList();
     }
 
     public static void register(final @Nonnull String name, final @Nonnull NBTFunctionType type, final @Nonnull NBTPathMethod method){
