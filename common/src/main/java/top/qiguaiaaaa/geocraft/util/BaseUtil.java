@@ -33,6 +33,12 @@ import top.qiguaiaaaa.geocraft.configs.FluidPhysicsConfig;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
+import java.lang.invoke.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -49,6 +55,37 @@ public final class BaseUtil {
         final @Nonnull File configurationDir = new File("config");
         if(!configurationDir.exists()) return null;
         return new File(configurationDir+File.separator+ GeoCraft.MODID+".cfg");
+    }
+
+    @Nonnull
+    public static <T> Map<String,T> getLambdasFrom(final @Nonnull MethodHandles.Lookup permission,
+                                                   final @Nonnull Class<?> cls,
+                                                   final @Nonnull Class<T> lambda){
+        final Map<String,T> res = new HashMap<>();
+        final Method lambdaMethod = Arrays.stream(lambda.getMethods())
+                .filter(m -> Modifier.isAbstract(m.getModifiers()))
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
+        final Method[] methods = cls.getDeclaredMethods();
+        for(final Method method:methods){
+            try{
+                final MethodHandle handle = permission.unreflect(method);
+
+                final @Nonnull CallSite site = LambdaMetafactory.metafactory(
+                        permission,
+                        lambdaMethod.getName(),
+                        MethodType.methodType(lambda),
+                        MethodType.methodType(lambdaMethod.getReturnType(),lambdaMethod.getParameterTypes()),
+                        handle,
+                        handle.type()
+                );
+                final T t = lambda.cast(site.getTarget().invoke());
+                res.put(method.getName(),t);
+            } catch (final @Nonnull Throwable e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return res;
     }
 
     /**

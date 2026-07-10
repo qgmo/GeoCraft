@@ -40,10 +40,13 @@ import net.minecraft.command.ICommandManager;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.LoaderState;
 import top.qiguaiaaaa.geocraft.GeoCraft;
+import top.qiguaiaaaa.geocraft.command.atmosphere.AtmosphereAdds;
+import top.qiguaiaaaa.geocraft.command.atmosphere.AtmosphereQueries;
+import top.qiguaiaaaa.geocraft.command.atmosphere.AtmosphereSets;
+import top.qiguaiaaaa.geocraft.command.atmosphere.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.test.GeoTest;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Function;
@@ -53,8 +56,8 @@ import java.util.stream.Stream;
 import static dev.xhyrom.brigo.shadow.brigadier.arguments.DoubleArgumentType.doubleArg;
 import static dev.xhyrom.brigo.shadow.brigadier.arguments.IntegerArgumentType.integer;
 import static dev.xhyrom.brigo.shadow.brigadier.arguments.StringArgumentType.greedyString;
-import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.ATMOSPHERE_COMMAND_NAME;
-import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.getPropertyList;
+import static top.qiguaiaaaa.geocraft.command.atmosphere.CommandAtmosphere.ATMOSPHERE_COMMAND_NAME;
+import static top.qiguaiaaaa.geocraft.command.atmosphere.CommandAtmosphere.getPropertyList;
 import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FLUID_PHYSICS_COMMAND_NAME;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;
 
@@ -95,15 +98,15 @@ public final class BrigoCompat {
     @Nonnull
     public static LiteralCommandNode<CommandSource> registerAtmosphere(){
         return register(literal(ATMOSPHERE_COMMAND_NAME)
-                .then(literal("set", Stream.concat(getPropertyList().stream(),CommandAtmosphere.SetConsumer.keySet().stream()).collect(Collectors.toList()),
+                .then(literal("set", Stream.concat(getPropertyList().stream(), AtmosphereSets.SetConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> builder.then(pos(argument(VALUE, doubleArg()),Function.identity())
                                 .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("add", Stream.concat(getPropertyList().stream(),CommandAtmosphere.AddConsumer.keySet().stream()).collect(Collectors.toList()),
+                .then(literal("add", Stream.concat(getPropertyList().stream(), AtmosphereAdds.AddConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> builder.then(pos(argument(VALUE, doubleArg()),Function.identity())
                                 .executes(DO_NOTHING)))
                         .then(compatArgs(PROPERTY,VALUE,"x","y","z")))
-                .then(literal("query",new ArrayList<>(CommandAtmosphere.QueryConsumer.keySet()),
+                .then(literal("query",Stream.concat(getPropertyList().stream(), AtmosphereQueries.QueryConsumer.keySet().stream()).collect(Collectors.toList()),
                         builder -> pos(builder,posThen ->
                                 posThen.then(argument("scale",DoubleArgumentType.doubleArg()))
                                         .executes(DO_NOTHING))

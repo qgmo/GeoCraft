@@ -63,7 +63,7 @@ import javax.annotation.Nullable;
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
 import static net.minecraft.block.BlockLiquid.LEVEL;
-import static top.qiguaiaaaa.geocraft.command.CommandAtmosphere.AtmosphereCommandContext.ACCESSOR;
+import static top.qiguaiaaaa.geocraft.command.atmosphere.AtmosphereCommandContext.ACCESSOR;
 import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FluidPhysicsCommandExecutor.CHECK_ATMOSPHERE_ACCESSIBILITY;
 import static top.qiguaiaaaa.geocraft.command.CommandFluidPhysics.FluidPhysicsCommandExecutor.GET_LIGHTED_ATMOSPHERE_ACCESSOR;
 import static top.qiguaiaaaa.geocraft.command.GeoArguments.*;

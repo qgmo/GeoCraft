@@ -35,7 +35,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.Logger;
 import top.qiguaiaaaa.geocraft.api.atmosphere.AtmosphereSystemRunner;
 import top.qiguaiaaaa.geocraft.api.atmosphere.storage.AtmosphereRegionFileCache;
-import top.qiguaiaaaa.geocraft.command.CommandAtmosphere;
+import top.qiguaiaaaa.geocraft.command.atmosphere.CommandAtmosphere;
 import top.qiguaiaaaa.geocraft.command.CommandFluidPhysics;
 import top.qiguaiaaaa.geocraft.command.CommandGeoConfig;
 import top.qiguaiaaaa.geocraft.command.CommandGeoTest;
