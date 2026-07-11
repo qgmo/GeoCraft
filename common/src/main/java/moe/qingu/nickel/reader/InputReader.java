@@ -232,7 +232,6 @@ public final class InputReader {
                 case '\'': return '\'';
                 case '/': return '/';
                 case '"': return '"';
-                case '0': return '\0';
                 case 'a': return '\u0007';
                 case 'v': return '\u000B';
                 case 'x': return scanInt(2,4);
