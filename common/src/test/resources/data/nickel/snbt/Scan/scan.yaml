@@ -1,0 +1,234 @@
+# 镍-SNBT解析-语法扫描：三态结果
+# ---- 正常走通 ----
+- name: 空复合标签
+  input: '{}'
+  outcome: ok
+
+- name: 单键整数
+  input: '{a:1}'
+  outcome: ok
+
+- name: 复杂结构
+  input: '{a:{b:[1,2],c:"x y"},d:1.5f}'
+  outcome: ok
+
+- name: 尾逗号
+  input: '{a:1,}'
+  outcome: ok
+
+- name: 混型列表宽容 # 预期行为：扫描器不查列表类型一致性
+  input: '{a:[1,"x"]}'
+  outcome: ok
+
+- name: 非法数字宽容 # 预期行为：扫描器不查数字合法性
+  input: '{a:00.5}'
+  outcome: ok
+
+- name: 空键宽容 # 预期行为：扫描器不查空键
+  input: '{:1}'
+  outcome: ok
+
+- name: 单NBT入口尾随空白
+  input: '{a:1} rest'
+  mode: single
+  outcome: ok
+
+# ---- EOF 信号（输入未完成）----
+- name: 空输入
+  input: ''
+  outcome: eof
+
+- name: 仅左花括号
+  input: '{'
+  outcome: eof
+
+- name: 截断于键后
+  input: '{a'
+  outcome: eof
+
+- name: 截断于冒号后
+  input: '{a:'
+  outcome: eof
+
+- name: 截断于值后
+  input: '{a:1'
+  outcome: eof
+
+- name: 未闭合字符串
+  input: '{a:"x'
+  outcome: eof
+
+- name: 截断于字符串转义
+  input: '{a:"x\'
+  outcome: eof
+
+- name: 仅左方括号
+  input: '{a:['
+  outcome: eof
+
+- name: 截断于列表逗号后
+  input: '{a:[1,'
+  outcome: eof
+
+- name: 截断于数组前缀
+  input: '{a:[B'
+  outcome: eof
+
+- name: 内层闭合外层未闭合
+  input: '{a:{b:1}'
+  outcome: eof
+
+# ---- 正常走通（补充：与 Read/ReadError 新增样例对应）----
+- name: 缺失值宽容 # 预期行为：扫描器不查空值 token，{a:} 走通（读取侧报错）
+  input: '{a:}'
+  outcome: ok
+
+- name: 孤立负号宽容 # 预期行为：扫描器不查数字合法性
+  input: '{a:-}'
+  outcome: ok
+
+- name: 后缀错配宽容
+  input: '{a:1.5b}'
+  outcome: ok
+
+- name: 双小数点宽容
+  input: '{a:1..5}'
+  outcome: ok
+
+- name: 无符号后缀
+  input: '{a:255ub}'
+  outcome: ok
+
+- name: 负零单精度
+  input: '{a:-0.0f}'
+  outcome: ok
+
+- name: 未注册函数宽容 # 预期行为：扫描器不做函数决议
+  input: '{a:nosuchfunc(1)}'
+  outcome: ok
+
+- name: 函数空参
+  input: '{a:bool()}'
+  outcome: ok
+
+- name: 三明治结构
+  input: '{a:{b:[{c:[1,2]},{c:[3]}]}}'
+  outcome: ok
+
+- name: 重复键
+  input: '{a:1,a:2}'
+  outcome: ok
+
+# ---- EOF 信号（补充）----
+- name: 截断于函数左括号后
+  input: '{a:bool('
+  outcome: eof
+
+- name: 截断于函数实参后
+  input: '{a:bool(1'
+  outcome: eof
+
+- name: 截断于引号键内
+  input: '{"k'
+  outcome: eof
+
+- name: 深处未闭合引号 # 字符串吞掉后续闭括号直至输入耗尽
+  input: '{a:{b:{c:"x}}}'
+  outcome: eof
+
+- name: 截断于嵌套列表逗号后
+  input: '{a:[[1],'
+  outcome: eof
+
+- name: 截断于第二个键后
+  input: '{a:1,b'
+  outcome: eof
+
+- name: 截断于u转义中途
+  input: '{a:"\u59'
+  outcome: eof
+
+# ---- 语法错误 ----
+- name: 缺冒号
+  input: '{a 1}'
+  outcome: error
+
+- name: 双冒号
+  input: '{a::1}'
+  outcome: error
+
+- name: 前导空白 # 预期行为：入口不跳过前导空白
+  input: ' {}'
+  outcome: error
+
+- name: 单NBT入口尾随内容
+  input: '{a:1}x'
+  mode: single
+  outcome: error
+
+- name: 逗号开头 # 空键在扫描侧宽容，但随后期望冒号读到逗号
+  input: '{,a:1}'
+  outcome: error
+
+- name: 双逗号
+  input: '{a:1,,b:2}'
+  outcome: error
+
+- name: 无引号值含汉字 # 汉字不在无引号字符集，期望闭花括号处读到汉字
+  input: '{a:天}'
+  outcome: error
+
+- name: 函数括号错闭
+  input: '{a:bool(1}'
+  outcome: error
+
+# ---- 正常走通（补充：空白交界与函数组合，与 Read/ReadError 新增样例对应）----
+- name: 制表符包围数值
+  input: "{a:\t1b\t}"
+  outcome: ok
+
+- name: 后缀后空白再闭合
+  input: '{a:1b }'
+  outcome: ok
+
+- name: 制表符分隔列表元素
+  input: "{a:[1,\t2]}"
+  outcome: ok
+
+- name: 函数实参制表符空白
+  input: "{r:concat(\t\"a\"\t,\t\"b\"\t)}"
+  outcome: ok
+
+- name: 制表符空列表
+  input: "{a:[\t]}"
+  outcome: ok
+
+# ---- 语法错误（补充）----
+- name: 数字与后缀间空格 # 空白结束值 token，期望闭花括号处读到 b
+  input: '{a:1 b}'
+  outcome: error
+
+- name: 函数名与括号间空格 # 空白结束无引号 token，左括号不再被视作实参表
+  input: '{a:bool (1)}'
+  outcome: error
+
+- name: 键位置函数调用 # 扫描侧同读取侧：键后期望冒号读到左括号
+  input: '{bool(1):2}'
+  outcome: error
+
+- name: 引号函数名
+  input: '{a:"bool"(1)}'
+  outcome: error
+
+- name: 制表符空复合标签 # 扫键无位移后期望冒号读到闭花括号
+  input: "{\t}"
+  outcome: error
+
+# ---- EOF 信号（补充）----
+- name: 截断于类型后缀后
+  input: '{a:1b'
+  outcome: eof
+
+- name: 截断于制表符后
+  input: "{a:\t"
+  outcome: eof

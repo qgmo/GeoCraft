@@ -1,0 +1,133 @@
+# 镍-SNBT解析-合法输入：键
+- name: 双引号键含空格
+  input: '{"a b":1}'
+  expected:
+    type: compound
+    value:
+      "a b": {type: int, value: 1}
+
+- name: 单引号键
+  input: '{''k'':1}'
+  expected:
+    type: compound
+    value:
+      k: {type: int, value: 1}
+
+- name: 引号键两端空白保留 # 引号键原样读出，不做 strip
+  input: '{"  a  ":1}'
+  expected:
+    type: compound
+    value:
+      "  a  ": {type: int, value: 1}
+
+- name: 引号纯空白键 # 纯空白是合法键；空串键仍报 EMPTY_KEY
+  input: '{"   ":1}'
+  expected:
+    type: compound
+    value:
+      "   ": {type: int, value: 1}
+
+- name: 中文键
+  input: '{"键":1}'
+  expected:
+    type: compound
+    value:
+      "键": {type: int, value: 1}
+
+- name: 中文键中文值
+  input: '{"名":"值"}'
+  expected:
+    type: compound
+    value:
+      "名": {type: string, value: "值"}
+
+- name: 键内转义换行
+  input: '{"a\nb":1}'
+  expected:
+    type: compound
+    value:
+      "a\nb": {type: int, value: 1}
+
+- name: 无引号点号键
+  input: '{a.b:1}'
+  expected:
+    type: compound
+    value:
+      "a.b": {type: int, value: 1}
+
+- name: 无引号符号键
+  input: '{+-_.:1}'
+  expected:
+    type: compound
+    value:
+      "+-_.": {type: int, value: 1}
+
+- name: 纯数字键
+  input: '{123:1}'
+  expected:
+    type: compound
+    value:
+      "123": {type: int, value: 1}
+
+- name: 表情符号键
+  input: '{"😀":1}'
+  expected:
+    type: compound
+    value:
+      "😀": {type: int, value: 1}
+
+- name: 键含空格与点号
+  input: '{"a b.c":1}'
+  expected:
+    type: compound
+    value:
+      "a b.c": {type: int, value: 1}
+
+- name: 键内u转义
+  input: '{"\u5929圆":1}'
+  expected:
+    type: compound
+    value:
+      "天圆": {type: int, value: 1}
+
+- name: 单引号键含双引号
+  input: '{''a"b'':1}'
+  expected:
+    type: compound
+    value:
+      'a"b': {type: int, value: 1}
+
+- name: 极限长无引号键
+  input: '{k0123456789012345678901234567890123456789012345678901234567890123:1}'
+  expected:
+    type: compound
+    value:
+      "k0123456789012345678901234567890123456789012345678901234567890123": {type: int, value: 1}
+
+- name: 制表符包围引号键
+  input: "{\t\"a b\"\t:1}"
+  expected:
+    type: compound
+    value:
+      "a b": {type: int, value: 1}
+
+- name: 键后制表符再冒号 # 制表符结束无引号键，随后空白被跳过
+  input: "{a\t:1}"
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 单引号键内转义单引号
+  input: '{''it\''s'':1}'
+  expected:
+    type: compound
+    value:
+      "it's": {type: int, value: 1}
+
+- name: 引号键内字面制表符 # 引号键原样读出，键内字面 tab 保留
+  input: "{\"a\tb\":1}"
+  expected:
+    type: compound
+    value:
+      "a\tb": {type: int, value: 1}

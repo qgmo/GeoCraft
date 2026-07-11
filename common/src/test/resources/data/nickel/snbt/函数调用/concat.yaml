@@ -1,0 +1,71 @@
+# 测试：镍-SNBT-函数调用（concat 函数各重载）
+# Claude Generated
+cases:
+  - name: concat-字符串基本
+    input: '{r:concat("a","b")}'
+    expected: '{r:"ab"}'
+  - name: concat-字符串中文
+    input: '{r:concat("你好","世界")}'
+    expected: '{r:"你好世界"}'
+  - name: concat-字符串双空串
+    input: '{r:concat("","")}'
+    expected: '{r:""}'
+  - name: concat-字符串右空串
+    input: '{r:concat("a","")}'
+    expected: '{r:"a"}'
+  - name: concat-复合标签合并
+    input: '{r:concat({x:1},{y:2})}'
+    expected: '{r:{x:1,y:2}}'
+  - name: concat-复合标签同键后者覆盖
+    input: '{r:concat({x:1,y:1},{y:2})}'
+    expected: '{r:{x:1,y:2}}'
+  - name: concat-复合标签同键异类型覆盖
+    input: '{r:concat({p:1},{p:"x"})}'
+    expected: '{r:{p:"x"}}'
+  - name: concat-复合标签双空
+    input: '{r:concat({},{})}'
+    expected: '{r:{}}'
+  - name: concat-复合标签嵌套值
+    input: '{r:concat({p:{q:1}},{s:2})}'
+    expected: '{r:{p:{q:1},s:2}}'
+  - name: concat-字节数组
+    input: '{r:concat([B;1b,2b],[B;3b])}'
+    expected: '{r:[B;1b,2b,3b]}'
+  - name: concat-字节数组双空
+    input: '{r:concat([B;],[B;])}'
+    expected: '{r:[B;]}'
+  - name: concat-整型数组
+    input: '{r:concat([I;1,2],[I;3])}'
+    expected: '{r:[I;1,2,3]}'
+  - name: concat-长整型数组
+    input: '{r:concat([L;1l,2l],[L;3l])}'
+    expected: '{r:[L;1l,2l,3l]}'
+  - name: concat-数字列表
+    input: '{r:concat([1,2],[3])}'
+    expected: '{r:[1,2,3]}'
+  - name: concat-字符串列表
+    input: '{r:concat(["a"],["b"])}'
+    expected: '{r:["a","b"]}'
+  - name: concat-列表双空
+    input: '{r:concat([],[])}'
+    expected: '{r:[]}'
+  # concat-列表异型拼接：暂不收录——期望语义为异构列表（非复合值以空键包裹成复合标签），
+  # 待实现后启用，见 TestSNBTBuiltinOperations.concatListMixedTypeTest（@Disabled）
+  #- name: concat-列表异型拼接
+  #  input: '{r:concat([1b],["s"])}'
+  #  expected: '{r:[{"":1b},{"":"s"}]}'
+  - name: concat-字符串左空串
+    input: '{r:concat("","b")}'
+    expected: '{r:"b"}'
+  - name: concat-复合标签左空
+    input: '{r:concat({},{x:1})}'
+    expected: '{r:{x:1}}'
+  - name: concat-复合标签右空
+    input: '{r:concat({x:1},{})}'
+    expected: '{r:{x:1}}'
+  - name: concat-复合元素列表拼接
+    input: '{r:concat([{x:1}],[{y:2}])}'
+    expected: '{r:[{x:1},{y:2}]}'
+  - name: concat-嵌套列表拼接
+    input: '{r:concat([[1]],[[2,3]])}'
+    expected: '{r:[[1],[2,3]]}'

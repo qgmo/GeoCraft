@@ -1,0 +1,197 @@
+# 镍-SNBT解析-合法输入：字符串值
+- name: 含空格字符串
+  input: '{a:"x y"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x y"}
+
+- name: 空字符串
+  input: '{a:""}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: ""}
+
+- name: 单引号串含双引号
+  input: '{a:''x"y''}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x\"y"}
+
+- name: 双引号串含单引号
+  input: '{a:"it''s"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "it's"}
+
+- name: 常用转义
+  input: '{a:"1\n2\t3\\4\"5"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "1\n2\t3\\4\"5"}
+
+- name: u转义
+  input: '{a:"\u5929"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "天"}
+
+- name: x转义
+  input: '{a:"\x41"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "A"}
+
+- name: 八进制转义
+  input: '{a:"\101"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "A"}
+
+- name: s转义空格
+  input: '{a:"a\sb"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "a b"}
+
+- name: 中文值
+  input: '{a:"天圆地方"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "天圆地方"}
+
+- name: 辅助平面字符
+  input: '{a:"𐍈水"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "𐍈水"}
+
+- name: 无引号字符串
+  input: '{a:hello}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "hello"}
+
+- name: 首字母大写True是字符串 # 预期行为：只有全小写 true/false 是布尔
+  input: '{a:True}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "True"}
+
+- name: 引号值周围空白
+  input: '{a: "x" }'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x"}
+
+- name: 转义反斜杠后接转义引号 # 多层转义嵌套：\\ 与 \" 相邻
+  input: '{a:"a\\\"b"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "a\\\"b"}
+
+- name: 字面反斜杠路径
+  input: '{a:"c:\\path"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "c:\\path"}
+
+- name: 单引号串内转义单引号
+  input: '{a:''it\''s''}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "it's"}
+
+- name: 回车换页转义
+  input: '{a:"\r\f"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "\r\f"}
+
+- name: e转义为ESC
+  input: '{a:"\e"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "\u001B"}
+
+- name: 大U转义辅助平面
+  input: '{a:"\U0001F600"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "😀"}
+
+- name: 引号值后空白再逗号
+  input: '{a:"x" ,b:"y"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x"}
+      b: {type: string, value: "y"}
+
+- name: 制表符前置引号值
+  input: "{a:\t\"x\"}"
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x"}
+
+- name: 单引号套双引号套转义单引号三层
+  input: '{a:''he said "it\''s ok"''}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: 'he said "it''s ok"'}
+
+- name: 双引号套单引号套转义双引号三层
+  input: '{a:"say ''a\"b'' now"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: 'say ''a"b'' now'}
+
+- name: 单引号串内转义双引号 # 对照"单引号串含双引号"（裸双引号）：转义形式同样合法
+  input: '{a:''x\"y''}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: 'x"y'}
+
+- name: 双引号串内转义单引号 # 对照"双引号串含单引号"（裸单引号）：转义形式同样合法
+  input: '{a:"it\''s"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "it's"}
+
+- name: 转义t制表符
+  input: '{a:"x\ty"}'
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x\ty"}
+
+- name: 引号串内字面制表符 # 与转义 \t 等价：readString 对非转义字符原样收录，字面 tab 不结束引号串
+  input: "{a:\"x\ty\"}"
+  expected:
+    type: compound
+    value:
+      a: {type: string, value: "x\ty"}

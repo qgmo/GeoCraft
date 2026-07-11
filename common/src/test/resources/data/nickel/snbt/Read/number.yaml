@@ -1,0 +1,328 @@
+# 镍-SNBT解析-合法输入：数字字面量
+# ---- 整数与类型后缀 ----
+- name: 零
+  input: '{a:0}'
+  expected: {type: compound, value: {a: {type: int, value: 0}}}
+
+- name: 十
+  input: '{a:10}'
+  expected: {type: compound, value: {a: {type: int, value: 10}}}
+
+- name: 字节小写后缀
+  input: '{a:1b}'
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+- name: 字节大写后缀
+  input: '{a:1B}'
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+- name: 短整数小写后缀
+  input: '{a:1s}'
+  expected: {type: compound, value: {a: {type: short, value: 1}}}
+
+- name: 短整数大写后缀
+  input: '{a:1S}'
+  expected: {type: compound, value: {a: {type: short, value: 1}}}
+
+- name: 长整数小写后缀
+  input: '{a:1l}'
+  expected: {type: compound, value: {a: {type: long, value: 1}}}
+
+- name: 长整数大写后缀
+  input: '{a:1L}'
+  expected: {type: compound, value: {a: {type: long, value: 1}}}
+
+- name: 正号
+  input: '{a:+5}'
+  expected: {type: compound, value: {a: {type: int, value: 5}}}
+
+- name: 负号
+  input: '{a:-5}'
+  expected: {type: compound, value: {a: {type: int, value: -5}}}
+
+# ---- 边界值 ----
+- name: 字节上界
+  input: '{a:127b}'
+  expected: {type: compound, value: {a: {type: byte, value: 127}}}
+
+- name: 字节下界
+  input: '{a:-128b}'
+  expected: {type: compound, value: {a: {type: byte, value: -128}}}
+
+- name: 短整数上界
+  input: '{a:32767s}'
+  expected: {type: compound, value: {a: {type: short, value: 32767}}}
+
+- name: 短整数下界
+  input: '{a:-32768s}'
+  expected: {type: compound, value: {a: {type: short, value: -32768}}}
+
+- name: 整数上界
+  input: '{a:2147483647}'
+  expected: {type: compound, value: {a: {type: int, value: 2147483647}}}
+
+- name: 整数下界
+  input: '{a:-2147483648}'
+  expected: {type: compound, value: {a: {type: int, value: -2147483648}}}
+
+- name: 长整数上界
+  input: '{a:9223372036854775807l}'
+  expected: {type: compound, value: {a: {type: long, value: 9223372036854775807}}}
+
+- name: 长整数下界
+  input: '{a:-9223372036854775808l}'
+  expected: {type: compound, value: {a: {type: long, value: -9223372036854775808}}}
+
+- name: 整数溢出落入双精度 # 预期行为：无后缀十进制超 int 范围时按 double 解析
+  input: '{a:2147483648}'
+  expected: {type: compound, value: {a: {type: double, value: 2147483648.0}}}
+
+# ---- 无符号标记 ----
+- name: 无符号整数标记
+  input: '{a:1u}'
+  expected: {type: compound, value: {a: {type: int, value: 1}}}
+
+- name: 无符号长整数双后缀
+  input: '{a:1ul}'
+  expected: {type: compound, value: {a: {type: long, value: 1}}}
+
+- name: 无符号字节上界 # 预期行为：按位装入有符号 byte
+  input: '{a:255ub}'
+  expected: {type: compound, value: {a: {type: byte, value: -1}}}
+
+- name: 无符号短整数上界
+  input: '{a:65535us}'
+  expected: {type: compound, value: {a: {type: short, value: -1}}}
+
+- name: 无符号整数上界
+  input: '{a:4294967295u}'
+  expected: {type: compound, value: {a: {type: int, value: -1}}}
+
+- name: 无符号长整数上界
+  input: '{a:18446744073709551615ul}'
+  expected: {type: compound, value: {a: {type: long, value: -1}}}
+
+# ---- 进制前缀 ----
+- name: 十六进制
+  input: '{a:0x1F}'
+  expected: {type: compound, value: {a: {type: int, value: 31}}}
+
+- name: 负十六进制
+  input: '{a:-0xff}'
+  expected: {type: compound, value: {a: {type: int, value: -255}}}
+
+- name: 正号十六进制
+  input: '{a:+0x10}'
+  expected: {type: compound, value: {a: {type: int, value: 16}}}
+
+- name: 十六进制中b是数字位 # 预期行为：hex 内 b 不是 Byte 后缀
+  input: '{a:0xffb}'
+  expected: {type: compound, value: {a: {type: int, value: 4091}}}
+
+- name: 十六进制前导零不检查
+  input: '{a:0x01}'
+  expected: {type: compound, value: {a: {type: int, value: 1}}}
+
+- name: 二进制
+  input: '{a:0b101}'
+  expected: {type: compound, value: {a: {type: int, value: 5}}}
+
+- name: 裸0b是字节零 # 预期行为：0b 无内容时按十进制 0 + 后缀 b 解析
+  input: '{a:0b}'
+  expected: {type: compound, value: {a: {type: byte, value: 0}}}
+
+- name: 十六进制带下划线
+  input: '{a:0x1_F}'
+  expected: {type: compound, value: {a: {type: int, value: 31}}}
+
+# ---- 数字分隔符 ----
+- name: 千位分隔
+  input: '{a:1_000}'
+  expected: {type: compound, value: {a: {type: int, value: 1000}}}
+
+- name: 长整数分隔
+  input: '{a:1_000_000l}'
+  expected: {type: compound, value: {a: {type: long, value: 1000000}}}
+
+- name: 连续下划线 # 预期行为：两侧是数字即可，中间可连续
+  input: '{a:1__0}'
+  expected: {type: compound, value: {a: {type: int, value: 10}}}
+
+- name: 下划线开头是字符串 # 预期行为：_ 不是数字首字符，落入无引号字符串
+  input: '{a:_1}'
+  expected: {type: compound, value: {a: {type: string, value: "_1"}}}
+
+# ---- 浮点 ----
+- name: 单精度小写后缀
+  input: '{a:1.5f}'
+  expected: {type: compound, value: {a: {type: float, value: 1.5}}}
+
+- name: 单精度大写后缀
+  input: '{a:1.5F}'
+  expected: {type: compound, value: {a: {type: float, value: 1.5}}}
+
+- name: 双精度小写后缀
+  input: '{a:1.5d}'
+  expected: {type: compound, value: {a: {type: double, value: 1.5}}}
+
+- name: 双精度大写后缀
+  input: '{a:1.5D}'
+  expected: {type: compound, value: {a: {type: double, value: 1.5}}}
+
+- name: 无后缀小数默认双精度
+  input: '{a:1.5}'
+  expected: {type: compound, value: {a: {type: double, value: 1.5}}}
+
+- name: 点开头小数
+  input: '{a:.5}'
+  expected: {type: compound, value: {a: {type: double, value: 0.5}}}
+
+- name: 点结尾小数
+  input: '{a:5.}'
+  expected: {type: compound, value: {a: {type: double, value: 5.0}}}
+
+- name: 点后缀单精度
+  input: '{a:1.f}'
+  expected: {type: compound, value: {a: {type: float, value: 1.0}}}
+
+- name: 科学计数法小写
+  input: '{a:1e2}'
+  expected: {type: compound, value: {a: {type: double, value: 100.0}}}
+
+- name: 科学计数法大写
+  input: '{a:1E2}'
+  expected: {type: compound, value: {a: {type: double, value: 100.0}}}
+
+- name: 科学计数法单精度
+  input: '{a:1e2f}'
+  expected: {type: compound, value: {a: {type: float, value: 100.0}}}
+
+- name: 负科学计数法
+  input: '{a:-1.25e2}'
+  expected: {type: compound, value: {a: {type: double, value: -125.0}}}
+
+- name: 零点五
+  input: '{a:0.5}'
+  expected: {type: compound, value: {a: {type: double, value: 0.5}}}
+
+- name: 一点零
+  input: '{a:1.0}'
+  expected: {type: compound, value: {a: {type: double, value: 1.0}}}
+
+- name: 小数中间零
+  input: '{a:1.05}'
+  expected: {type: compound, value: {a: {type: double, value: 1.05}}}
+
+# ---- 负零 ----
+- name: 负零整数
+  input: '{a:-0}'
+  expected: {type: compound, value: {a: {type: int, value: 0}}}
+
+- name: 负零字节 # 预期行为：与裸 0b 同理，-0b 按十进制 -0 + 后缀 b 解析
+  input: '{a:-0b}'
+  expected: {type: compound, value: {a: {type: byte, value: 0}}}
+
+- name: 负零长整数
+  input: '{a:-0l}'
+  expected: {type: compound, value: {a: {type: long, value: 0}}}
+
+- name: 负零双精度
+  input: '{a:-0.0}'
+  expected: {type: compound, value: {a: {type: double, value: -0.0}}}
+
+- name: 负零单精度
+  input: '{a:-0.0f}'
+  expected: {type: compound, value: {a: {type: float, value: -0.0}}}
+
+# ---- 前导正号与后缀组合 ----
+- name: 正号字节
+  input: '{a:+1b}'
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+- name: 正号单精度
+  input: '{a:+1.5f}'
+  expected: {type: compound, value: {a: {type: float, value: 1.5}}}
+
+- name: 无小数点单精度 # Java 原生支持 1f 形态
+  input: '{a:1f}'
+  expected: {type: compound, value: {a: {type: float, value: 1.0}}}
+
+- name: 无小数点双精度
+  input: '{a:1d}'
+  expected: {type: compound, value: {a: {type: double, value: 1.0}}}
+
+- name: 无符号大写双后缀
+  input: '{a:1UB}'
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+# ---- 进制前缀补充 ----
+- name: 负号二进制
+  input: '{a:-0b101}'
+  expected: {type: compound, value: {a: {type: int, value: -5}}}
+
+- name: 十六进制大写位
+  input: '{a:0xAB}'
+  expected: {type: compound, value: {a: {type: int, value: 171}}}
+
+- name: 十六进制无符号字节 # 预期行为：hex 中 u 结束数字位，b 作类型后缀，按位装入
+  input: '{a:0xffub}'
+  expected: {type: compound, value: {a: {type: byte, value: -1}}}
+
+# ---- 浮点补充 ----
+- name: 科学计数正号指数
+  input: '{a:1e+2}'
+  expected: {type: compound, value: {a: {type: double, value: 100.0}}}
+
+- name: 科学计数负指数
+  input: '{a:2.5e-1}'
+  expected: {type: compound, value: {a: {type: double, value: 0.25}}}
+
+- name: 零点零
+  input: '{a:0.0}'
+  expected: {type: compound, value: {a: {type: double, value: 0.0}}}
+
+- name: 尾随零小数 # 末位 0 不是前导零，合法
+  input: '{a:0.50}'
+  expected: {type: compound, value: {a: {type: double, value: 0.5}}}
+
+# ---- 后缀与空白交界 ----
+- name: 后缀后空白再闭合 # 空白只作分隔，1b 已完整读出
+  input: '{a:1b }'
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+- name: 后缀后空白再逗号
+  input: '{a:1b ,b:2s}'
+  expected:
+    type: compound
+    value:
+      a: {type: byte, value: 1}
+      b: {type: short, value: 2}
+
+- name: 制表符包围数值 # 空白跳过用 Character.isWhitespace，制表符等同空格
+  input: "{a:\t1b\t}"
+  expected: {type: compound, value: {a: {type: byte, value: 1}}}
+
+# ---- 进制前缀与类型后缀组合 ----
+- name: 十六进制长整型后缀 # l 不是十六进制数字位，结束数字后作类型后缀
+  input: '{a:0x1Fl}'
+  expected: {type: compound, value: {a: {type: long, value: 31}}}
+
+- name: 二进制字节后缀 # b 不是二进制数字位，结束数字后作类型后缀（与 hex 中 u 结束数字位同理）
+  input: '{a:0b101b}'
+  expected: {type: compound, value: {a: {type: byte, value: 5}}}
+
+- name: 十六进制短整型后缀 # s 不是十六进制数字位，结束数字后作类型后缀
+  input: '{a:0x7fffs}'
+  expected: {type: compound, value: {a: {type: short, value: 32767}}}
+
+- name: 二进制长整型后缀
+  input: '{a:0b101l}'
+  expected: {type: compound, value: {a: {type: long, value: 5}}}
+
+- name: 十六进制整数上界
+  input: '{a:0x7FFFFFFF}'
+  expected: {type: compound, value: {a: {type: int, value: 2147483647}}}
+
+- name: 负十六进制整数下界
+  input: '{a:-0x80000000}'
+  expected: {type: compound, value: {a: {type: int, value: -2147483648}}}

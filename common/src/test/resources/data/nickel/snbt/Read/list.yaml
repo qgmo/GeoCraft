@@ -1,0 +1,162 @@
+# 镍-SNBT解析-合法输入：列表
+- name: 整数列表
+  input: '{a:[1,2,3]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+          - {type: int, value: 3}
+
+- name: 单元素列表
+  input: '{a:[42]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 42}
+
+- name: 列表尾逗号 # 预期行为：尾逗号被接受
+  input: '{a:[1,2,]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+
+- name: 列表元素周围空白
+  input: '{a:[ 1 , 2 ]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+
+- name: 复合标签列表
+  input: '{a:[{x:1},{y:2}]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - type: compound
+            value:
+              x: {type: int, value: 1}
+          - type: compound
+            value:
+              y: {type: int, value: 2}
+
+- name: 字符串列表
+  input: '{a:["x","y"]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: string, value: "x"}
+          - {type: string, value: "y"}
+
+- name: B开头无引号字符串列表 # 对照 typed array：非 B; 前缀走普通列表
+  input: '{a:[Beef,Bee]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: string, value: "Beef"}
+          - {type: string, value: "Bee"}
+
+- name: 嵌套列表
+  input: '{a:[[1],[2,3]]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - type: list
+            value:
+              - {type: int, value: 1}
+          - type: list
+            value:
+              - {type: int, value: 2}
+              - {type: int, value: 3}
+
+- name: 双精度列表
+  input: '{a:[1.5d,2.5d]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: double, value: 1.5}
+          - {type: double, value: 2.5}
+
+- name: 布尔列表
+  input: '{a:[true,false]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: byte, value: 1}
+          - {type: byte, value: 0}
+
+# ---- 列表内空白（输入为单行，可含制表符）----
+- name: 制表符分隔列表元素
+  input: "{a:[1,\t2,\t3]}"
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+          - {type: int, value: 3}
+
+- name: 制表符空列表 # 与 {a:[ ]} 同理：前缀探测前跳过空白
+  input: "{a:[\t]}"
+  expected:
+    type: compound
+    value:
+      a: {type: list, value: []}
+
+- name: 混合空白列表
+  input: "{a:[ 1 ,\t2 , 3\t]}"
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+          - {type: int, value: 3}
+
+- name: 列表元素后缀后空白
+  input: '{a:[1b ,2b]}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: byte, value: 1}
+          - {type: byte, value: 2}

@@ -1,0 +1,116 @@
+# 镍-SNBT解析-非法输入：结构性语法错误
+- name: 空输入
+  input: ''
+
+- name: 仅左花括号
+  input: '{'
+
+- name: 缺冒号
+  input: '{a}'
+
+- name: 缺失值
+  input: '{a:}'
+
+- name: 未闭合复合标签
+  input: '{a:1'
+
+- name: 缺逗号
+  input: '{a:1 b:2}'
+
+- name: 空键
+  input: '{:1}'
+
+- name: 引号空键 # 空串键报 EMPTY_KEY（纯空白键合法，见 Read/key.yaml）
+  input: '{"":1}'
+
+- name: 含空白空复合标签 # 预期行为：{ } 不被接受
+  input: '{ }'
+
+- name: 前导空白 # 预期行为：入口不跳过前导空白
+  input: ' {}'
+
+- name: 列表空元素
+  input: '{a:[,]}'
+
+- name: 列表类型不一致
+  input: '{a:[1,"x"]}'
+
+- name: 列表数字类型不一致
+  input: '{a:[1,2b]}'
+
+- name: 未闭合列表
+  input: '{a:[1,2'
+
+- name: 无引号值含汉字 # 预期行为：汉字不在无引号字符集，读出空 token
+  input: '{a:天}'
+
+- name: 单NBT入口尾随内容
+  input: '{a:1}xyz'
+  mode: single
+
+- name: 未闭合字符串
+  input: '{a:"x}'
+
+- name: 字符串截断转义
+  input: '{a:"x\'
+
+- name: 非法十六进制转义位
+  input: '{a:"\xZZ"}'
+
+- name: 未注册函数
+  input: '{a:foo(1)}'
+
+- name: 字节数组元素越界 # 300 超出 byte 范围
+  input: '{a:[B;300]}'
+
+- name: 纯冒号 # 键为空
+  input: '{:}'
+
+- name: 逗号开头
+  input: '{,a:1}'
+
+- name: 双逗号 # 第二个逗号后读键得空 token
+  input: '{a:1,,b:2}'
+
+- name: 列表双逗号
+  input: '{a:[1,,2]}'
+
+- name: 深处未闭合引号 # 字符串吞掉所有后续闭括号直至输入耗尽
+  input: '{a:{b:{c:"x}}}'
+
+- name: 函数括号未闭合
+  input: '{a:bool(1}'
+
+- name: 键位置函数调用 # 键读出 bool 后期望冒号读到左括号
+  input: '{bool(1):2}'
+
+- name: 引号函数名 # 引号字符串不构成函数名，读出字符串后期望闭花括号读到左括号
+  input: '{a:"bool"(1)}'
+
+- name: 制表符空复合标签 # 与 { } 同理：制表符也是空白，读键得空 token
+  input: "{\t}"
+
+- name: 复合值后缺逗号
+  input: '{a:{x:1}b:2}'
+
+# ---- 函数实参表（尾随逗号是合法的，见 函数调用/嵌套与语法.yaml；以下为真错误）----
+- name: 函数实参内未闭合引号 # 字符串吞掉 )} 直至输入耗尽
+  input: '{r:bool("x)}'
+
+- name: 函数实参逗号开头 # 读值得空 token
+  input: '{r:bool(,1)}'
+
+- name: 函数实参双逗号
+  input: '{r:bool(1,,2)}'
+
+- name: 函数实参缺逗号 # 1 后无逗号即视作实参表结束，期望闭圆括号处读到 2
+  input: '{r:bool(1 2)}'
+# 重复键（duplicated_key）：读取侧报错，扫描侧不做此检查
+- name: 重复键
+  input: '{a:1,a:2}'
+
+- name: 重复键异类型
+  input: '{a:1,a:2b}'
+
+- name: 重复键复合值
+  input: '{a:{x:1},a:{y:2}}'

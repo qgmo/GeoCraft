@@ -1,0 +1,115 @@
+# 镍-SNBT解析-非法输入：数字字面量错误
+- name: 字节上溢
+  input: '{a:128b}'
+
+- name: 字节下溢
+  input: '{a:-129b}'
+
+- name: 短整数上溢
+  input: '{a:32768s}'
+
+- name: 长整数上溢
+  input: '{a:9223372036854775808l}'
+
+- name: 无符号字节上溢
+  input: '{a:256ub}'
+
+- name: 无符号字节负值
+  input: '{a:-1ub}'
+
+- name: 无符号短整数上溢
+  input: '{a:65536us}'
+
+- name: 无符号整数上溢
+  input: '{a:4294967296u}'
+
+- name: 标记后缀顺序颠倒 # su 不是合法后缀组合
+  input: '{a:1su}'
+
+- name: 双重字节后缀
+  input: '{a:1bb}'
+
+- name: 空十六进制
+  input: '{a:0x}'
+
+- name: 非法十六进制位
+  input: '{a:0xG}'
+
+- name: 非法二进制位
+  input: '{a:0b102}'
+
+- name: 下划线结尾
+  input: '{a:1_}'
+
+- name: 下划线邻接小数点
+  input: '{a:1_.5}'
+
+- name: 小数点后下划线
+  input: '{a:1._5}'
+
+- name: 前导零整数
+  input: '{a:01}'
+
+- name: 前导零小数
+  input: '{a:00.5}'
+
+- name: 双精度无穷大
+  input: '{a:1e999}'
+
+- name: 负双精度无穷大
+  input: '{a:-1e999}'
+
+- name: 单精度无穷大
+  input: '{a:1e39f}'
+
+- name: 数字后接字母
+  input: '{a:1abc}'
+
+- name: 非法浮点后缀
+  input: '{a:1.5x}'
+
+- name: 孤立负号
+  input: '{a:-}'
+
+- name: 孤立正号
+  input: '{a:+}'
+
+- name: 孤立小数点
+  input: '{a:.}'
+
+- name: 双正负号
+  input: '{a:+-1}'
+
+- name: 双小数点
+  input: '{a:1..5}'
+
+- name: 两段小数
+  input: '{a:1.5.5}'
+
+- name: 后缀错配字节 # 1.5 落入浮点解析后 b 不是浮点后缀
+  input: '{a:1.5b}'
+
+- name: 后缀错配短整数
+  input: '{a:1.5s}'
+
+- name: 指数缺失
+  input: '{a:1e}'
+
+- name: 双指数
+  input: '{a:1e2e3}'
+
+- name: 双前导零整数
+  input: '{a:00}'
+
+# ---- 数字与空白交界：空白结束数字 token，后续字母/数字于闭合处报错 ----
+- name: 数字与后缀间空格 # 1 已读作 int，随后期望闭花括号处读到 b
+  input: '{a:1 b}'
+
+- name: 浮点数与后缀间空格
+  input: '{a:1.5 f}'
+
+- name: 符号与数字间空格 # 孤立 "-" 落入浮点解析后报非法浮点后缀
+  input: '{a:- 1}'
+
+- name: 列表内数字与后缀间空格 # 1 已读作 int，期望闭方括号处读到 b
+  input: '{a:[1 b]}'
