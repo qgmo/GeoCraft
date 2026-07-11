@@ -80,7 +80,7 @@ public final class InputReader {
     public boolean canRead(final int readLen){
         if(readLen < 1) throw new IllegalArgumentException();
         final int res = this.cursor + readLen;
-        if (((this.cursor ^ res) & (readLen ^ this.cursor)) < 0) return false; //溢出
+        if (((this.cursor ^ res) & (readLen ^ res)) < 0) return false; //溢出
         return res - 1 < codepoints.length;
     }
 
