@@ -27,13 +27,47 @@
 
 package 清汩萌.镍;
 
+import moe.qingu.nickel.nbt.operation.SNBTOperations;
+import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagByte;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
+import javax.annotation.Nonnull;
 
 /**
- * @author QGMoe
+ * @author QGMoe, Claude
  */
+@ExtendWith(镍测试.SetupNickelTestExtension.class)
 public class 镍测试 {
     public static final String MODID = "镍";
     public static final Logger LOGGER = LogManager.getLogger("NickelTest");
+
+    /**
+     * Claude Generated
+     * 幂等加载 NBTPathMethods 与 SNBTOperations 两个内置注册表（全局状态，重复 loadFuncs 触发重复签名日志；
+     * 两表须一并加载，漏一个会把函数误报为未注册。生产环境由 FML scanProviders 加载，测试环境无 FML）
+     */
+    public static void loadRegistries(){
+        if(NBTPathMethods.resolveMethod("values",new NBTBase[0]) == null)
+            NBTPathMethods.loadFuncs(NBTPathMethods.class);
+        if(SNBTOperations.resolve("bool",new NBTBase[]{new NBTTagByte((byte)1)}) == null)
+            SNBTOperations.loadFuncs(SNBTOperations.class);
+    }
+
+    /**
+     * Claude Generated
+     * JUnit 扩展：测试类运行前加载内置注册表，依赖注册表的测试类继承 {@link 镍测试} 即可获得
+     */
+    public static final class SetupNickelTestExtension implements BeforeAllCallback {
+
+        @Override
+        public void beforeAll(final @Nonnull ExtensionContext context) {
+            loadRegistries();
+        }
+    }
 }

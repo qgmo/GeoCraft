@@ -1,0 +1,30 @@
+# 测试：镍-SNBT-函数调用（uuid 函数）
+# Claude Generated
+cases:
+  - name: uuid-单参基本
+    input: '{id:uuid("00000000-0000-0001-0000-000000000002")}'
+    expected: '{id:[I;0,1,0,2]}'
+  - name: uuid-单参重复段
+    input: '{id:uuid("12345678-1234-5678-1234-567812345678")}'
+    expected: '{id:[I;305419896,305419896,305419896,305419896]}'
+  - name: uuid-单参全F大写
+    input: '{id:uuid("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")}'
+    expected: '{id:[I;-1,-1,-1,-1]}'
+  - name: uuid-双参基本
+    input: '{r:uuid("Owner","00000000-0000-0001-0000-000000000002")}'
+    expected: '{r:{OwnerMost:1L,OwnerLeast:2L}}'
+  - name: uuid-双参中文键
+    input: '{r:uuid("主人","00000000-0000-0001-0000-000000000002")}'
+    expected: '{r:{"主人Most":1L,"主人Least":2L}}'
+  - name: uuid-双参空键 # setUniqueId("",...) 产出裸 Most/Least 键
+    input: '{r:uuid("","00000000-0000-0001-0000-000000000002")}'
+    expected: '{r:{Most:1L,Least:2L}}'
+  - name: uuid-双参全F负一
+    input: '{r:uuid("K","ffffffff-ffff-ffff-ffff-ffffffffffff")}'
+    expected: '{r:{KMost:-1L,KLeast:-1L}}'
+  - name: uuid-双参大写UUID
+    input: '{r:uuid("K","FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF")}'
+    expected: '{r:{KMost:-1L,KLeast:-1L}}'
+  - name: uuid-与其他键共存
+    input: '{a:1,id:uuid("00000000-0000-0001-0000-000000000002"),b:2}'
+    expected: '{a:1,id:[I;0,1,0,2],b:2}'

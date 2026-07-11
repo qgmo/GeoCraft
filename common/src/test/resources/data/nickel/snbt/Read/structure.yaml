@@ -1,0 +1,221 @@
+# 镍-SNBT解析-合法输入：复合标签结构
+- name: 空复合标签
+  input: '{}'
+  expected:
+    type: compound
+    value: {}
+
+- name: 单键整数
+  input: '{a:1}'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 多键
+  input: '{a:1,b:2}'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+      b: {type: int, value: 2}
+
+- name: 尾逗号 # 预期行为：尾逗号被接受
+  input: '{a:1,}'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 尾逗号带空白 # 预期行为
+  input: '{a:1, }'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 键值周围空白
+  input: '{ a : 1 }'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 嵌套复合标签
+  input: '{a:{b:{c:1}}}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: compound
+        value:
+          b:
+            type: compound
+            value:
+              c: {type: int, value: 1}
+
+- name: 十二层嵌套
+  input: '{a:{a:{a:{a:{a:{a:{a:{a:{a:{a:{a:{v:1}}}}}}}}}}}}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: compound
+        value:
+          a:
+            type: compound
+            value:
+              a:
+                type: compound
+                value:
+                  a:
+                    type: compound
+                    value:
+                      a:
+                        type: compound
+                        value:
+                          a:
+                            type: compound
+                            value:
+                              a:
+                                type: compound
+                                value:
+                                  a:
+                                    type: compound
+                                    value:
+                                      a:
+                                        type: compound
+                                        value:
+                                          a:
+                                            type: compound
+                                            value:
+                                              a:
+                                                type: compound
+                                                value:
+                                                  v: {type: int, value: 1}
+
+- name: 布尔true
+  input: '{a:true}'
+  expected:
+    type: compound
+    value:
+      a: {type: byte, value: 1}
+
+- name: 布尔false
+  input: '{a:false}'
+  expected:
+    type: compound
+    value:
+      a: {type: byte, value: 0}
+
+
+- name: 普通入口忽略尾随内容 # 预期行为：readNBTFromInput 不检查剩余输入
+  input: '{a:1}xyz'
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 单NBT入口尾随空白
+  input: '{a:1} rest'
+  mode: single
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 空列表值
+  input: '{a:[]}'
+  expected:
+    type: compound
+    value:
+      a: {type: list, value: []}
+
+- name: 含空白空列表 # 预期行为：列表在前缀探测前跳过空白，[ ] 被接受（与 { } 报错不对称）
+  input: '{a:[ ]}'
+  expected:
+    type: compound
+    value:
+      a: {type: list, value: []}
+
+- name: 混合大结构
+  input: '{name:"钻石剑",count:3b,tags:[1,2,3],nested:{x:1.5d}}'
+  expected:
+    type: compound
+    value:
+      name: {type: string, value: "钻石剑"}
+      count: {type: byte, value: 3}
+      tags:
+        type: list
+        value:
+          - {type: int, value: 1}
+          - {type: int, value: 2}
+          - {type: int, value: 3}
+      nested:
+        type: compound
+        value:
+          x: {type: double, value: 1.5}
+
+- name: 复合嵌列表嵌复合嵌列表三明治
+  input: '{a:{b:[{c:[1,2]},{c:[3]}]}}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: compound
+        value:
+          b:
+            type: list
+            value:
+              - type: compound
+                value:
+                  c:
+                    type: list
+                    value:
+                      - {type: int, value: 1}
+                      - {type: int, value: 2}
+              - type: compound
+                value:
+                  c:
+                    type: list
+                    value:
+                      - {type: int, value: 3}
+
+
+
+# ---- 结构内空白（输入为单行，可含制表符）----
+- name: 制表符键值分隔
+  input: "{\ta\t:\t1\t}"
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}
+
+- name: 复合值后空白再逗号
+  input: '{a:{x:1} ,b:2}'
+  expected:
+    type: compound
+    value:
+      a:
+        type: compound
+        value:
+          x: {type: int, value: 1}
+      b: {type: int, value: 2}
+
+- name: 列表值后空白再闭合
+  input: '{a:[1] }'
+  expected:
+    type: compound
+    value:
+      a:
+        type: list
+        value:
+          - {type: int, value: 1}
+
+- name: 单NBT入口尾随制表符 # 制表符是空白，single 入口接受
+  input: "{a:1}\t"
+  mode: single
+  expected:
+    type: compound
+    value:
+      a: {type: int, value: 1}

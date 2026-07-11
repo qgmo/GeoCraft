@@ -1,0 +1,151 @@
+ver: 1
+group: 复合标签
+cases:
+  - name: 空匹配器-对空目标
+    matcher: '{}'
+    target: '{}'
+    expected: true
+  - name: 空匹配器-对非空目标通配
+    matcher: '{}'
+    target: '{a:1,b:"x"}'
+    expected: true
+  - name: 单键-同值
+    matcher: '{a:1}'
+    target: '{a:1}'
+    expected: true
+  - name: 子集-目标多余键不影响
+    matcher: '{a:1}'
+    target: '{a:1,b:2,c:"extra"}'
+    expected: true
+  - name: 缺键-目标缺少期望键
+    matcher: '{a:1,b:2}'
+    target: '{a:1}'
+    expected: false
+  - name: 缺键-空目标
+    matcher: '{a:1}'
+    target: '{}'
+    expected: false
+  - name: 值错-同键异值
+    matcher: '{a:1}'
+    target: '{a:2}'
+    expected: false
+  - name: 值错-同键同值异类型
+    matcher: '{a:1}'
+    target: '{a:1b}'
+    expected: false
+  - name: 多键-全部命中且乱序
+    matcher: '{a:1,b:"x"}'
+    target: '{b:"x",a:1,c:2}'
+    expected: true
+  - name: 多键-一键值错
+    matcher: '{a:1,b:"x"}'
+    target: '{a:1,b:"y"}'
+    expected: false
+  - name: 嵌套-同构
+    matcher: '{data:{flag:1b}}'
+    target: '{data:{flag:1b}}'
+    expected: true
+  - name: 嵌套-内外层均可多余键
+    matcher: '{data:{flag:1b}}'
+    target: '{data:{flag:1b,extra:"多余"},top:1}'
+    expected: true
+  - name: 嵌套-内层值错
+    matcher: '{data:{flag:1b}}'
+    target: '{data:{flag:0b}}'
+    expected: false
+  - name: 嵌套-内层类型错
+    matcher: '{data:{flag:1b}}'
+    target: '{data:1}'
+    expected: false
+  - name: 嵌套-空匹配器通配内层
+    matcher: '{data:{}}'
+    target: '{data:{anything:1}}'
+    expected: true
+  - name: 嵌套-内层缺键
+    matcher: '{data:{flag:1b}}'
+    target: '{data:{}}'
+    expected: false
+  - name: 中文键-同键同值
+    matcher: '{"中文键":1}'
+    target: '{"中文键":1}'
+    expected: true
+  - name: 中文键-键不存在
+    matcher: '{"中文键":1}'
+    target: '{"别的键":1}'
+    expected: false
+  - name: 引号键-带空格
+    matcher: '{"a b":1}'
+    target: '{"a b":1}'
+    expected: true
+  - name: 引号键-带空格键不存在
+    matcher: '{"a b":1}'
+    target: '{"ab":1}'
+    expected: false
+  - name: 三层嵌套-各层子集
+    matcher: '{a:{b:{c:"深"}}}'
+    target: '{a:{b:{c:"深",d:1},e:2},f:3}'
+    expected: true
+  - name: 三层嵌套-最深层值错
+    matcher: '{a:{b:{c:"深"}}}'
+    target: '{a:{b:{c:"浅"}}}'
+    expected: false
+  - name: 三层嵌套-最深层类型错
+    matcher: '{a:{b:{c:1}}}'
+    target: '{a:{b:{c:1b}}}'
+    expected: false
+  - name: 五层嵌套-全命中
+    matcher: '{a:{b:{c:{d:{e:1}}}}}'
+    target: '{a:{b:{c:{d:{e:1,x:2}}}},y:3}'
+    expected: true
+  - name: 五层嵌套-仅最深层值错
+    matcher: '{a:{b:{c:{d:{e:1}}}}}'
+    target: '{a:{b:{c:{d:{e:2,x:2}}}},y:3}'
+    expected: false
+  - name: 空字符串值-同值命中
+    matcher: '{k:""}'
+    target: '{k:"",x:1}'
+    expected: true
+  - name: 空字符串值-对非空串
+    matcher: '{k:""}'
+    target: '{k:"v"}'
+    expected: false
+  - name: 表情键-同键同值
+    matcher: '{"😀":1}'
+    target: '{"😀":1,other:2}'
+    expected: true
+  - name: 表情键-键不存在
+    matcher: '{"😀":1}'
+    target: '{"😺":1}'
+    expected: false
+  - name: 深度-同构三层命中
+    matcher: '{a:{b:{c:1}}}'
+    target: '{a:{b:{c:1}}}'
+    expected: true
+  - name: 深度-期望多一层嵌套
+    matcher: '{a:{b:{c:1}}}'
+    target: '{a:{b:1}}'
+    expected: false
+  - name: 深度-目标多一层嵌套
+    matcher: '{a:1}'
+    target: '{a:{v:1}}'
+    expected: false
+  - name: 深度-空匹配器对标量不通配
+    matcher: '{a:{}}'
+    target: '{a:1}'
+    expected: false
+  - name: 方向-深层子集正向
+    matcher: '{a:{b:1}}'
+    target: '{a:{b:1,c:{d:2}},e:3}'
+    expected: true
+  - name: 方向-深层子集互换
+    matcher: '{a:{b:1,c:{d:2}},e:3}'
+    target: '{a:{b:1}}'
+    expected: false
+  - name: 带空格引号键-命中 # 引号键不剥离空白，"  a  " 与 "a" 是不同键
+    matcher: '{"  a  ":1}'
+    target: '{"  a  ":1,other:2}'
+    expected: true
+  - name: 带空格引号键-与无空格键不混同
+    matcher: '{"  a  ":1}'
+    target: '{a:1}'
+    expected: false

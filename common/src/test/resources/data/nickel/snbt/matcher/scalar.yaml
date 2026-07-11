@@ -1,0 +1,231 @@
+ver: 1
+group: 标量
+cases:
+  - name: 字节-同型同值
+    matcher: '{v:1b}'
+    target: '{v:1b}'
+    expected: true
+  - name: 字节-同型异值
+    matcher: '{v:1b}'
+    target: '{v:2b}'
+    expected: false
+  - name: 字节-对短整型同值
+    matcher: '{v:1b}'
+    target: '{v:1s}'
+    expected: false
+  - name: 短整型-同型同值
+    matcher: '{v:2s}'
+    target: '{v:2s}'
+    expected: true
+  - name: 短整型-对整型同值
+    matcher: '{v:2s}'
+    target: '{v:2}'
+    expected: false
+  - name: 整型-同型同值
+    matcher: '{v:3}'
+    target: '{v:3}'
+    expected: true
+  - name: 整型-同型异值
+    matcher: '{v:3}'
+    target: '{v:4}'
+    expected: false
+  - name: 整型-对长整型同值
+    matcher: '{v:3}'
+    target: '{v:3l}'
+    expected: false
+  - name: 长整型-同型同值
+    matcher: '{v:4l}'
+    target: '{v:4l}'
+    expected: true
+  - name: 长整型-同型异值
+    matcher: '{v:4l}'
+    target: '{v:5l}'
+    expected: false
+  - name: 长整型-边界最大值
+    matcher: '{v:9223372036854775807l}'
+    target: '{v:9223372036854775807l}'
+    expected: true
+  - name: 长整型-边界最大值差一
+    matcher: '{v:9223372036854775807l}'
+    target: '{v:9223372036854775806l}'
+    expected: false
+  - name: 字节-负数同值
+    matcher: '{v:-3b}'
+    target: '{v:-3b}'
+    expected: true
+  - name: 字节-负数对正数
+    matcher: '{v:-3b}'
+    target: '{v:3b}'
+    expected: false
+  - name: 单精度-同值
+    matcher: '{v:1.5f}'
+    target: '{v:1.5f}'
+    expected: true
+  - name: 单精度-异值
+    matcher: '{v:1.5f}'
+    target: '{v:2.5f}'
+    expected: false
+  - name: 单精度-对双精度同值
+    matcher: '{v:1.5f}'
+    target: '{v:1.5d}'
+    expected: false
+  - name: 双精度-同值
+    matcher: '{v:2.5d}'
+    target: '{v:2.5d}'
+    expected: true
+  - name: 双精度-无后缀默认双精度
+    matcher: '{v:2.5}'
+    target: '{v:2.5d}'
+    expected: true
+  - name: 双精度-异值
+    matcher: '{v:2.5}'
+    target: '{v:3.5}'
+    expected: false
+  - name: 字符串-同值
+    matcher: '{v:"hello"}'
+    target: '{v:"hello"}'
+    expected: true
+  - name: 字符串-异值
+    matcher: '{v:"hello"}'
+    target: '{v:"world"}'
+    expected: false
+  - name: 字符串-大小写敏感
+    matcher: '{v:"Water"}'
+    target: '{v:"water"}'
+    expected: false
+  - name: 字符串-数字串对整型
+    matcher: '{v:"1"}'
+    target: '{v:1}'
+    expected: false
+  - name: 字符串-无引号等价有引号
+    matcher: '{v:abc}'
+    target: '{v:"abc"}'
+    expected: true
+  - name: 字符串-无引号对异值
+    matcher: '{v:abc}'
+    target: '{v:"abd"}'
+    expected: false
+  - name: 字符串-中文同值
+    matcher: '{v:"天圆地方"}'
+    target: '{v:"天圆地方"}'
+    expected: true
+  - name: 字符串-中文异值
+    matcher: '{v:"天圆地方"}'
+    target: '{v:"天方地圆"}'
+    expected: false
+  - name: 布尔-真字面量即字节1
+    matcher: '{v:true}'
+    target: '{v:1b}'
+    expected: true
+  - name: 布尔-真字面量对字节0
+    matcher: '{v:true}'
+    target: '{v:0b}'
+    expected: false
+  - name: 零值-字节同型
+    matcher: '{v:0b}'
+    target: '{v:0b}'
+    expected: true
+  - name: 零值-字节对短整型
+    matcher: '{v:0b}'
+    target: '{v:0s}'
+    expected: false
+  - name: 零值-短整型对整型
+    matcher: '{v:0s}'
+    target: '{v:0}'
+    expected: false
+  - name: 零值-整型对长整型
+    matcher: '{v:0}'
+    target: '{v:0l}'
+    expected: false
+  - name: 零值-长整型对字节
+    matcher: '{v:0l}'
+    target: '{v:0b}'
+    expected: false
+  - name: 单精度-负零等于正零 # 预期行为：浮点为 == 语义，-0.0f == 0.0f
+    matcher: '{v:-0.0f}'
+    target: '{v:0.0f}'
+    expected: true
+  - name: 单精度-负零对双精度正零
+    matcher: '{v:-0.0f}'
+    target: '{v:0.0d}'
+    expected: false
+  - name: 双精度-负零等于正零
+    matcher: '{v:-0.0}'
+    target: '{v:0.0}'
+    expected: true
+  - name: 双精度-负零对单精度正零
+    matcher: '{v:-0.0}'
+    target: '{v:0.0f}'
+    expected: false
+  - name: 单精度-对整型同值
+    matcher: '{v:1.0f}'
+    target: '{v:1}'
+    expected: false
+  - name: 字节-边界上界同值
+    matcher: '{v:127b}'
+    target: '{v:127b}'
+    expected: true
+  - name: 字节-边界上界对短整型
+    matcher: '{v:127b}'
+    target: '{v:127s}'
+    expected: false
+  - name: 空字符串-同值
+    matcher: '{v:""}'
+    target: '{v:""}'
+    expected: true
+  - name: 空字符串-对空格串
+    matcher: '{v:""}'
+    target: '{v:" "}'
+    expected: false
+  - name: 字节-边界下界同值
+    matcher: '{v:-128b}'
+    target: '{v:-128b}'
+    expected: true
+  - name: 字节-边界下界对短整型
+    matcher: '{v:-128b}'
+    target: '{v:-128s}'
+    expected: false
+  - name: 字节-边界上界对整型
+    matcher: '{v:127b}'
+    target: '{v:127}'
+    expected: false
+  - name: 短整型-边界上界同值
+    matcher: '{v:32767s}'
+    target: '{v:32767s}'
+    expected: true
+  - name: 短整型-边界上界对整型
+    matcher: '{v:32767s}'
+    target: '{v:32767}'
+    expected: false
+  - name: 短整型-边界上界对长整型
+    matcher: '{v:32767s}'
+    target: '{v:32767l}'
+    expected: false
+  - name: 短整型-边界下界同值
+    matcher: '{v:-32768s}'
+    target: '{v:-32768s}'
+    expected: true
+  - name: 短整型-边界下界对整型
+    matcher: '{v:-32768s}'
+    target: '{v:-32768}'
+    expected: false
+  - name: 整型-边界上界同值
+    matcher: '{v:2147483647}'
+    target: '{v:2147483647}'
+    expected: true
+  - name: 整型-边界下界对长整型
+    matcher: '{v:-2147483648}'
+    target: '{v:-2147483648l}'
+    expected: false
+  - name: 长整型-整型上界值对整型
+    matcher: '{v:2147483647l}'
+    target: '{v:2147483647}'
+    expected: false
+  - name: 长整型-边界最小值同值
+    matcher: '{v:-9223372036854775808l}'
+    target: '{v:-9223372036854775808l}'
+    expected: true
+  - name: 长整型-边界最小值差一
+    matcher: '{v:-9223372036854775808l}'
+    target: '{v:-9223372036854775807l}'
+    expected: false

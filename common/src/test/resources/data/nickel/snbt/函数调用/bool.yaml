@@ -1,0 +1,78 @@
+# 测试：镍-SNBT-函数调用（bool 函数）
+# Claude Generated
+cases:
+  - name: bool-整数零
+    input: '{r:bool(0)}'
+    expected: '{r:0b}'
+  - name: bool-整数一
+    input: '{r:bool(1)}'
+    expected: '{r:1b}'
+  - name: bool-负整数
+    input: '{r:bool(-2)}'
+    expected: '{r:1b}'
+  - name: bool-大整数
+    input: '{r:bool(114514)}'
+    expected: '{r:1b}'
+  - name: bool-布尔字面量真
+    input: '{r:bool(true)}'
+    expected: '{r:1b}'
+  - name: bool-布尔字面量假
+    input: '{r:bool(false)}'
+    expected: '{r:0b}'
+  - name: bool-长整型零
+    input: '{r:bool(0L)}'
+    expected: '{r:0b}'
+  - name: bool-短整型
+    input: '{r:bool(300s)}'
+    expected: '{r:1b}'
+  - name: bool-双精度正小数向下取整
+    input: '{r:bool(0.5d)}'
+    expected: '{r:0b}'
+  # NBTTagDouble.getLong 为 Math.floor：-0.9d 取整为 -1，非零
+  - name: bool-双精度负小数向下取整
+    input: '{r:bool(-0.9d)}'
+    expected: '{r:1b}'
+  - name: bool-双精度大于一
+    input: '{r:bool(1.5d)}'
+    expected: '{r:1b}'
+  # NBTTagFloat.getLong 为 (long) 强转截断：-0.9f 截断为 0
+  - name: bool-单精度负小数截断
+    input: '{r:bool(-0.9f)}'
+    expected: '{r:0b}'
+  - name: bool-十六进制零
+    input: '{r:bool(0x0)}'
+    expected: '{r:0b}'
+  - name: bool-字节参
+    input: '{r:bool(0b)}'
+    expected: '{r:0b}'
+  # NBTTagFloat.getLong 为强转截断：0.9f 截断为 0
+  - name: bool-单精度正小数截断
+    input: '{r:bool(0.9f)}'
+    expected: '{r:0b}'
+  - name: bool-单精度大于一
+    input: '{r:bool(1.5f)}'
+    expected: '{r:1b}'
+  # NBTTagDouble.getLong 为 Math.floor：-1.5d 取整为 -2，非零
+  - name: bool-双精度负一点五向下取整
+    input: '{r:bool(-1.5d)}'
+    expected: '{r:1b}'
+  # floor(-0.0) 为 -0.0，强转 long 后为 0
+  - name: bool-双精度负零
+    input: '{r:bool(-0.0d)}'
+    expected: '{r:0b}'
+  - name: bool-字节负参
+    input: '{r:bool(-1b)}'
+    expected: '{r:1b}'
+  - name: bool-短整型零
+    input: '{r:bool(0s)}'
+    expected: '{r:0b}'
+  - name: bool-长整型下界
+    input: '{r:bool(-9223372036854775808L)}'
+    expected: '{r:1b}'
+  - name: bool-二进制参
+    input: '{r:bool(0b1)}'
+    expected: '{r:1b}'
+  # 对照 嵌套与语法.yaml 的 bool(bool(5))：内层产出 0b 经 NUMBER 重载仍为零
+  - name: bool-套bool零传播
+    input: '{r:bool(bool(0))}'
+    expected: '{r:0b}'

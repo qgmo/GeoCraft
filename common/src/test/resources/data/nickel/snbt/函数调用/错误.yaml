@@ -1,0 +1,81 @@
+# 测试：镍-SNBT-函数调用（错误语义）
+# Claude Generated
+# error: true 表示解析该输入应当抛出 NickelRuntimeException
+cases:
+  - name: 错误-未定义函数名
+    input: '{r:nosuchfunc(1)}'
+    error: true
+  - name: 错误-bool无参
+    input: '{r:bool()}'
+    error: true
+  - name: 错误-bool多参
+    input: '{r:bool(1,2)}'
+    error: true
+  - name: 错误-bool字符串参
+    input: '{r:bool("str")}'
+    error: true
+  - name: 错误-bool未加引号字符串参
+    input: '{r:bool(abc)}'
+    error: true
+  - name: 错误-uuid非法格式
+    input: '{r:uuid("bad")}'
+    error: true
+  - name: 错误-uuid空串
+    input: '{r:uuid("")}'
+    error: true
+  - name: 错误-双参uuid非法格式
+    input: '{r:uuid("k","bad")}'
+    error: true
+  - name: 错误-concat无参
+    input: '{r:concat()}'
+    error: true
+  - name: 错误-concat数字参无重载
+    input: '{r:concat(1b,2b)}'
+    error: true
+  - name: 错误-concat字符串对复合标签
+    input: '{r:concat("a",{x:1})}'
+    error: true
+  - name: 错误-concat列表对字节数组
+    input: '{r:concat([1],[B;1b])}'
+    error: true
+  - name: 错误-uuid无参
+    input: '{r:uuid()}'
+    error: true
+  - name: 错误-uuid三参
+    input: '{r:uuid("a","b","c")}'
+    error: true
+  - name: 错误-uuid数字参
+    input: '{r:uuid(1)}'
+    error: true
+  - name: 错误-concat单参
+    input: '{r:concat({x:1})}'
+    error: true
+  - name: 错误-concat三参
+    input: '{r:concat("a","b","c")}'
+    error: true
+  # concat 返回 STRING，bool 无 STRING 重载，决议失败
+  - name: 错误-函数结果类型无重载
+    input: '{r:bool(concat("a","b"))}'
+    error: true
+  - name: 错误-bool列表参
+    input: '{r:bool([1])}'
+    error: true
+  # 空白结束无引号 token，左括号不再被视作实参表：bool 读作无引号字符串后于期望闭花括号处报错
+  - name: 错误-函数名与括号间空格
+    input: '{r:bool (1)}'
+    error: true
+  - name: 错误-嵌套函数内层未定义
+    input: '{r:bool(nosuchfunc(1))}'
+    error: true
+  - name: 错误-concat复合对列表
+    input: '{r:concat({x:1},[1])}'
+    error: true
+  - name: 错误-uuid键位数字参 # 双参重载要求 (STRING,STRING)，(NUMBER,STRING) 无重载
+    input: '{r:uuid(1,"00000000-0000-0001-0000-000000000002")}'
+    error: true
+  - name: 错误-bool复合参 # bool 只有 NUMBER 重载，COMPOUND 无重载
+    input: '{r:bool({x:1})}'
+    error: true
+  - name: 错误-嵌套函数外层未定义 # 对照"嵌套函数内层未定义"：内层 bool 决议成功，外层名未注册
+    input: '{r:nosuchfunc(bool(1))}'
+    error: true

@@ -1,0 +1,60 @@
+# 测试：镍-SNBT-函数调用（嵌套调用与语法形态）
+# Claude Generated
+cases:
+  - name: 嵌套-concat链式合并
+    input: '{a:concat(concat({x:1},{y:2}),{z:3})}'
+    expected: '{a:{x:1,y:2,z:3}}'
+  - name: 嵌套-bool套bool
+    input: '{r:bool(bool(5))}'
+    expected: '{r:1b}'
+  - name: 嵌套-列表元素为函数调用
+    input: '{r:[bool(0),bool(1)]}'
+    expected: '{r:[0b,1b]}'
+  - name: 嵌套-深层复合内函数
+    input: '{a:{b:bool(1)}}'
+    expected: '{a:{b:1b}}'
+  - name: 嵌套-uuid结果参与concat
+    input: '{r:concat(uuid("00000000-0000-0001-0000-000000000002"),[I;9])}'
+    expected: '{r:[I;0,1,0,2,9]}'
+  - name: 嵌套-字符串concat右结合
+    input: '{r:concat("a",concat("b","c"))}'
+    expected: '{r:"abc"}'
+  - name: 嵌套-函数结果作列表元素
+    input: '{r:[concat("a","b")]}'
+    expected: '{r:["ab"]}'
+  - name: 语法-参数与键周围空白宽容
+    input: '{ r : concat( "a" , "b" ) }'
+    expected: '{r:"ab"}'
+  - name: 语法-尾随逗号参数
+    input: '{r:bool(1,)}'
+    expected: '{r:1b}'
+  - name: 嵌套-三层bool
+    input: '{r:bool(bool(bool(5)))}'
+    expected: '{r:1b}'
+  - name: 嵌套-双侧函数实参
+    input: '{r:concat(concat("a","b"),concat("c","d"))}'
+    expected: '{r:"abcd"}'
+  - name: 嵌套-函数结果作复合值再参与concat
+    input: '{r:concat({x:bool(1)},{y:2})}'
+    expected: '{r:{x:1b,y:2}}'
+  - name: 语法-嵌套函数内空白
+    input: '{r:bool( bool( 1 ) )}'
+    expected: '{r:1b}'
+  - name: 语法-函数实参制表符空白
+    input: "{r:concat(\t\"a\"\t,\t\"b\"\t)}"
+    expected: '{r:"ab"}'
+  - name: 组合-多键均函数值
+    input: '{x:bool(1),y:concat("a","b")}'
+    expected: '{x:1b,y:"ab"}'
+  - name: 组合-函数值与字面值混排
+    input: '{a:1,b:bool(0),c:"x"}'
+    expected: '{a:1,b:0b,c:"x"}'
+  - name: 组合-引号键函数值
+    input: '{"键":bool(1)}'
+    expected: '{"键":1b}'
+  - name: 组合-嵌套复合各键均函数值
+    input: '{r:{x:bool(1),y:bool(0)}}'
+    expected: '{r:{x:1b,y:0b}}'
+  - name: 组合-concat合并函数值复合
+    input: '{r:concat({x:bool(1)},{y:concat("a","b")})}'
+    expected: '{r:{x:1b,y:"ab"}}'
