@@ -77,6 +77,10 @@ public final class InputReader {
         return this.cursor < codepoints.length;
     }
 
+    public boolean canUnread(){
+        return this.cursor>0;
+    }
+
     public boolean canRead(final int readLen){
         if(readLen < 1) throw new IllegalArgumentException();
         final int res = this.cursor + readLen;
@@ -199,7 +203,6 @@ public final class InputReader {
                 case '\'': return '\'';
                 case '/': return '/';
                 case '"': return '"';
-                case '0': return '\0';
                 case 'a': return '\u0007';
                 case 'v': return '\u000B';
                 case 'x': return readInt(2,4);
