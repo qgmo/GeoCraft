@@ -108,7 +108,7 @@ version = propertyString('mod_version')
 group = propertyString('root_package')
 
 base {
-    archivesName.set(propertyString('mod_id'))
+    archivesName.set(propertyString('mod_name'))
 }
 
 tasks.decompressDecompiledSources.enabled !propertyBool('change_minecraft_sources')
@@ -203,7 +203,7 @@ dependencies {
     }
 }
 
-apply from: "${rootProject.projectDir}/gradle/scripts/dependencies.gradle"
+apply from: "${projectDir}/gradle/dependencies.gradle"
 
 // Adds Access Transformer files to tasks
 if (propertyBool('use_access_transformer')) {
@@ -262,32 +262,69 @@ processResources {
 
 }
 
-jar {
-    manifest {
-        def attribute_map = [:]
-        if (propertyBool('is_coremod')) {
-            attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
-            if (propertyBool('coremod_includes_mod')) {
-                attribute_map['FMLCorePluginContainsFMLMod'] = true
-                def currentTasks = gradle.startParameter.taskNames
-                if (currentTasks[0] == 'build' || currentTasks[0] == 'prepareObfModsFolder' || currentTasks[0] == 'runObfClient') {
-                    attribute_map['ForceLoadAsMod'] = true
-                }
+/* ==========================
+ *       Jar 打包区域
+ */
+
+def buildManifest = {
+    def attribute_map = [:]
+    if (propertyBool('is_coremod')) {
+        attribute_map['FMLCorePlugin'] = propertyString('coremod_plugin_class_name')
+        if (propertyBool('coremod_includes_mod')) {
+            attribute_map['FMLCorePluginContainsFMLMod'] = true
+            def currentTasks = gradle.startParameter.taskNames
+            if (currentTasks[0] == 'build' || currentTasks[0] == 'prepareObfModsFolder' || currentTasks[0] == 'runObfClient') {
+                attribute_map['ForceLoadAsMod'] = true
             }
         }
-        if (propertyBool('use_access_transformer')) {
-            attribute_map['FMLAT'] = propertyString('access_transformer_locations')
-        }
-        attributes(attribute_map)
     }
+    if (propertyBool('use_access_transformer')) {
+        attribute_map['FMLAT'] = propertyString('access_transformer_locations')
+    }
+    return attribute_map
+}
+
+def jarTasks = ['jar', 'jarCRL'] as Set
+
+tasks.withType(Jar).matching {it.name in jarTasks } .configureEach {
+    manifest {attributes(buildManifest())}
     // Add all embedded dependencies into the jar
     from(provider{ configurations.embed.collect {it.isDirectory() ? it : zipTree(it)} })
+}
+
+jar {
+    archiveClassifier = 'Forge-dev'
+}
+
+def CRL的MCP到SRG表 = project(':cleanroom').layout.buildDirectory.file('tmp/mixins/mixins.srg')
+def CRL的refmap = project(':cleanroom').layout.buildDirectory.file("tmp/mixins/mixins.${mod_id}_cleanroom.refmap.json")
+
+tasks.register('jarCRL', Jar).configure {
+    archiveClassifier = 'CRL-dev'
+    manifest { attributes('ModType': 'CRL') } //Cleanroom!!!!
+    from(sourceSets.main.output) //自己注册的jar需要手动注册产出
     from(project(':cleanroom').sourceSets.main.output)
+    from(files(CRL的refmap).filter { it.exists() }) //将CRL的refmap也打包进去
 }
 
 tasks.named('sourcesJar').configure {
     from(project(':cleanroom').sourceSets.main.allSource)
 }
+
+tasks.named('reobfJar') { archiveClassifier = 'Forge' }
+tasks.named('reobfJarCRL') {
+    archiveClassifier = 'CRL'
+    extraSrgFiles.from(layout.buildDirectory.file('tmp/mixins/mixins.srg')) // RFG 对于 reobfJar 会自动处理 Shadow，但自己注册的不会
+    extraSrgFiles.from(files(CRL的MCP到SRG表).filter { it.exists() }) //同样，Cleanroom 模块自己的 Mixin 也要处理映射
+    referenceClasspath.from(project(':cleanroom').sourceSets.main.compileClasspath)
+    // 映射的时候也需要处理 cleanroom 那边的继承类，虽然现在没事以后可能用得上
+    // 至于MC本身有两个这个问题不大，都用同一个映射
+}
+tasks.named('assemble') { dependsOn 'reobfJarCRL' }
+
+/* ================================
+ *        Jar 打包区域结束
+ */
 
 idea {
     module {

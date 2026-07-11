@@ -27,11 +27,13 @@
 
 package moe.qingu.nickel;
 
+import com.ibm.icu.lang.UCharacter;
 import moe.qingu.nickel.nbt.operation.SNBTOperations;
 import moe.qingu.nickel.nbt.path.method.NBTPathMethods;
 import moe.qingu.nickel.network.PackageNBTInfo;
 import moe.qingu.nickel.network.PacketSuggestionReminder;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -48,11 +50,28 @@ public final class NickelAPI{
     public final static Logger LOGGER = LogManager.getLogger(NAME);
     public final static SimpleNetworkWrapper CHANNEL = NetworkRegistry.INSTANCE.newSimpleChannel(MODID+":network");
 
+    private static boolean isICUAvailable;
+
+    public static boolean isUnicodeDataAvailable() {
+        return isICUAvailable;
+    }
+
     @Mod.EventHandler
     public void onPreInit(final FMLPreInitializationEvent event){
         CHANNEL.registerMessage(PacketSuggestionReminder.Handler.class, PacketSuggestionReminder.class,0, Side.CLIENT);
         CHANNEL.registerMessage(PackageNBTInfo.Handler.class,PackageNBTInfo.class,1,Side.CLIENT);
         SNBTOperations.scanProviders(event.getAsmData());
         NBTPathMethods.scanProviders(event.getAsmData());
+    }
+
+    @Mod.EventHandler
+    public void onPostInit(final FMLPostInitializationEvent event){
+        try {
+            UCharacter.getCharFromName("SPACE");
+            isICUAvailable = true;
+        }catch (final Throwable t){
+            isICUAvailable = false;
+            NickelAPI.LOGGER.error("Unicode Name Database not found. \\N{ UNICODE NAME } isn't available in Nickel API.");
+        }
     }
 }

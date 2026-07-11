@@ -32,6 +32,7 @@ nickel.command.syntax.int.invalid_digit=Character %s is not a valid base-%s inte
 nickel.command.syntax.unexpected=Expected character %s but found %s
 nickel.command.syntax.eof=Incomplete argument
 nickel.command.syntax.undefined_unicode=Undefined Unicode character name %s
+nickel.command.error.unicode.unavaliable=Unicode name data is unavailable. Consider completing the data file or switching to Cleanroom mod loader
 
 nickel.command.parameter.base.default_not_found=This optional parameter node doesn't have a default value parser!
 nickel.command.parameter.smart.checker1=This parameter is required to accepted one argument.

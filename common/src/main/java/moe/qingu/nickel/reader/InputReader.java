@@ -29,6 +29,7 @@ package moe.qingu.nickel.reader;
 
 import com.ibm.icu.lang.UCharacter;
 import moe.qingu.nickel.I18nKeys;
+import moe.qingu.nickel.NickelAPI;
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.command.exception.NickelCommandException;
 import moe.qingu.nickel.command.exception.NickelRuntimeException;
@@ -252,6 +253,8 @@ public final class InputReader {
         final StringBuilder builder = new StringBuilder();
         while (canRead() && isValidUnicodeNameCP(peek())) builder.appendCodePoint(Character.toUpperCase(this.read()));
         expect('}');
+        if(!NickelAPI.isUnicodeDataAvailable()) throw context != null && context.getCurrentBranch() != null?new NickelCommandException(context.getCurrentBranch())
+                .withAppendix(translation(I18nKeys.Syntax.UNAVAILABLE_UNICODE)):new CommandException(I18nKeys.Syntax.UNAVAILABLE_UNICODE);
         final int cp = UCharacter.getCharFromName(builder.toString());
         if(cp == -1) this.panic(begin,translation(I18nKeys.Syntax.UNDEFINED_UNICODE,builder));
         return cp;

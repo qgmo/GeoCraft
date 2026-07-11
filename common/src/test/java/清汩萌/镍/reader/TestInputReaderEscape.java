@@ -157,40 +157,6 @@ public final class TestInputReaderEscape {
         Assertions.assertThrows(NickelScanEOFSignal.class,() -> new InputReader("0").scanEscape());//截断发信号
     }
 
-    public static @Nonnull Stream<Arguments> pullDataForUnicodeName(){
-        return Stream.of(
-                Arguments.of("N{LATIN SMALL LETTER A}",(int)'a'),
-                Arguments.of("N{latin small letter a}",(int)'a'),//名字大小写不敏感
-                Arguments.of("N{CJK UNIFIED IDEOGRAPH-5929}",0x5929),//天，名字含数字与连字符
-                Arguments.of("N{SPACE}",0x20)
-        );
-    }
-
-    /**
-     * Claude Generated
-     * 测试 \N{UNICODE NAME} 经 ICU 按名查字符，大小写不敏感
-     */
-    @Disabled("测试环境缺少 ICU 字符名数据（UCharacter 初始化 MissingResourceException），完整运行环境下可启用")
-    @ParameterizedTest
-    @MethodSource("pullDataForUnicodeName")
-    public void readEscapeUnicodeNameTest(final @Nonnull String body,final int expected) throws Exception {
-        final @Nonnull InputReader reader = new InputReader(body);
-        Assertions.assertEquals(expected,reader.readEscape());
-        Assertions.assertFalse(reader.canRead());
-    }
-
-    /**
-     * Claude Generated
-     * 测试 readUnicodeName 直接调用：读 {NAME} 后游标停在闭括号之后
-     */
-    @Disabled("测试环境缺少 ICU 字符名数据（UCharacter 初始化 MissingResourceException），完整运行环境下可启用")
-    @Test
-    public void readUnicodeNameDirectTest() throws Exception {
-        final @Nonnull InputReader reader = new InputReader("{LATIN SMALL LETTER A}xyz");
-        Assertions.assertEquals('a',reader.readUnicodeName());
-        Assertions.assertEquals('x',reader.peek());
-    }
-
     /**
      * Claude Generated
      * 测试 isValidUnicodeNameCP 的合法字符集 [A-Za-z0-9 空格 连字符]
@@ -238,7 +204,6 @@ public final class TestInputReaderEscape {
      * Claude Generated
      * \N{} 空名字应被拒绝：无论 panic 还是 ICU 侧拒绝，都以异常收场
      */
-    @Disabled("测试环境缺少 ICU 字符名数据（UCharacter 初始化 MissingResourceException），完整运行环境下可启用")
     @Test
     public void readEscapeEmptyUnicodeNameTest(){
         final @Nonnull InputReader reader = withContext("N{}");

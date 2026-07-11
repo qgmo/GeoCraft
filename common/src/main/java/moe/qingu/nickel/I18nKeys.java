@@ -62,6 +62,7 @@ public final class I18nKeys {
         public static final String UNEXPECTED = "nickel.command.syntax.unexpected";
         public static final String EOF = "nickel.command.syntax.eof";
         public static final String UNDEFINED_UNICODE = "nickel.command.syntax.undefined_unicode";
+        public static final String UNAVAILABLE_UNICODE = "nickel.command.error.unicode.unavaliable";
         public static final String STR_TRUNCATED_ESCAPE = "nickel.command.syntax.string.truncated_escape";
         public static final String STR_TRUNCATED_ESCAPE_INT = "nickel.command.syntax.string.truncated_escape.int";
         public static final String NUM_INVALID = "nickel.command.syntax.num.invalid";

@@ -64,35 +64,7 @@
 
 apply from: "${rootProject.projectDir}/gradle/scripts/helpers.gradle"
 
-repositories {
-    // Other repositories described by default:
-    // CleanroomMC: https://maven.cleanroommc.com
-    exclusiveContent {
-        forRepository {
-            maven {
-                name 'CurseMaven'
-                url 'https://cursemaven.com'
-            }
-        }
-        filter {
-            includeGroup 'curse.maven'
-        }
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name 'Modrinth'
-                url 'https://api.modrinth.com/maven'
-            }
-        }
-        filter {
-            includeGroup 'maven.modrinth'
-        }
-    }
-    maven { url = 'https://jitpack.io' }
-    maven { url = 'https://mod-buildcraft.com/maven' }
-    mavenLocal() // Must be last for caching to work
-}
+apply from: "${rootProject.projectDir}/gradle/scripts/repositories.gradle"
 
 dependencies {
     // Include StripLatestForgeRequirements by default for the dev env, saves everyone a hassle
