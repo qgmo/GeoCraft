@@ -153,8 +153,8 @@ public strictfp class SNBTReader {
 
     private int getArrayContentTypeByChar(final char c){
         switch (c){
-            case 'B': return Constants.NBT.TAG_BYTE;
-            case 'L': return Constants.NBT.TAG_LONG;
+            case 'b': return Constants.NBT.TAG_BYTE;
+            case 'l': return Constants.NBT.TAG_LONG;
             default:return Constants.NBT.TAG_INT;
         }
     }

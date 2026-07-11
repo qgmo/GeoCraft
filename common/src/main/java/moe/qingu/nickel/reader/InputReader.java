@@ -79,7 +79,9 @@ public final class InputReader {
 
     public boolean canRead(final int readLen){
         if(readLen < 1) throw new IllegalArgumentException();
-        return Math.addExact(this.cursor,readLen) - 1 < codepoints.length;
+        final int res = this.cursor + readLen;
+        if (((this.cursor ^ res) & (readLen ^ this.cursor)) < 0) return false; //溢出
+        return res - 1 < codepoints.length;
     }
 
     public int read(){
@@ -172,7 +174,7 @@ public final class InputReader {
             return true;
         }else if("false".equals(token) || "0".equals(token)){
             return false;
-        }else return context.input.panic(begin,translation(I18nKeys.Syntax.INVALID_BOOLEAN,token));
+        }else return panic(begin,translation(I18nKeys.Syntax.INVALID_BOOLEAN,token));
     }
 
     @Nonnull
@@ -294,7 +296,7 @@ public final class InputReader {
             return Integer.parseInt(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,I18nKeys.Syntax.invalidInt(raw,e));
+            return panic(begin,I18nKeys.Syntax.invalidInt(raw,e));
         }
     }
 
@@ -307,7 +309,7 @@ public final class InputReader {
             return Long.parseLong(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,I18nKeys.Syntax.invalidLong(raw,e));
+            return panic(begin,I18nKeys.Syntax.invalidLong(raw,e));
         }
     }
 
@@ -320,7 +322,7 @@ public final class InputReader {
             return Double.parseDouble(raw);
         }catch (final @Nonnull NumberFormatException e){
             this.cursor = begin;
-            return context.input.panic(begin,I18nKeys.Syntax.invalidDouble(raw,e));
+            return panic(begin,I18nKeys.Syntax.invalidDouble(raw,e));
         }
     }
 
