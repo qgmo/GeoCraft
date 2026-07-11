@@ -151,12 +151,17 @@ public final class NBTPathMethods {
 
     public static void loadFuncs(final @Nonnull Class<?> cls){
         final Method[] methods = cls.getDeclaredMethods();
+        outer:
         for(final Method method:methods){
             if(!Modifier.isStatic(method.getModifiers())) continue;
             if(!method.isAnnotationPresent(NBTPathFunction.class)) continue;
             if(!Modifier.isPublic(method.getModifiers())){
                 NickelAPI.LOGGER.warn("Skipped loading NBTPath method {} in class {}, because it is not public.",method,cls.getName());
                 continue;
+            }
+            for(final Class<?> para: method.getParameterTypes()) if(!NBTBase.class.isAssignableFrom(para)){
+                NickelAPI.LOGGER.warn("Skipped loading NBTPath method/processor {} in class {}, because it has at least a para type that isn't a son of NBTBase",method,cls.getName());
+                continue outer;
             }
             final NBTPathFunction annotation = method.getAnnotation(NBTPathFunction.class);
             final String name = annotation.name().isEmpty()? method.getName(): annotation.name();

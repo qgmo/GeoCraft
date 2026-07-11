@@ -50,6 +50,7 @@ nickel.command.parameter.entity_entry.invalid=无效的实体类型 %s
 
 nickel.command.nbt.syntax.eof=NBT 不完整
 nickel.command.nbt.syntax.expect_key=NBT 标签需要键
+nickel.command.nbt.syntax.duplicated_key=NBT 复合标签存在重复的键 %s
 nickel.command.nbt.syntax.expect_value=NBT 标签需要值
 nickel.command.nbt.syntax.empty_key=NBT 键不能为空字符串
 nickel.command.nbt.syntax.too_min=数字 %s 过小，最小值为 %s

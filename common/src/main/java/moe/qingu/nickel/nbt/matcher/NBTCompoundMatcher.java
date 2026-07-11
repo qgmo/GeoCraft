@@ -32,7 +32,6 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,12 +58,32 @@ public final class NBTCompoundMatcher extends NBTMatcher<NBTTagCompound> {
         return map.size();
     }
 
-    public void expect(final @Nonnull String key,final @Nullable NBTMatcher<?> matcher){
+    public void expect(final @Nonnull String key,final @Nonnull NBTMatcher<?> matcher){
         map.put(key,matcher);
     }
 
     public void expectByte(final @Nonnull String key, final byte val){
         map.put(key,new NBTByteMatcher(val));
+    }
+
+    public void expectShort(final @Nonnull String key, final short val){
+        map.put(key,new NBTShortMatcher(val));
+    }
+
+    public void expectInt(final @Nonnull String key, final int val){
+        map.put(key,new NBTIntMatcher(val));
+    }
+
+    public void expectLong(final @Nonnull String key, final long val){
+        map.put(key,new NBTLongMatcher(val));
+    }
+
+    public void expectFloat(final @Nonnull String key, final float val){
+        map.put(key,new NBTFloatMatcher(val));
+    }
+
+    public void expectDouble(final @Nonnull String key, final double val){
+        map.put(key,new NBTDoubleMatcher(val));
     }
 
     @Nonnull
@@ -85,7 +104,6 @@ public final class NBTCompoundMatcher extends NBTMatcher<NBTTagCompound> {
     protected boolean _match(final @Nonnull NBTTagCompound compound) {
         for(final Map.Entry<String,NBTMatcher<?>> entry:map.entrySet()){
             if(!compound.hasKey(entry.getKey())) return false;
-            if(entry.getValue() == null) continue;
             final NBTBase v = compound.getTag(entry.getKey());
             if(!entry.getValue().match(v)) return false;
         }

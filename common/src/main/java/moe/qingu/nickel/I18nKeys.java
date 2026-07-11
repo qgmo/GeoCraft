@@ -96,6 +96,7 @@ public final class I18nKeys {
     public static final class NBT{
         public static final String EOF = "nickel.command.nbt.syntax.eof";
         public static final String EXPECT_KEY = "nickel.command.nbt.syntax.expect_key";
+        public static final String DUPLICATE_KEY = "nickel.command.nbt.syntax.duplicated_key";
         public static final String EXPECT_VALUE = "nickel.command.nbt.syntax.expect_value";
         public static final String EMPTY_KEY = "nickel.command.nbt.syntax.empty_key";
         public static final String TOO_MIN = "nickel.command.nbt.syntax.too_min";

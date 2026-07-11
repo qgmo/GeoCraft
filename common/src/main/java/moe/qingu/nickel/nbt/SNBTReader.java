@@ -73,9 +73,12 @@ public strictfp class SNBTReader {
         expect('{');
         final NBTTagCompound compound = new NBTTagCompound();
         while (input.canRead() && input.peek() != '}'){
+            input.skipWhitespaces();
+            final int keyBegin = this.input.getCursor();
             final String key = this.readKey();
             input.skipWhitespaces();
             expect(':');
+            if(compound.hasKey(key)) input.panic(keyBegin,translation(I18nKeys.NBT.DUPLICATE_KEY,key));
             compound.setTag(key,this.readValue('i'));
             if(this.shouldExit('}')) break;
         }

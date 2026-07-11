@@ -50,6 +50,7 @@ nickel.command.parameter.entity_entry.invalid=Invalid Entity Entry %s
 
 nickel.command.nbt.syntax.eof=Incomplete NBT
 nickel.command.nbt.syntax.expect_key=NBT tag requires a key
+nickel.command.nbt.syntax.duplicated_key=NBT compound tag has duplicated key %s
 nickel.command.nbt.syntax.expect_value=NBT tag requires a value
 nickel.command.nbt.syntax.empty_key=NBT key cannot be an empty string
 nickel.command.nbt.syntax.too_min=Number %s is too small, minimum value is %s

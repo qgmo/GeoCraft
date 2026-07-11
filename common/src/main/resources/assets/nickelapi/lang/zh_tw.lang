@@ -50,6 +50,7 @@ nickel.command.parameter.entity_entry.invalid=無效的實體類型 %s
 
 nickel.command.nbt.syntax.eof=NBT 不完整
 nickel.command.nbt.syntax.expect_key=NBT 標籤需要鍵
+nickel.command.nbt.syntax.duplicated_key=NBT 複合標籤存在重複的鍵 %s
 nickel.command.nbt.syntax.expect_value=NBT 標籤需要值
 nickel.command.nbt.syntax.empty_key=NBT 鍵不能為空字串
 nickel.command.nbt.syntax.too_min=數字 %s 過小，最小值為 %s

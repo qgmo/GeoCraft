@@ -178,6 +178,7 @@ public final class SNBTOperations {
     @SuppressWarnings("unchecked")
     public static void loadFuncs(final @Nonnull Class<?> cls){
         final Method[] methods = cls.getDeclaredMethods();
+        outer:
         for(final Method method:methods){
             if(!Modifier.isStatic(method.getModifiers())) continue;
             else if(!method.isAnnotationPresent(SNBTFunction.class)) continue;
@@ -185,12 +186,16 @@ public final class SNBTOperations {
                 NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because it is not public.",method,cls.getName());
                 continue;
             }else if(!NBTBase.class.isAssignableFrom(method.getReturnType())){
-                NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because its return type isn't a son of NBTBase",methods,cls.getName());
+                NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because its return type isn't a son of NBTBase",method,cls.getName());
                 continue;
             }
             final SNBTFunction annotation = method.getAnnotation(SNBTFunction.class);
 
             final Class<?>[] paras = method.getParameterTypes();
+            for(final Class<?> para: paras) if(!NBTBase.class.isAssignableFrom(para)){
+                NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because it has at least a para type that isn't a son of NBTBase",method,cls.getName());
+                continue outer;
+            }
             try{
                 final MethodHandle handle = PERMISSION.unreflect(method)
                         .asSpreader(NBTBase[].class,paras.length)
