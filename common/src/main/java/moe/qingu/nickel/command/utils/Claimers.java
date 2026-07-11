@@ -36,14 +36,14 @@ import java.util.function.Predicate;
 /**
  * @author QiguaiAAAA
  */
-public final class Matchers {
+public final class Claimers {
     public static final Claimer ANY = input-> !input.isRemainingEmpty();
-    public static final Claimer INTEGER = matchInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
-    public static final Claimer LONG = matchLong(Long.MIN_VALUE,Long.MAX_VALUE);
-    public static final Claimer DOUBLE = matchDouble(Double.MIN_VALUE,Double.MAX_VALUE);
-    public static final Claimer RESOURCE_LOCATION = matchOnlyFirstToken(Matchers::isResourceLocation);
+    public static final Claimer INTEGER = claimInteger(Integer.MIN_VALUE,Integer.MAX_VALUE);
+    public static final Claimer LONG = claimLong(Long.MIN_VALUE,Long.MAX_VALUE);
+    public static final Claimer DOUBLE = claimDouble(Double.MIN_VALUE,Double.MAX_VALUE);
+    public static final Claimer RESOURCE_LOCATION = matchOnlyFirstToken(Claimers::isResourceLocation);
 
-    private Matchers(){}
+    private Claimers(){}
 
     @Nonnull
     public static Claimer matchOnlyFirstToken(@Nonnull final Predicate<String> simpleMatcher){
@@ -51,7 +51,7 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static Claimer matchInteger(final int min, final int max){
+    public static Claimer claimInteger(final int min, final int max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseInt(arg,min,max);
@@ -63,7 +63,7 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static Claimer matchLong(final long min, final long max){
+    public static Claimer claimLong(final long min, final long max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseLong(arg,min,max);
@@ -75,7 +75,7 @@ public final class Matchers {
     }
 
     @Nonnull
-    public static Claimer matchDouble(final double min, final double max){
+    public static Claimer claimDouble(final double min, final double max){
         return matchOnlyFirstToken(arg->{
             try {
                 CommandBase.parseDouble(arg,min,max);

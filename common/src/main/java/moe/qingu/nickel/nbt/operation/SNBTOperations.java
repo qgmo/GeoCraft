@@ -180,12 +180,16 @@ public final class SNBTOperations {
         final Method[] methods = cls.getDeclaredMethods();
         for(final Method method:methods){
             if(!Modifier.isStatic(method.getModifiers())) continue;
-            if(!method.isAnnotationPresent(SNBTFunction.class)) continue;
-            if(!Modifier.isPublic(method.getModifiers())){
+            else if(!method.isAnnotationPresent(SNBTFunction.class)) continue;
+            else if(!Modifier.isPublic(method.getModifiers())){
                 NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because it is not public.",method,cls.getName());
+                continue;
+            }else if(!NBTBase.class.isAssignableFrom(method.getReturnType())){
+                NickelAPI.LOGGER.warn("Skipped loading SNBT operation {} in class {}, because its return type isn't a son of NBTBase",methods,cls.getName());
                 continue;
             }
             final SNBTFunction annotation = method.getAnnotation(SNBTFunction.class);
+
             final Class<?>[] paras = method.getParameterTypes();
             try{
                 final MethodHandle handle = PERMISSION.unreflect(method)

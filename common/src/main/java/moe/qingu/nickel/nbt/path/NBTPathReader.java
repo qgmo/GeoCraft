@@ -32,7 +32,6 @@ import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.nbt.SNBTReader;
 import moe.qingu.nickel.nbt.matcher.NBTMatcher;
 import moe.qingu.nickel.nbt.path.node.*;
-import moe.qingu.nickel.util.StringUtils;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -57,7 +56,7 @@ public class NBTPathReader extends SNBTReader {
 
     @Nonnull
     public final NBTPath readPath(final @Nonnull NBTPath path) throws CommandException {
-        if(!input.canRead()) return path.length() != 0?path:input.panic(input.getCursor(), I18nKeys.NBTPath.EOF);
+        if(!input.canRead()) return input.panic(input.getCursor(), I18nKeys.NBTPath.EOF);
         switch (input.peek()){
             case '{': {
                 readPathCompound(path);
@@ -120,7 +119,7 @@ public class NBTPathReader extends SNBTReader {
         final int begin = input.getCursor();
         final String key;
         if(!input.canRead()) input.panic(begin,translation(I18nKeys.NBTPath.EXPECT_TAG_NAME));
-        if(input.peek() == '"' || input.peek() == '\'') key = StringUtils.strip(input.readString());
+        if(input.peek() == '"' || input.peek() == '\'') key = input.readString();
         else key = readUnquotedPathString();
         if(input.canRead() && input.peek() == '('){
             readPathMethod(begin,key,path);

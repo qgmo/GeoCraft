@@ -160,7 +160,7 @@ public final class NBTPathMethods {
             }
             final NBTPathFunction annotation = method.getAnnotation(NBTPathFunction.class);
             final String name = annotation.name().isEmpty()? method.getName(): annotation.name();
-            if(annotation.processor()) loadProcessor(method,name);
+            if(annotation.processor()) loadProcessor(cls,method,name);
             else loadMethod(cls,method,name);
         }
     }
@@ -173,6 +173,9 @@ public final class NBTPathMethods {
             return;
         }else if(paras[0] != NBTBase.class){
             NickelAPI.LOGGER.warn("The first parameter of NBTPathMethod must be NBTbase! Ignored method {} in class {}",method,cls.getName());
+            return;
+        }else if(!Collection.class.isAssignableFrom(method.getReturnType())){
+            NickelAPI.LOGGER.warn("Skipped loading NBTPath method {} in class {}, because its return type isn't a son of Collection",methods,cls.getName());
             return;
         }
         final Class<?>[] actualParas = new Class[paras.length-1];
@@ -200,7 +203,11 @@ public final class NBTPathMethods {
     }
 
     @SuppressWarnings("unchecked")
-    private static void loadProcessor(final @Nonnull Method method,final @Nonnull String name){
+    private static void loadProcessor(final @Nonnull Class<?> cls,final @Nonnull Method method,final @Nonnull String name){
+        if(!Function.class.isAssignableFrom(method.getReturnType())){
+            NickelAPI.LOGGER.warn("Skipped loading NBTPath processor {} in class {}, because its return type isn't a son of Function",methods,cls.getName());
+            return;
+        }
         final Class<?>[] paras = method.getParameterTypes();
         try{
             final MethodHandle handle = PERMISSION.unreflect(method)

@@ -32,7 +32,6 @@ import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import moe.qingu.nickel.reader.InputReader;
 import moe.qingu.nickel.nbt.operation.SNBTOperation;
 import moe.qingu.nickel.nbt.operation.SNBTOperations;
-import moe.qingu.nickel.util.StringUtils;
 import net.minecraft.command.CommandException;
 import net.minecraft.nbt.*;
 import net.minecraft.util.text.event.HoverEvent;
@@ -96,12 +95,10 @@ public strictfp class SNBTReader {
             case 'I':
             case 'L':{
                 if(!input.canRead(2)) break;
-                final int cp;
-                try{
-                    cp = input.read();
-                    if(input.read() != ';') break;
-                }finally {
+                final int cp = input.read();
+                if(input.read() != ';') {
                     input.setCursor(begin);
+                    break;
                 }
                 return readArray((char) Character.toLowerCase(cp));
             }
@@ -168,7 +165,7 @@ public strictfp class SNBTReader {
         final int begin = input.getCursor();
         final String key;
         if(!input.canRead()) return input.panic(begin,translation(I18nKeys.NBT.EXPECT_KEY));
-        if(input.peek() == '"' || input.peek() == '\'') key = StringUtils.strip(input.readString());
+        if(input.peek() == '"' || input.peek() == '\'') key = input.readString();
         else key = readUnquotedString();
         if(begin == input.getCursor() || key.isEmpty()) return input.panic(begin,translation(I18nKeys.NBT.EMPTY_KEY));
         return key;

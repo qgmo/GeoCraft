@@ -30,7 +30,7 @@ package moe.qingu.nickel.command.builder.parameter.minecraft;
 import moe.qingu.nickel.command.builder.parameter.ParameterNodeBuilder;
 import net.minecraft.item.ItemStack;
 import moe.qingu.nickel.command.node.parameter.minecraft.ItemStackNode;
-import moe.qingu.nickel.command.utils.Matchers;
+import moe.qingu.nickel.command.utils.Claimers;
 
 import javax.annotation.Nonnull;
 
@@ -68,7 +68,7 @@ public class ItemStackNodeBuilder extends ParameterNodeBuilder<ItemStack,ItemSta
     @Override
     protected ItemStackNode buildInstance() {
         final ItemStackNode node = new ItemStackNode(name);
-        if(!allowNBT) node.setClaimer(Matchers.RESOURCE_LOCATION); //Smart 的 build() 可以覆盖
+        if(!allowNBT) node.setClaimer(Claimers.RESOURCE_LOCATION); //Smart 的 build() 可以覆盖
         node.setAllowNBT(allowNBT);
         node.setCount(count);
         node.setMeta(meta);

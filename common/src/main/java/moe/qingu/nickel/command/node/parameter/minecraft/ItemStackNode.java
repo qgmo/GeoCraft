@@ -41,7 +41,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.utils.Matchers;
+import moe.qingu.nickel.command.utils.Claimers;
 import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
@@ -51,9 +51,9 @@ import javax.annotation.Nonnull;
  */
 public class ItemStackNode extends ParameterNode<ItemStack> {
     public static final DefaultParser<ItemStack> DEFAULT_PARSER = (node, context) -> new ItemStack(Items.AIR,1);
-    public static final Claimer CLAIMER_WITH_NBT = Matchers.matchOnlyFirstToken(arg->{
+    public static final Claimer CLAIMER_WITH_NBT = Claimers.matchOnlyFirstToken(arg->{
         final String[] split = arg.split("\\{",2);
-        return split.length == 1 && Matchers.isResourceLocation(arg) || split.length == 2 && Matchers.isResourceLocation(split[0]);
+        return split.length == 1 && Claimers.isResourceLocation(arg) || split.length == 2 && Claimers.isResourceLocation(split[0]);
     });
     public static final DirectSuggestor<ItemStack> DEFAULT_SUGGESTOR = DirectSuggestor.of(ItemSelectorNode.DEFAULT_SUGGESTOR.getData());
 

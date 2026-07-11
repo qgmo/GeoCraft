@@ -83,7 +83,7 @@ public final class NBTUtils {
     }
 
     public static void reset(final @Nonnull NBTTagList list) throws IllegalAccessException{
-        if(list.isEmpty()) throw new IllegalArgumentException();
+        if(!list.isEmpty()) throw new IllegalArgumentException();
         if(list.getTagType() == 0) return;
         listTypeField.setByte(list,(byte) 0);
     }
@@ -135,6 +135,7 @@ public final class NBTUtils {
     public static LongStream streamOf(final @Nonnull NBTTagLongArray longs){
         final String arr = longs.toString();
         return Arrays.stream(arr.substring(3,arr.length()-1).split(","))
+                .filter(e->!e.isEmpty())
                 .map(e -> e.substring(0,e.length()-1))
                 .mapToLong(Long::parseLong);
     }

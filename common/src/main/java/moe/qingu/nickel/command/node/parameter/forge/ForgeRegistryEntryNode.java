@@ -27,17 +27,15 @@
 
 package moe.qingu.nickel.command.node.parameter.forge;
 
-import moe.qingu.nickel.command.exception.NickelCommandException;
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
 import moe.qingu.nickel.command.suggestor.DirectSuggestor;
+import net.minecraft.command.CommandException;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.IRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.utils.Matchers;
+import moe.qingu.nickel.command.utils.Claimers;
 import moe.qingu.nickel.command.utils.Acceptor;
 
 import javax.annotation.Nonnull;
@@ -48,11 +46,11 @@ import javax.annotation.Nonnull;
 public abstract class ForgeRegistryEntryNode<E extends IForgeRegistryEntry<E>> extends TokenizeParameterNode.Single<E> {
     public ForgeRegistryEntryNode(@Nonnull final String name) {
         super(name);
-        setClaimer(Matchers.RESOURCE_LOCATION);
+        setClaimer(Claimers.RESOURCE_LOCATION);
     }
 
     @Override
-    public boolean accepts(@Nonnull final String token, @Nonnull final CommandContext context) throws NickelCommandException, NickelRuntimeException, NickelSyntaxException {
+    public boolean accepts(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
         return Acceptor.matchResourceLocation(token,context);
     }
 

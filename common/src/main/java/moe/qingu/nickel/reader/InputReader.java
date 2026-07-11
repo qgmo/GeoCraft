@@ -78,7 +78,8 @@ public final class InputReader {
     }
 
     public boolean canRead(final int readLen){
-        return this.cursor + readLen - 1 < codepoints.length;
+        if(readLen < 1) throw new IllegalArgumentException();
+        return Math.addExact(this.cursor,readLen) - 1 < codepoints.length;
     }
 
     public int read(){
@@ -324,7 +325,8 @@ public final class InputReader {
     }
 
     @Nonnull
-    public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
+    public <T> T panic(final @Nonnull TextBuilder<?,?> text) throws CommandException {
+        if(this.context == null) throw new CommandException(text.done().getFormattedText());
         final @Nullable ICommandNode curNode = context.getCurrentNode();
         final @Nullable CommandBranch curBranch = context.getCurrentBranch();
         if(curBranch != null){
@@ -334,12 +336,14 @@ public final class InputReader {
     }
 
     @Nonnull
-    public <T> T panic(final int loc,final @Nonnull String translationKey) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+    public <T> T panic(final int loc,final @Nonnull String translationKey) throws CommandException {
+        if(this.context == null) throw new CommandException(translationKey);
         return panic(loc,translation(translationKey));
     }
 
     @Nonnull
-    public <T> T panic(final int loc,final @Nonnull TextBuilder<?,?> text) throws NickelRuntimeException, NickelCommandException, NickelSyntaxException {
+    public <T> T panic(final int loc,final @Nonnull TextBuilder<?,?> text) throws CommandException {
+        if(this.context == null) throw new CommandException(text.done().getFormattedText());
         try{
             panic(text);
         }catch (final NickelSyntaxException e){

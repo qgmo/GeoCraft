@@ -29,9 +29,6 @@ package moe.qingu.nickel.command.utils;
 
 import moe.qingu.nickel.command.context.CommandContext;
 import moe.qingu.nickel.reader.InputReader;
-import moe.qingu.nickel.command.exception.NickelCommandException;
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.command.exception.NickelSyntaxException;
 import moe.qingu.nickel.command.node.parameter.ParameterNode;
 import net.minecraft.command.CommandException;
 
@@ -49,10 +46,10 @@ public interface Acceptor {
         else if(self.isOptional()) return false;
         else return input.getContext().input.panic(translation("nickel.command.parameter.smart.checker1"));
     };
-    Acceptor MATCH_TWO_PARAMETER = matchMultiTokens(2);
-    Acceptor MATCH_THREE_PARAMETER = matchMultiTokens(3);
-    Acceptor MATCH_FOUR_PARAMETER = matchMultiTokens(4);
-    Acceptor MATCH_RESOURCE_LOCATION = REQUIRE_ONE_TOKEN.and((self, input) ->
+    Acceptor REQUIRE_TWO_TOKENS = matchMultiTokens(2);
+    Acceptor REQUIRE_THREE_TOKENS = matchMultiTokens(3);
+    Acceptor REQUIRE_FOUR_TOKENS = matchMultiTokens(4);
+    Acceptor REQUIRE_RESOURCE_LOCATION = REQUIRE_ONE_TOKEN.and((self, input) ->
             matchResourceLocation(input.readToken(),input.getContext()));
 
     default boolean check(@Nonnull final ParameterNode<?> self, @Nonnull final InputReader input) throws CommandException{
@@ -82,7 +79,7 @@ public interface Acceptor {
         return (self, input) -> matchMultiTokens(self,input,paraNum);
     }
 
-    static boolean matchMultiTokens(final @Nonnull ParameterNode<?> self, final @Nonnull InputReader input, final int paraNum) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+    static boolean matchMultiTokens(final @Nonnull ParameterNode<?> self, final @Nonnull InputReader input, final int paraNum) throws CommandException {
         int num = paraNum;
         check:{
             while (num-->0) if(input.readToken().isEmpty()) break check;
@@ -93,7 +90,7 @@ public interface Acceptor {
         else return input.getContext().input.panic(translation("nickel.command.parameter.smart.checkers",paraNum));
     }
 
-    static boolean matchResourceLocation(final @Nonnull String token, final @Nonnull CommandContext context) throws NickelCommandException, NickelSyntaxException, NickelRuntimeException {
+    static boolean matchResourceLocation(final @Nonnull String token, final @Nonnull CommandContext context) throws CommandException {
         final String[] split = token.split(":");
         if(split.length>2) return context.input.panic(translation("nickel.command.parameter.checker.resource_location.invalid.repeat"));
         else if(split.length==2&&split[0].contains("/"))

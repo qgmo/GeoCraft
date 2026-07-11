@@ -37,8 +37,7 @@ import net.minecraft.command.NumberInvalidException;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import moe.qingu.nickel.command.context.CommandContext;
-import moe.qingu.nickel.command.utils.Matchers;
-import org.apache.commons.lang3.ArrayUtils;
+import moe.qingu.nickel.command.utils.Claimers;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -52,7 +51,7 @@ public class Vec3dNode extends MinecraftVec3Node<Vec3d> {
     /**
      *  若第一个参数为数字，则说明为坐标。不会检查参数长度是否满足条件，因为若检查则会导致歧义。
      */
-    public static final Claimer DEFAULT_CLAIMER = Matchers.matchOnlyFirstToken(arg->{
+    public static final Claimer DEFAULT_CLAIMER = Claimers.matchOnlyFirstToken(arg->{
         try {
             CommandBase.parseDouble(0d,arg,false);
         }catch (final NumberInvalidException e) {

@@ -73,6 +73,7 @@ public class SNBTScanner extends SNBTReader{
             case 'L':{
                 if(!input.canRead()) throw NickelScanEOFSignal.INSTANCE;
                 if(input.read() != ';') input.unread();
+                break;
             } default:input.unread();
         }
         while (input.canRead() && input.peek() != ']'){
