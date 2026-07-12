@@ -297,7 +297,7 @@ jar {
 }
 
 def CRL的MCP到SRG表 = project(':cleanroom').layout.buildDirectory.file('tmp/mixins/mixins.srg')
-def CRL的refmap = project(':cleanroom').layout.buildDirectory.file("tmp/mixins/mixins.${mod_id}_cleanroom.refmap.json")
+def CRL的refmap = project(':cleanroom').layout.buildDirectory.file("tmp/mixins/mixins.crl.${mod_id}.refmap.json")
 
 tasks.register('jarCRL', Jar).configure {
     archiveClassifier = 'CRL-dev'

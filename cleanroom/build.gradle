@@ -128,7 +128,7 @@ unimined.minecraft {
 
 // 下面这一段参考 RFG 实现的，用于 Mixin 文件中 Shadow remap 的实现
 def SRG名输出文件 = layout.buildDirectory.file('tmp/mixins/mixins.srg')
-def CRL的映射输出文件 = layout.buildDirectory.file("tmp/mixins/mixins.${mod_id}_cleanroom.refmap.json")
+def CRL的映射输出文件 = layout.buildDirectory.file("tmp/mixins/mixins.crl.${mod_id}.refmap.json")
 def MCP到SRG名映射 = project(':common').tasks.named('generateForgeSrgMappings') // RFG 生成 SRG 映射表的任务
         .flatMap { it.mcpToSrg } //获取这个任务的 MCP 到 SRG 名字的映射
 

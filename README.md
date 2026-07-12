@@ -9,8 +9,9 @@
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/modrinth_64h.png)](https://modrinth.com/project/3CKJAWbv)
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/cozy/available/github_64h.png)](https://github.com/QGMoe/GeoCraft)
 
-![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/built-with/java_46h.png)
+![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact-minimal/built-with/java25_46h.png)
 ![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/supported/forge_46h.png)
+![](https://raw.githubusercontent.com/KessokuTeaTime/Badges-Extra/refs/heads/main/assets/compact/supported/cleanroom_46h.png)
 
 [![](https://raw.githubusercontent.com/intergrav/devins-badges/refs/heads/v3/assets/compact/documentation/readthedocs_46h.png)](https://github.com/QGMoe/GeoCraft/wiki)
 
@@ -115,7 +116,9 @@
 
 ## 运行要求
 
-该模组要求使用 [MixinBooter](https://github.com/CleanroomMC/MixinBooter) 作为前置以提供 Mixin 环境。模组可以仅安装在服务端，但在双端安装下可以提供最佳效果。
+该模组要求使用 [MixinBooter](https://github.com/CleanroomMC/MixinBooter) 作为前置以提供 Mixin 环境。模组可以仅安装在服务端，但在双端安装下可以提供最佳效果。对于 Cleanroom 加载器，无需安装 MixinBooter 前置。
+
+自 v0.2.7 版本开始，天圆地方开始主动兼容 Cleanroom 加载器，并同时发布针对 Forge 和 Cleanroom 的生产版本。请注意，尽管由于 Cleanroom 强大的向后兼容能力，使得天圆地方的 Forge 版本现阶段可以在 Cleanroom 上运行，但模组不保证 Forge 版本能够稳定适配 Cleanroom。若要在 Cleanroom 加载器上使用天圆地方，请考虑使用 CRL 后缀（Cleanroom Loader 的缩写）的生产版本。
 
 由于 1.12.2 原版光照系统和渲染管线的限制，若没有进行额外的优化，即使仅有上千流体方块同时更新，光照计算仍会导致 MSPT 值飙升。安装诸如 [Alfheim Lighting Engine](https://github.com/Red-Studio-Ragnarok/Alfheim) 等光照优化模组可以解决此问题，并极大提升大量流体更新时的性能。对客户端同理，安装相关渲染优化模组可以缓解大量流体更新时的 FPS 波动，例如高清修复。
 
@@ -168,6 +171,15 @@
 
 没有，含水方块会在未来通过兼容 Fluidlogged API 实现。载流方块 API 只是一个流体交互协议，并不负责具体的机制。
 
+**问：Cleanroom 不是向后兼容吗，为什么需要专门做针对 Cleanroom 的版本？**
+
+有三个因素： 
+1. 尽管声称 99% 向后兼容性，但 Cleanroom 仍然会有不能兼容的地方，对于这种地方天圆地方需要专门写适配 Cleanroom 的代码；
+2. 对于一些热点调用路径，高版本的 Java 或 Cleanroom 可能提供了性能更好的实现方式；
+3. Cleanroom 环境也有许多新的 API。
+
+但导致分包的关键因素在于 Forge，不然其实可以将所有逻辑打包成一个 jar，无需发布专门针对 Cleanroom 的版本：尽管 Cleanroom 向前兼容，但 Forge 不一定向后兼容。Java 8 环境下的 Forge 可能无法正确处理一个同时包含 Java 8 和 Java 25 版本字节码的 jar，从而导致模组加载不完整，进而引发崩溃。因此模组的发布版本分成了 Forge 版本和 CRL 版本，后者在 Forge 的基础上额外包括针对 Cleanroom 平台的逻辑。
+
 ## 为本模组编写代码
 
 ### 贡献代码到模组本体
@@ -180,6 +192,56 @@
 2. [x] 引入 Cleanroom 加载器直接支持；
 3. 基于 JNI，用 Rust 编写高性能的底层实现，预计将用于流体物理和大气系统；
 4. 进一步用 Github Workflow 自动化构建流程。
+
+本模组同时使用 RetroFuturaGradle 和 Cleanroom 团队定制的 Unimined 工具链进行开发。一次 build 任务的构建流程如下（忽略前期的环境准备和单元测试）：
+
+```mermaid
+flowchart TB
+    subgraph COMMON[":common 模块编译部分（RetroFuturaGradle）"]
+        direction TB
+        cSRC["模组主体源码"] --> cCOMPILE["任务 compileJava"]
+        cCOMPILE --> cCLASS["模组主体 class 文件<br>（MCP）"]
+        cCOMPILE --> cAP["Mixin 注解处理器<br>（使用 RFG 映射）"]
+        cAP --> cSRG["mixins.srg（模组主体）<br/>MCP 到 SRG 映射表"]
+        cAP --> cREF["mixins.geocraft.refmap.json"]
+        cRES["模组主体资源文件"] --> cPR["任务 processResources"]
+        cREF --> cPR
+    end
+
+    subgraph CRL[":cleanroom 模块编译部分（Unimined）"]
+        direction TB
+        rSRC["Cleanroom 平台专属源码"] --> rCOMPILE["任务 compileJava"]
+        rCOMPILE --> rCLASS["CRL 专属 class 文件<br/>（MCP）"]
+        rCOMPILE --> rAP["Mixin 注解处理器<br/>（使用 RFG 映射）"]
+        rAP --> rSRG["mixins.srg（CRL 专属部分）<br/>MCP 到 SRG 映射表"]
+        rAP --> rREF["mixins.crl.geocraft.refmap.json"]
+        rRES["Cleanroom 平台专属资源文件"]
+    end
+
+    subgraph PACK[":common 模块映射与打包部分（RetroFuturaGradle）"]
+        direction TB
+        JAR["任务 jar"] --> ForgeDev(["GeoCraft-{版本}-Forge-dev.jar"])
+        JARCRL["任务 jarCRL"] --> CRLDev(["GeoCraft-{版本}-CRL-dev.jar"])
+        ForgeDev --> REOBFJAR["任务 reobfJar<br/>（将 MCP 名映射回 SRG 名）"]
+        REOBFJAR --> ForgeJar(["GeoCraft-{版本}-Forge.jar<br/>（Forge 生产版本）"])
+        CRLDev --> REOBFCRLJAR["任务 reobfJarCRL<br/>（将 MCP 名映射回 SRG 名）"]
+        REOBFCRLJAR --> CRLJar(["GeoCraft-{版本}-CRL.jar<br/>（Cleanroom 生产版本）"])
+        SRCJAR["任务 sourcesJar"] --> SourcesJar(["GeoCraft-{版本}-sources.jar"])
+    end
+
+    cCLASS --> JAR
+    cPR --> JAR
+    cCLASS --> JARCRL
+    cPR --> JARCRL
+    rCLASS --> JARCRL
+    rREF --> JARCRL
+    rRES --> JARCRL
+    cSRG --> REOBFJAR
+    cSRG --> REOBFCRLJAR
+    rSRG --> REOBFCRLJAR
+    cSRC --> SRCJAR
+    rSRC --> SRCJAR
+```
 
 ### 编写附属模组
 （以下教程尚未得到实际工程验证）
@@ -194,6 +256,7 @@ compileOnly fg.deobf("maven.modrinth:qg_geocraft:0.2.2")
 
 // RetroFuturaGradle 同理
 compileOnly rfg.deobf("maven.modrinth:qg_geocraft:0.2.2")
+// 若要依赖 CRL 版本，请在后面加上 -CRL 后缀，例如“maven.modrinth:qg_geocraft:0.2.7-CRL”
 ```
 
 CurseForge Maven 虽然不推荐，但也可以使用：
