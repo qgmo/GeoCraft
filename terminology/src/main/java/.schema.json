@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "术语表",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["中文","英文","出处"],
+    "additionalProperties": false,
+    "properties": {
+      "中文":{
+        "$ref": "#/definitions/主要名称"
+      },
+      "英文": {
+        "$ref": "#/definitions/主要名称"
+      },
+      "别称": {
+        "$ref": "#/definitions/次要名称"
+      },
+      "旧称": {
+        "$ref": "#/definitions/次要名称"
+      },
+      "定义": {
+        "description": "一个术语的定义",
+        "type": "string"
+      },
+      "出处": {
+        "description": "该术语的出处，最好填写定义的位置。可以是本地化键、Java 类全名以及文档链接。",
+        "anyOf": [{
+          "$ref": "#/definitions/出处"
+        },{
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/出处"
+          }
+        }]
+      }
+    }
+  },
+  "definitions": {
+    "主要名称": {
+      "description": "一个术语的标准名称。null 表示尚未有标准名称。若有多个标准名称，请使用对象。",
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "description": "一个可能的标准名称作为键，值为该名称的使用场景说明",
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "次要名称": {
+      "description": "一个术语的次要名称，为一个二维数组。第一组填写中文，第二组填写英文",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "出处": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "网页链接"
+        },
+        {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)+$",
+          "description": "本地化键"
+        },
+        {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 1,
+          "properties": {
+            "键": {
+              "type": "string",
+              "pattern": "^[a-z0-9_-]+(\\.[a-z0-9_-]+)+$",
+              "description": "本地化键"
+            },
+            "链": {
+              "type": "string",
+              "pattern": "^https?://",
+              "description": "网页链接"
+            },
+            "类": {
+              "type": "string",
+              "pattern": "^([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)+[\\p{L}_$][\\p{L}\\p{N}_$]*$",
+              "x-intellij-language-injection": {
+                "language": "JAVA",
+                "prefix": "import ",
+                "suffix": ".*"
+              },
+              "description": "Java类全称或本地化键"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

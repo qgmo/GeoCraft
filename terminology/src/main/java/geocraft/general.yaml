@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=../.schema.json
+# 天圆地方 GeoCraft 术语表 —— 通用概念与系统交集
+# 范围：跨系统共用的框架级基础概念（层级、地理属性/状态、海拔、配置类型、方块更新器等）。
+# 格式与规则见本目录 README.md。
+
+- 中文: "映射表"
+  英文: "Map"
+  定义: "本模组基于 Forge 配置文件字符串列表定义的新配置类型，表示一系列具有映射关系的数据。"
+  出处:
+    - "https://www.mcmod.cn/item/892905.html"
+    - 类: top.qiguaiaaaa.geocraft.api.configs.item.map.ConfigMap
+
+- 中文: "方块状态选择器"
+  英文: "Configurable Block State"
+  定义: "本模组配置文件中用以选择一种或多种方块状态的值类型。"
+  出处:
+    - "https://www.mcmod.cn/item/892906.html"
+    - 类: top.qiguaiaaaa.geocraft.api.configs.value.minecraft.ConfigurableBlockState
+
+- 中文: "热容"
+  英文: "Heat Capacity"
+  定义: "天圆地方对方块添加的属性，也是层级的一种地理属性，表示温度每升高一单位所需吸收的热量。"
+  出处:
+    - "https://www.mcmod.cn/item/905244.html"
+
+- 中文: "方块更新器"
+  英文: "Block Updater"
+  定义: "为管理流体方块计划刻引入的延时方块更新机制，在原版计划刻基础上针对流体更新拓展，可配置。"
+  出处:
+    - "https://www.mcmod.cn/item/904958.html"
+    - 类: top.qiguaiaaaa.geocraft.world.BlockUpdater
+
+- 中文: "更新计划"
+  英文: "Next Tick Entry"
+  别称:
+    - []
+    - ["NTE"]
+  定义: "方块更新器中记录一次延时方块更新的条目。"
+  出处:
+    - "https://www.mcmod.cn/item/904958.html"
+    - 类: net.minecraft.world.NextTickListEntry
+    - 类: top.qiguaiaaaa.geocraft.util.misc.ExtendedNextTickListEntry
+
+- 中文: "反射率"
+  英文: null
+  定义: "天圆地方为方块添加的物理属性之一，可经 /atmosphere util 查询。"
+  出处: "https://www.mcmod.cn/item/927875.html"
+
+- 中文: "延迟警报"
+  英文: null
+  定义: "天圆地方自带性能监控机制的预警信息之一，有限模式流体物理系统据此限制流动计算开销。"
+  出处: "https://www.mcmod.cn/item/919288.html"
+
+- 中文: "延迟应急响应"
+  英文: null
+  定义: "天圆地方性能监控机制中比延迟警报更高的预警信息。"
+  出处: "https://www.mcmod.cn/item/919288.html"

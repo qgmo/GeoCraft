@@ -22,34 +22,20 @@
 
 ## 条目格式
 
-```yaml
-- 中文: "示例术语"
-  英文: "Example Term"
-  别称:
-    - ["中文别称"]
-    - ["English Alias"]
-  旧称:
-    - ["中文旧称"]
-    - ["Old English Name"]
-  定义: "一句话定义。"
-  出处:
-    - "https://www.mcmod.cn/item/xxxxxx.html"
-    - "https://github.com/QGMoe/GeoCraft/releases/tag/vX.Y.Z"
-```
+见 src/main/java/.schema.json
 
-## 规则
+## 特殊规则
 
-- **英文** 为 null = 尚未决定英文命名，文档与翻译中不得擅自命名。
 - 一个概念有多个正式英文名时，**英文** 可为列表，并以 `#` 注释注明各名的适用语境。
 - **别称** 为可选字段，值为两个列表：第一个列表为中文别称，第二个为英文别称（含简称、对应类名）。
 - **旧称** 为可选字段，结构同别称（先中文后英文），记录历史名称/曾用名。
 - 暂定（未正式定名）的名字放入别称，主名字段记 null。
 - **定义** 为可选字段，缺省时请见出处文档。
-- **出处** 为必填字段，值为列表，且必须为精确链接：仓库内文件指向具体 commit 的 blob/tree 链接，release note 指向对应 release 页，语言文件另注明键名。
+- **出处** 为必填字段，值为列表，且必须为精确链接、Java类全称或本地化键。如为仓库文件链接，需要指向具体提交的文件。若为更新日志，则指向对应的发布页。
 
 ## 数据来源
 
-MC 百科资料页（[游戏设定](https://www.mcmod.cn/item/list/22470-10.html)与[方块/物品](https://www.mcmod.cn/item/list/22470-1.html)分类）、语言文件（assets/geocraft/lang、assets/nickelapi/lang）、双语 README 与主仓库 release note。
+MC 百科资料页（[游戏设定](https://www.mcmod.cn/item/list/22470-10.html)与[方块/物品](https://www.mcmod.cn/item/list/22470-1.html)分类）、语言文件（assets/geocraft/lang、assets/nickelapi/lang）、主仓库更新日志等。
 
 ## 维护
 

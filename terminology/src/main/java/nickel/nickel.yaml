@@ -1,0 +1,180 @@
+# yaml-language-server: $schema=../.schema.json
+# 天圆地方 GeoCraft 术语表 —— NickelAPI 底层框架
+# 范围：NickelAPI 命令框架的节点体系与参数类型名（NBT 相关的见 nbt.yaml）。
+# 格式与规则见本目录 README.md。
+- 中文: "高精度十进制数"
+  英文: "BigDecimal"
+  出处: "nickel.command.parameter.generic.big_decimal"
+
+- 中文: "高精度整数"
+  英文: "BigInteger"
+  出处: "nickel.command.parameter.generic.big_integer"
+
+- 中文: "布尔值"
+  英文: "Boolean"
+  出处: "nickel.command.parameter.generic.boolean"
+
+- 中文: "双精度浮点数"
+  英文: "Double"
+  出处: "nickel.command.parameter.generic.double"
+
+- 中文: "整型"
+  英文: "Integer"
+  出处: "nickel.command.parameter.generic.integer"
+
+- 中文: "长整型"
+  英文: "Long"
+  出处: "nickel.command.parameter.generic.long"
+
+- 中文: "字符串"
+  英文: "String"
+  出处: "nickel.command.parameter.generic.string"
+
+- 中文: "词元"
+  英文: "Token"
+  出处: "nickel.command.parameter.generic.token"
+
+- 中文: "贪婪字符串"
+  英文: "Greedy String"
+  出处: "nickel.command.parameter.generic.greed"
+
+- 中文: "UUID"
+  英文: "UUID"
+  出处: "nickel.command.parameter.generic.uuid"
+
+- 中文: "方块坐标"
+  英文: "BlockPos"
+  出处: "nickel.command.parameter.minecraft.block_pos"
+
+- 中文: "方块"
+  英文: "Block"
+  出处: "nickel.command.parameter.minecraft.block"
+
+- 中文: "方块状态"
+  英文: "BlockState"
+  出处: "nickel.command.parameter.minecraft.block_state"
+
+- 中文: "目标选择器"
+  英文: "TargetSelector"
+  出处: "nickel.command.parameter.minecraft.entity_selector"
+
+- 中文: "物品"
+  英文: "Item"
+  出处: "nickel.command.parameter.minecraft.item"
+
+- 中文: "物品堆"
+  英文: "ItemStack"
+  出处: "nickel.command.parameter.minecraft.item_stack"
+
+- 中文: "三维向量"
+  英文: "Vector3D"
+  出处: "nickel.command.parameter.minecraft.vector3d"
+
+- 中文: "流体"
+  英文: "Fluid"
+  出处: "nickel.command.parameter.forge.fluid"
+
+- 中文: "矿物词典"
+  英文: "Ore Directory"
+  出处: "nickel.command.parameter.forge.ore_directory"
+
+- 中文: "实体类型"
+  英文: "Entity Entry"
+  出处: "nickel.command.parameter.forge.entity_entry"
+
+- 中文: "镍 API"
+  英文: "Nickel API"
+  定义: "从天圆地方 API 分离出的自研命令构建 API，以内置模组方式内嵌。"
+  出处:
+  - 链: "https://github.com/QGMoe/GeoCraft/releases/tag/v0.2.2"
+
+#
+# Nickel 节点类型
+
+#
+# 逻辑节点
+#
+
+- 中文: "逻辑节点"
+  英文: "Execute Node"
+  定义: "执行指定逻辑的节点。"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.execute.ExecuteNode"
+
+- 中文: "中继逻辑节点"
+  英文: "Relay Execute Node"
+  定义: "可在执行子节点完成前后运行指定逻辑的逻辑节点。"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.execute.RelayExecuteNode"
+
+#
+# 功能节点
+#
+
+- 中文: "功能节点"
+  英文: "Functional Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.functional"
+
+- 中文: "智能分支节点"
+  英文: "Smart Split Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.functional.SmartSplitNode"
+
+- 中文: null
+  英文: null
+  别称:
+    - [ "For-Each 节点" ]
+    - [ "For-Each Node" ]
+  出处:
+  - 类: "moe.qingu.nickel.command.node.functional.ForEachNode"
+
+- 中文: "命令运行节点"
+  英文: "Run Command Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.functional.RunCommandNode"
+
+- 中文: "重定向运行命令节点"
+  英文: "Redirect Command Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.functional.RedirectCommandNode"
+
+#
+# 参数节点相关
+#
+
+- 中文: "参数节点"
+  英文: "Parameter Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.ParameterNode"
+
+- 中文: "词元化参数节点"
+  英文: "Tokenized Parameter Node"
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.TokenizeParameterNode"
+
+- 中文: "多词元化参数节点"
+  英文: null
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.TokenizeParameterNode.Multi"
+
+- 中文: "单词元化参数节点"
+  英文: null
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.TokenizeParameterNode.Single"
+
+- 中文: "字符串参数节点"
+  英文: "String Parameter Node"
+  别称:
+    - [ "字符串节点" ]
+    - [ "String Node" ]
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.generic.StringNode"
+
+- 中文: "参数装饰器"
+  英文: "Parameter Decorator"
+  别称:
+    - [ "装饰器" ]
+    - [ "Decorator" ]
+  出处:
+  - 类: "moe.qingu.nickel.command.node.parameter.Decorator"
