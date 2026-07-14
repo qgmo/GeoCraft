@@ -29,8 +29,8 @@ package 清汩萌.天圆地方.api.vec;
 
 import net.minecraft.util.math.Vec3i;
 import org.junit.jupiter.api.Test;
-import top.qiguaiaaaa.geocraft.api.util.math.Int21;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.RelativeMVec3i;
+import moe.qingu.geocraft.api.util.math.Int21;
+import moe.qingu.geocraft.api.util.math.vec.RelativeMVec3i;
 
 import static org.junit.jupiter.api.Assertions.*;
 

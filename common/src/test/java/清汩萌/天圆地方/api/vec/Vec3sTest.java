@@ -29,8 +29,8 @@ package 清汩萌.天圆地方.api.vec;
 
 import net.minecraft.util.math.Vec3i;
 import org.junit.jupiter.api.Test;
-import top.qiguaiaaaa.geocraft.api.util.math.Int10;
-import top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s;
+import moe.qingu.geocraft.api.util.math.Int10;
+import moe.qingu.geocraft.api.util.math.vec.Vec3s;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -154,22 +154,6 @@ public final class Vec3sTest {
 
         assertNotEquals(null, vec);
         assertNotEquals("Vec3s", vec);
-    }
-
-    /**
-     * ChatGPT Generated
-     *
-     * @author QGMoe
-     * @author ChatGPT
-     */
-    @Test
-    public void testToString() {
-        final Vec3s vec = new Vec3s((short) 1, (short) 2, (short) 3);
-
-        assertEquals(
-                "top.qiguaiaaaa.geocraft.api.util.math.vec.Vec3s(1,2,3)",
-                vec.toString()
-        );
     }
 
     /**

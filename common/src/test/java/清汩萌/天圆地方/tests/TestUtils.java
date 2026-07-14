@@ -36,9 +36,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import top.qiguaiaaaa.geocraft.util.BaseUtil;
-import top.qiguaiaaaa.geocraft.util.ChunkUtil;
-import top.qiguaiaaaa.geocraft.util.math.MathUtil;
+import moe.qingu.geocraft.util.BaseUtil;
+import moe.qingu.geocraft.util.ChunkUtil;
+import moe.qingu.geocraft.util.math.MathUtil;
 import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.world.MockSimpleWorld;
 import 清汩萌.天圆地方.world.MockWorldProvider;
@@ -349,7 +349,7 @@ public class TestUtils {
 
     /**
      * @author QGMoe
-     * @see top.qiguaiaaaa.geocraft.util.ChunkUtil
+     * @see ChunkUtil
      */
     public final static class TestChunkUtil extends 天圆地方测试{
         @ParameterizedTest

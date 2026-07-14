@@ -31,7 +31,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import top.qiguaiaaaa.geocraft.configs.GeneralConfig;
+import moe.qingu.geocraft.configs.GeneralConfig;
 import 清汩萌.天圆地方.assets.MockBlocks;
 import 清汩萌.天圆地方.util.网格工具;
 import 清汩萌.天圆地方.天圆地方测试;

@@ -28,7 +28,7 @@
 package 清汩萌.天圆地方.tests.fluidphysics.finite;
 
 import org.junit.jupiter.api.BeforeAll;
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
 import 清汩萌.天圆地方.tests.fluidphysics.FluidPhysicsTest;
 
 import java.lang.reflect.InvocationTargetException;

@@ -1,0 +1,12 @@
+{
+  "package": "moe.qingu.geocraft.mixin.finite.compat.ic2",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "LiquidUtilMixin",
+    "PumpUtilMixin"
+  ],
+  "client": [
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "package": "moe.qingu.geocraft.mixin.common.block",
+  "required": false,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "BlockFallingMixin"
+  ],
+  "client": [
+  ]
+}

@@ -29,7 +29,7 @@ package 清汩萌.天圆地方.assets;
 
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
-import top.qiguaiaaaa.geocraft.fluid.FluidSnow;
+import moe.qingu.geocraft.fluid.FluidSnow;
 
 /**
  * @author QiguaiAAAA

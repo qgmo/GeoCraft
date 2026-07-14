@@ -27,9 +27,9 @@
 
 package 清汩萌.天圆地方.assets;
 
-import top.qiguaiaaaa.geocraft.api.configs.value.geo.FluidPhysicsMode;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
-import top.qiguaiaaaa.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
+import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
+import moe.qingu.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
 
 /**
  * @author QiguaiAAAA

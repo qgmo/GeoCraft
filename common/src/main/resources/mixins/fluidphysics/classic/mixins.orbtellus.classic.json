@@ -1,0 +1,14 @@
+{
+  "package": "moe.qingu.geocraft.mixin.classic",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "BlockDynamicLiquidMixin",
+    "BlockFluidClassicMixin",
+    "BlockLiquidMixin",
+    "BlockStaticLiquidMixin"
+  ],
+  "client": [
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "package": "moe.qingu.geocraft.mixin.common",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "block.BlockFluidBaseAccessor",
+    "item.ItemGlassBottleMixin",
+    "item.ItemHoeMixin",
+    "item.ItemSpadeMixin",
+    "entity.EntityFallingBlockMixin",
+    "entity.EntityFallingBlockAccessor",
+    "entity.EntityPotionMixin"
+  ],
+  "client": [
+    "client.BlockModelShapesMixin"
+  ]
+}

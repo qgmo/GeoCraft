@@ -1,0 +1,13 @@
+{
+  "package": "moe.qingu.geocraft.mixin.atmosphere",
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "mixins.geocraft.refmap.json",
+  "mixins": [
+    "block.BlockIceMixin",
+    "WorldServerMixin",
+    "block.BlockCauldronMixin"
+  ],
+  "client": [
+  ]
+}

@@ -28,7 +28,7 @@
 package 清汩萌.天圆地方.api;
 
 import org.junit.jupiter.api.Test;
-import top.qiguaiaaaa.geocraft.api.util.math.Int10;
+import moe.qingu.geocraft.api.util.math.Int10;
 
 import static org.junit.jupiter.api.Assertions.*;
 

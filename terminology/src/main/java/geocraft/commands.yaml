@@ -7,28 +7,28 @@
   定义: "/atmosphere 是用于管理大气系统的命令。"
   出处:
     - 链: "https://www.mcmod.cn/item/927875.html"
-    - 类: top.qiguaiaaaa.geocraft.command.atmosphere
+    - 类: moe.qingu.geocraft.command.atmosphere
 
 - 中文: "/fluidphysics"
   英文: null
   定义: "/fluidphysics 是用于管理流体物理的命令。"
   出处:
     - 链: "https://www.mcmod.cn/item/927876.html"
-    - 类: top.qiguaiaaaa.geocraft.command.CommandFluidPhysics
+    - 类: moe.qingu.geocraft.command.CommandFluidPhysics
 
 - 中文: "/geoconfig"
   英文: null
   定义: "/geoconfig 是用于管理天圆地方模组的配置的命令。"
   出处:
     - 链: "https://www.mcmod.cn/item/950633.html"
-    - 类: top.qiguaiaaaa.geocraft.command.CommandGeoConfig
+    - 类: moe.qingu.geocraft.command.CommandGeoConfig
 
 - 中文: "/geotest"
   英文: null
   定义: "/geotest 是用于在游戏中进行 GeoTest 集成测试的命令。"
   出处:
     - 链: "https://www.mcmod.cn/item/950634.html"
-    - 类: top.qiguaiaaaa.geocraft.command.CommandGeoTest
+    - 类: moe.qingu.geocraft.command.CommandGeoTest
 
 - 中文: "查询结果"
   英文: "QueryResult"

@@ -28,17 +28,18 @@
 package 清汩萌.天圆地方.asm;
 
 import git.jbredwards.fluidlogged_api.api.asm.IASMPlugin;
+import moe.qingu.geocraft.mixin.soil.block.BlockMixin;
 import net.minecraft.block.Block;
 import net.minecraft.util.ResourceLocation;
 import org.objectweb.asm.tree.ClassNode;
-import top.qiguaiaaaa.geocraft.handler.RegistryHandler;
+import moe.qingu.geocraft.handler.RegistryHandler;
 import 清汩萌.天圆地方.天圆地方测试;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * @see top.qiguaiaaaa.geocraft.mixin.soil.block.BlockMixin
+ * @see BlockMixin
  * @author QGMoe
  */
 public class BlockPlugin implements IASMPlugin {
