@@ -180,6 +180,15 @@ Three factors:
 
 But the decisive reason for splitting the jars is Forge — otherwise all the logic could ship in a single jar with no dedicated Cleanroom release. Cleanroom is forward compatible, but Forge is not necessarily backward compatible: Forge on Java 8 may fail to correctly handle a jar containing both Java 8 and Java 25 bytecode, loading the mod incompletely and then crashing. So the releases are split into a Forge build and a CRL build, the latter containing the Cleanroom-specific logic on top of the Forge base.
 
+## Documentation
+
+For more detailed documentation, please note that the English version is currently **much less complete** and may **not** be up-to-date compared to the Chinese documentation. You can visit:
+
+- [MC百科 (mcmod.cn)](https://www.mcmod.cn/class/22470.html) (Most comprehensive, but in Chinese)
+- [GitHub Repository Wiki](https://github.com/QGMoe/GeoCraft/wiki) (English documentation available but limited)
+
+The configuration file in-game contains bilingual (English & Chinese) comments for **most** settings.
+
 ## Writing Code for This Mod
 
 ### Contributing to the Mod Itself
