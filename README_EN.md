@@ -77,7 +77,7 @@ The image below shows a river created by a repeating command block: after windin
 
 ## Atmosphere System
 
-The mod implements a **dynamic atmosphere system** computed in real time from in-game data, with the in-game ID `surface` (the Overworld/surface atmosphere system; the Chinese name is still tentative). This atmosphere system runs independently of vanilla biomes: it only uses biome data during initialisation and relies on **real-time game data** afterwards. This means player activity genuinely changes the climate!
+The mod implements a **dynamic atmosphere system** computed in real time from in-game data, with the in-game ID `surface` (the Surface Atmosphere System). This atmosphere system runs independently of vanilla biomes: it only uses biome data during initialisation and relies on **real-time game data** afterwards. This means player activity genuinely changes the climate!
 
 Note that this atmosphere system is still in **early development**. Its simulation of unusual situations (such as floating islands) can be badly distorted, and strange behaviour shows up from time to time. The `surface` atmosphere system is, at its core, an extremely simplified climate model; even if it looks fine in the short term, it is not suitable for long-term play. Unless you are genuinely interested in climate simulation and willing to test it, for long-term use of this mod it is recommended to switch to the `vanilla` atmosphere system (the static, biome-data-based atmosphere system) via the configuration file.
 
