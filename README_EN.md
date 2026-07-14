@@ -44,7 +44,7 @@ FINITE is the fluid physics mode enabled by default. It completely changes how f
 - When a block is placed into a fluid, the fluid fills that block as much as possible, and any remainder **flows outward** instead of vanishing;
 - Denser fluids sink below less dense ones;
 - **Soil system interaction**:
-  - Water (or other supported fluids) spontaneously infiltrates into **fluid host blocks** (note that this concept is different from waterlogged blocks), or evaporates;
+  - Water (or other supported fluids) spontaneously infiltrates into **Layered Fluid Host Blocks** (note that this concept is different from waterlogged blocks), or evaporates;
 - **Atmosphere system interaction** (requires the atmosphere system and the corresponding features to be enabled in the dimension):
   - Water freezes when the surface temperature drops below 0 °C (due to vanilla block limitations, partially filled water freezes into snow of the corresponding height);
   - Snow and ice melt when the surface temperature rises above 0 °C;
@@ -98,13 +98,13 @@ Everything below applies to the `surface` atmosphere system:
 
 ## Soil (Moisture) System
 
-GeoCraft introduces a mechanism called the "**Layered Fluid Host Block**" ("fluid host block" for short) and builds soil hydrology simulation and several other mechanics on top of it. The API behind fluid host blocks is an interface for fluid storage and exchange: it defines how fluids are stored inside a block and the basic ways fluids move between blocks. By definition, waterlogged blocks are, set-theoretically, a subset of fluid host blocks (waterlogged blocks ⊆ fluid host blocks). For example: dirt, grass blocks and sand are not waterlogged blocks, yet they are all permeable to water; stairs are waterlogged blocks and should be considered fluid host blocks as well.
+GeoCraft introduces a mechanism called the "**Layered Fluid Host Block**" and builds soil hydrology simulation and several other mechanics on top of it. The API behind Layered Fluid Host Blocks is an interface for fluid storage and exchange: it defines how fluids are stored inside a block and the basic ways fluids move between blocks. By definition, waterlogged blocks are, set-theoretically, a subset of Layered Fluid Host Blocks (waterlogged blocks ⊆ Layered Fluid Host Blocks). For example: dirt, grass blocks and sand are not waterlogged blocks, yet they are all permeable to water; stairs are waterlogged blocks and should be considered Layered Fluid Host Blocks as well.
 
 The soil system brings fresh gameplay. For example, because soil is permeable, building a basement in a relatively humid biome becomes a somewhat tricky task, since you have to guard against every potential leak (requires MORE REALITY). Conversely, sand at suitable moisture no longer collapses so easily and can form stable structures.
 
-Soil (and other fluid host blocks) behaves rather differently under the different fluid physics modes, but most soil hydrology mechanics only take effect in the MORE REALITY mode.
+Soil (and other Layered Fluid Host Blocks) behaves rather differently under the different fluid physics modes, but most soil hydrology mechanics only take effect in the MORE REALITY mode.
 
-Soil (like most other fluid host blocks) is not implemented by adding new blocks; instead, the block states of existing blocks are extended via Mixin. This means that although the mod appears to add no new blocks, you cannot casually uninstall it; otherwise some modified blocks will end up as abnormal variants of their block types.
+Soil (like most other Layered Fluid Host Blocks) is not implemented by adding new blocks; instead, the block states of existing blocks are extended via Mixin. This means that although the mod appears to add no new blocks, you cannot casually uninstall it; otherwise some modified blocks will end up as abnormal variants of their block types.
 
 The soil system does not yet support soils added by third-party mods, such as the grass blocks from Biomes O' Plenty (BOP). A long-term compatibility plan is in place.
 
@@ -131,7 +131,7 @@ You can also consult the mod documentation and tune performance through the conf
 - In general, the mod's fluid physics also supports fluids added by other mods, but fluids whose flow implementation has been overridden by their own mod won't get this mod's fluid physics. Good news: the MORE REALITY mode implements support for Immersive Engineering's concrete;
 - The MORE REALITY implementation rewrites the pump extraction and fluid placement logic of Immersive Engineering and IndustrialCraft 2, adjustable in the configuration file;
 - You can disable the physics of specific fluids in the configuration file;
-- If you uninstall this mod, some fluid host blocks whose data values exceed the vanilla block state range will turn into different data values of the same block: dirt may become podzol and sand may become red sand. A lossless uninstall mechanism (or companion mod) may come in the future;
+- If you uninstall this mod, some Layered Fluid Host Blocks whose data values exceed the vanilla block state range will turn into different data values of the same block: dirt may become podzol and sand may become red sand. A lossless uninstall mechanism (or companion mod) may come in the future;
 - The network communication modification may conflict with anti-X-ray plugins and other mods or plugins built on similar principles. To avoid this, you can disable the feature in the configuration file. Careful: once disabled, unless some other mod or plugin rewrites the network traffic instead, vanilla clients (or any client without this mod) will misbehave even worse than described above: none of the extended block states will render correctly;
 - If the pressure system's multithreaded implementation causes unacceptable crashes, try disabling multithreading or the pressure system entirely, and ideally send the crash reports to the author;
 - The mod is currently incompatible with [Fluidlogged API](https://github.com/jbredwards/Fluidlogged-API). Compatibility work is in progress.
@@ -169,7 +169,7 @@ Due to time constraints, the mod won't see major feature updates for quite a whi
 
 **Q: Are waterlogged blocks implemented?**
 
-No. Waterlogged blocks will be implemented in the future through Fluidlogged API compatibility. The fluid host block API is only a fluid interaction protocol; it is not responsible for the concrete mechanics.
+No. Waterlogged blocks will be implemented in the future through Fluidlogged API compatibility. The Layered Fluid Host Block API is only a fluid interaction protocol; it is not responsible for the concrete mechanics.
 
 **Q: Isn't Cleanroom backward compatible? Why does Cleanroom need a dedicated build?**
 
@@ -283,7 +283,7 @@ compileOnly rfg.deobf("curse.maven:qg-geocraft-1423755:7599943")
 ## Did You Know
 
 - GeoCraft was originally created because 1.12.2 lacked a usable fluid physics mod, and during development it drew inspiration from the two well-known fluid physics mods for Minecraft Java 1.15+: Fluid Physics and Water Physics Overhaul. Even so, GeoCraft's entire fluid physics system was built completely from scratch: in the early days it neither referenced nor used any code from those two mods. Had things gone as planned, the mod would not be called GeoCraft at all, but would simply be a fluid physics mod for 1.12.2. Mid-development, however, the author (QiguaiAAAA), a geography enthusiast, wasn't satisfied with fluid physics as a single system, so an atmosphere system was introduced, followed by a soil system. The mod thus became one dedicated to implementing multiple deeply coupled geographic systems in Minecraft.
-- If you read through the implementations of the systems above, you will find that GeoCraft's fluid host block system, atmosphere system, soil system (built on fluid host blocks), and the possible future groundwater system, fault zones and so on, have no fully comparable implementation in any other mod, even where other mods have similar concepts.
+- If you read through the implementations of the systems above, you will find that GeoCraft's Layered Fluid Host Block system, atmosphere system, soil system (built on Layered Fluid Host Blocks), and the possible future groundwater system, fault zones and so on, have no fully comparable implementation in any other mod, even where other mods have similar concepts.
 
 ---
 
