@@ -36,5 +36,5 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD,ElementType.FIELD,ElementType.CONSTRUCTOR,ElementType.LOCAL_VARIABLE,ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface MultiThread {
-    ThreadType[] value();
+    int[] value();
 }

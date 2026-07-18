@@ -27,6 +27,8 @@
 
 package moe.qingu.geocraft;
 
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -83,6 +85,7 @@ public class GeoCraft {
 
     @EventHandler
     public void onServerAboutToStart(final @Nonnull FMLServerAboutToStartEvent event){
+        FluidTasks.freeze();
         final @Nonnull MinecraftServer server = event.getServer();
         final File saveDir = server.isDedicatedServer()? new File(server.getDataDirectory(),server.getFolderName()):
                 new File(server.getDataDirectory(),"saves"+File.separator+server.getFolderName());
@@ -93,6 +96,7 @@ public class GeoCraft {
         }catch (final @Nonnull StartupQuery.AbortedException ignored){
             GeoDataFile.CURRENT.setTrash(true);
         }
+        FluidTasks.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
     }
 
     @EventHandler
@@ -121,6 +125,7 @@ public class GeoCraft {
         }
         FluidUpdateManager.onServerStop();
         BlockUpdater.onServerStop();
+        FluidUpdaterManager.onServerStop();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPING);
     }
 

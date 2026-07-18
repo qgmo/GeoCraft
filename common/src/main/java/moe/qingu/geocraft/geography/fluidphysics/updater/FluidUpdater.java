@@ -101,6 +101,11 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public boolean isScheduled(final int chunkX,final int chunkY,final int chunkZ){
+        return this.queueHeavy.contains(chunkX, chunkY, chunkZ) || this.queueLight.contains(chunkX,chunkY,chunkZ);
+    }
+
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void scheduleHeavy(final int chunkX, final int chunkY, final int chunkZ, final short taskID){
         lock.lock();
         try {

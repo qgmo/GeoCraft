@@ -32,6 +32,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
+import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.capability.FluidUpdaterCapability;
 import moe.qingu.geocraft.capability.FluidUpdaterManagerCapability;
@@ -67,32 +69,7 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         maxUpdateNum = FluidPhysicsConfig.FLUID_UPDATER_MAX_TASKS_PER_TICK.getValue();
     }
 
-    @Nullable
-    public static FluidUpdaterManager getManager(final @Nonnull World world){
-        @Nullable FluidUpdaterManager manager = managers.get(world.provider.getDimension());
-        if(manager != null) return manager;
-        if(world.hasCapability(FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER,null)){
-            managers.put(world.provider.getDimension(),manager = world.getCapability(FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER,null));
-            return manager;
-        }else return null;
-    }
-
-    @Nullable
-    public FluidUpdater getUpdater(final int cx,final int cz){
-        FluidUpdater res = updaters.get((long) cx <<Integer.SIZE|cz);
-        if(res != null) return res;
-        final Chunk chunk = world.getChunk(cx,cz);
-        if(chunk.hasCapability(FluidUpdaterCapability.FLUID_UPDATER,null)){
-            updaters.put((long) cx <<Integer.SIZE|cz,res = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null));
-            return res;
-        }else return null;
-    }
-
-    @Nonnull
-    public ConcurrentLinkedQueue<FluidUpdater> getDirties() {
-        return dirties;
-    }
-
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid){
         if(pos.getY()>255 || pos.getY()<0) return;
         final int chunkX = pos.getX()>>4;
@@ -101,6 +78,7 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         if(updater == null) return;
         final int cx = pos.getX() & 0xF;
         final int cz = pos.getZ() & 0xF;
+        if(updater.isScheduled(cx,pos.getY(),cz)) return;
         final int taskID = FluidTasks.getID(task);
         if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, (short) taskID);
         else updater.scheduleLight(cx,pos.getY(),cz,(short) taskID);
@@ -121,12 +99,40 @@ public class FluidUpdaterManager implements ICapabilityProvider {
             if(updater == null) continue;
             final int x = (int) (pos>>Integer.SIZE);
             final int z = (int) pos;
-            final int cot = updater.update(world,posContainer,x,z);
-            count += cot;
+            int cot;
+            do{
+                cot = updater.update(world,posContainer,x,z);
+            }while (updater.hasLeft() && (count += cot) < maxUpdateNum);
             if(cot != 0 && updater.markDirty()) dirties.add(updater);
             if(!updater.hasLeft()) iterator.remove();
             if(System.nanoTime() - beginTime > maxTime) break;
         }
+    }
+
+    @Nullable
+    public FluidUpdater getUpdater(final int cx,final int cz){
+        FluidUpdater res = updaters.get((long) cx <<Integer.SIZE|cz);
+        if(res != null) return res;
+        final Chunk chunk = world.getChunk(cx,cz);
+        if(chunk.hasCapability(FluidUpdaterCapability.FLUID_UPDATER,null)){
+            updaters.put((long) cx <<Integer.SIZE|cz,res = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null));
+            return res;
+        }else return null;
+    }
+
+    @Nonnull
+    public Long2ObjectOpenHashMap<FluidUpdater> getUpdaters() {
+        return updaters;
+    }
+
+    @Nonnull
+    public LongOpenHashSet getSchedules() {
+        return schedules;
+    }
+
+    @Nonnull
+    public ConcurrentLinkedQueue<FluidUpdater> getDirties() {
+        return dirties;
     }
 
     @Nonnull
@@ -143,5 +149,24 @@ public class FluidUpdaterManager implements ICapabilityProvider {
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
         return capability == FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER ? FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER.cast(this):null;
+    }
+
+    public static void onServerStop(){
+        managers.clear();
+    }
+
+    @Nullable
+    public static FluidUpdaterManager getManager(final @Nonnull World world){
+        @Nullable FluidUpdaterManager manager = managers.get(world.provider.getDimension());
+        if(manager != null) return manager;
+        if(world.hasCapability(FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER,null)){
+            managers.put(world.provider.getDimension(),manager = world.getCapability(FluidUpdaterManagerCapability.FLUID_UPDATER_MANAGER,null));
+            return manager;
+        }else return null;
+    }
+
+    @Nonnull
+    public static Int2ObjectOpenHashMap<FluidUpdaterManager> getManagers() {
+        return managers;
     }
 }

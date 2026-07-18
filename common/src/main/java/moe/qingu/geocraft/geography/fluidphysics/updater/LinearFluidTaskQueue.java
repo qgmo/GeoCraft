@@ -81,7 +81,7 @@ public class LinearFluidTaskQueue extends FluidTaskQueue{
                 final int taskX = (task >>> 4) & 0xF;
                 final int taskZ = task & 0xF;
                 final int taskID = (task >>> 8) & 0xFFFF;
-                consumer.consume(taskX,taskY,taskZ,FluidTasks.getTask(taskID));
+                consumer.consume(taskX,taskY,taskZ,FluidTasks.getTaskByID(taskID));
             }
             return list.size();
         }finally {

@@ -30,25 +30,18 @@ package moe.qingu.geocraft.handler.event;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.property.IGeographyProperty;
-import moe.qingu.geocraft.capability.SavingScheduledTicksCapability;
-import moe.qingu.geocraft.capability.SchedulingTicksCapability;
 import moe.qingu.geocraft.handler.RegistryHandler;
 import moe.qingu.geocraft.world.BlockUpdater;
-import moe.qingu.geocraft.world.storage.GeoCraftWorldSavedData;
 import moe.qingu.geocraft.world.storage.ScheduledTicksData;
 
 import javax.annotation.Nonnull;
@@ -68,76 +61,35 @@ public final class CommonEventHandler {
     }
 
     @SubscribeEvent
-    @Deprecated
-    public static void onWorldLoad(final @Nonnull WorldEvent.Load event){
-        final @Nonnull World world = event.getWorld();
-        if(world.isRemote) return;
-        final @Nullable GeoCraftWorldSavedData data = getSavedData(world);
-        if(data == null) return;
-        BlockUpdater.scheduleUpdates(world,data.getEntrySet());
-        data.setEntrySet(BlockUpdater.getEntries(world));
-        data.setWorld(world);
-    }
-
-    @SubscribeEvent
     public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event){
         if(event.getObject().isRemote) return;
-        event.addCapability(BlockUpdater.ID, new ICapabilityProvider() {
-            @Override
-            public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                return capability == SchedulingTicksCapability.BLOCK_UPDATER;
-            }
-
-            @Nullable
-            @Override
-            public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-                if(hasCapability(capability,facing)){
-                    final BlockUpdater updater = new BlockUpdater();
-                    updater.setWorld(event.getObject());
-                    return SchedulingTicksCapability.BLOCK_UPDATER.cast(updater);
-                }
-                return null;
-            }
-        });
+        final BlockUpdater updater = new BlockUpdater();
+        updater.setWorld(event.getObject());
+        event.addCapability(BlockUpdater.ID, updater);
         event.addCapability(FluidUpdaterManager.ID,new FluidUpdaterManager(event.getObject()));
     }
 
     @SubscribeEvent
-    public static void onChunkAttachCapabilities(AttachCapabilitiesEvent<Chunk> event){
-        if(event.getObject().getWorld() == null //??? 为什么在逻辑客户端这会是null
-                || event.getObject().getWorld().isRemote) return;
-        event.addCapability(ScheduledTicksData.ID, new ICapabilitySerializable<NBTTagCompound>() {
-            private final ScheduledTicksData data = new ScheduledTicksData().setChunk(event.getObject());
-            @Override
-            public NBTTagCompound serializeNBT() {
-                return data.serializeNBT();
-            }
-
-            @Override
-            public void deserializeNBT(NBTTagCompound nbt) {
-                data.deserializeNBT(nbt);
-            }
-
-            @Override
-            public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-                return capability == SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA;
-            }
-
-            @Nullable
-            @Override
-            public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-                if(hasCapability(capability,facing)){
-                    return SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA.cast(data);
-                }else return null;
-            }
-        });
+    public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event){
+        final @Nullable World world = event.getObject().getWorld(); //??? 为什么在逻辑客户端这会是null
+        if(world == null || world.isRemote) return;
+        event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData());
         event.addCapability(FluidUpdater.ID, new FluidUpdater());
     }
 
-    @Nullable
-    @Deprecated
-    static GeoCraftWorldSavedData getSavedData(@Nonnull World world){
-        return (GeoCraftWorldSavedData) world.getPerWorldStorage().getOrLoadData(GeoCraftWorldSavedData.class,GeoCraftWorldSavedData.DATA_NAME);
+    @SubscribeEvent
+    public static void onChunkUnload(final @Nonnull ChunkEvent.Unload event){
+        final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
+        if(manager == null || manager.getWorld() != event.getWorld()) return;
+        final long pos = (long) event.getChunk().x << Integer.SIZE | event.getChunk().z;
+        manager.getSchedules().remove(pos);
+        manager.getUpdaters().remove(pos);
     }
 
+    @SubscribeEvent
+    public static void onWorldUnload(final @Nonnull WorldEvent.Unload event){
+        final World world = event.getWorld();
+        if(world.isRemote) return;
+        FluidUpdaterManager.getManagers().remove(world.provider.getDimension());
+    }
 }

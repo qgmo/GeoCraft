@@ -37,7 +37,7 @@ import java.util.Random;
 /**
  * @author QGMoe
  */
-public interface IFluidTask {
+public interface IFluidTask{
     void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand);
     void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand);
     boolean accepts(@Nonnull final World world,@Nonnull final IBlockState state);

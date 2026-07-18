@@ -27,10 +27,18 @@
 
 package moe.qingu.geocraft.world.storage;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.StartupQuery;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
@@ -55,6 +63,7 @@ public final class GeoDataFile {
     private static final String KEY_VERSION = "version";
     private static final String KEY_FLUID_PHYSICS_MODE = "fluidPhysicsMode";
     private static final String KEY_SOIL_SYSTEM_STATUS = "soilSystemStatus";
+    private static final String KEY_FLUID_TASKS_MAPPING = "fluidTasksMapping";
     public static GeoDataFile CURRENT;
 
     private static final ArrayList<Supplier<Boolean>> validators = new ArrayList<>(
@@ -116,6 +125,7 @@ public final class GeoDataFile {
     public static void captureCurrentState(){
         CURRENT.setFluidPhysicsMode(FluidPhysicsMode.getCurrentMode());
         CURRENT.setSoilSystemStatus(SoilSystem.getStatus());
+        CURRENT.setFluidTasksMapping(FluidTasks.getMapping());
         CURRENT.save();
     }
 
@@ -137,6 +147,28 @@ public final class GeoDataFile {
             case 2:return ActionResult.newResult(EnumActionResult.SUCCESS,Boolean.TRUE);
             default:return ActionResult.newResult(EnumActionResult.FAIL,Boolean.TRUE);
         }
+    }
+
+    @Nonnull
+    public Int2ObjectOpenHashMap<ResourceLocation> getFluidTasksMapping(){
+        final Int2ObjectOpenHashMap<ResourceLocation> mapping = new Int2ObjectOpenHashMap<>();
+        final NBTTagList arr = this.data.getTagList(KEY_FLUID_TASKS_MAPPING, Constants.NBT.TAG_COMPOUND);
+        for (int i=0;i<arr.tagCount();i++){
+            final NBTTagCompound compound = arr.getCompoundTagAt(i);
+            if(compound.hasKey("K") && compound.hasKey("V")) mapping.put(compound.getInteger("V"),new ResourceLocation(compound.getString("K")));
+        }
+        return mapping;
+    }
+
+    public void setFluidTasksMapping(final @Nonnull Int2ObjectOpenHashMap<ResourceLocation> mapping){
+        final NBTTagList list = new NBTTagList();
+        for(final @Nonnull Int2ObjectMap.Entry<ResourceLocation> entry:mapping.int2ObjectEntrySet()){
+            final NBTTagCompound compound = new NBTTagCompound();
+            compound.setString("K",entry.getValue().toString());
+            compound.setInteger("V",entry.getIntKey());
+            list.appendTag(compound);
+        }
+        this.data.setTag(KEY_FLUID_TASKS_MAPPING,list);
     }
 
     public void setFluidPhysicsMode(final @Nonnull FluidPhysicsMode mode){

@@ -33,25 +33,27 @@ import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
  * @since 0.1
  * @author QiguaiAAAA
  */
-public enum ThreadType {
-    MINECRAFT_SERVER,
-    MINECRAFT_CLIENT,
+public final class ThreadType {
+    public static final int MINECRAFT_SERVER = 1;
+    public static final int MINECRAFT_CLIENT = 2;
     /**
      * @see FluidPressureSearchManager
      */
-    FLUID_PRESSURE_MANAGER,
+    public static final int FLUID_PRESSURE_MANAGER = 3;
     /**
      * @see FluidPressureSearchManager
      */
-    FLUID_PRESSURE_TASKS,
+    public static final int FLUID_PRESSURE_TASKS = 4;
     /**
      * @since 0.2.0-alpha.3
      * @see net.minecraft.world.storage.ThreadedFileIOBase
      */
-    CHUNK_IO_THREADS,
+    public static final int CHUNK_IO_THREADS = 5;
     /**
      * @since 0.3.0-alpha.1
      * @see moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon
      */
-    FLUID_DAEMON
+    public static final int FLUID_DAEMON = 6;
+
+    private ThreadType(){}
 }

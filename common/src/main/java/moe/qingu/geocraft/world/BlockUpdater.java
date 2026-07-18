@@ -29,12 +29,15 @@ package moe.qingu.geocraft.world;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.NextTickListEntry;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
@@ -64,7 +67,7 @@ import static moe.qingu.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER;
  */
 @ThreadSafe
 @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-public class BlockUpdater {
+public class BlockUpdater implements ICapabilityProvider {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"block_updater");
     private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(SchedulingTicksCapability.BLOCK_UPDATER,null)?
             w.getCapability(SchedulingTicksCapability.BLOCK_UPDATER,null):null;
@@ -345,5 +348,18 @@ public class BlockUpdater {
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public static void onServerStop(){
         UPDATERS_CACHE.clear();
+    }
+
+    @Override
+    public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
+        return capability == SchedulingTicksCapability.BLOCK_UPDATER;
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
+        if(hasCapability(capability,facing)){
+            return SchedulingTicksCapability.BLOCK_UPDATER.cast(this);
+        }return null;
     }
 }

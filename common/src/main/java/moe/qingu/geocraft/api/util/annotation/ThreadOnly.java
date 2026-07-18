@@ -37,6 +37,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.SOURCE)
 public @interface ThreadOnly {
 
-    ThreadType value();
+    int value();
 
 }

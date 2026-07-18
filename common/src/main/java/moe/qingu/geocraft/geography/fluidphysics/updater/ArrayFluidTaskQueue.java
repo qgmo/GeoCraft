@@ -77,7 +77,7 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
                     final int task = tasks.getInt(i);
                     final int x = (task >>> 4) & 0xF;
                     final int z = task & 0xF;
-                    consumer.consume(x,curY,z,FluidTasks.getTask((task>>8)&0xFFFF));
+                    consumer.consume(x,curY,z,FluidTasks.getTaskByID((task>>8)&0xFFFF));
                 }
                 return size;
             }finally {
@@ -96,9 +96,8 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
         for(int i=0;i<4;i++){
             long l = bitmap[i];
             if(l == 0) continue;
-            int lowest = 0;
-            while (lowest < 64){
-                lowest = Long.numberOfTrailingZeros(l);
+            int lowest;
+            while ((lowest = Long.numberOfTrailingZeros(l)) < 64){
                 l &= ~(1L<<lowest);
                 final int y = lowest+ (i<<6);
                 final IntArrayList tasks = layers[y];

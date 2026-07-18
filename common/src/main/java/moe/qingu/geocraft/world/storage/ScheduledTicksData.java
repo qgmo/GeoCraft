@@ -27,14 +27,18 @@
 
 package moe.qingu.geocraft.world.storage;
 
+import moe.qingu.geocraft.capability.SavingScheduledTicksCapability;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.INBTSerializable;
 import moe.qingu.geocraft.GeoCraft;
@@ -42,6 +46,7 @@ import moe.qingu.geocraft.util.misc.ExtendedNextTickListEntry;
 import moe.qingu.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -49,7 +54,7 @@ import java.util.Set;
  * @since 0.2.0
  * @author QiguaiAAAA
  */
-public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
+public class ScheduledTicksData implements ICapabilitySerializable<NBTTagCompound> {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"scheduled_ticks_data");
     protected Set<ExtendedNextTickListEntry> entrySet = new HashSet<>();
 
@@ -109,5 +114,18 @@ public class ScheduledTicksData implements INBTSerializable<NBTTagCompound> {
             entrySet.add(entry);
         }
         BlockUpdater.scheduleUpdates(chunk.getWorld(),entrySet);
+    }
+
+    @Override
+    public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
+        return capability == SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA;
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
+        if(hasCapability(capability,facing)){
+            return SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA.cast(this);
+        }else return null;
     }
 }
