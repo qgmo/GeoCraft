@@ -25,37 +25,36 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.pressure;
+package moe.qingu.geocraft.geography.fluidphysics.classic.update;
 
+import moe.qingu.geocraft.geography.fluidphysics.classic.mixin.IClassicBlock;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.BlockFluidClassic;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
  * @author QiguaiAAAA
  */
-public class FluidPressureSearchTaskEmptyResult implements IFluidPressureSearchTaskResult{
-    public static final FluidPressureSearchTaskEmptyResult EMPTY_RESULT = new FluidPressureSearchTaskEmptyResult();
-    FluidPressureSearchTaskEmptyResult(){}
+public final class ClassicFluidClassicFluidTask implements IFluidTask {
+
+    public ClassicFluidClassicFluidTask() {}
 
     @Override
-    public int hashCode() {
-        return 0;
+    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
+        final IClassicBlock classic = (IClassicBlock) state.getBlock();
+        classic.天圆地方$onFlowingTask(world, pos, state, rand);
     }
 
     @Override
-    public int size() {
-        return 0;
-    }
+    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
 
     @Override
-    public boolean hasNext() {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public BlockPos next() {
-        return null;
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+        return state.getBlock() instanceof BlockFluidClassic;
     }
 }

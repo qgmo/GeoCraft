@@ -27,22 +27,28 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
-import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTaskManager;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.Loader;
 
 /**
  * @author QGMoe
  */
 public final class FiniteFluidTasks {
-    public static final FiniteFluidVanillaUpdateTask WATER_TASK = new FiniteFluidVanillaUpdateTask(FiniteFlowings.WATER_FLOW);
-    public static final FiniteFluidVanillaUpdateTask LAVA_TASK = new FiniteFluidVanillaUpdateTask(FiniteFlowings.LAVA_FLOW);
+    public static FiniteFluidClassicFluidTask IE_CONCRETE_TASK = null;
+
+    public static void load(){
+        FluidTasks.WATER_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.WATER_FLOW);
+        FluidTasks.LAVA_TASK = new FiniteFluidVanillaFluidTask(FiniteFlowings.LAVA_FLOW);
+        for(int i=0;i<16;i++) FluidTasks.CLASSIC_TASKS[i] = new FiniteFluidClassicFluidTask(i+1);
+        if(Loader.isModLoaded("immersiveengineering")) IE_CONCRETE_TASK = new FiniteIEConcreteFluidTask();
+    }
 
     private FiniteFluidTasks(){}
 
     public static void register(){
-        FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"finite_water"),WATER_TASK);
-        FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"finite_lava"),LAVA_TASK);
+        if(IE_CONCRETE_TASK != null) FluidTaskManager.register(new ResourceLocation("immersiveengineering","concrete"),IE_CONCRETE_TASK);
     }
 }

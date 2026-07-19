@@ -77,7 +77,7 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
                     final int task = tasks.getInt(i);
                     final int x = (task >>> 4) & 0xF;
                     final int z = task & 0xF;
-                    consumer.consume(x,curY,z,FluidTasks.getTaskByID((task>>8)&0xFFFF));
+                    consumer.consume(x,curY,z, FluidTaskManager.getTaskByID((task>>8)&0xFFFF));
                 }
                 return size;
             }finally {

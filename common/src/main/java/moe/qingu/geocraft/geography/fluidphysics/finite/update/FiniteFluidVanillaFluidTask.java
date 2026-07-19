@@ -48,7 +48,7 @@ import moe.qingu.geocraft.api.util.math.FlowChoice;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import moe.qingu.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
 import moe.qingu.geocraft.handler.ServerStatusMonitor;
@@ -73,7 +73,7 @@ import static net.minecraft.block.BlockLiquid.LEVEL;
  */
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
-public final class FiniteFluidVanillaUpdateTask implements IFluidTask {
+public final class FiniteFluidVanillaFluidTask implements IFluidTask {
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<FlowChoice> averageFlowChoices = new ArrayList<>();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] slopeFlowDirectionsArr = new EnumFacing[4];
@@ -84,7 +84,7 @@ public final class FiniteFluidVanillaUpdateTask implements IFluidTask {
     public final @Nonnull Fluid fluid;
     public final @Nonnull FiniteFlowingVanilla flowing;
 
-    public FiniteFluidVanillaUpdateTask(@Nonnull final FiniteFlowingVanilla flowing) {
+    public FiniteFluidVanillaFluidTask(@Nonnull final FiniteFlowingVanilla flowing) {
         this.flowing = flowing;
         this.fluid = flowing.fluid;
     }

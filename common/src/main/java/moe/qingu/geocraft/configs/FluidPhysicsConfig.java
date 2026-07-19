@@ -48,7 +48,7 @@ import moe.qingu.geocraft.api.configs.item.collection.list.ConfigList;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.api.util.exception.ConfigParseError;
 import moe.qingu.geocraft.geography.fluidphysics.FluidPhysicsInfo;
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 import moe.qingu.geocraft.api.util.math.Int10;
 import moe.qingu.geocraft.api.util.math.Int21;
 

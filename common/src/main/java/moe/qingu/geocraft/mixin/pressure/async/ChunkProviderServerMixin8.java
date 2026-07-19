@@ -40,7 +40,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 
 import javax.annotation.Nonnull;
 import java.util.Set;

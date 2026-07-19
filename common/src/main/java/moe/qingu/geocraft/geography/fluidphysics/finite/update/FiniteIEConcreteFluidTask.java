@@ -48,16 +48,15 @@ import static net.minecraftforge.fluids.BlockFluidBase.LEVEL;
 /**
  * @author QiguaiAAAA
  */
-public final class FiniteIEConcreteUpdateTask extends FiniteFluidClassicUpdateTask {
+public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask {
     public static final @Nonnull FiniteFlowingClassic IE_CONCRETE_FLOWING_UPDATER = new FiniteFlowingClassic(IEContent.blockFluidConcrete);
 
-    public FiniteIEConcreteUpdateTask(@Nonnull final BlockPos pos) {
-        super(pos, IE_CONCRETE_FLOWING_UPDATER);
+    public FiniteIEConcreteFluidTask() {
+        super(16);
     }
 
     @Override
-    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState curState, @Nonnull final Random rand) {
-        this.state = curState;
+    public void onUpdate(@Nonnull final World world, @Nonnull IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
         final int meta = state.getValue(LEVEL);
         final int quanta = IE_CONCRETE_FLOWING_UPDATER.quantaPerBlock-meta;
         final int timer = state.getValue(IEProperties.INT_16);
@@ -72,7 +71,7 @@ public final class FiniteIEConcreteUpdateTask extends FiniteFluidClassicUpdateTa
             world.setBlockState(pos, state);
         }
 
-        super.onUpdate(world,curState,rand);
+        super.onUpdate(world,state,pos,rand);
     }
 
     /**

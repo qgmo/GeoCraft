@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,31 +25,30 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.pressure;
+package moe.qingu.geocraft.geography.fluidphysics.pressure.task;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
-import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.fluids.Fluid;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Iterator;
 
 /**
  * @author QiguaiAAAA
  */
-public interface IFluidPressureSearchTaskResult extends Iterator<BlockPos> {
-    int size();
-
-    default boolean isEmpty(){
-        return size() == 0;
-    }
-
-    @Override
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    boolean hasNext();
-
-    @Override
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+public interface IFluidPressureSearchTask {
+    @Nonnull
+    Fluid getFluid();
+    @Nonnull
+    BlockPos getBeginPos();
+    @Nonnull
+    IBlockState getBeginState();
     @Nullable
-    BlockPos next();
+    IFluidPressureSearchTaskResult search(@Nonnull WorldServer world);
+    void cancel();
+    void finish();
+    boolean isFinished();
+    boolean isEqualState(@Nonnull IBlockState curState);
 }

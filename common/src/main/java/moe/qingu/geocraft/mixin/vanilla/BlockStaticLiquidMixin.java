@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.mixin.vanilla;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStaticLiquid;
 import net.minecraft.block.material.Material;
@@ -34,13 +35,13 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.event.EventFactory;
-import moe.qingu.geocraft.util.mixinapi.FluidSettable;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
@@ -49,7 +50,7 @@ import java.util.Random;
  * @author QiguaiAAAA
  */
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable {
+public class BlockStaticLiquidMixin extends BlockLiquid{
     @Unique
     private Fluid 天圆地方$thisFluid;
     @Unique
@@ -62,6 +63,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
     @Inject(method = "<init>",at = @At("RETURN"))
     private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
         this.setTickRandomly(true);
+        DeferredActions.onPostInit(()-> 天圆地方$thisFluid = Material.LAVA == materialIn ? FluidRegistry.LAVA:FluidRegistry.WATER);
     }
 
     @Override
@@ -78,10 +80,4 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
             worldIn.setBlockState(pos,newState);
         }
     }
-
-    @Override
-    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
-        this.天圆地方$thisFluid = fluid;
-    }
-
 }

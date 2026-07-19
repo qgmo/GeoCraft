@@ -28,7 +28,7 @@
 package moe.qingu.geocraft.mixin.classic;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
-import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
 import net.minecraft.block.Block;
@@ -110,8 +110,8 @@ public class BlockDynamicLiquidMixin extends BlockLiquid{
                     return state.getBlock() == dynamic;
                 }
             };
-            if(material == Material.LAVA) ClassicFluidTasks.LAVA_TASK = 天圆地方$CLASSIC$task;
-            else ClassicFluidTasks.WATER_TASK = 天圆地方$CLASSIC$task;
+            if(material == Material.LAVA) FluidTasks.LAVA_TASK = 天圆地方$CLASSIC$task;
+            else FluidTasks.WATER_TASK = 天圆地方$CLASSIC$task;
         });
     }
 

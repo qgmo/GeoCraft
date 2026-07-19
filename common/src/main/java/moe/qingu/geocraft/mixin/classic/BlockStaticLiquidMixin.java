@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockStaticLiquid;
@@ -35,6 +36,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -44,13 +46,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.event.EventFactory;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.util.MiscUtil;
-import moe.qingu.geocraft.util.mixinapi.FluidSettable;
 
 import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockStaticLiquid.class)
-public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable {
+public class BlockStaticLiquidMixin extends BlockLiquid{
     @Unique
     private Fluid 天圆地方$thisFluid;
     @Unique
@@ -63,6 +64,7 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
     @Inject(method = "<init>",at = @At("RETURN"))
     private void 天圆地方$onInit(Material materialIn, CallbackInfo ci) {
         this.setTickRandomly(true);
+        DeferredActions.onPostInit(()-> 天圆地方$thisFluid = Material.LAVA == materialIn ? FluidRegistry.LAVA:FluidRegistry.WATER);
     }
 
     @Override
@@ -88,11 +90,5 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements FluidSettable
             at = @At(value = "INVOKE",target = "Lnet/minecraft/world/World;scheduleUpdate(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/Block;I)V"))
     private void 天圆地方$scheduleLiquidUpdate(@Nonnull final World instance, final BlockPos pos, final Block blockIn, final int delay){
         MiscUtil.scheduleFluidBlockUpdate(instance, pos, blockIn, delay);
-    }
-
-    @Override
-    @Unique
-    public void 天圆地方$setCorrespondingFluid(Fluid fluid) {
-        this.天圆地方$thisFluid = fluid;
     }
 }

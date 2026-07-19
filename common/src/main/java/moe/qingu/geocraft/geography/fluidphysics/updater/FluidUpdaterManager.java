@@ -42,6 +42,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
@@ -79,7 +80,7 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         final int cx = pos.getX() & 0xF;
         final int cz = pos.getZ() & 0xF;
         if(updater.isScheduled(cx,pos.getY(),cz)) return;
-        final int taskID = FluidTasks.getID(task);
+        final int taskID = FluidTaskManager.getID(task);
         if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, (short) taskID);
         else updater.scheduleLight(cx,pos.getY(),cz,(short) taskID);
         schedules.add((long) chunkX << Integer.SIZE | chunkZ);
@@ -153,6 +154,13 @@ public class FluidUpdaterManager implements ICapabilityProvider {
 
     public static void onServerStop(){
         managers.clear();
+    }
+
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public static void onWorldTick(@Nonnull final WorldServer world){
+        final FluidUpdaterManager manager = getManager(world);
+        if(manager == null) return;
+        manager.update();
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)

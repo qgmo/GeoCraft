@@ -154,11 +154,11 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         if(nbt.getInteger("v")>1) throw new IllegalArgumentException();
         if(nbt.hasKey("heavy")){
             if(queueHeavy == null) queueHeavy = new LinearFluidTaskQueue();
-            for (final int task: nbt.getIntArray("heavy")) this.queueHeavy.queue(task);
+            for (final int task: nbt.getIntArray("heavy")) if(isValidTask(task)) this.queueHeavy.queue(task);
         }
         if(nbt.hasKey("light")){
             if(queueLight == null) queueLight = new LinearFluidTaskQueue();
-            for (final int task: nbt.getIntArray("light")) this.queueLight.queue(task);
+            for (final int task: nbt.getIntArray("light")) if(isValidTask(task)) this.queueLight.queue(task);
         }
     }
 
@@ -199,6 +199,11 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         }else return current;
     }
 
+    protected static boolean isValidTask(final int task){
+        final int id = (task>>8) & 0xFFFF;
+        return FluidTaskManager.getTaskByID(id) != null;
+    }
+
     protected static final class Consumer extends FluidTaskConsumer{
 
         private Chunk chunk;
@@ -223,7 +228,8 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         }
 
         @Override
-        public void consume(final int x,int y,final int z, final @Nonnull IFluidTask task) {
+        public void consume(final int x,int y,final int z, final IFluidTask task) {
+            if(task == null) return;
             if(flip) y = 255-y;
             final @Nullable ExtendedBlockStorage storage = chunk.getBlockStorageArray()[y>>4];
             if(storage != Chunk.NULL_BLOCK_STORAGE){

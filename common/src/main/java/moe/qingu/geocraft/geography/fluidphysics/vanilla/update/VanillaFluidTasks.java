@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,29 +25,20 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.update;
+package moe.qingu.geocraft.geography.fluidphysics.vanilla.update;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
-
-import javax.annotation.Nonnull;
-import java.util.Random;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import net.minecraft.block.material.Material;
 
 /**
- * 一个流体更新任务
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-@Deprecated
-public interface IFluidUpdateTask {
-    void onUpdate(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);
-    void onFailure(@Nonnull World world,@Nonnull IBlockState state,@Nonnull Random rand);
-    @Nonnull
-    Block getBlock();
-    @Nonnull
-    BlockPos getPos();
-    @Nonnull
-    Fluid getFluid();
+public final class VanillaFluidTasks {
+    private VanillaFluidTasks(){}
+
+    public static void load(){
+        FluidTasks.WATER_TASK = new VanillaFluidVanillaFluidTask(Material.WATER);
+        FluidTasks.LAVA_TASK = new VanillaFluidVanillaFluidTask(Material.LAVA);
+        for(int i=0;i<16;i++) FluidTasks.CLASSIC_TASKS[i] = new VanillaFluidClassicFluidTask();
+    }
 }

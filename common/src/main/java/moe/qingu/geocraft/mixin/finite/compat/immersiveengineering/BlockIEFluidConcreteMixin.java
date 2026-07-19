@@ -29,6 +29,8 @@ package moe.qingu.geocraft.mixin.finite.compat.immersiveengineering;
 
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
+import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -39,16 +41,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
-import moe.qingu.geocraft.block.finite.IBlockFluidClassicFinite;
-import moe.qingu.geocraft.geography.fluidphysics.FluidUpdateManager;
-import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
-import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteIEConcreteUpdateTask;
+import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteIEConcreteFluidTask;
 
-import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockIEFluidConcrete.class,remap = false)
-public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFluidClassicFinite {
+public class BlockIEFluidConcreteMixin extends BlockIEFluid {
 
     public BlockIEFluidConcreteMixin(String name, Fluid fluid, Material material) {
         super(name, fluid, material);
@@ -59,15 +57,6 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IBlockFlu
         if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdateManager.addTask(world,new FiniteIEConcreteUpdateTask(pos));
-    }
-
-    @Override
-    public void 天圆地方$FINITE$init() {}
-
-    @Nonnull
-    @Override
-    public FiniteFlowingClassic 天圆地方$FINITE$getFlowingHandler() {
-        return FiniteIEConcreteUpdateTask.IE_CONCRETE_FLOWING_UPDATER;
+        FluidUpdaterManager.schedule(world,pos, FiniteFluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
     }
 }

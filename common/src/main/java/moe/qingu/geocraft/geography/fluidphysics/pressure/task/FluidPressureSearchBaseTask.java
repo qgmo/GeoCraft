@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,34 +25,56 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.update;
+package moe.qingu.geocraft.geography.fluidphysics.pressure.task;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class FluidUpdateBaseTask implements IFluidUpdateTask {
+public abstract class FluidPressureSearchBaseTask implements IFluidPressureSearchTask {
+    private static final AtomicInteger ID = new AtomicInteger(); //减少Hash计算开销
     protected final Fluid fluid;
-    protected final BlockPos pos;
-
-    public FluidUpdateBaseTask(@Nonnull Fluid fluid,@Nonnull BlockPos pos) {
+    protected final IBlockState beginState;
+    protected final BlockPos beginPos;
+    private final int hashID;
+    public FluidPressureSearchBaseTask(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos) {
         this.fluid = fluid;
-        this.pos = pos;
-    }
-
-    @Nonnull
-    @Override
-    public BlockPos getPos() {
-        return pos;
+        this.beginState = beginState;
+        this.beginPos = beginPos;
+        hashID = ID.getAndIncrement();
     }
 
     @Nonnull
     @Override
     public Fluid getFluid() {
         return fluid;
+    }
+
+    @Nonnull
+    @Override
+    public BlockPos getBeginPos() {
+        return beginPos;
+    }
+
+    @Nonnull
+    @Override
+    public IBlockState getBeginState() {
+        return beginState;
+    }
+
+    @Override
+    public boolean isEqualState(@Nonnull IBlockState curState) {
+        return curState == beginState;
+    }
+
+    @Override
+    public int hashCode() {
+        return hashID;
     }
 }

@@ -29,9 +29,7 @@ package moe.qingu.geocraft.world.storage;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTaskManager;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -125,7 +123,7 @@ public final class GeoDataFile {
     public static void captureCurrentState(){
         CURRENT.setFluidPhysicsMode(FluidPhysicsMode.getCurrentMode());
         CURRENT.setSoilSystemStatus(SoilSystem.getStatus());
-        CURRENT.setFluidTasksMapping(FluidTasks.getMapping());
+        CURRENT.setFluidTasksMapping(FluidTaskManager.getMapping());
         CURRENT.save();
     }
 

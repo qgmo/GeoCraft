@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,64 +25,61 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.pressure;
+package moe.qingu.geocraft.geography.fluidphysics.pressure.task;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3i;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.api.util.math.Int10;
-import moe.qingu.geocraft.api.util.math.vec.Vec3s;
+import moe.qingu.geocraft.api.util.math.Int21;
+import moe.qingu.geocraft.api.util.math.vec.RelativeMVec3i;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
 import static moe.qingu.geocraft.geography.fluidphysics.ThreadLocalHelper.MUTABLE_BLOCK_POS_FOR_RES;
-import static moe.qingu.geocraft.api.util.math.vec.Vec3s.X_INT_OFFSET;
-import static moe.qingu.geocraft.api.util.math.vec.Vec3s.Y_INT_OFFSET;
+import static moe.qingu.geocraft.api.util.math.vec.RelativeMVec3i.X_LONG_OFFSET;
+import static moe.qingu.geocraft.api.util.math.vec.RelativeMVec3i.Y_LONG_OFFSET;
 
 /**
  * @author QiguaiAAAA
  */
-public class FluidPressureSearchTaskSmallRangeRelativeResult implements IFluidPressureSearchTaskResult{
+public class FluidPressureSearchTaskLargeRangeRelativeResult implements IFluidPressureSearchTaskResult{
     protected final int cx, cy, cz;
-    protected final IntList res = new IntArrayList();
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    protected final LongList res = new LongArrayList();
     protected int curIndex = 0;
 
-    public FluidPressureSearchTaskSmallRangeRelativeResult(final int cx,final int cy,final int cz) {
+    public FluidPressureSearchTaskLargeRangeRelativeResult(int cx, int cy, int cz) {
         this.cx = cx;
         this.cy = cy;
         this.cz = cz;
     }
 
-    public FluidPressureSearchTaskSmallRangeRelativeResult(final @Nonnull Vec3i centerPos){
+    public FluidPressureSearchTaskLargeRangeRelativeResult(Vec3i centerPos){
         this(centerPos.getX(),centerPos.getY(),centerPos.getZ());
     }
 
     @ThreadOnly(ThreadType.FLUID_PRESSURE_TASKS)
-    public void put(@Nonnull final Vec3s pos){
-        res.add(pos.toInt());
-    }
-
-    @ThreadOnly(ThreadType.FLUID_PRESSURE_TASKS)
-    @Nonnull
     public Collection<BlockPos> toResultCollection(){
         ArrayList<BlockPos> list = new ArrayList<>(res.size());
-        for(int p:res){
-            list.add(getPosFromInt(p).toImmutable());
+        for(long p:res){
+            list.add(getPosFromLong(p).toImmutable());
         }
         return list;
     }
 
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    @ThreadOnly(ThreadType.FLUID_PRESSURE_TASKS)
+    public void put(final @Nonnull RelativeMVec3i pos){
+        res.add(pos.toLong());
+    }
+
     @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean hasNext() {
         return curIndex < res.size();
     }
@@ -92,22 +89,19 @@ public class FluidPressureSearchTaskSmallRangeRelativeResult implements IFluidPr
         return res.size();
     }
 
-    /**
-     * @return 返回一个BlockPos.MutableBlockPos的结果位置
-     */
+    @Nullable
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     @Override
-    @Nullable
     public BlockPos next() {
         if(!hasNext()) return null;
-        return getPosFromInt(res.get(curIndex++));
+        return getPosFromLong(res.get(curIndex++));
     }
 
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.FLUID_PRESSURE_TASKS})
-    protected BlockPos getPosFromInt(int posInt){
-        final int x = Int10.toInt((posInt& Vec3s.X_INT_MASK)>> X_INT_OFFSET),
-                y = Int10.toInt((posInt& Vec3s.Y_INT_MASK)>> Y_INT_OFFSET),
-                z = Int10.toInt(posInt& Vec3s.Z_INT_MASK);
-        return  MUTABLE_BLOCK_POS_FOR_RES.get().setPos(cx+x,cy+y,cz+z);
+    protected BlockPos getPosFromLong(long posLong){
+        final int x = Int21.toInt((posLong& RelativeMVec3i.X_LONG_MASK)>> X_LONG_OFFSET),
+                y = Int21.toInt((posLong& RelativeMVec3i.Y_LONG_MASK)>> Y_LONG_OFFSET),
+                z = Int21.toInt(posLong& RelativeMVec3i.Z_LONG_MASK);
+        return MUTABLE_BLOCK_POS_FOR_RES.get().setPos(cx+x,cy+y,cz+z);
     }
 }

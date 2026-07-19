@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,13 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics;
+package moe.qingu.geocraft.geography.fluidphysics.pressure;
 
 import io.netty.util.internal.ConcurrentSet;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import moe.qingu.geocraft.geography.fluidphysics.ThreadLocalHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.server.MinecraftServer;
@@ -47,8 +48,8 @@ import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTask;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTask;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 import moe.qingu.geocraft.world.BlockUpdater;
 import moe.qingu.geocraft.util.misc.FixedCollection;
 
@@ -60,10 +61,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 
-import static moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager.WorldPressureInfo.CREATE_WORLD_PRESSURE_INFO;
-import static moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager.WorldPressureInfoFastutil.CREATE_WORLD_PRESSURE_INFO_FASTUTIL;
-import static moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager.WorldQueueTaskInfo.CREATE_WORLD_QUEUE_TASK_INFO;
-import static moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager.WorldQueueTaskInfoFastutil.CREATE_WORLD_QUEUE_TASK_INFO_FASTUTIL;
+import static moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager.WorldPressureInfo.CREATE_WORLD_PRESSURE_INFO;
+import static moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager.WorldPressureInfoFastutil.CREATE_WORLD_PRESSURE_INFO_FASTUTIL;
+import static moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager.WorldQueueTaskInfo.CREATE_WORLD_QUEUE_TASK_INFO;
+import static moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager.WorldQueueTaskInfoFastutil.CREATE_WORLD_QUEUE_TASK_INFO_FASTUTIL;
 import static moe.qingu.geocraft.util.MiscUtil.getValidWorld;
 
 /**

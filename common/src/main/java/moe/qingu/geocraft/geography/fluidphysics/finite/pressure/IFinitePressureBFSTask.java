@@ -29,7 +29,7 @@ package moe.qingu.geocraft.geography.fluidphysics.finite.pressure;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureBFSTask;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureBFSTask;
 
 import javax.annotation.Nonnull;
 

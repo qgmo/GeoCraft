@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.pressure;
 
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTask;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTask;
 import moe.qingu.geocraft.api.util.math.Int10;
 import moe.qingu.geocraft.api.util.math.Int21;
 

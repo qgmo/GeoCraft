@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.api.util.annotation;
 
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 
 /**
  * @since 0.1

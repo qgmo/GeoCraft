@@ -32,9 +32,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fluids.Fluid;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.FluidPressureLargeBFSBaseTask;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchTaskLargeRangeRelativeResult;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.FluidPressureLargeBFSBaseTask;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.FluidPressureSearchTaskLargeRangeRelativeResult;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -29,6 +29,7 @@ package moe.qingu.geocraft;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTaskManager;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.server.MinecraftServer;
@@ -46,8 +47,7 @@ import moe.qingu.geocraft.command.CommandGeoTest;
 import moe.qingu.geocraft.compat.GeoCompatLoader;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.configs.GeneralConfig;
-import moe.qingu.geocraft.geography.fluidphysics.FluidPressureSearchManager;
-import moe.qingu.geocraft.geography.fluidphysics.FluidUpdateManager;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 import moe.qingu.geocraft.world.BlockUpdater;
 import moe.qingu.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 import moe.qingu.geocraft.world.storage.GeoDataFile;
@@ -76,13 +76,16 @@ public class GeoCraft {
     @EventHandler
     public void init(final @Nonnull FMLInitializationEvent event){
         proxy.init(event);
+        FluidTasks.load();
         GeoCompatLoader.loadCompats(LoaderState.INITIALIZATION);
         DeferredActions.run(LoaderState.INITIALIZATION);
+
     }
 
     @EventHandler
     public void postInit(final @Nonnull FMLPostInitializationEvent event){
         proxy.postInit(event);
+        FluidTasks.register();
         AtmosphereSystemRunner.onPostInit(event);
         GeoCompatLoader.loadCompats(LoaderState.POSTINITIALIZATION);
         DeferredActions.run(LoaderState.POSTINITIALIZATION);
@@ -95,7 +98,7 @@ public class GeoCraft {
 
     @EventHandler
     public void onServerAboutToStart(final @Nonnull FMLServerAboutToStartEvent event){
-        FluidTasks.freeze();
+        FluidTaskManager.freeze();
         final @Nonnull MinecraftServer server = event.getServer();
         final File saveDir = server.isDedicatedServer()? new File(server.getDataDirectory(),server.getFolderName()):
                 new File(server.getDataDirectory(),"saves"+File.separator+server.getFolderName());
@@ -106,7 +109,7 @@ public class GeoCraft {
         }catch (final @Nonnull StartupQuery.AbortedException ignored){
             GeoDataFile.CURRENT.setTrash(true);
         }
-        FluidTasks.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
+        FluidTaskManager.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
     }
 
     @EventHandler
@@ -135,9 +138,8 @@ public class GeoCraft {
         }else{
             FluidPressureSearchManager.syncStop();
         }
-        FluidUpdateManager.onServerStop();
-        BlockUpdater.onServerStop();
         FluidUpdaterManager.onServerStop();
+        BlockUpdater.onServerStop();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPING);
     }
 

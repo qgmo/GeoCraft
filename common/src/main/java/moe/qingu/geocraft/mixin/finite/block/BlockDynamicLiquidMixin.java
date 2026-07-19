@@ -28,8 +28,9 @@
 package moe.qingu.geocraft.mixin.finite.block;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
-import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDynamicLiquid;
 import net.minecraft.block.BlockLiquid;
@@ -49,7 +50,6 @@ import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.block.finite.ILayeredFluidHostFiniteLiquid;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
-import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidVanillaUpdateTask;
 import moe.qingu.geocraft.util.MiscUtil;
 
 import javax.annotation.Nonnull;
@@ -60,7 +60,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements ILayeredFlui
     @Unique
     private FiniteFlowingVanilla 天圆地方$FINITE$flowingHandler;
     @Unique
-    private FiniteFluidVanillaUpdateTask 天圆地方$FINITE$task;
+    private IFluidTask 天圆地方$FINITE$task;
 
     protected BlockDynamicLiquidMixin(final @Nonnull Material materialIn) {
         super(materialIn);
@@ -73,8 +73,8 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements ILayeredFlui
     private void 天圆地方$FINITE$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
         DeferredActions.onInit(() -> {
             this.天圆地方$FINITE$flowingHandler = FiniteFlowingVanilla.getFlowingByMaterial(this.material);
-            if(天圆地方$FINITE$flowingHandler.fluid == FluidRegistry.WATER) 天圆地方$FINITE$task = FiniteFluidTasks.WATER_TASK;
-            else 天圆地方$FINITE$task = FiniteFluidTasks.LAVA_TASK;
+            if(天圆地方$FINITE$flowingHandler.fluid == FluidRegistry.WATER) 天圆地方$FINITE$task = FluidTasks.WATER_TASK;
+            else 天圆地方$FINITE$task = FluidTasks.LAVA_TASK;
         });
     }
 
@@ -107,7 +107,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements ILayeredFlui
             worldIn.setBlockState(pos, getStaticBlock(this.material).getDefaultState().withProperty(LEVEL, state.getValue(LEVEL)), Constants.BlockFlags.SEND_TO_CLIENTS);
             return;
         }
-        FluidUpdaterManager.schedule(worldIn,pos, 天圆地方$FINITE$task,天圆地方$FINITE$task.fluid);
+        FluidUpdaterManager.schedule(worldIn,pos, 天圆地方$FINITE$task,天圆地方$FINITE$flowingHandler.fluid);
     }
 
     @Inject(method = "onBlockAdded",at = @At("HEAD"),cancellable = true)

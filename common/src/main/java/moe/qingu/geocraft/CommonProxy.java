@@ -45,7 +45,6 @@ import moe.qingu.geocraft.handler.event.SoilEventHandler;
 import moe.qingu.geocraft.handler.event.ClassicEventHandler;
 import moe.qingu.geocraft.handler.network.NetworkFakeStateManager;
 import moe.qingu.geocraft.util.BaseUtil;
-import moe.qingu.geocraft.handler.MixinHandler;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -80,7 +79,6 @@ public class CommonProxy {
 
     public void postInit(@Nonnull FMLPostInitializationEvent event) {
         ConfigInit.verifyConfigValidity();
-        MixinHandler.linkLiquidWithFluid();
         FluidHandler.initRegisteredFluids();
         FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
         FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());

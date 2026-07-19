@@ -28,11 +28,8 @@
 package moe.qingu.geocraft.handler;
 
 import com.google.common.collect.Sets;
-import net.minecraft.init.Blocks;
-import net.minecraftforge.fluids.FluidRegistry;
 import moe.qingu.geocraft.compat.GeoCompatInfo;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.util.mixinapi.FluidSettable;
 import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
 
 import javax.annotation.Nonnull;
@@ -58,17 +55,6 @@ public final class MixinHandler {
     ));
 
     public static final Set<GeoCompatInfo>[] FLUID_PHYSICS_TO_COMPATS = new Set[]{Sets.newHashSet(BRIGO_COMPAT),Sets.newHashSet(BRIGO_COMPAT),COMPATS_UNDER_FINITE};
-
-    public static void linkLiquidWithFluid(){
-        if(Blocks.FLOWING_WATER instanceof FluidSettable){
-            ((FluidSettable) Blocks.FLOWING_WATER).天圆地方$setCorrespondingFluid(FluidRegistry.WATER);
-            ((FluidSettable) Blocks.FLOWING_LAVA).天圆地方$setCorrespondingFluid(FluidRegistry.LAVA);
-        }
-        if(Blocks.WATER instanceof FluidSettable){
-            ((FluidSettable) Blocks.WATER).天圆地方$setCorrespondingFluid(FluidRegistry.WATER);
-            ((FluidSettable) Blocks.LAVA).天圆地方$setCorrespondingFluid(FluidRegistry.LAVA);
-        }
-    }
 
     @Nonnull
     public static List<String> getCompatMixins(){

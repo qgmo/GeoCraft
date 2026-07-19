@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,28 +25,61 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.task.pressure;
+package moe.qingu.geocraft.geography.fluidphysics.pressure.task;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
-import java.util.Set;
+import java.util.Collection;
 
 /**
  * @author QiguaiAAAA
  */
-public abstract class FluidPressureBFSBaseTask extends FluidPressureSearchBaseTask implements IFluidPressureBFSTask{
+public interface IFluidPressureBFSTask extends IFluidPressureSearchTask {
+    /**
+     * 指定位置是否已经被访问
+     * @param pos 位置
+     * @return 若已被访问,则返回true
+     */
+    boolean isVisited(@Nonnull BlockPos pos);
 
-    public FluidPressureBFSBaseTask(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos) {
-        super(fluid, beginState, beginPos);
-    }
+    /**
+     * 标记指定位置被访问
+     * @param pos 被访问的位置
+     */
+    void markVisited(@Nonnull BlockPos pos);
+    int getVisitedSize();
 
-    @Override
-    public int getVisitedSize() {
-        return getVisitedSet().size();
-    }
+    boolean isQueueEmpty();
 
-    abstract protected Set<?> getVisitedSet();
+    /**
+     * 将指定位置加入队列
+     * @param pos 位置
+     */
+    void queued(@Nonnull BlockPos pos);
+
+    /**
+     * 取出队列中的第一个位置，会从队列中移除第一个位置
+     * @return 第一个位置
+     */
+    @Nonnull
+    BlockPos pull();
+
+    /**
+     * 获取队列中的第一个位置，不会在队列中将其移除
+     * @return 第一个位置
+     */
+    @Nonnull
+    BlockPos peek();
+
+    int getQueueSize();
+
+    /**
+     * 获取结果集合
+     * @return 一个BlockPos集合
+     */
+    @Nonnull
+    Collection<BlockPos> getResultCollection();
+
+    void putBlockPosToResults(@Nonnull BlockPos pos);
 }

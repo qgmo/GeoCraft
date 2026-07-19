@@ -27,27 +27,16 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.classic.update;
 
-import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
-import net.minecraft.util.ResourceLocation;
 
 /**
  * @author QGMoe
  */
 public final class ClassicFluidTasks {
-    public static IFluidTask WATER_TASK;
-    public static IFluidTask LAVA_TASK;
-    public static IFluidTask CLASSIC_TASK = new ClassicFluidClassicUpdateTask();
-
-    static {
-        DeferredActions.onPostInit(()->{
-            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_water"),WATER_TASK);
-            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_lava"),LAVA_TASK);
-            FluidTasks.register(new ResourceLocation(GeoCraft.MODID,"classic_classic"),CLASSIC_TASK);
-        });
-    }
 
     private ClassicFluidTasks(){}
+
+    public static void load(){
+        for(int i=0;i<16;i++) FluidTasks.CLASSIC_TASKS[i] = new ClassicFluidClassicFluidTask();
+    }
 }

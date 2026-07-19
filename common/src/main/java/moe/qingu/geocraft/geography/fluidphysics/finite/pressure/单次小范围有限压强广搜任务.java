@@ -38,9 +38,9 @@ import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.Vec3s;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchBaseTask;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.FluidPressureSearchTaskSmallRangeRelativeResult;
-import moe.qingu.geocraft.geography.fluidphysics.task.pressure.IFluidPressureSearchTaskResult;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.FluidPressureSearchBaseTask;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.FluidPressureSearchTaskSmallRangeRelativeResult;
+import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 import moe.qingu.geocraft.api.util.math.Int10;
 
 import javax.annotation.Nonnull;
@@ -48,7 +48,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 
 import static moe.qingu.geocraft.geography.fluidphysics.ThreadLocalHelper.*;
-import static moe.qingu.geocraft.geography.fluidphysics.task.pressure.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
+import static moe.qingu.geocraft.geography.fluidphysics.pressure.task.FluidPressureSmallBFSBaseTask.MAX_RELATIVE_POS_OFFSET;
 import static moe.qingu.geocraft.api.util.math.vec.Vec3s.X_INT_OFFSET;
 import static moe.qingu.geocraft.api.util.math.vec.Vec3s.Y_INT_OFFSET;
 import static moe.qingu.geocraft.api.util.math.vec.Vec3s.RelativeMVec3s.MUTABLE;

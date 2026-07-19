@@ -27,89 +27,35 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.updater;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.vanilla.update.VanillaFluidTasks;
 import net.minecraft.util.ResourceLocation;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
 
 /**
  * @author QGMoe
  */
 public final class FluidTasks {
-    private static final HashMap<ResourceLocation,IFluidTask> ID2Tasks = new HashMap<>();
-    private static final IdentityHashMap<IFluidTask,ResourceLocation> Tasks2ID = new IdentityHashMap<>();
-    private static final Int2ObjectOpenHashMap<IFluidTask> TaskLookup = new Int2ObjectOpenHashMap<>();
-    private static ArrayList<IFluidTask> ArrTaskLookup = null;
-    private static final Object2IntMap<IFluidTask> IDLookup = new Object2IntOpenHashMap<>();
-    private static boolean frozen = false;
+    public static IFluidTask WATER_TASK;
+    public static IFluidTask LAVA_TASK;
+    public static IFluidTask[] CLASSIC_TASKS = new IFluidTask[16];
 
-    static {
-        IDLookup.defaultReturnValue(-1);
+    private FluidTasks(){}
+
+    public static void load(){
+        if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY) FiniteFluidTasks.load();
+        else if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.VANILLA_LIKE) ClassicFluidTasks.load();
+        else VanillaFluidTasks.load();
     }
 
-    public static void freeze() {
-        frozen = true;
-    }
-
-    public static void register(final @Nonnull ResourceLocation location, final @Nonnull IFluidTask task){
-        if(frozen) throw new IllegalStateException();
-        ID2Tasks.put(location,task);
-        Tasks2ID.put(task,location);
-    }
-
-    public static void reloadMapping(final @Nonnull Int2ObjectOpenHashMap<ResourceLocation> mapping){
-        ArrTaskLookup = null;
-        TaskLookup.clear();
-        IDLookup.clear();
-        final HashSet<IFluidTask> lefts = new HashSet<>(Tasks2ID.keySet());
-        int maxID = 0;
-        for(final @Nonnull Int2ObjectMap.Entry<ResourceLocation> entry:mapping.int2ObjectEntrySet()){
-            final IFluidTask task = ID2Tasks.get(entry.getValue());
-            if(task == null) continue; //missingMapping
-            lefts.remove(task);
-            TaskLookup.put(entry.getIntKey(),task);
-            IDLookup.put(task,entry.getIntKey());
-            maxID = Math.max(maxID,entry.getIntKey());
+    public static void register(){
+        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"water"),WATER_TASK);
+        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"lava"),LAVA_TASK);
+        for(int i=1;i<=16;i++){
+            FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"classic_"+i),CLASSIC_TASKS[i-1]);
         }
-        int i = 0;
-        for (final @Nonnull IFluidTask task : lefts) {
-            while (TaskLookup.containsKey(i)) i++;
-            TaskLookup.put(i, task);
-            IDLookup.put(task, i);
-        }
-        maxID = Math.max(maxID,i);
-        if(maxID<16384) ArrTaskLookup = new ArrayList<>(maxID+1);
-        for(final @Nonnull Int2ObjectMap.Entry<IFluidTask> entry:TaskLookup.int2ObjectEntrySet()) ArrTaskLookup.set(entry.getIntKey(),entry.getValue());
-        TaskLookup.clear();
-    }
-
-    @Nonnull
-    public static Int2ObjectOpenHashMap<ResourceLocation> getMapping(){
-        final Int2ObjectOpenHashMap<ResourceLocation> mapping = new Int2ObjectOpenHashMap<>();
-        for(final @Nonnull Int2ObjectMap.Entry<IFluidTask> entry: TaskLookup.int2ObjectEntrySet()) mapping.put(entry.getIntKey(),Tasks2ID.get(entry.getValue()));
-        return mapping;
-    }
-
-    public static int getID(final @Nonnull IFluidTask task){
-        return IDLookup.get(task);
-    }
-
-    public static ResourceLocation getName(final @Nonnull IFluidTask task){
-        return Tasks2ID.get(task);
-    }
-
-    public static IFluidTask getTaskByID(final int id){
-        return ArrTaskLookup == null?TaskLookup.get(id):ArrTaskLookup.get(id);
-    }
-
-    public static IFluidTask getTaskByName(final @Nonnull ResourceLocation location){
-        return ID2Tasks.get(location);
+        if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY) FiniteFluidTasks.register();
     }
 }

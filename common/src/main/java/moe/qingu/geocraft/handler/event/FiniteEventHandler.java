@@ -57,12 +57,10 @@ import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import moe.qingu.geocraft.api.atmosphere.Atmosphere;
 import moe.qingu.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.geocraft.api.block.IBlockStateLayeredFluidHost;
@@ -77,7 +75,6 @@ import moe.qingu.geocraft.api.util.AtmosphereUtil;
 import moe.qingu.geocraft.api.util.FluidUtil;
 import moe.qingu.geocraft.api.util.QBUtil;
 import moe.qingu.geocraft.geography.fluidphysics.finite.FluidPhysicsCoreFinite;
-import moe.qingu.geocraft.geography.fluidphysics.finite.IPostEventInitFinite;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingVanilla;
 import moe.qingu.geocraft.handler.ServerStatusMonitor;
 import moe.qingu.geocraft.mixin.common.entity.EntityFallingBlockAccessor;
@@ -423,9 +420,5 @@ public final class FiniteEventHandler {
         if(!GeoFluidSetting.isFluidToBePhysical(FluidRegistry.LAVA)){
             Blocks.LAVA.setTickRandomly(false);
         }
-        ForgeRegistries.BLOCKS.getValuesCollection().stream()
-                .filter(block -> block instanceof IPostEventInitFinite)
-                .map(block -> (IPostEventInitFinite) block)
-                .forEach(IPostEventInitFinite::天圆地方$FINITE$init);
     }
 }
