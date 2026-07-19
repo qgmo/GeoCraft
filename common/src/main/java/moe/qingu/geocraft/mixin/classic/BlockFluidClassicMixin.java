@@ -92,12 +92,12 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         if(!GeoFluidSetting.hasGravity(world)){
             return;
         }
-        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASKS[quantaPerBlock-1],this.getFluid());
+        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASK,this.getFluid());
     }
 
     @Override
     @Unique
-    public void 天圆地方$onFlowingTask(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final Random rand) {
+    public final void 天圆地方$onFlowingTask(@Nonnull final World world, @Nonnull final BlockPos pos, @Nonnull final IBlockState state, @Nonnull final Random rand) {
         final int modifiedTickRate = MiscUtil.modifyTickRateByGravity(world,tickRate);
         if(modifiedTickRate<=0) return; //无重力
 

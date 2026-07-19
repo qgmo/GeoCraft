@@ -27,7 +27,10 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.classic.update;
 
+import moe.qingu.geocraft.api.util.ModIDs;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.vanilla.update.VanillaFluidClassicFluidTask;
+import net.minecraftforge.fml.common.Loader;
 
 /**
  * @author QGMoe
@@ -37,6 +40,7 @@ public final class ClassicFluidTasks {
     private ClassicFluidTasks(){}
 
     public static void load(){
-        for(int i=0;i<16;i++) FluidTasks.CLASSIC_TASKS[i] = new ClassicFluidClassicFluidTask();
+        FluidTasks.CLASSIC_TASK = new ClassicFluidClassicFluidTask();
+        if(Loader.isModLoaded(ModIDs.IMMERSIVE_ENGINEERING)) FluidTasks.IE_CONCRETE_TASK = new VanillaFluidClassicFluidTask();
     }
 }

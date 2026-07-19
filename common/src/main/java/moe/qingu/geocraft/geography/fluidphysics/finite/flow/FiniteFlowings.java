@@ -27,8 +27,12 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.flow;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.init.Blocks;
+import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.FluidRegistry;
+
+import javax.annotation.Nonnull;
 
 /**
  * 存放常用的 Flowing 逻辑实例
@@ -38,4 +42,10 @@ import net.minecraftforge.fluids.FluidRegistry;
 public final class FiniteFlowings {
     public static final FiniteFlowingVanilla WATER_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_WATER,Blocks.WATER, FluidRegistry.WATER);
     public static final FiniteFlowingVanilla LAVA_FLOW = new FiniteFlowingVanilla(Blocks.FLOWING_LAVA,Blocks.LAVA,FluidRegistry.LAVA);
+    private static final Object2ObjectOpenHashMap<BlockFluidClassic,FiniteFlowingClassic> CLASSIC_FLOWS = new Object2ObjectOpenHashMap<>();
+
+    @Nonnull
+    public static FiniteFlowingClassic of(final @Nonnull BlockFluidClassic block){
+        return CLASSIC_FLOWS.computeIfAbsent(block, FiniteFlowingClassic::new);
+    }
 }

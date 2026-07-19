@@ -39,7 +39,7 @@ import java.util.Random;
 /**
  * @author QGMoe
  */
-final class VanillaFluidClassicFluidTask implements IFluidTask {
+public final class VanillaFluidClassicFluidTask implements IFluidTask {
     @Override
     public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
         state.getBlock().updateTick(world,pos,state,rand);

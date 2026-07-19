@@ -27,9 +27,11 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import moe.qingu.geocraft.api.util.LayeredFluidHostUtil;
+import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
-import moe.qingu.nickel.util.reflect.FieldAccessor;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -53,7 +55,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static net.minecraftforge.fluids.BlockFluidBase.LEVEL;
@@ -66,41 +67,58 @@ import static moe.qingu.geocraft.configs.FluidPhysicsConfig.slopeModeForModsWhen
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
 public class FiniteFluidClassicFluidTask implements IFluidTask {
+    private static final ObjectOpenHashSet<BlockFluidClassic> DISALLOWS = new ObjectOpenHashSet<>();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<OldFlowChoice> averageFlowChoices = new ArrayList<>(5);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] slopeFlowDirectionsArr = new EnumFacing[4];
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> bestFlowDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] bestFlowDirectionsArr = new EnumFacing[4];
-    private static final FieldAccessor FIELD_FLOWING;
-    protected final int quantaPerBlock;
+
+    private boolean running = false;
+    protected World world;
+    protected BlockPos pos;
+    protected Random rand;
+    // prepare area
+    protected BlockFluidClassic block;
+    protected FiniteFlowingClassic flowing;
 
     static {
-        try {
-            /// @see moe.qingu.geocraft.mixin.finite.block.BlockFluidClassicMixin#天圆地方$FINITE$flowing
-            FIELD_FLOWING = FieldAccessor.of(BlockFluidClassic.class.getDeclaredField("天圆地方$FINITE$flowing"));
-        } catch (final @Nonnull NoSuchFieldException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
-            throw new RuntimeException(e);
-        }
+        DISALLOWS.add(null);
     }
 
-    public FiniteFluidClassicFluidTask(final int quantaPerBlock) {
-        this.quantaPerBlock = quantaPerBlock;
-    }
-
-    @Nonnull
-    public static FiniteFlowingClassic getFlowingOf(final @Nonnull BlockFluidClassic block){
-        try {
-            return (FiniteFlowingClassic) FIELD_FLOWING.get(block);
-        } catch (final @Nonnull IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * 不允许通用模组流体任务应用到某个流体方块上
+     * @param block 指定的方块
+     */
+    public static void disallowFor(final @Nonnull BlockFluidClassic block){
+        DISALLOWS.add(block);
     }
 
     @Override
-    public void onUpdate(@Nonnull final World world, @Nonnull IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
-        final BlockFluidClassic block = (BlockFluidClassic) state.getBlock();
-        final FiniteFlowingClassic flowing = getFlowingOf(block);
-        int tickRate = flowing.tickRate(world);
+    public final void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
+        if(running) throw new IllegalStateException();
+        try {
+            running = true;
+            this.world = world;
+            this.pos = pos;
+            this.rand = rand;
+            prepare(state);
+            flow(state);
+        }finally {
+            this.world = null;
+            running = false;
+        }
+    }
+
+    protected void prepare(@Nonnull final IBlockState state){
+        final Block b = state.getBlock();
+        if(this.block == b) return;
+        block = (BlockFluidClassic) b;
+        flowing = FiniteFlowings.of(block);
+    }
+
+    protected void flow(@Nonnull IBlockState state){
+        final int tickRate = flowing.tickRate(world);
         if(tickRate <= 0) return; //无重力
         int meta = state.getValue(LEVEL);
         int quanta = flowing.quantaPerBlock-meta;
@@ -130,13 +148,13 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
 
         if(quanta == 1){
             if(!slopeModeForModsWhenOnFluidsAndQuantaIs1.getValue() && flowing.isEqualFluid(stateBelow)){
-                tryPressureFlow(flowing,world,pos,state,rand,tickRate);
+                tryPressureFlow(state,tickRate);
                 return;
             }
             slopeFlowableDirections.clear();
             flowing.singleSlopeAlgorithm(world,pos,slopeFlowableDirections);
             if(slopeFlowableDirections.isEmpty()){
-                tryPressureFlow(flowing,world,pos,state,rand,tickRate);
+                tryPressureFlow(state,tickRate);
             }else{
                 int i = 0;
                 for(@Nonnull final EnumFacing dir:slopeFlowableDirections){
@@ -176,8 +194,8 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
             else {
                 state = state.withProperty(LEVEL,meta);
                 world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-                BlockUpdater.scheduleUpdate(world,pos, flowing.block, tickRate);
-                world.notifyNeighborsOfStateChange(pos,flowing.block, false);
+                BlockUpdater.scheduleUpdate(world,pos, block, tickRate);
+                world.notifyNeighborsOfStateChange(pos,block, false);
             }
             for(final @Nonnull OldFlowChoice choice:averageFlowChoices){ //向四周流动
                 if(choice.getQuantaOfThisFluid() == 0) continue;
@@ -203,15 +221,15 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
             //更新自己
             state = state.withProperty(LEVEL, newLiquidMeta);
             world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-            BlockUpdater.scheduleUpdate(world, pos, flowing.block, tickRate);
-            world.notifyNeighborsOfStateChange(pos, flowing.block, false);
+            BlockUpdater.scheduleUpdate(world, pos, block, tickRate);
+            world.notifyNeighborsOfStateChange(pos, block, false);
             //移动至新位置
             world.setBlockState(pos.offset(flowDir), state.withProperty(LEVEL, meta), Constants.BlockFlags.SEND_TO_CLIENTS);
         }else {
             // *******************
             //  Pressure Flow
             // *******************
-            tryPressureFlow(flowing,world,pos,state,rand,tickRate);
+            tryPressureFlow(state,tickRate);
         }
     }
 
@@ -220,22 +238,18 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
 
     @Override
     public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
-        return state.getBlock() instanceof BlockFluidClassic;
+        final Block b = state.getBlock();
+        return b instanceof BlockFluidClassic && !DISALLOWS.contains(b);
     }
 
-    protected boolean tryPressureFlow(final @Nonnull FiniteFlowingClassic flowing,
-                                      final @Nonnull World world,
-                                      final @Nonnull BlockPos pos,
-                                      final @Nonnull IBlockState state,
-                                      final @Nonnull Random rand,
-                                      final int tickRate){
+    protected boolean tryPressureFlow(final @Nonnull IBlockState state, final int tickRate){
         if(FluidPressureSearchManager.isTaskRunning(world,pos)){
-            BlockUpdater.scheduleUpdate(world,pos,flowing.block,tickRate);
+            BlockUpdater.scheduleUpdate(world,pos,block,tickRate);
             return false;
         }
         final @Nullable IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(world,pos);
         if(res == null || res.isEmpty()){
-            sendPressureQuery(world,state,pos,flowing,rand,BaseUtil.getRandomPressureSearchRange(),false);
+            sendPressureQuery(state,BaseUtil.getRandomPressureSearchRange(),false);
             return false;
         }
         IBlockState nowState = state;
@@ -247,25 +261,19 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
             nowState = world.getBlockState(pos);
         }
         if(nowState != state && flowing.isEqualFluid(nowState)){
-            sendPressureQuery(world,state,pos,flowing,rand,BaseUtil.getRandomPressureSearchRange(),true);
+            sendPressureQuery(state,BaseUtil.getRandomPressureSearchRange(),true);
             return true;
         }else if(nowState == state){
-            sendPressureQuery(world,state,pos,flowing,rand,BaseUtil.getRandomPressureSearchRange(),false);
+            sendPressureQuery(state,BaseUtil.getRandomPressureSearchRange(),false);
             return false;
         }
         return true;
     }
 
-    protected void sendPressureQuery(final @Nonnull World world,
-                                     final @Nonnull IBlockState state,
-                                     final @Nonnull BlockPos pos,
-                                     final @Nonnull FiniteFlowingClassic flowing,
-                                     final @Nonnull Random rand,
-                                     final int range,
-                                     final boolean directly){
+    protected void sendPressureQuery(final @Nonnull IBlockState state, final int range, final boolean directly){
         final @Nonnull IBlockState up = world.getBlockState(pos.down(flowing.densityDir));
         if(FluidUtil.getFluid(up)!=flowing.fluid && (directly || BaseUtil.getRandomResult(rand, FluidPhysicsConfig.POSSIBILITY_FOR_CLASSIC_FLUIDS_TO_CREATE_PRESSURE_TASK.getValue()))) {
-            FluidPressureSearchManager.addTask(world, FinitePressureTasks.createModClassicTask(flowing.fluid,state,pos, range,quantaPerBlock));
+            FluidPressureSearchManager.addTask(world, FinitePressureTasks.createModClassicTask(flowing.fluid,state,pos, range,flowing.quantaPerBlock));
         }
     }
 }

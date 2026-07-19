@@ -32,16 +32,15 @@ import blusunrize.immersiveengineering.common.IEContent;
 import blusunrize.immersiveengineering.common.blocks.stone.BlockTypes_StoneDecoration;
 import blusunrize.immersiveengineering.common.blocks.stone.BlockTypes_StoneDevices;
 import blusunrize.immersiveengineering.common.util.IEPotions;
+import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import java.util.Random;
 
 import static net.minecraftforge.fluids.BlockFluidBase.LEVEL;
 
@@ -49,14 +48,19 @@ import static net.minecraftforge.fluids.BlockFluidBase.LEVEL;
  * @author QiguaiAAAA
  */
 public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask {
-    public static final @Nonnull FiniteFlowingClassic IE_CONCRETE_FLOWING_UPDATER = new FiniteFlowingClassic(IEContent.blockFluidConcrete);
+    public static final @Nonnull FiniteFlowingClassic IE_CONCRETE_FLOWING_UPDATER = FiniteFlowings.of(IEContent.blockFluidConcrete);
 
-    public FiniteIEConcreteFluidTask() {
-        super(16);
+    public FiniteIEConcreteFluidTask(){
+        this.block = IEContent.blockFluidConcrete;
+        this.flowing = IE_CONCRETE_FLOWING_UPDATER;
+        FiniteFluidClassicFluidTask.disallowFor(IEContent.blockFluidConcrete);
     }
 
     @Override
-    public void onUpdate(@Nonnull final World world, @Nonnull IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
+    protected void prepare(@Nonnull final IBlockState state) {}
+
+    @Override
+    protected void flow(@Nonnull IBlockState state) {
         final int meta = state.getValue(LEVEL);
         final int quanta = IE_CONCRETE_FLOWING_UPDATER.quantaPerBlock-meta;
         final int timer = state.getValue(IEProperties.INT_16);
@@ -71,7 +75,12 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
             world.setBlockState(pos, state);
         }
 
-        super.onUpdate(world,state,pos,rand);
+        super.flow(state);
+    }
+
+    @Override
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+        return state.getBlock() == IEContent.blockFluidConcrete;
     }
 
     /**
@@ -79,6 +88,7 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
      * @param meta 当前数据值
      * @return 固化后的方块状态
      */
+    @Nonnull
     private IBlockState getConcretingBlock(final int meta){
         if(meta >= 14)
             return IEContent.blockStoneDevice.getStateFromMeta(BlockTypes_StoneDevices.CONCRETE_SHEET.getMeta());
@@ -91,4 +101,5 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
         else
             return IEContent.blockStoneDecoration.getStateFromMeta(BlockTypes_StoneDecoration.CONCRETE.getMeta());
     }
+
 }

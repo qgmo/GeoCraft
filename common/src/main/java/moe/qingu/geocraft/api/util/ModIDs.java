@@ -25,27 +25,11 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.mixin.common.block;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockAccess;
-import net.minecraft.world.World;
-import net.minecraftforge.fluids.BlockFluidClassic;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.gen.Invoker;
+package moe.qingu.geocraft.api.util;
 
 /**
  * @author QGMoe
  */
-@Mixin(value = BlockFluidClassic.class,remap = false)
-public interface BlockFluidClassicAccessor {
-    @Accessor(value = "canCreateSources",remap = false)
-    boolean 天圆地方$canCreateSources();
-
-    @Invoker(value = "getLargerQuanta",remap = false)
-    int 天圆地方$getLargerQuanta(IBlockAccess world, BlockPos pos, int compare);
-
-    @Invoker(value = "getOptimalFlowDirections",remap = false)
-    boolean[] 天圆地方$getOptimalFlowDirections(World world, BlockPos pos);
+public final class ModIDs {
+    public static final String IMMERSIVE_ENGINEERING = "immersiveengineering";
 }

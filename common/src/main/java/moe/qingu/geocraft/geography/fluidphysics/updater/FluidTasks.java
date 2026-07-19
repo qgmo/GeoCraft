@@ -40,7 +40,8 @@ import net.minecraft.util.ResourceLocation;
 public final class FluidTasks {
     public static IFluidTask WATER_TASK;
     public static IFluidTask LAVA_TASK;
-    public static IFluidTask[] CLASSIC_TASKS = new IFluidTask[16];
+    public static IFluidTask CLASSIC_TASK;
+    public static IFluidTask IE_CONCRETE_TASK;
 
     private FluidTasks(){}
 
@@ -53,9 +54,7 @@ public final class FluidTasks {
     public static void register(){
         FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"water"),WATER_TASK);
         FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"lava"),LAVA_TASK);
-        for(int i=1;i<=16;i++){
-            FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"classic_"+i),CLASSIC_TASKS[i-1]);
-        }
-        if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY) FiniteFluidTasks.register();
+        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"classic"), CLASSIC_TASK);
+        if(IE_CONCRETE_TASK != null) FluidTaskManager.register(new ResourceLocation("immersiveengineering","concrete"),IE_CONCRETE_TASK);
     }
 }

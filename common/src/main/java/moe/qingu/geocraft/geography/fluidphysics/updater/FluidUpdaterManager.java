@@ -81,6 +81,7 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         final int cz = pos.getZ() & 0xF;
         if(updater.isScheduled(cx,pos.getY(),cz)) return;
         final int taskID = FluidTaskManager.getID(task);
+        if(taskID <0 || taskID > 65535) throw new IllegalArgumentException();
         if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, (short) taskID);
         else updater.scheduleLight(cx,pos.getY(),cz,(short) taskID);
         schedules.add((long) chunkX << Integer.SIZE | chunkZ);

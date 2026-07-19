@@ -29,7 +29,7 @@ package moe.qingu.geocraft.mixin.finite.compat.immersiveengineering;
 
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
-import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
+import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -53,10 +53,10 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid {
     }
 
     @Inject(method = "updateTick",at = @At("HEAD"),cancellable = true,remap = true)
-    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand, CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
+    public void updateTick(final World world,final BlockPos pos,final IBlockState state,final Random rand,final CallbackInfo ci) {
+        if(!GeoFluidSetting.isFluidToBePhysical(FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid)) return;
         ci.cancel();
         if(world.isRemote) return;
-        FluidUpdaterManager.schedule(world,pos, FiniteFluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
+        FluidUpdaterManager.schedule(world,pos, FluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
     }
 }
