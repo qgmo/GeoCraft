@@ -27,14 +27,11 @@
 
 package moe.qingu.geocraft;
 
-import moe.qingu.geocraft.capability.FluidUpdaterCapability;
-import moe.qingu.geocraft.capability.FluidUpdaterManagerCapability;
+import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
-import moe.qingu.geocraft.capability.SavingScheduledTicksCapability;
-import moe.qingu.geocraft.capability.SchedulingTicksCapability;
 import moe.qingu.geocraft.configs.ConfigInit;
 import moe.qingu.geocraft.configs.ConfigurationLoader;
 import moe.qingu.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
@@ -64,10 +61,7 @@ public class CommonProxy {
         ConfigurationLoader.load();
     }
     public void preInit(FMLPreInitializationEvent event) {
-        SchedulingTicksCapability.register();
-        SavingScheduledTicksCapability.register();
-        FluidUpdaterCapability.register();
-        FluidUpdaterManagerCapability.register();
+        CapabilityHandler.register();
 
         if(ConfigurationLoader.isInitialised()) return;
         if(!isConfigInitialised) initConfig();

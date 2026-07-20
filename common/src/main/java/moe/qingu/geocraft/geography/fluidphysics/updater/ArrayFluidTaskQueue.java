@@ -28,6 +28,7 @@
 package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 
 import javax.annotation.Nonnull;
 import java.util.function.IntConsumer;
@@ -77,7 +78,7 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
                     final int task = tasks.getInt(i);
                     final int x = (task >>> 4) & 0xF;
                     final int z = task & 0xF;
-                    consumer.consume(x,curY,z, FluidTaskManager.getTaskByID((task>>8)&0xFFFF));
+                    consumer.consume(x,curY,z, FluidTaskRegistry.getTaskByID((task>>8)&0xFFFF));
                 }
                 return size;
             }finally {

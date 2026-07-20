@@ -29,6 +29,8 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.ModIDs;
 import moe.qingu.geocraft.geography.fluidphysics.classic.update.ClassicFluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteFluidTasks;
@@ -53,9 +55,9 @@ public final class FluidTasks {
     }
 
     public static void register(){
-        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"water"),WATER_TASK);
-        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"lava"),LAVA_TASK);
-        FluidTaskManager.register(new ResourceLocation(GeoCraft.MODID,"classic"), CLASSIC_TASK);
-        if(IE_CONCRETE_TASK != null) FluidTaskManager.register(new ResourceLocation(ModIDs.IMMERSIVE_ENGINEERING,"concrete"),IE_CONCRETE_TASK);
+        FluidTaskRegistry.register(new ResourceLocation(GeoCraft.MODID,"water"),WATER_TASK);
+        FluidTaskRegistry.register(new ResourceLocation(GeoCraft.MODID,"lava"),LAVA_TASK);
+        FluidTaskRegistry.register(new ResourceLocation(GeoCraft.MODID,"classic"), CLASSIC_TASK);
+        if(IE_CONCRETE_TASK != null) FluidTaskRegistry.register(new ResourceLocation(ModIDs.IMMERSIVE_ENGINEERING,"concrete"),IE_CONCRETE_TASK);
     }
 }

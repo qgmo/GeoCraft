@@ -54,7 +54,7 @@ public final class SoilConfig {
 
     @Config.Comment({"启用土壤系统，注意禁用土壤系统为新功能，可能会破坏存档，请谨慎使用!",
             "Enable Soil System. Attention: Disabling Soil System is in experiment and may break your world!"})
-    @GeoConfig.Since("0.2.6")
+    @GeoConfig.Support(since = "0.2.6")
     @Config.LangKey("geocraft.config.comment.soil.enable_soil")
     @GeoConfig.Experimental
     @Config.RequiresMcRestart
@@ -68,7 +68,7 @@ public final class SoilConfig {
 
     @Config.RequiresMcRestart
     @Config.Ignore
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     public static final ConfigBoolean ALLOW_CLIENT_TO_READ_HUMIDITY_DATA =
             new ConfigBoolean(CATEGORY_SOIL, "allowClientToReadHumidityData",false)
                     .setComment("是否允许客户端读取土壤的湿度数据。默认为允许。在禁止状态下，模组将会对服务器和客户端的网络通信进行修改，以去除土壤的湿度信息。其原理和反矿透原理类似。\n" +
@@ -87,19 +87,19 @@ public final class SoilConfig {
     @Config.Comment("土壤相关的世界生成机制控制\n" + "Control for soil-related world generation features")
     public static final ConfigCategory CATEGORY_SOIL_GENERATION = CATEGORY_SOIL.getChildCategory("generation");
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("开启土壤相关的世界生成机制。\n" +
             "若禁用，自然生成的土壤和其他透水方块将默认不会有湿度，该配置块内的其他功能同样不会生效。\n" +
             "Enable soil-related world generation features.\n" +
             "If disabled, naturally generated soil and other permeable blocks will have no moisture by default, and other functions within this configuration block will also be disabled.")
     public static final ConfigBoolean ENABLE_GENERATION = new ConfigBoolean(CATEGORY_SOIL_GENERATION, "enable",true);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("需要禁用土壤相关世界生成机制的维度。\n" + "Dimensions for which soil-related world generation features should be disabled.")
     public static final ConfigIntegerSet GENERATION_DIMENSION_BLACK_LIST =
             new ConfigIntegerSet(CATEGORY_SOIL_GENERATION, "dimensionBlackList", new ConfigurableSet<>(1,-1));
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("需要禁用土壤相关世界生成机制的生物群系。\n" +
             "Biomes for which soil-related world generation features should be disabled.")
     public static final ConfigSet<ConfigurableBiome,?> GENERATION_BIOME_BLACK_LIST =
@@ -109,7 +109,7 @@ public final class SoilConfig {
                     new ConfigurableBiome("minecraft:sky")
             ),ConfigurableBiome::new);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("开启水下落的预保护机制，通过在区块生成的时候检测竖直方向上可能被水流入的地方，并自动生成方块阻止水流动，以一定程度上避免诸如海洋生物群系在一生成就漏海的情况。但导致阻止水下落的方块可能在奇怪的地方出现，强迫症不建议开启。\n" +
             "Enable the pre-protection mechanism for water flow by detecting areas vertically susceptible to water inflow during chunk generation and automatically generating blocks to prevent water movement. " +
             "This helps mitigate issues such as water leakage in ocean biomes immediately after generation.")
@@ -117,7 +117,7 @@ public final class SoilConfig {
             new ConfigBoolean(CATEGORY_SOIL_GENERATION, "enablePreProtectionFromWaterFalling",false);
 
     @Config.RequiresMcRestart
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("每个生物群系用于阻止水下落而生成的方块。默认为石头。\n" +
             "The block generated per biome to prevent water from falling. Defaults to stone.")
     public static final ConfigMap<ConfigurableBiome, ConfigurableBlockState> WATER_PROTECTION_BLOCK =
@@ -134,7 +134,7 @@ public final class SoilConfig {
 
     public static final ConfigCategory CATEGORY_SOIL_WATER = CATEGORY_SOIL.getChildCategory("water");
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @GeoConfig.Fixed
     @Config.RequiresMcRestart
     @Config.Comment("各种土壤的最大持水量\nMax water-holding capacity for each soil type.")
@@ -153,7 +153,7 @@ public final class SoilConfig {
                     new ConfigEntry<>(BlockSoilType.CLAY,4)
             ).setKeyClass(BlockSoilType.class).setValueClass(Integer.class);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @GeoConfig.Fixed
     @Config.RequiresMcRestart
     @Config.Comment("地表径流在一次下渗尝试中下渗到指定土壤类型的概率\nProbability of surface runoff infiltrating into the specified soil type per infiltration attempt.")
@@ -171,7 +171,7 @@ public final class SoilConfig {
                     new ConfigEntry<>(BlockSoilType.CLAY,0.1)
             ).setKeyClass(BlockSoilType.class).setValueClass(Double.class);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.RequiresMcRestart
     @GeoConfig.Fixed
     @Config.Comment("大气降雨在一次下渗尝试中下渗到指定土壤类型的概率\nProbability of rainfall infiltrating into the specified soil type per infiltration attempt.")

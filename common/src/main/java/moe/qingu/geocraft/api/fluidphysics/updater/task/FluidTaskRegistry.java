@@ -25,7 +25,7 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.api.fluidphysics.updater.task;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -42,8 +42,8 @@ import java.util.Objects;
 /**
  * @author QGMoe
  */
-public final class FluidTaskManager {
-    private static final HashMap<ResourceLocation,IFluidTask> ID2Tasks = new HashMap<>();
+public final class FluidTaskRegistry {
+    private static final HashMap<ResourceLocation, IFluidTask> ID2Tasks = new HashMap<>();
     private static final IdentityHashMap<IFluidTask,ResourceLocation> Tasks2ID = new IdentityHashMap<>();
     private static final Int2ObjectOpenHashMap<IFluidTask> TaskLookup = new Int2ObjectOpenHashMap<>();
     private static IFluidTask[] ArrTaskLookup = null;
@@ -53,6 +53,8 @@ public final class FluidTaskManager {
     static {
         IDLookup.defaultReturnValue(-1);
     }
+
+    private FluidTaskRegistry(){}
 
     public static void freeze() {
         frozen = true;

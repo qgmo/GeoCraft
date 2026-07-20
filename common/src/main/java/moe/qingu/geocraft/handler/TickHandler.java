@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.handler;
 
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;

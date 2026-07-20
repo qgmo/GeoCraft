@@ -29,9 +29,9 @@ package moe.qingu.geocraft;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidDaemon;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTaskManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.*;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -60,7 +60,7 @@ public class GeoCraft {
     public static final String MODID = "geocraft";
     public static final String NAME = "Geo Craft";
     public static final String VERSION = "0.3.0-alpha.1";
-    @SidedProxy(clientSide = "moe.qingu.geocraft.ClientProxy",serverSide = "moe.qingu.geocraft.CommonProxy")
+    @SuppressWarnings("unused") @SidedProxy(clientSide = "moe.qingu.geocraft.ClientProxy",serverSide = "moe.qingu.geocraft.CommonProxy")
     private static CommonProxy proxy;
     private static Logger logger;
 
@@ -98,7 +98,7 @@ public class GeoCraft {
 
     @EventHandler
     public void onServerAboutToStart(final @Nonnull FMLServerAboutToStartEvent event){
-        FluidTaskManager.freeze();
+        FluidTaskRegistry.freeze();
         final @Nonnull MinecraftServer server = event.getServer();
         final File saveDir = server.isDedicatedServer()? new File(server.getDataDirectory(),server.getFolderName()):
                 new File(server.getDataDirectory(),"saves"+File.separator+server.getFolderName());
@@ -110,7 +110,7 @@ public class GeoCraft {
                 GeoDataFile.CURRENT.setTrash(true);
             }
         }
-        FluidTaskManager.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
+        FluidTaskRegistry.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
     }
 
     @EventHandler

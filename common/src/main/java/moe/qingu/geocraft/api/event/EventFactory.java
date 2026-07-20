@@ -27,6 +27,8 @@
 
 package moe.qingu.geocraft.api.event;
 
+import moe.qingu.geocraft.api.event.fluidphysics.FluidUpdaterManagerEvent;
+import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.player.EntityPlayer;
@@ -68,6 +70,7 @@ import moe.qingu.geocraft.api.setting.GeoAtmosphereSetting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static moe.qingu.geocraft.api.util.AtmosphereUtil.Constants.WATER_MELT_LATENT_HEAT_PER_QUANTA;
 
@@ -87,6 +90,11 @@ public final class EventFactory {
         FillGlassBottleEvent event = new FillGlassBottleOnFluidEvent(player,itemStack,world,rayTraceResult);
         return processOnGlassBottleUseEvent(itemStack,player,event);
     }
+
+    /* -----------------------
+       Atmosphere Events
+       ----------------------- */
+
     public static IBlockState onAtmosphereRainAndSnow(@Nonnull Chunk chunk, @Nonnull IAtmosphereAccessor accessor, @Nonnull Atmosphere atmosphere, @Nonnull BlockPos randPos, double rainPossibility){
         AtmosphereUpdateEvent.RainAndSnow event = new AtmosphereUpdateEvent.RainAndSnow(chunk,atmosphere,accessor,randPos,rainPossibility);
         EVENT_BUS.post(event);
@@ -120,6 +128,45 @@ public final class EventFactory {
         EVENT_BUS.post(event);
         if(event.isCanceled()) return null;
         return event.getSystem();
+    }
+
+    /**
+     * @since 0.2.0
+     * @return 填充的量。若为 -1 则表示事件没有结果
+     */
+    public static int onFillFluidToAtmosphere(@Nonnull Atmosphere atmosphere,@Nonnull IAtmosphereAccessor accessor,@Nonnull final Fluid fluid,final double temp ,int amount, @Nullable final FluidStack stack, @Nonnull final StateOfMatter state,final boolean doFill){
+        AtmosphereAccessEvent.FluidFill event = new AtmosphereAccessEvent.FluidFill(atmosphere, accessor, fluid, stack, amount,temp, state, doFill);
+        if(EVENT_BUS.post(event)) return -1;
+        if(event.hasResult()){
+            switch (event.getResult()){
+                case ALLOW:return event.getFilledAmount();
+                case DENY:return 0;
+                case DEFAULT:
+                default:return -1;
+            }
+        }else return -1;
+    }
+
+    /**
+     * @since 0.2.0
+     * @return 吸取的事件.
+     */
+    @Nullable
+    public static AtmosphereAccessEvent.FluidDrain onDrainedFluidToAtmosphere(@Nonnull Atmosphere atmosphere, @Nonnull IAtmosphereAccessor accessor, @Nonnull final Fluid fluid, int amount,final boolean requireStack, @Nonnull final StateOfMatter state, final boolean doDrain){
+        AtmosphereAccessEvent.FluidDrain event = new AtmosphereAccessEvent.FluidDrain(atmosphere,accessor,fluid,amount,requireStack,state,doDrain);
+        if(EVENT_BUS.post(event)) return null;
+        return event;
+    }
+
+    /* -----------------------
+       FluidPhysics Events
+       ----------------------- */
+
+    @Nullable
+    public static Supplier<FluidUpdaterManager> onFluidUpdaterManagerCreate(@Nonnull final World world){
+        FluidUpdaterManagerEvent.Create event = new FluidUpdaterManagerEvent.Create(world);
+        EVENT_BUS.post(event);
+        return event.hasResult()?event.getCandidate():null;
     }
 
     public static int onHoeUse(final @Nonnull ItemStack stack,final @Nonnull EntityPlayer player,final @Nonnull World worldIn,
@@ -164,34 +211,6 @@ public final class EventFactory {
             }
         }
         return null;
-    }
-
-    /**
-     * @since 0.2.0
-     * @return 填充的量。若为 -1 则表示事件没有结果
-     */
-    public static int onFillFluidToAtmosphere(@Nonnull Atmosphere atmosphere,@Nonnull IAtmosphereAccessor accessor,@Nonnull final Fluid fluid,final double temp ,int amount, @Nullable final FluidStack stack, @Nonnull final StateOfMatter state,final boolean doFill){
-        AtmosphereAccessEvent.FluidFill event = new AtmosphereAccessEvent.FluidFill(atmosphere, accessor, fluid, stack, amount,temp, state, doFill);
-        if(EVENT_BUS.post(event)) return -1;
-        if(event.hasResult()){
-            switch (event.getResult()){
-                case ALLOW:return event.getFilledAmount();
-                case DENY:return 0;
-                case DEFAULT:
-                default:return -1;
-            }
-        }else return -1;
-    }
-
-    /**
-     * @since 0.2.0
-     * @return 吸取的事件.
-     */
-    @Nullable
-    public static AtmosphereAccessEvent.FluidDrain onDrainedFluidToAtmosphere(@Nonnull Atmosphere atmosphere, @Nonnull IAtmosphereAccessor accessor, @Nonnull final Fluid fluid, int amount,final boolean requireStack, @Nonnull final StateOfMatter state, final boolean doDrain){
-        AtmosphereAccessEvent.FluidDrain event = new AtmosphereAccessEvent.FluidDrain(atmosphere,accessor,fluid,amount,requireStack,state,doDrain);
-        if(EVENT_BUS.post(event)) return null;
-        return event;
     }
 
     @Nullable

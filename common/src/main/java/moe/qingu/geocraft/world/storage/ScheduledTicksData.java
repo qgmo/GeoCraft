@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.world.storage;
 
-import moe.qingu.geocraft.capability.SavingScheduledTicksCapability;
+import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTBase;
@@ -117,14 +117,14 @@ public class ScheduledTicksData implements ICapabilitySerializable<NBTTagCompoun
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA;
+        return capability == CapabilityHandler.SCHEDULED_TICKS_DATA;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
         if(hasCapability(capability,facing)){
-            return SavingScheduledTicksCapability.SCHEDULED_TICKS_DATA.cast(this);
+            return CapabilityHandler.SCHEDULED_TICKS_DATA.cast(this);
         }else return null;
     }
 }

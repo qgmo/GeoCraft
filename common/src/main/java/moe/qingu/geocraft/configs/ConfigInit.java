@@ -71,9 +71,10 @@ public final class ConfigInit {
         itemProcessors.put(Config.Comment.class,(item,a)-> item.setComment(String.join("\n",((Config.Comment)a).value())));
         itemProcessors.put(Config.LangKey.class,(item,a) -> item.setTranslationKey(((Config.LangKey)a).value()));
         itemProcessors.put(GeoConfig.Experimental.class,(item,a) -> item.setBeta(true));
-        itemProcessors.put(GeoConfig.Since.class,(item,a) -> {
-            final GeoConfig.Since since = (GeoConfig.Since) a;
-            item.addCommentProperty("自 From","v"+since.value()+" 起 Begin");
+        itemProcessors.put(GeoConfig.Support.class,(item, a) -> {
+            final GeoConfig.Support support = (GeoConfig.Support) a;
+            item.addCommentProperty("自 From","v"+ support.since()+" 起 Begin");
+            if(!support.until().isEmpty()) item.addCommentProperty("至 To","v"+support.until()+" 终 End");
         });
 
         for(final @Nonnull EffectiveMode mode : EffectiveMode.values())

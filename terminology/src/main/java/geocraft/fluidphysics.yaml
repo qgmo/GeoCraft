@@ -143,7 +143,7 @@
   英文: "Fluid Updater"
   出处:
     - "https://www.mcmod.cn/item/904888.html"
-    - 类: moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager
+    - 类: moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager
 
 - 中文: "标准测试"
   英文: "Standard Test"

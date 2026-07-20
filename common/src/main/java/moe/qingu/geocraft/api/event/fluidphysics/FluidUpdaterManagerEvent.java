@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,38 +25,46 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.capability;
+package moe.qingu.geocraft.api.event.fluidphysics;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
- * @since 0.2.0
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class SchedulingTicksCapability {
+public class FluidUpdaterManagerEvent extends Event {
+    private final World world;
 
-    @CapabilityInject(BlockUpdater.class)
-    public static Capability<BlockUpdater> BLOCK_UPDATER = null;
+    public FluidUpdaterManagerEvent(final @Nonnull World world) {
+        this.world = world;
+    }
 
-    public static void register(){
-        CapabilityManager.INSTANCE.register(BlockUpdater.class, new Capability.IStorage<BlockUpdater>() {
-            @Nonnull
-            @Override
-            public NBTBase writeNBT(Capability<BlockUpdater> capability, BlockUpdater instance, EnumFacing side) {
-                return new NBTTagCompound();
-            }
+    @Nonnull
+    public final World getWorld() {
+        return world;
+    }
 
-            @Override
-            public void readNBT(Capability<BlockUpdater> capability, BlockUpdater instance, EnumFacing side, NBTBase nbt) {
-            }
-        },BlockUpdater::new);
+    @HasResult
+    public static class Create extends FluidUpdaterManagerEvent{
+        private Supplier<FluidUpdaterManager> candidate;
+
+        public Create(@Nonnull final World world) {
+            super(world);
+        }
+
+        public final void setCandidate(final Supplier<FluidUpdaterManager> candidate) {
+            this.candidate = candidate;
+        }
+
+        @Nullable
+        public Supplier<FluidUpdaterManager> getCandidate() {
+            return candidate;
+        }
     }
 }

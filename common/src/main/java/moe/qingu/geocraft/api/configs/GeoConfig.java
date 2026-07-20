@@ -68,8 +68,9 @@ public @interface GeoConfig {
      */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    @interface Since{
-        String value();
+    @interface Support {
+        String since();
+        String until() default "";
     }
 
     /**

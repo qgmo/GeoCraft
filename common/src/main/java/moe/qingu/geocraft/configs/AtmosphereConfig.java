@@ -52,10 +52,10 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public final class AtmosphereConfig {
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     public static final ConfigCategory CATEGORY_ATMOSPHERE = new ConfigCategory("atmosphere");
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("开启详细的大气日志记录\nEnable detailed atmosphere logging.")
     @Config.LangKey("geocraft.config.comment.atmosphere.enable_detailed_logging")
     public static final ConfigBoolean ENABLE_DETAIL_LOGGING = new ConfigBoolean(CATEGORY_ATMOSPHERE,"enableDetailLogging", false){
@@ -75,11 +75,11 @@ public final class AtmosphereConfig {
     @Config.RangeInt(min = 1)
     @Config.Comment("[自 0.2.0-beta.1 开始弃用]大气加载的最大距离，单位为区块。\n" +
             "The max loaded distance for Atmosphere, measured in chunks.")
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Deprecated
     public static final ConfigInteger ATMOSPHERE_MAX_LOAD_DISTANCE = new ConfigInteger(CATEGORY_ATMOSPHERE,"maxLoadDistance",100);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("配置每个维度使用的大气系统。注意，切换大气系统后原大气系统的数据可能丢失，建议提前备份。\n" +
             "Configure the atmosphere system for each dimension. ATTENTION: Changing of atmosphere system may cause data loss on old atmosphere system, and a backup is recommended.\n")
     @GeoConfig.KeyComment("维度ID Dimension ID")
@@ -128,7 +128,7 @@ public final class AtmosphereConfig {
                 }
     }.setKeyClass(Integer.class).setValueClass(AtmosphereSystemInfo.class);
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("方块每1立方分米的热容，默认为2000，单位为FE/(dm^3·K),可以用 比热容*密度/1000 计算(国际标准单位)\n" +
             "Volumetric heat capacity per cubic decimeter of a block, default 2000, in FE/(dm^3·K). Can be calculated as specificHeatCapacity * density / 1000 (SI units).")
     @Config.RequiresMcRestart
@@ -275,7 +275,7 @@ public final class AtmosphereConfig {
                 }
             };
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("下垫面方块的反射率，默认为12%，单位为%\nUnderlying surface block reflectivity (albedo), default 12%, in percent.")
     @Config.RequiresMcRestart
     public static final ConfigMap<ConfigurableBlockState,Integer> UNDERLYING_REFLECTIVITY =
@@ -444,13 +444,13 @@ public final class AtmosphereConfig {
                 }
             };
 
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("是否允许炼药锅接无限量的水，即在接水时不会消耗大气水\n" +
             "Whether to allow cauldrons to receive unlimited water, i.e. collecting water does not consume atmospheric moisture.")
     public static final ConfigBoolean ALLOW_CAULDRON_GET_INFINITE_WATER = new ConfigBoolean(CATEGORY_ATMOSPHERE,"allowCauldronGetInfiniteWater", false);
 
     @Config.RangeInt(min = 2)
-    @GeoConfig.Since("0.1")
+    @GeoConfig.Support(since = "0.1")
     @Config.Comment("大气重新计算下垫面性质的间隔时间，单位为大气刻\n" +
             "Interval for the atmosphere to recalculate underlying surface properties, in atmosphere ticks.")
     public static final ConfigInteger ATMOSPHERE_UNDERLYING_RECALCULATE_GAP = new ConfigInteger(CATEGORY_ATMOSPHERE, "atmosphereUnderlyingRecalculateGap",400){

@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.shorts.ShortOpenHashSet;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 
 import javax.annotation.Nonnull;
 import java.util.function.IntConsumer;
@@ -81,7 +82,7 @@ public class LinearFluidTaskQueue extends FluidTaskQueue{
                 final int taskX = (task >>> 4) & 0xF;
                 final int taskZ = task & 0xF;
                 final int taskID = (task >>> 8) & 0xFFFF;
-                consumer.consume(taskX,taskY,taskZ, FluidTaskManager.getTaskByID(taskID));
+                consumer.consume(taskX,taskY,taskZ, FluidTaskRegistry.getTaskByID(taskID));
             }
             return list.size();
         }finally {

@@ -165,6 +165,7 @@ public final class RegistryHandler {
 
     public static void registerEventHandler(){
         EventFactory.EVENT_BUS.register(AtmosphereEventHandler.class);
+        EventFactory.EVENT_BUS.register(FluidPhysicsEventHandler.class);
         if(SoilSystem.getStatus()) MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
         final @Nonnull FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
         switch (mode){

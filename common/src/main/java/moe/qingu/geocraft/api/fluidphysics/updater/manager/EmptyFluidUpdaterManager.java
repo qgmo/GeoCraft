@@ -25,13 +25,26 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.api.fluidphysics.updater.manager;
 
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.fluids.Fluid;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public abstract class FluidTaskConsumer {
-    public abstract void consume(final int x,final int y,final int z,final IFluidTask task);
+public final class EmptyFluidUpdaterManager extends FluidUpdaterManager{
+    public EmptyFluidUpdaterManager(@Nonnull final World world) {
+        super(world);
+    }
+
+    @Override
+    public void schedule(@Nonnull final BlockPos pos, @Nonnull final IFluidTask task, @Nonnull final Fluid fluid) {}
+
+    @Override
+    public void update() {}
 }

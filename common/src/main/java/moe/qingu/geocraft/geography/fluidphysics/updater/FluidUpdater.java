@@ -29,11 +29,14 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskAcceptor;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
-import moe.qingu.geocraft.capability.FluidUpdaterCapability;
+import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
@@ -84,11 +87,11 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public int update(final @Nonnull World world, final @Nonnull MBlockPos container, final int chunkX,final int chunkZ){
+    public int update(final @Nonnull MBlockPos container, final @Nonnull Chunk chunk){
         lock.lock();
         try {
             int count = 0;
-            consumer.setChunk(world.getChunk(chunkX,chunkZ));
+            consumer.setChunk(chunk);
             consumer.setPosContainer(container);
             consumer.setFlip(false);
             if(queueHeavy != null) count += queueHeavy.forNext(consumer);
@@ -174,13 +177,13 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == FluidUpdaterCapability.FLUID_UPDATER;
+        return capability == CapabilityHandler.FLUID_UPDATER;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == FluidUpdaterCapability.FLUID_UPDATER?FluidUpdaterCapability.FLUID_UPDATER.cast(this):null;
+        return capability == CapabilityHandler.FLUID_UPDATER? CapabilityHandler.FLUID_UPDATER.cast(this):null;
     }
 
     @Nonnull
@@ -203,7 +206,7 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
 
     protected static boolean isValidTask(final int task){
         final int id = (task>>8) & 0xFFFF;
-        return FluidTaskManager.getTaskByID(id) != null;
+        return FluidTaskRegistry.getTaskByID(id) != null;
     }
 
     protected static final class Consumer extends FluidTaskConsumer{

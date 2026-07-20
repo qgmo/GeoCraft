@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.world;
 
+import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
@@ -43,7 +44,6 @@ import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.capability.SchedulingTicksCapability;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.util.math.MathUtil;
 import moe.qingu.geocraft.util.misc.ExtendedNextTickListEntry;
@@ -69,8 +69,8 @@ import static moe.qingu.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER;
 @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
 public class BlockUpdater implements ICapabilityProvider {
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"block_updater");
-    private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(SchedulingTicksCapability.BLOCK_UPDATER,null)?
-            w.getCapability(SchedulingTicksCapability.BLOCK_UPDATER,null):null;
+    private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(CapabilityHandler.BLOCK_UPDATER,null)?
+            w.getCapability(CapabilityHandler.BLOCK_UPDATER,null):null;
     private static final Comparator<ExtendedNextTickListEntry> compareByDistanceToPlayer =
             Comparator.comparingDouble(ExtendedNextTickListEntry::getDisSqToNearestPlayer);
     static final int MAX_UPDATE_NUM = BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
@@ -352,14 +352,14 @@ public class BlockUpdater implements ICapabilityProvider {
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == SchedulingTicksCapability.BLOCK_UPDATER;
+        return capability == CapabilityHandler.BLOCK_UPDATER;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
         if(hasCapability(capability,facing)){
-            return SchedulingTicksCapability.BLOCK_UPDATER.cast(this);
+            return CapabilityHandler.BLOCK_UPDATER.cast(this);
         }return null;
     }
 }

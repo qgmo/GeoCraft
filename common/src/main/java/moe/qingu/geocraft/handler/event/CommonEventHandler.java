@@ -27,16 +27,12 @@
 
 package moe.qingu.geocraft.handler.event;
 
-import moe.qingu.geocraft.capability.FluidUpdaterCapability;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
-import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.api.fluidphysics.updater.manager.FluidUpdaterManager;
 import net.minecraft.block.Block;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -68,37 +64,16 @@ public final class CommonEventHandler {
         final BlockUpdater updater = new BlockUpdater();
         updater.setWorld(event.getObject());
         event.addCapability(BlockUpdater.ID, updater);
-        event.addCapability(FluidUpdaterManager.ID,new FluidUpdaterManager(event.getObject()));
+        FluidPhysicsEventHandler.onWorldAttachCapabilities(event,event.getObject());
     }
 
     @SubscribeEvent
+    @SuppressWarnings("ConstantValue")
     public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event){
         final @Nullable World world = event.getObject().getWorld(); //??? 为什么在逻辑客户端这会是null
         if(world == null || world.isRemote) return;
         event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData().setChunk(event.getObject()));
-        event.addCapability(FluidUpdater.ID, new FluidUpdater());
-    }
-
-    @SubscribeEvent
-    public static void onChunkLoad(final @Nonnull ChunkEvent.Load event){
-        final Chunk chunk = event.getChunk();
-        final FluidUpdater updater = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null);
-        if(updater == null || !updater.hasLeft()) return;
-        final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
-        if(manager == null || manager.getWorld() != event.getWorld()) return;
-        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        manager.getUpdaters().put(pos,updater);
-        manager.getSchedules().add(pos);
-    }
-
-    @SubscribeEvent
-    public static void onChunkUnload(final @Nonnull ChunkEvent.Unload event){
-        final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
-        if(manager == null || manager.getWorld() != event.getWorld()) return;
-        final Chunk chunk = event.getChunk();
-        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        manager.getSchedules().remove(pos);
-        manager.getUpdaters().remove(pos);
+        FluidPhysicsEventHandler.onChunkAttachCapabilities(event,world);
     }
 
     @SubscribeEvent
