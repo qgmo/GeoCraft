@@ -82,7 +82,7 @@ subprojects {
 
 idea {
     module {
-        inheritOutputDirs = true
+        inheritOutputDirs = false // 不要用 IDEA 自带构建
     }
     project {
         settings {

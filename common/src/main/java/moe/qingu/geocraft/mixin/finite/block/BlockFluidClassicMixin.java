@@ -30,6 +30,8 @@ package moe.qingu.geocraft.mixin.finite.block;
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTaskAcceptor;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -57,7 +59,7 @@ import java.util.Random;
  * @author QiguaiAAAA
  */
 @Mixin(value = BlockFluidClassic.class)
-public abstract class BlockFluidClassicMixin extends BlockFluidBase{
+public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IFluidTaskAcceptor {
 
     @Unique
     private Fluid 天圆地方$FINITE$fluid;
@@ -66,9 +68,6 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase{
         super(fluid, material, mapColor);
     }
 
-    /**
-     * @author QGMoe
-     */
     @Inject(method = "Lnet/minecraftforge/fluids/BlockFluidClassic;<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
             at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Fluid fluid,final @Nonnull Material material,final @Nonnull MapColor color,final @Nonnull CallbackInfo ci) {
@@ -175,5 +174,12 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase{
                                 @Nonnull final Block neighborBlock,
                                 @Nonnull final BlockPos neighbourPos) {
         MiscUtil.scheduleFluidBlockUpdate(world,pos,this,tickRate);
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public boolean accepts(@Nonnull final IFluidTask task) {
+        return GeoFluidSetting.isFluidToBePhysical(天圆地方$FINITE$fluid);
     }
 }

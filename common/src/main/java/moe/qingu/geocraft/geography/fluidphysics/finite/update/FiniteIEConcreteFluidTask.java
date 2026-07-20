@@ -53,7 +53,6 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
     public FiniteIEConcreteFluidTask(){
         this.block = IEContent.blockFluidConcrete;
         this.flowing = IE_CONCRETE_FLOWING_UPDATER;
-        FiniteFluidClassicFluidTask.disallowFor(IEContent.blockFluidConcrete);
     }
 
     @Override

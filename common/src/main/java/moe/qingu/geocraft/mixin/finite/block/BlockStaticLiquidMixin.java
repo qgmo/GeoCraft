@@ -88,9 +88,12 @@ public class BlockStaticLiquidMixin extends BlockLiquid implements ILayeredFluid
                            @Nonnull final BlockPos pos,
                            @Nonnull final IBlockState state,
                            @Nonnull final Random random) {
-        天圆地方$curRandomTick.set(Boolean.TRUE);
-        super.randomTick(worldIn, pos, state, random);
-        天圆地方$curRandomTick.set(Boolean.FALSE);
+        try {
+            天圆地方$curRandomTick.set(Boolean.TRUE);
+            super.randomTick(worldIn, pos, state, random);
+        }finally {
+            天圆地方$curRandomTick.set(Boolean.FALSE);
+        }
     }
 
     @Inject(method = "neighborChanged",at =@At("HEAD"),cancellable = true)

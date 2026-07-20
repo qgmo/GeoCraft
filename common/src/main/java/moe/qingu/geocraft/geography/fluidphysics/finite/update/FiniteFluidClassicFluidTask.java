@@ -27,7 +27,6 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.update;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import moe.qingu.geocraft.api.util.LayeredFluidHostUtil;
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowings;
 import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
@@ -67,7 +66,6 @@ import static moe.qingu.geocraft.configs.FluidPhysicsConfig.slopeModeForModsWhen
 @ThreadOnly(ThreadType.MINECRAFT_SERVER)
 @NotThreadSafe
 public class FiniteFluidClassicFluidTask implements IFluidTask {
-    private static final ObjectOpenHashSet<BlockFluidClassic> DISALLOWS = new ObjectOpenHashSet<>();
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) List<OldFlowChoice> averageFlowChoices = new ArrayList<>(5);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) Set<EnumFacing> slopeFlowableDirections = EnumSet.noneOf(EnumFacing.class);
     private static final @ThreadOnly(ThreadType.MINECRAFT_SERVER) EnumFacing[] slopeFlowDirectionsArr = new EnumFacing[4];
@@ -81,18 +79,6 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
     // prepare area
     protected BlockFluidClassic block;
     protected FiniteFlowingClassic flowing;
-
-    static {
-        DISALLOWS.add(null);
-    }
-
-    /**
-     * 不允许通用模组流体任务应用到某个流体方块上
-     * @param block 指定的方块
-     */
-    public static void disallowFor(final @Nonnull BlockFluidClassic block){
-        DISALLOWS.add(block);
-    }
 
     @Override
     public final void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {
@@ -238,8 +224,7 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
 
     @Override
     public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
-        final Block b = state.getBlock();
-        return b instanceof BlockFluidClassic && !DISALLOWS.contains(b);
+        return state.getBlock() instanceof BlockFluidClassic;
     }
 
     protected boolean tryPressureFlow(final @Nonnull IBlockState state, final int tickRate){

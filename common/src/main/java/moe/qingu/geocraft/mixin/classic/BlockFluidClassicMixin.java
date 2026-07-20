@@ -27,9 +27,13 @@
 
 package moe.qingu.geocraft.mixin.classic;
 
+import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTaskAcceptor;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
@@ -62,9 +66,8 @@ import java.util.*;
 
 import static moe.qingu.geocraft.configs.FluidPhysicsConfig.*;
 
-@SuppressWarnings("ReferenceToMixin")
 @Mixin(value = BlockFluidClassic.class)
-public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IClassicBlock {
+public abstract class BlockFluidClassicMixin extends BlockFluidBase implements IClassicBlock, IFluidTaskAcceptor {
     @Final
     @Shadow(remap = false)
     protected static final List<EnumFacing> SIDES = Collections.unmodifiableList(Arrays.asList(
@@ -72,8 +75,17 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     @Shadow(remap = false)
     protected boolean canCreateSources;
 
+    @Unique
+    private Fluid 天圆地方$CLASSIC$fluid;
+
     public BlockFluidClassicMixin(final Fluid fluid, final Material material) {
         super(fluid, material);
+    }
+
+    @Inject(method = "Lnet/minecraftforge/fluids/BlockFluidClassic;<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
+            at = @At("TAIL"))
+    private void 天圆地方$FINITE$init(final @Nonnull Fluid fluid, final @Nonnull Material material, final @Nonnull MapColor color, final @Nonnull CallbackInfo ci) {
+        DeferredActions.onPostInit(() -> this.天圆地方$CLASSIC$fluid = this.getFluid());
     }
 
     /**
@@ -86,13 +98,13 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                                     @Nonnull final IBlockState state,
                                     @Nonnull final Random rand,
                                     @Nonnull final CallbackInfo ci) {
-        if(!GeoFluidSetting.isFluidToBePhysical(this.getFluid())) return;
+        if(!GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$fluid)) return;
         ci.cancel();
         if(world.isRemote) return;
         if(!GeoFluidSetting.hasGravity(world)){
             return;
         }
-        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASK,this.getFluid());
+        FluidUpdaterManager.schedule(world,pos, FluidTasks.CLASSIC_TASK,天圆地方$CLASSIC$fluid);
     }
 
     @Override
@@ -112,7 +124,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         boolean canMoveSourceDown = this.天圆地方$canMoveInto(world, downPos);
         if(canMoveSourceDown){
             if (!sourcePosOption.isPresent())
-                sourcePosOption = FluidSearchUtil.findSource(world,pos,this.getFluid(),false,false,
+                sourcePosOption = FluidSearchUtil.findSource(world,pos,天圆地方$CLASSIC$fluid,false,false,
                         findSourceMaxIterationsWhenVerticalFlowing.getValue(),
                         findSourceMaxSameLevelIterationsWhenVerticalFlowing.getValue());
             if(sourcePosOption.isPresent()){
@@ -120,7 +132,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                 if(sourcePosOption.get() == pos) return;
             }
         }else if(quantaRemaining == quantaPerBlock-1){
-            sourcePosOption = FluidSearchUtil.findSource(world,pos,this.getFluid(),true,false,
+            sourcePosOption = FluidSearchUtil.findSource(world,pos,天圆地方$CLASSIC$fluid,true,false,
                     findSourceMaxIterationsWhenHorizontalFlowing.getValue(),
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
@@ -198,7 +210,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
     private boolean 天圆地方$canMoveInto(World worldIn, BlockPos pos){
         IBlockState state = worldIn.getBlockState(pos);
         if(FluidUtil.isFluid(state)){
-            if(FluidUtil.getFluid(state) != this.getFluid()) return false;
+            if(FluidUtil.getFluid(state) != 天圆地方$CLASSIC$fluid) return false;
             return state.getValue(LEVEL) != 0;
         }
         return this.canDisplace(worldIn,pos);
@@ -206,9 +218,16 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
 
     @Unique
     private boolean 天圆地方$isSameFluidUnder(World worldIn, BlockPos pos){
-        Fluid thisFluid = this.getFluid();
+        Fluid thisFluid = 天圆地方$CLASSIC$fluid;
         Fluid underFluid = FluidUtil.getFluid(worldIn.getBlockState(pos));
         return thisFluid == underFluid;
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public boolean accepts(@Nonnull final IFluidTask task) {
+        return GeoFluidSetting.isFluidToBePhysical(天圆地方$CLASSIC$fluid);
     }
 
     @Shadow(remap = false)

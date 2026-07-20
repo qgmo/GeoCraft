@@ -66,9 +66,6 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements ILayeredFlui
         super(materialIn);
     }
 
-    /**
-     * @author QGMoe
-     */
     @Inject(method = "<init>",at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Material material,final @Nonnull CallbackInfo ci) {
         DeferredActions.onInit(() -> {

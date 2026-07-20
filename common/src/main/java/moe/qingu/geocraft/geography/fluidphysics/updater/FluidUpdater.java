@@ -34,6 +34,7 @@ import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.capability.FluidUpdaterCapability;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagIntArray;
@@ -236,8 +237,17 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
             if(storage != Chunk.NULL_BLOCK_STORAGE){
                 final IBlockState state = storage.get(x,y & 0xF,z);
                 final World world = chunk.getWorld();
-                if(!task.accepts(world,state)) return;
-                posContainer.setPos((chunk.x<<4)+x,y,(chunk.z<<4)+z);
+                try {
+                    if (!task.accepts(world, state)) return;
+                    final Block block = state.getBlock();
+                    if (block instanceof IFluidTaskAcceptor && !((IFluidTaskAcceptor) block).accepts(task)) return;
+                    posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
+                }catch (final Throwable t){
+                    final Logger logger = GeoCraft.getLogger();
+                    logger.warn("When preparing update fluid {} at {} in world {},",state,posContainer,world.provider.getDimension());
+                    logger.warn("FluidUpdater caught an error:",t);
+                    return;
+                }
                 try {
                     task.onUpdate(world,state,posContainer,world.rand);
                 } catch (final Throwable t) {

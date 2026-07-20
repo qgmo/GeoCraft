@@ -29,7 +29,6 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
@@ -96,9 +95,10 @@ public class FluidUpdaterManager implements ICapabilityProvider {
     public void update(){
         final long beginTime = System.nanoTime(),maxTime = FluidPhysicsConfig.FLUID_UPDATER_MAX_TIME_USAGE.getValue();
         temp = schedules.toLongArray(temp);
+        final int size = schedules.size();
         int count = 0;
         int i = 0;
-        while (count < maxUpdateNum && i < temp.length){
+        while (count < maxUpdateNum && i < size){
             final long pos = temp[i];
             final FluidUpdater updater = updaters.get(pos);
             if(updater == null) {

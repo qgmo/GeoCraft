@@ -28,6 +28,7 @@
 package moe.qingu.geocraft.handler;
 
 import com.google.common.collect.Sets;
+import moe.qingu.geocraft.api.util.ModIDs;
 import moe.qingu.geocraft.compat.GeoCompatInfo;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
@@ -45,7 +46,7 @@ public final class MixinHandler {
     public static final Set<GeoCompatInfo> COMPATS_UNDER_FINITE = Collections.unmodifiableSet(Sets.newHashSet(
             new GeoCompatInfo("ic2",null, "mixins/compat/ic2/mixins.orbtellus.finite.json")
                     .enableIf(FluidPhysicsConfig.enableSupportForIC2::getValue),
-            new GeoCompatInfo("immersiveengineering",null, "mixins/compat/immersiveengineering/mixins.geocraft_finite.json")
+            new GeoCompatInfo(ModIDs.IMMERSIVE_ENGINEERING,null, "mixins/compat/immersiveengineering/mixins.geocraft_finite.json")
                     .enableIf(FluidPhysicsConfig.enableSupportForIE::getValue),
             new GeoCompatInfo("toughasnails",
                     "moe.qingu.geocraft.compat.toughasnails.TANCompat",

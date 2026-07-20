@@ -31,22 +31,26 @@ import blusunrize.immersiveengineering.common.blocks.BlockIEFluid;
 import blusunrize.immersiveengineering.common.blocks.BlockIEFluidConcrete;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidTasks;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTask;
+import moe.qingu.geocraft.geography.fluidphysics.updater.IFluidTaskAcceptor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.geography.fluidphysics.finite.update.FiniteIEConcreteFluidTask;
 
+import javax.annotation.Nonnull;
 import java.util.Random;
 
 @Mixin(value = BlockIEFluidConcrete.class,remap = false)
-public class BlockIEFluidConcreteMixin extends BlockIEFluid {
+public class BlockIEFluidConcreteMixin extends BlockIEFluid implements IFluidTaskAcceptor {
 
     public BlockIEFluidConcreteMixin(String name, Fluid fluid, Material material) {
         super(name, fluid, material);
@@ -58,5 +62,12 @@ public class BlockIEFluidConcreteMixin extends BlockIEFluid {
         ci.cancel();
         if(world.isRemote) return;
         FluidUpdaterManager.schedule(world,pos, FluidTasks.IE_CONCRETE_TASK, FiniteIEConcreteFluidTask.IE_CONCRETE_FLOWING_UPDATER.fluid);
+    }
+
+    @Override
+    @Unique
+    @SuppressWarnings("AddedMixinMembersNamePattern")
+    public boolean accepts(@Nonnull final IFluidTask task) {
+        return task == FluidTasks.IE_CONCRETE_TASK;
     }
 }

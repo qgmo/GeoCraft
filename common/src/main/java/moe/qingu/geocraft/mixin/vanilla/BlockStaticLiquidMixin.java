@@ -68,9 +68,12 @@ public class BlockStaticLiquidMixin extends BlockLiquid{
 
     @Override
     public void randomTick(@Nonnull World worldIn, @Nonnull BlockPos pos, @Nonnull IBlockState state, @Nonnull Random random) {
-        天圆地方$curRandomTick = true;
-        super.randomTick(worldIn, pos, state, random);
-        天圆地方$curRandomTick = false;
+        try {
+            天圆地方$curRandomTick = true;
+            super.randomTick(worldIn, pos, state, random);
+        }finally {
+            天圆地方$curRandomTick = false;
+        }
     }
 
     @Inject(method = "updateTick",at = @At("RETURN"))
