@@ -92,7 +92,7 @@ public final class FluidDaemon implements Runnable {
         for(final WorldServer world : server.worlds){
             final FluidUpdaterManager manager;
             try {
-                 manager = FluidUpdaterManager.getManager(world);
+                 manager = FluidUpdaterManager.getManagers().get(world.provider.getDimension());
             }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
                 continue;
             }

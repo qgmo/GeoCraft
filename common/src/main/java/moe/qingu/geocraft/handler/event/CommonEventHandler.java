@@ -75,7 +75,7 @@ public final class CommonEventHandler {
     public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event){
         final @Nullable World world = event.getObject().getWorld(); //??? 为什么在逻辑客户端这会是null
         if(world == null || world.isRemote) return;
-        event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData());
+        event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData().setChunk(event.getObject()));
         event.addCapability(FluidUpdater.ID, new FluidUpdater());
     }
 

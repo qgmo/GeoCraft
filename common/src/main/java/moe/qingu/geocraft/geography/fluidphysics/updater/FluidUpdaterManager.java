@@ -99,17 +99,21 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         int count = 0;
         int i = 0;
         while (count < maxUpdateNum && i < size){
-            final long pos = temp[i];
+            final long pos = temp[i++];
             final FluidUpdater updater = updaters.get(pos);
             if(updater == null) {
                 schedules.remove(pos);
                 continue;
             }
-            final int x = (int) (pos>>Integer.SIZE);
-            final int z = (int) pos;
-            int cot;
-            do cot = updater.update(world,posContainer,x,z);
-            while (updater.hasLeft() && (count += cot) < maxUpdateNum);
+            final int z = (int) (pos>>Integer.SIZE);
+            final int x = (int) pos;
+            int cot = 0;
+            do {
+                final int n = updater.update(world,posContainer,x,z);
+                count += n;
+                cot += n;
+            }
+            while (updater.hasLeft() && count < maxUpdateNum);
             if(cot != 0 && updater.markDirty()) dirties.add(updater);
             if(!updater.hasLeft()) schedules.remove(pos);
             if(System.nanoTime() - beginTime > maxTime) break;

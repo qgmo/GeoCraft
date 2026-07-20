@@ -40,7 +40,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.INBTSerializable;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.util.misc.ExtendedNextTickListEntry;
 import moe.qingu.geocraft.world.BlockUpdater;
