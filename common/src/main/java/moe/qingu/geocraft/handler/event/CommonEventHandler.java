@@ -31,6 +31,7 @@ import moe.qingu.geocraft.capability.FluidUpdaterCapability;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdater;
 import moe.qingu.geocraft.geography.fluidphysics.updater.FluidUpdaterManager;
 import net.minecraft.block.Block;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -85,7 +86,7 @@ public final class CommonEventHandler {
         if(updater == null || !updater.hasLeft()) return;
         final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
         if(manager == null || manager.getWorld() != event.getWorld()) return;
-        final long pos = (long) event.getChunk().x << Integer.SIZE | event.getChunk().z;
+        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
         manager.getUpdaters().put(pos,updater);
         manager.getSchedules().add(pos);
     }
@@ -94,7 +95,8 @@ public final class CommonEventHandler {
     public static void onChunkUnload(final @Nonnull ChunkEvent.Unload event){
         final FluidUpdaterManager manager = FluidUpdaterManager.getManager(event.getWorld());
         if(manager == null || manager.getWorld() != event.getWorld()) return;
-        final long pos = (long) event.getChunk().x << Integer.SIZE | event.getChunk().z;
+        final Chunk chunk = event.getChunk();
+        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
         manager.getSchedules().remove(pos);
         manager.getUpdaters().remove(pos);
     }

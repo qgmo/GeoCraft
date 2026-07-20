@@ -102,11 +102,12 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean isScheduled(final int chunkX,final int chunkY,final int chunkZ){
-        return this.queueHeavy.contains(chunkX, chunkY, chunkZ) || this.queueLight.contains(chunkX,chunkY,chunkZ);
+        return this.queueHeavy != null && this.queueHeavy.contains(chunkX, chunkY, chunkZ)
+                || this.queueLight != null && this.queueLight.contains(chunkX,255-chunkY,chunkZ);
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void scheduleHeavy(final int chunkX, final int chunkY, final int chunkZ, final short taskID){
+    public void scheduleHeavy(final int chunkX, final int chunkY, final int chunkZ, final int taskID){
         lock.lock();
         try {
             if(this.queueHeavy == null) this.queueHeavy = new LinearFluidTaskQueue();
@@ -118,7 +119,7 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void scheduleLight(final int chunkX,final int chunkY,final int chunkZ,final short taskID){
+    public void scheduleLight(final int chunkX,final int chunkY,final int chunkZ,final int taskID){
         lock.lock();
         try {
             if(this.queueLight == null) this.queueLight = new LinearFluidTaskQueue();
@@ -247,7 +248,7 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
                         task.onFailure(world,state,posContainer,world.rand);
                     }catch (final Throwable t2){
                         logger.error("When restoring failure of fluid {} at {} in world {},",state,posContainer,world.provider.getDimension());
-                        logger.error("FluidUpdateManager caught an error:",t2);
+                        logger.error("FluidUpdater caught an error:",t2);
                     }
                 }
             }

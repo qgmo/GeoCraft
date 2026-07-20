@@ -60,10 +60,10 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
     protected void prepare(@Nonnull final IBlockState state) {}
 
     @Override
-    protected void flow(@Nonnull IBlockState state) {
-        final int meta = state.getValue(LEVEL);
+    protected void flow(@Nonnull final IBlockState oldState) {
+        final int meta = oldState.getValue(LEVEL);
         final int quanta = IE_CONCRETE_FLOWING_UPDATER.quantaPerBlock-meta;
-        final int timer = state.getValue(IEProperties.INT_16);
+        final int timer = oldState.getValue(IEProperties.INT_16);
 
         if(timer >= Math.min(14, quanta)) {
             world.setBlockState(pos, getConcretingBlock(meta));
@@ -71,11 +71,11 @@ public final class FiniteIEConcreteFluidTask extends FiniteFluidClassicFluidTask
                 living.addPotionEffect(new PotionEffect(IEPotions.concreteFeet, Integer.MAX_VALUE));
             return;
         } else {
-            state = state.withProperty(IEProperties.INT_16, Math.min(15, timer+1));
+            final IBlockState state = oldState.withProperty(IEProperties.INT_16, Math.min(15, timer+1));
             world.setBlockState(pos, state);
         }
 
-        super.flow(state);
+        super.flow(oldState); //流动的混凝土不容易凝固
     }
 
     @Override

@@ -49,7 +49,7 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
     }
 
     @Override
-    public void queue(final int cx, final int cy, final int cz, final short taskID) {
+    public void queue(final int cx, final int cy, final int cz, final int taskID) {
         if(layers[cy] == null) layers[cy] = new IntArrayList();
         bitmap[cy >>>6] |= 1L<<(cy & 0_77);
         final int xz = cx <<4 | cz;

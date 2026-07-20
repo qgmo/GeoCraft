@@ -61,7 +61,7 @@ public final class FluidDaemon implements Runnable {
             try {
                 thread.join(1000);
             } catch (final @Nonnull InterruptedException e) {
-                throw new RuntimeException(e);
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -90,7 +90,12 @@ public final class FluidDaemon implements Runnable {
         final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         if(server == null) return;
         for(final WorldServer world : server.worlds){
-            final FluidUpdaterManager manager = FluidUpdaterManager.getManager(world);
+            final FluidUpdaterManager manager;
+            try {
+                 manager = FluidUpdaterManager.getManager(world);
+            }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
+                continue;
+            }
             if(manager == null) continue;
             final ConcurrentLinkedQueue<FluidUpdater> dirties = manager.getDirties();
             final int size = dirties.size();

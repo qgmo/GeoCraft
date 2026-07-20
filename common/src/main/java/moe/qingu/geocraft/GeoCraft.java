@@ -103,11 +103,12 @@ public class GeoCraft {
         final File saveDir = server.isDedicatedServer()? new File(server.getDataDirectory(),server.getFolderName()):
                 new File(server.getDataDirectory(),"saves"+File.separator+server.getFolderName());
         GeoDataFile.init(saveDir);
-        if(!GeneralConfig.ENABLE_SECURE_CHECK.getValue()) return;
-        try {
-            GeoDataFile.validateEqualization();
-        }catch (final @Nonnull StartupQuery.AbortedException ignored){
-            GeoDataFile.CURRENT.setTrash(true);
+        if(GeneralConfig.ENABLE_SECURE_CHECK.getValue()){
+            try {
+                GeoDataFile.validateEqualization();
+            }catch (final @Nonnull StartupQuery.AbortedException ignored){
+                GeoDataFile.CURRENT.setTrash(true);
+            }
         }
         FluidTaskManager.reloadMapping(GeoDataFile.CURRENT.getFluidTasksMapping());
     }
@@ -126,6 +127,11 @@ public class GeoCraft {
         }
         FluidDaemon.start();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STARTING);
+    }
+
+    @EventHandler
+    public void onServerStarted(final @Nonnull FMLServerStartedEvent event){
+        GeoDataFile.captureCurrentState();
     }
 
     @EventHandler

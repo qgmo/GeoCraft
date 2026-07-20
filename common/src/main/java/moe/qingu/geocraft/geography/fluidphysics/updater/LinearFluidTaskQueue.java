@@ -60,7 +60,7 @@ public class LinearFluidTaskQueue extends FluidTaskQueue{
     }
 
     @Override
-    public void queue(final int cx, final int cy, final int cz, final short taskID) {
+    public void queue(final int cx, final int cy, final int cz, final int taskID) {
         final int task = cy << 24 | taskID << 8 | cx << 4 | cz;
         presence.add((short) (cy <<8 | cx << 4 | cz));
         list.add(task);

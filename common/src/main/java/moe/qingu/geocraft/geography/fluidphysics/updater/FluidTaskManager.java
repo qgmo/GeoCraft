@@ -34,10 +34,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 
 /**
  * @author QGMoe
@@ -46,7 +46,7 @@ public final class FluidTaskManager {
     private static final HashMap<ResourceLocation,IFluidTask> ID2Tasks = new HashMap<>();
     private static final IdentityHashMap<IFluidTask,ResourceLocation> Tasks2ID = new IdentityHashMap<>();
     private static final Int2ObjectOpenHashMap<IFluidTask> TaskLookup = new Int2ObjectOpenHashMap<>();
-    private static ArrayList<IFluidTask> ArrTaskLookup = null;
+    private static IFluidTask[] ArrTaskLookup = null;
     private static final Object2IntMap<IFluidTask> IDLookup = new Object2IntOpenHashMap<>();
     private static boolean frozen = false;
 
@@ -60,7 +60,7 @@ public final class FluidTaskManager {
 
     public static void register(final @Nonnull ResourceLocation location, final @Nonnull IFluidTask task){
         if(frozen) throw new IllegalStateException();
-        ID2Tasks.put(location,task);
+        ID2Tasks.put(location, Objects.requireNonNull(task));
         Tasks2ID.put(task,location);
     }
 
@@ -85,15 +85,17 @@ public final class FluidTaskManager {
             IDLookup.put(task, i);
         }
         maxID = Math.max(maxID,i);
-        if(maxID<16384) ArrTaskLookup = new ArrayList<>(maxID+1);
-        for(final @Nonnull Int2ObjectMap.Entry<IFluidTask> entry:TaskLookup.int2ObjectEntrySet()) ArrTaskLookup.set(entry.getIntKey(),entry.getValue());
-        TaskLookup.clear();
+        if(maxID<16384){
+            ArrTaskLookup = new IFluidTask[maxID+1];
+            for(final @Nonnull Int2ObjectMap.Entry<IFluidTask> entry:TaskLookup.int2ObjectEntrySet()) ArrTaskLookup[entry.getIntKey()] = entry.getValue();
+            TaskLookup.clear();
+        }
     }
 
     @Nonnull
     public static Int2ObjectOpenHashMap<ResourceLocation> getMapping(){
         final Int2ObjectOpenHashMap<ResourceLocation> mapping = new Int2ObjectOpenHashMap<>();
-        for(final @Nonnull Int2ObjectMap.Entry<IFluidTask> entry: TaskLookup.int2ObjectEntrySet()) mapping.put(entry.getIntKey(),Tasks2ID.get(entry.getValue()));
+        for(final @Nonnull Object2IntMap.Entry<IFluidTask> entry: IDLookup.object2IntEntrySet()) mapping.put(entry.getIntValue(),Tasks2ID.get(entry.getKey()));
         return mapping;
     }
 
@@ -106,7 +108,7 @@ public final class FluidTaskManager {
     }
 
     public static IFluidTask getTaskByID(final int id){
-        return ArrTaskLookup == null?TaskLookup.get(id):ArrTaskLookup.get(id);
+        return ArrTaskLookup == null?TaskLookup.get(id):ArrTaskLookup[id];
     }
 
     public static IFluidTask getTaskByName(final @Nonnull ResourceLocation location){

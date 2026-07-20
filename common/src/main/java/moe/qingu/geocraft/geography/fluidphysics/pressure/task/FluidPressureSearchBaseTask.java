@@ -46,7 +46,7 @@ public abstract class FluidPressureSearchBaseTask implements IFluidPressureSearc
     public FluidPressureSearchBaseTask(@Nonnull Fluid fluid, @Nonnull IBlockState beginState, @Nonnull BlockPos beginPos) {
         this.fluid = fluid;
         this.beginState = beginState;
-        this.beginPos = beginPos;
+        this.beginPos = beginPos.toImmutable();
         hashID = ID.getAndIncrement();
     }
 

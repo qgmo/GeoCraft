@@ -41,6 +41,7 @@ import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
@@ -64,6 +65,7 @@ public class FluidUpdaterManager implements ICapabilityProvider {
     private final Long2ObjectOpenHashMap<FluidUpdater> updaters = new Long2ObjectOpenHashMap<>();
     private final ConcurrentLinkedQueue<FluidUpdater> dirties = new ConcurrentLinkedQueue<>();
     private final LongOpenHashSet schedules = new LongOpenHashSet();
+    private long[] temp = new long[0];
 
     public FluidUpdaterManager(final @Nonnull World world) {
         this.world = world;
@@ -82,42 +84,45 @@ public class FluidUpdaterManager implements ICapabilityProvider {
         if(updater.isScheduled(cx,pos.getY(),cz)) return;
         final int taskID = FluidTaskManager.getID(task);
         if(taskID <0 || taskID > 65535) throw new IllegalArgumentException();
-        if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, (short) taskID);
-        else updater.scheduleLight(cx,pos.getY(),cz,(short) taskID);
-        schedules.add((long) chunkX << Integer.SIZE | chunkZ);
+        if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, taskID);
+        else updater.scheduleLight(cx,pos.getY(),cz,taskID);
+        schedules.add(ChunkPos.asLong(chunkX,chunkZ));
         if(!updater.isDirty() && updater.markDirty()){
             dirties.add(updater);
         }
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void update(){
         final long beginTime = System.nanoTime(),maxTime = FluidPhysicsConfig.FLUID_UPDATER_MAX_TIME_USAGE.getValue();
+        temp = schedules.toLongArray(temp);
         int count = 0;
-        final LongIterator iterator = schedules.iterator();
-        while (count < maxUpdateNum){
-            if(!iterator.hasNext()) break;
-            final long pos = iterator.nextLong();
+        int i = 0;
+        while (count < maxUpdateNum && i < temp.length){
+            final long pos = temp[i];
             final FluidUpdater updater = updaters.get(pos);
-            if(updater == null) continue;
+            if(updater == null) {
+                schedules.remove(pos);
+                continue;
+            }
             final int x = (int) (pos>>Integer.SIZE);
             final int z = (int) pos;
             int cot;
-            do{
-                cot = updater.update(world,posContainer,x,z);
-            }while (updater.hasLeft() && (count += cot) < maxUpdateNum);
+            do cot = updater.update(world,posContainer,x,z);
+            while (updater.hasLeft() && (count += cot) < maxUpdateNum);
             if(cot != 0 && updater.markDirty()) dirties.add(updater);
-            if(!updater.hasLeft()) iterator.remove();
+            if(!updater.hasLeft()) schedules.remove(pos);
             if(System.nanoTime() - beginTime > maxTime) break;
         }
     }
 
     @Nullable
     public FluidUpdater getUpdater(final int cx,final int cz){
-        FluidUpdater res = updaters.get((long) cx <<Integer.SIZE|cz);
+        FluidUpdater res = updaters.get(ChunkPos.asLong(cx,cz));
         if(res != null) return res;
         final Chunk chunk = world.getChunk(cx,cz);
         if(chunk.hasCapability(FluidUpdaterCapability.FLUID_UPDATER,null)){
-            updaters.put((long) cx <<Integer.SIZE|cz,res = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null));
+            updaters.put(ChunkPos.asLong(cx,cz),res = chunk.getCapability(FluidUpdaterCapability.FLUID_UPDATER,null));
             return res;
         }else return null;
     }
