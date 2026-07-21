@@ -38,7 +38,7 @@ import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidRegistry;
 import moe.qingu.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.fluid.StateOfMatter;
 import moe.qingu.geocraft.api.property.TemperatureProperty;
 import moe.qingu.geocraft.api.util.AtmosphereUtil;
@@ -165,7 +165,7 @@ public class BlockSnowExtended extends BlockSnow {
             }
             worldIn.setBlockToAir(pos);
         } else {
-            if(FluidPhysicsMode.getCurrentMode() != FluidPhysicsMode.MORE_REALITY){
+            if(FluidPhysicsMode.getCurrentMode() != FluidPhysicsMode.FINITE){
                 worldIn.setBlockToAir(pos);
                 return;
             }

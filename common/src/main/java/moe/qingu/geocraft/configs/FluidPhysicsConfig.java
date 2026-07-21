@@ -39,7 +39,7 @@ import moe.qingu.geocraft.api.configs.item.number.ConfigDouble;
 import moe.qingu.geocraft.api.configs.item.number.ConfigInteger;
 import moe.qingu.geocraft.api.configs.item.number.ConfigLong;
 import moe.qingu.geocraft.api.configs.value.collection.ConfigurableList;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.configs.value.map.entry.ConfigEntry;
 import moe.qingu.geocraft.api.configs.value.minecraft.ConfigurableFluid;
 import moe.qingu.geocraft.api.configs.item.collection.list.ConfigIntegerWeightDistribution;
@@ -93,9 +93,9 @@ public final class FluidPhysicsConfig {
     @Config.RequiresMcRestart
     @GeoConfig.Support(since = "0.1")
     @Config.Comment("设置流体物理模式 Set Fluid Physics Mode.\n" +
-            "支持的模式 Support Values: VANILLA | VANILLA_LIKE | MORE_REALITY （原版 | 类原版 | 更真实一些）")
+            "支持的模式 Support Values: VANILLA | CLASSIC | FINITE （原版 | 经典 | 有限）")
     public static final ConfigCustom<FluidPhysicsMode> FLUID_PHYSICS_MODE =
-            new ConfigCustom<>(CATEGORY_FLUID_PHYSICS,"fluidPhysicsMode", FluidPhysicsMode.MORE_REALITY, FluidPhysicsMode::getInstanceByString);
+            new ConfigCustom<>(CATEGORY_FLUID_PHYSICS,"fluidPhysicsMode", FluidPhysicsMode.FINITE, FluidPhysicsMode::getInstanceByString);
     //********************************
     // Fluid Updater Config
     //********************************
@@ -328,8 +328,8 @@ public final class FluidPhysicsConfig {
 
     @GeoConfig.Support(since = "0.1")
     public static final ConfigCategory CATEGORY_FLUID_PHYSICS_VANILLA_LIKE = CATEGORY_FLUID_PHYSICS.getChildCategory("vanilla_like")
-            .setComment("设置流体物理模式为"+FluidPhysicsMode.VANILLA_LIKE+"时的参数\n" +
-                    "Parameters when fluid physics mode is set to " + FluidPhysicsMode.VANILLA_LIKE);
+            .setComment("设置流体物理模式为"+FluidPhysicsMode.CLASSIC +"时的参数\n" +
+                    "Parameters when fluid physics mode is set to " + FluidPhysicsMode.CLASSIC);
 
     @Config.Ignore
     @GeoConfig.Support(since = "0.1")
@@ -404,8 +404,8 @@ public final class FluidPhysicsConfig {
     //******************************
     @GeoConfig.Support(since = "0.1")
     public static final ConfigCategory CATEGORY_FLUIDPHYSICS_FINITE = CATEGORY_FLUID_PHYSICS.getChildCategory("more_reality")
-            .setComment("设置流体物理模式为"+FluidPhysicsMode.MORE_REALITY+"时的参数\n" +
-                    "Set the parameters when Fluid Physics Mode is "+FluidPhysicsMode.MORE_REALITY);
+            .setComment("设置流体物理模式为"+FluidPhysicsMode.FINITE +"时的参数\n" +
+                    "Set the parameters when Fluid Physics Mode is "+FluidPhysicsMode.FINITE);
 
     // ********************
     // Pressure System
@@ -682,8 +682,8 @@ public final class FluidPhysicsConfig {
     @GeoConfig.Support(since = "0.2.3")
     public static final ConfigBoolean enableSupportForTAN =
             new ConfigBoolean(CATEGORY_FLUID_PHYSICS_COMPAT_TOUGH_AS_NAILS,"ToughAsNailsCompat",true)
-                    .setComment("如果您已安装意志坚定，并启用了该配置项，则天圆地方在使用 "+FluidPhysicsMode.MORE_REALITY+" 流体物理模式时会启用意志坚定的相关兼容。\n" +
-                            "If you have installed Tough As Nails, set this option to true will allow GeoCraft enabling compatibility for Tough As Nails when using fluid physics mode "+FluidPhysicsMode.MORE_REALITY+".");
+                    .setComment("如果您已安装意志坚定，并启用了该配置项，则天圆地方在使用 "+FluidPhysicsMode.FINITE +" 流体物理模式时会启用意志坚定的相关兼容。\n" +
+                            "If you have installed Tough As Nails, set this option to true will allow GeoCraft enabling compatibility for Tough As Nails when using fluid physics mode "+FluidPhysicsMode.FINITE +".");
 
     @GeoConfig.Support(since = "0.2.3")
     @Config.Comment("在右键饮用纯净水液体时，允许一层一层的饮用而非直接全部饮用。此时一层纯净水将提供 3 点水分\n" +

@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 import moe.qingu.geocraft.api.util.ModIDs;
 import moe.qingu.geocraft.compat.GeoCompatInfo;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

@@ -39,7 +39,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.common.StartupQuery;
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.soil.SoilSystem;
 import moe.qingu.geocraft.util.MiscUtil;
 
@@ -132,8 +132,8 @@ public final class GeoDataFile {
         final int val = this.data.getInteger(KEY_FLUID_PHYSICS_MODE);
         if(val >0 && val <= 3){
             return ActionResult.newResult(EnumActionResult.SUCCESS, FluidPhysicsMode.values()[val-1]);
-        }else if(val == 0) return ActionResult.newResult(EnumActionResult.PASS,FluidPhysicsMode.MORE_REALITY);//这里的模式没用
-        else return ActionResult.newResult(EnumActionResult.FAIL,FluidPhysicsMode.MORE_REALITY);//同样没用
+        }else if(val == 0) return ActionResult.newResult(EnumActionResult.PASS,FluidPhysicsMode.FINITE);//这里的模式没用
+        else return ActionResult.newResult(EnumActionResult.FAIL,FluidPhysicsMode.FINITE);//同样没用
     }
 
     @Nonnull

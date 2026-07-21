@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,9 +25,9 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.configs.value.geo;
+package moe.qingu.geocraft.api.fluidphysics;
 
-import moe.qingu.geocraft.api.fluidphysics.IFluidOperationChecker;
+import moe.qingu.nickel.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,20 +37,21 @@ import javax.annotation.Nullable;
  * 只有天圆地方自己的模拟模式
  */
 public enum FluidPhysicsMode {
-    VANILLA,
-    VANILLA_LIKE,
-    MORE_REALITY;
+    VANILLA("原版","原版模式"),
+    CLASSIC("VANILLA_LIKE","VANILLA LIKE","经典","经典模式","經典","經典模式"),
+    FINITE("MORE_REALITY","MORE REALITY","有限","有限模式");
+    private static final FluidPhysicsMode[] MODES = values();
+    private static FluidPhysicsMode CURRENT_MODE = FINITE;
 
-    private static FluidPhysicsMode CURRENT_MODE = MORE_REALITY;
-
+    private final String[] alias;
     private IFluidOperationChecker checker;
 
-    public void setChecker(@Nonnull IFluidOperationChecker checker) {
-        this.checker = checker;
+    FluidPhysicsMode(final @Nonnull String... alias){
+        this.alias = alias;
     }
 
-    public static void setCurrentMode(@Nonnull FluidPhysicsMode currentMode) {
-        CURRENT_MODE = currentMode;
+    public void setChecker(@Nonnull final IFluidOperationChecker checker) {
+        this.checker = checker;
     }
 
     @Nonnull
@@ -63,8 +64,11 @@ public enum FluidPhysicsMode {
         return checker;
     }
 
-    private boolean isStringMatched(@Nullable String s){
-        return toString().equalsIgnoreCase(s);
+    private boolean isStringMatched(@Nullable final String s){
+        if(s == null) return false;
+        if(toString().equalsIgnoreCase(s)) return true;
+        for(final String a:alias) if(a.equalsIgnoreCase(s)) return true;
+        return false;
     }
 
     /**
@@ -72,10 +76,13 @@ public enum FluidPhysicsMode {
      * @param content 字符串
      * @return 模拟模式
      */
-    public static @Nonnull FluidPhysicsMode getInstanceByString(@Nonnull String content) {
-        for(FluidPhysicsMode mode:values()){
-            if(mode.isStringMatched(content.trim())) return mode;
-        }
-        return MORE_REALITY;
+    public static @Nonnull FluidPhysicsMode getInstanceByString(@Nonnull final String content) {
+        final String t = StringUtils.strip(content);
+        for(FluidPhysicsMode mode:MODES) if(mode.isStringMatched(t)) return mode;
+        return FINITE;
+    }
+
+    public static void setCurrentMode(@Nonnull final FluidPhysicsMode currentMode) {
+        CURRENT_MODE = currentMode;
     }
 }

@@ -27,7 +27,7 @@
 
 package 清汩萌.天圆地方.assets;
 
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
 import moe.qingu.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationChecker;
 
@@ -36,8 +36,8 @@ import moe.qingu.geocraft.geography.fluidphysics.vanilla.VanillaFluidOperationCh
  */
 public class FluidPhysicsMocks {
     public static void initFluidPhysicsMode(){
-        FluidPhysicsMode.MORE_REALITY.setChecker(new FiniteFluidOperationChecker());
+        FluidPhysicsMode.FINITE.setChecker(new FiniteFluidOperationChecker());
         FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());
-        FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
+        FluidPhysicsMode.CLASSIC.setChecker(new VanillaFluidOperationChecker());
     }
 }

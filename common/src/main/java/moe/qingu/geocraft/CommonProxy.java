@@ -31,7 +31,7 @@ import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.configs.ConfigInit;
 import moe.qingu.geocraft.configs.ConfigurationLoader;
 import moe.qingu.geocraft.geography.fluidphysics.finite.FiniteFluidOperationChecker;
@@ -76,12 +76,12 @@ public class CommonProxy {
     public void postInit(@Nonnull FMLPostInitializationEvent event) {
         ConfigInit.verifyConfigValidity();
         FluidHandler.initRegisteredFluids();
-        FluidPhysicsMode.VANILLA_LIKE.setChecker(new VanillaFluidOperationChecker());
+        FluidPhysicsMode.CLASSIC.setChecker(new VanillaFluidOperationChecker());
         FluidPhysicsMode.VANILLA.setChecker(new VanillaFluidOperationChecker());
-        FluidPhysicsMode.MORE_REALITY.setChecker(new FiniteFluidOperationChecker());
-        if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.MORE_REALITY){
+        FluidPhysicsMode.FINITE.setChecker(new FiniteFluidOperationChecker());
+        if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.FINITE){
             FiniteEventHandler.onPostInit(event);
-        }else if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.VANILLA_LIKE){
+        }else if(FLUID_PHYSICS_MODE.getValue() == FluidPhysicsMode.CLASSIC){
             ClassicEventHandler.onPostInit(event);
         }
         SoilEventHandler.onPostInit(event);

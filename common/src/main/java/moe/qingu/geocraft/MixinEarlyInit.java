@@ -34,7 +34,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.soil.SoilSystem;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.configs.GeneralConfig;
@@ -63,11 +63,11 @@ public class MixinEarlyInit implements IFMLLoadingPlugin, IEarlyMixinLoader {
                     mixinList.add("mixins/fluidphysics/vanilla/mixins.orbtellus.vanilla.json");
                 break;
             }
-            case VANILLA_LIKE:{
+            case CLASSIC:{
                 mixinList.add("mixins/fluidphysics/classic/mixins.orbtellus.classic.json");
                 break;
             }
-            case MORE_REALITY:
+            case FINITE:
             default:{
                 mixinList.add("mixins/fluidphysics/finite/mixins.orbtellus.finite.json");
                 if(FluidPhysicsConfig.ENABLE_INVALID_LIQUID_STATE_REPORT.getValue()){

@@ -57,7 +57,7 @@ import moe.qingu.geocraft.api.atmosphere.AtmosphereSystemManager;
 import moe.qingu.geocraft.api.atmosphere.accessor.IAtmosphereAccessor;
 import moe.qingu.geocraft.api.block.IBlockStateLayeredFluidHost;
 import moe.qingu.geocraft.api.block.ILayeredFluidHost;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.fluid.StateOfMatter;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
@@ -76,7 +76,7 @@ import java.util.List;
 import java.util.Random;
 
 import static moe.qingu.geocraft.api.block.BlockProperties.HUMIDITY;
-import static moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode.getCurrentMode;
+import static moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode.getCurrentMode;
 import static moe.qingu.geocraft.configs.FluidPhysicsConfig.FLUID_PHYSICS_MODE;
 
 public interface IBlockSoil extends IBlockStateLayeredFluidHost {
@@ -90,7 +90,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
         final BlockPos down = pos.down();
         final IBlockState downState = worldIn.getBlockState(down);
         if(downState.getMaterial() == Material.AIR){
-            if(getCurrentMode() == FluidPhysicsMode.MORE_REALITY)
+            if(getCurrentMode() == FluidPhysicsMode.FINITE)
                 worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), BlockFlags.DEFAULT);
             return -1;
         }else if(LayeredFluidHostUtil.isLayeredFluidHost(downState)){
@@ -100,7 +100,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
             final long filled = host.addAmountInQB(worldIn,down,downState,FluidRegistry.WATER, QBUtil.QUANTA_VOLUME,true);
             return filled>0?-1:0;
         }else if(FiniteFlowings.WATER_FLOW.canFlowDownTo(downState)){
-            if(getCurrentMode() == FluidPhysicsMode.MORE_REALITY) {
+            if(getCurrentMode() == FluidPhysicsMode.FINITE) {
                 FluidOperationUtil.triggerDestroyBlockEffectByFluid(worldIn,down,downState,FluidRegistry.WATER);
                 worldIn.setBlockState(down, Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,7), BlockFlags.DEFAULT);
             }
@@ -155,7 +155,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
                 }
                 BlockPos facingPos = pos.offset(choice.direction);
                 if(choice.isAir()){
-                    if(FLUID_PHYSICS_MODE.getValue() != FluidPhysicsMode.MORE_REALITY) continue;
+                    if(FLUID_PHYSICS_MODE.getValue() != FluidPhysicsMode.FINITE) continue;
                     worldIn.setBlockState(facingPos,Blocks.FLOWING_WATER.getDefaultState().withProperty(BlockLiquid.LEVEL,8-choice.getNewLayers()));
                     continue;
                 }
@@ -243,7 +243,7 @@ public interface IBlockSoil extends IBlockStateLayeredFluidHost {
     default void dropWaterWhenBroken(World world, BlockPos pos, IBlockState state){
         int humidity = getLayers(world,pos,state,FluidRegistry.WATER);
         if(humidity == 0) return;
-        if(getCurrentMode() != FluidPhysicsMode.MORE_REALITY){
+        if(getCurrentMode() != FluidPhysicsMode.FINITE){
             world.spawnParticle(EnumParticleTypes.BLOCK_CRACK,
                     pos.getX()+0.5, pos.getY()+0.5, pos.getZ()+0.5,
                     0, 0, 0, Block.getStateId(Blocks.WATER.getDefaultState()));

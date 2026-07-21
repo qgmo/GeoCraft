@@ -44,4 +44,12 @@ public interface IFluidTaskResponder {
                      final @Nonnull IBlockState state,
                      final @Nonnull IFluidTask task,
                      final @Nonnull FluidTaskCollector collector);
+
+    default void onRefused(final @Nonnull World world,
+                   final @Nonnull BlockPos pos,
+                   final @Nonnull IBlockState state,
+                   final @Nonnull IFluidTask task,
+                   final @Nonnull FluidTaskCollector collector){
+        this.onStaleTask(world, pos, state, task, collector);
+    }
 }

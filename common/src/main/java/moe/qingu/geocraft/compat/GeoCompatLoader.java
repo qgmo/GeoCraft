@@ -31,7 +31,7 @@ import moe.qingu.geocraft.command.BrigoCompat;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.LoaderState;
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.handler.MixinHandler;
 
 import javax.annotation.Nonnull;

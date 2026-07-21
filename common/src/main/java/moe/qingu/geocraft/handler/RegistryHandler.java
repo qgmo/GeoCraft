@@ -33,9 +33,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import moe.qingu.geocraft.block.soil.*;
 import moe.qingu.geocraft.geography.property.*;
 import moe.qingu.geocraft.handler.event.*;
-import moe.qingu.geocraft.block.soil.*;
-import moe.qingu.geocraft.geography.property.*;
-import moe.qingu.geocraft.handler.event.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -44,7 +41,7 @@ import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.registries.IForgeRegistry;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.GeoCraftProperties;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.event.EventFactory;
 import moe.qingu.geocraft.api.property.IGeographyProperty;
 import moe.qingu.geocraft.api.soil.SoilSystem;
@@ -84,7 +81,7 @@ public final class RegistryHandler {
      * @see Block#registerBlocks()
      */
     private static void registerVanillaBlockOverrides(){
-        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSnowFinite():new BlockSnowExtended())
+        registerVanillaBlockOverride("snow_layer",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE ?new BlockSnowFinite():new BlockSnowExtended())
                 .setHardness(0.1F).setTranslationKey("snow").setLightOpacity(0));
         final Block grass;
         final Block dirt;
@@ -99,7 +96,7 @@ public final class RegistryHandler {
             gravel = new BlockSoilGravel();
             grass_path = new BlockSoilGrassPath();
             clay = new BlockSoilClay();
-            registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
+            registerVanillaBlockOverride("farmland",(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE ?new BlockSoilFarmland.MoreReality():new BlockSoilFarmland())
                     .setHardness(0.6F).setTranslationKey("farmland"));
         }else {
             grass = new BlockSoilExtends.Grass();
@@ -169,11 +166,11 @@ public final class RegistryHandler {
         if(SoilSystem.getStatus()) MinecraftForge.EVENT_BUS.register(SoilEventHandler.class);
         final @Nonnull FluidPhysicsMode mode = FluidPhysicsConfig.FLUID_PHYSICS_MODE.getValue();
         switch (mode){
-            case MORE_REALITY:{
+            case FINITE:{
                 registerMoreRealityEventHandler();
                 break;
             }
-            case VANILLA_LIKE:{
+            case CLASSIC:{
                 registerVanillaLikeEventHandler();
                 break;
             }

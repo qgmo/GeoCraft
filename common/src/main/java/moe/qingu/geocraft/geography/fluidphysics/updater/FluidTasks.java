@@ -28,7 +28,7 @@
 package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.ModIDs;
@@ -49,8 +49,8 @@ public final class FluidTasks {
     private FluidTasks(){}
 
     public static void load(){
-        if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY) FiniteFluidTasks.load();
-        else if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.VANILLA_LIKE) ClassicFluidTasks.load();
+        if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE) FiniteFluidTasks.load();
+        else if(FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.CLASSIC) ClassicFluidTasks.load();
         else VanillaFluidTasks.load();
     }
 

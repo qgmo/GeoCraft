@@ -33,6 +33,7 @@ import moe.qingu.geocraft.api.GeoCraftAPI;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -45,8 +46,18 @@ import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Random;
 
 /**
+ * 流体任务调度器，用于管理一个维度的流体任务 {@link IFluidTask} 的调度
+ * 一个位置一个时间只能最多有一个任务，因此 {@link #query(BlockPos)} 返回的是单个任务
+ * 流体任务的发布不应该在流动逻辑期间。流体首先是方块，所以需要先通过计划刻更新方块，
+ * 然后在{@link net.minecraft.block.Block#updateTick(World, BlockPos, IBlockState, Random)} 中或其他地方发布流体任务
+ * 这是因为流体任务的调度方式和方块计划刻并不一样，流体任务的调度的顺序、特性之类的有很大不同。例如，流体任务没有优先级的概念，但计划刻任务有。同样流体任务也没有延时多少刻的概念。
+ * 但流体不能只用流体任务调度器更新，因为首先，调度器调用流体任务期间直接用 {@link #schedule(BlockPos, IFluidTask, Fluid)} 可能引发 {@link java.util.ConcurrentModificationException}
+ * 其次，流体方块同样需要计划刻的延迟功能，这直接影响到流体的流动速度和粘度。所以流体需要先通过方块更新再通过流体调度器更新。
+ * 流体当然也可以只用方块更新，但是这意味着更新顺序之类的不会根据流体本身的特性定制，这在拟真流体流动的情况下会是很大的问题。
+ * @since GeoCraft-API 0.3.4
  * @author QGMoe
  */
 public abstract class FluidTaskScheduler implements ICapabilityProvider {
@@ -59,6 +70,13 @@ public abstract class FluidTaskScheduler implements ICapabilityProvider {
         this.world = world;
     }
 
+    /**
+     * 计划一个流体任务
+     * @param pos 位置
+     * @param task 流体任务，必须已经在 {@link moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry} 中注册
+     * @param fluid 流体，最好是 {@link net.minecraftforge.fluids.FluidRegistry} 中已经注册的实例
+     * @apiNote 任务需要根据位置去重
+     */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public abstract void schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
 

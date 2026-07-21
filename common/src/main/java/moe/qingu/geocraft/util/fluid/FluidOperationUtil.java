@@ -42,7 +42,7 @@ import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fluids.*;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.configs.GeneralConfig;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.util.exception.UnsupportedFluidException;
 
 import javax.annotation.Nonnull;

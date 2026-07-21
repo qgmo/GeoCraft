@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,25 +25,34 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package 清汩萌.天圆地方.tests.fluidphysics.finite;
+package moe.qingu.geocraft.api.fluidphysics.updater.task;
 
-import org.junit.jupiter.api.BeforeAll;
-import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
-import 清汩萌.天圆地方.tests.fluidphysics.FluidPhysicsTest;
+import moe.qingu.geocraft.api.util.ModIDs;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
-import java.lang.reflect.InvocationTargetException;
+import javax.annotation.Nonnull;
+import java.util.Random;
 
 /**
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class FiniteModeTest extends FluidPhysicsTest {
-    @BeforeAll
-    public static void initCurrentTest() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        run(FiniteModeTest.class.getName(),"initCurrentTest_Inner");
-    }
+public final class EmptyFluidTask implements IFluidTask{
+    public static final ResourceLocation ID = new ResourceLocation(ModIDs.MC,"empty");
+    public static final EmptyFluidTask INSTANCE = new EmptyFluidTask();
 
-    @SuppressWarnings("unused")
-    public static void initCurrentTest_Inner(){
-        FluidPhysicsMode.setCurrentMode(FluidPhysicsMode.FINITE);
+    private EmptyFluidTask(){}
+
+    @Override
+    public void onUpdate(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
+
+    @Override
+    public void onFailure(@Nonnull final World world, @Nonnull final IBlockState state, @Nonnull final BlockPos pos, @Nonnull final Random rand) {}
+
+    @Override
+    public boolean accepts(@Nonnull final World world, @Nonnull final IBlockState state) {
+        return false;
     }
 }

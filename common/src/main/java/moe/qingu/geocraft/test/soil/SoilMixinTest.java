@@ -37,7 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.soil.SoilSystem;
 import moe.qingu.geocraft.test.GeoTestItem;
 
@@ -68,7 +68,7 @@ public final class SoilMixinTest extends GeoTestItem {
             injectionClsMap.put(Blocks.CLAY, BlockSoilClay.class);
             injectionClsMap.put(Blocks.GRAVEL, BlockSoilGravel.class);
             injectionClsMap.put(Blocks.GRASS_PATH, BlockSoilGrassPath.class);
-            injectionClsMap.put(Blocks.FARMLAND, FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.MORE_REALITY? BlockSoilFarmland.MoreReality.class: BlockSoilFarmland.class);
+            injectionClsMap.put(Blocks.FARMLAND, FluidPhysicsMode.getCurrentMode() == FluidPhysicsMode.FINITE ? BlockSoilFarmland.MoreReality.class: BlockSoilFarmland.class);
         }else {
             injectionClsMap.put(Blocks.DIRT, BlockSoilExtends.Dirt.class);
             injectionClsMap.put(Blocks.GRASS, BlockSoilExtends.Grass.class);

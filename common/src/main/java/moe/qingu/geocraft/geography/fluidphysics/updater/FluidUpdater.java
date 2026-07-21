@@ -30,7 +30,6 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTaskResponder;
-import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
@@ -75,13 +74,18 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
         lock.lock();
         try {
             int count = 0;
-            consumer.setChunk(chunk);
-            consumer.setPosContainer(container);
-            consumer.setCollector(collector);
-            consumer.setFlip(false);
-            if(queueHeavy != null) count += queueHeavy.forNext(consumer);
-            consumer.setFlip(true);
-            if(queueLight != null) count += queueLight.forNext(consumer);
+            consumer.chunk = chunk;
+            consumer.posContainer = container;
+            consumer.collector = collector;
+            if(consumer.flip){
+                if(queueLight != null) count += queueLight.forNext(consumer);
+                consumer.flip = false;
+                if(queueHeavy != null) count += queueHeavy.forNext(consumer);
+            }else {
+                if(queueHeavy != null) count += queueHeavy.forNext(consumer);
+                consumer.flip = true;
+                if(queueLight != null) count += queueLight.forNext(consumer);
+            }
             return count;
         }finally {
             consumer.clear();
@@ -160,11 +164,11 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
         if(nbt.getInteger("v")>1) throw new IllegalArgumentException();
         if(nbt.hasKey("heavy")){
             if(queueHeavy == null) queueHeavy = new LinearFluidTaskQueue();
-            for (final int task: nbt.getIntArray("heavy")) if(isValidTask(task)) this.queueHeavy.queue(task);
+            for (final int task: nbt.getIntArray("heavy")) this.queueHeavy.queue(task);
         }
         if(nbt.hasKey("light")){
             if(queueLight == null) queueLight = new LinearFluidTaskQueue();
-            for (final int task: nbt.getIntArray("light")) if(isValidTask(task)) this.queueLight.queue(task);
+            for (final int task: nbt.getIntArray("light")) this.queueLight.queue(task);
         }
     }
 
@@ -233,11 +237,6 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
         }else return current;
     }
 
-    private static boolean isValidTask(final int task){
-        final int id = (task>>8) & 0xFFFF;
-        return FluidTaskRegistry.getTaskByID(id) != null;
-    }
-
     private static final class Consumer extends FluidTaskConsumer{
 
         private Chunk chunk;
@@ -245,31 +244,21 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
         private ChunkyFluidTaskScheduler.ChunkyCollector collector;
         private boolean flip = false;
 
-        void setChunk(final @Nonnull Chunk chunk) {
-            this.chunk = chunk;
-        }
-
-        void setPosContainer(final @Nonnull MBlockPos posContainer) {
-            this.posContainer = posContainer;
-        }
-
-        void setCollector(final @Nonnull ChunkyFluidTaskScheduler.ChunkyCollector collector) {
-            this.collector = collector;
-        }
-
-        void setFlip(final boolean flip) {
-            this.flip = flip;
-        }
-
         void clear(){
             this.chunk = null;
             this.posContainer = null;
             this.collector = null;
         }
 
+        void prepareForResponder(final int x,final int y,final int z){
+            posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
+            collector.x = x;
+            collector.y = y;
+            collector.z = z;
+        }
+
         @Override
-        public void consume(final int x,int y,final int z, final IFluidTask task) {
-            if(task == null) return;
+        public void consume(final int x, int y, final int z, @Nonnull final IFluidTask task) {
             if(flip) y = 255-y;
             final @Nullable ExtendedBlockStorage storage = chunk.getBlockStorageArray()[y>>4];
             if(storage != Chunk.NULL_BLOCK_STORAGE){
@@ -279,15 +268,18 @@ public final class FluidUpdater implements ICapabilitySerializable<NBTTagCompoun
                     final Block block = state.getBlock();
                     final IFluidTaskResponder responder = block instanceof IFluidTaskResponder ?(IFluidTaskResponder) block:null;
                     if (!task.accepts(world, state)){
-                        if(responder == null) return;
-                        posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
-                        collector.x = x;
-                        collector.y = y;
-                        collector.z = z;
-                        responder.onStaleTask(world,posContainer,state,task,collector);
+                        if(responder != null) {
+                            prepareForResponder(x,y,z);
+                            responder.onStaleTask(world,posContainer,state,task,collector);
+                        }
+                        return;
                     }
 
-                    if (responder != null && !responder.accepts(world,state,task)) return;
+                    if (responder != null && !responder.accepts(world,state,task)){
+                        prepareForResponder(x,y,z);
+                        responder.onRefused(world,posContainer,state,task,collector);
+                        return;
+                    }
                     posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
                 }catch (final Throwable t){
                     final Logger logger = GeoCraft.getLogger();

@@ -31,5 +31,6 @@ package moe.qingu.geocraft.api.util;
  * @author QGMoe
  */
 public final class ModIDs {
+    public static final String MC = "minecraft";
     public static final String IMMERSIVE_ENGINEERING = "immersiveengineering";
 }

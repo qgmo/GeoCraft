@@ -31,7 +31,6 @@ import moe.qingu.geocraft.mixin.finite.ForgeFluidUtilMixin;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -42,7 +41,7 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import moe.qingu.geocraft.GeoCraft;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.test.GeoTestItem;
 import moe.qingu.geocraft.util.wrappers.FiniteBlockLiquidWrapper;
@@ -83,7 +82,7 @@ public final class FluidDrainMixinTest extends GeoTestItem {
 
     @Nullable
     private static EnumActionResult validate(final @Nonnull World world,final @Nonnull BlockPos pos,final @Nullable ICommandSender sender){
-        if(FluidPhysicsMode.getCurrentMode() != FluidPhysicsMode.MORE_REALITY){
+        if(FluidPhysicsMode.getCurrentMode() != FluidPhysicsMode.FINITE){
             if(sender != null) sender.sendMessage(translation("geocraft.geotest.finite_fluid_drain_mixin_test.pass_because_mode").arg(FluidPhysicsMode.getCurrentMode())
                     .color(TextFormatting.RED).done());
             return EnumActionResult.PASS;

@@ -29,9 +29,11 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author QGMoe
  */
 public abstract class FluidTaskConsumer {
-    public abstract void consume(final int x,final int y,final int z,final IFluidTask task);
+    public abstract void consume(final int x,final int y,final int z,final @Nonnull IFluidTask task);
 }

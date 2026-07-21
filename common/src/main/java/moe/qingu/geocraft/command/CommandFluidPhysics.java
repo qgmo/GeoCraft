@@ -28,6 +28,9 @@
 package moe.qingu.geocraft.command;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.nickel.command.builder.execute.CommandExecutor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
@@ -35,6 +38,7 @@ import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
@@ -49,7 +53,7 @@ import moe.qingu.nickel.command.builder.execute.RelayExecuteNodeBuilder;
 import moe.qingu.nickel.command.context.ExecuteContext;
 import moe.qingu.nickel.command.node.ISmartNode;
 import moe.qingu.nickel.command.node.parameter.generic.StringNode;
-import moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode;
+import moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode;
 import moe.qingu.geocraft.api.fluid.StateOfMatter;
 import moe.qingu.geocraft.api.property.TemperatureProperty;
 import moe.qingu.geocraft.api.util.AtmosphereUtil;
@@ -86,10 +90,46 @@ public final class CommandFluidPhysics {
                 .smart()
                 .append(buildQueryCommand()).done()
                 .append(buildUtilCommand()).done()
+                .append(buildTaskCommand()).done()
                 .done()
                 .usage("geocraft.command.fluidphysics.usage")
                 .build();
 
+    }
+
+    @Nonnull
+    public static INodeBuilder<? extends ISmartNode> buildTaskCommand(){ //unfinished
+        return literal("task")
+                .then(literals()
+                        .when("query").then(
+                                _pos().then(
+                                        execute(ctx -> {
+                                            final FluidTaskScheduler scheduler = FluidTaskScheduler.getScheduler(ctx.getWorld());
+                                            if(scheduler == null){
+                                                plain("NULL MANAGER").sendTo(ctx.getSender());
+                                                return;
+                                            }
+                                            final BlockPos pos = ctx.getBlockPos(POS);
+                                            final IFluidTask task = scheduler.query(pos);
+                                            if(task == null) plain("NO").color(TextFormatting.RED).sendTo(ctx.getSender());
+                                            else plain("SCHEDULED "+FluidTaskRegistry.getName(task)).color(TextFormatting.GREEN).sendTo(ctx.getSender());
+                                        })))
+                        .when("schedule").then(
+                                $token("taskID")
+                                        .then($fluid("fluidName").then(
+                                                _pos().then(
+                                                        execute(ctx -> {
+                                                            final IFluidTask task = FluidTaskRegistry.getTaskByName(new ResourceLocation(ctx.get("taskID", StringNode.class)));
+                                                            if(task == null){
+                                                                plain("invalid task").color(TextFormatting.RED).sendTo(ctx.getSender());
+                                                                return;
+                                                            }
+                                                            final FluidTaskScheduler scheduler = FluidTaskScheduler.getScheduler(ctx.getWorld());
+                                                            if(scheduler == null){
+                                                                plain("NULL MANAGER").sendTo(ctx.getSender());
+                                                                return;
+                                                            }scheduler.schedule(ctx.getBlockPos(POS),task,ctx.get("fluidName"));
+                                                        }))))));
     }
 
     @Nonnull
@@ -159,7 +199,7 @@ public final class CommandFluidPhysics {
     }
 
     enum ModeHandler{
-        FINITE(FluidPhysicsMode.MORE_REALITY){
+        FINITE(FluidPhysicsMode.FINITE){
             @Override
             public void evaporate(@Nonnull final ExecuteContext ctx,@Nonnull final IAtmosphereAccessor accessor) throws CommandException {
                 super.evaporate(ctx,accessor);
@@ -234,7 +274,7 @@ public final class CommandFluidPhysics {
                 ctx.getSender().setCommandStat(CommandResultStats.Type.AFFECTED_BLOCKS,quanta==0?0:1);
             }
         },
-        CLASSIC(FluidPhysicsMode.VANILLA_LIKE){
+        CLASSIC(FluidPhysicsMode.CLASSIC){
             @Override
             public void evaporate(@Nonnull final ExecuteContext ctx,@Nonnull final IAtmosphereAccessor accessor) throws CommandException {
                 super.evaporate(ctx,accessor);
@@ -323,8 +363,8 @@ public final class CommandFluidPhysics {
 
         public static ModeHandler getHandler(@Nonnull final FluidPhysicsMode mode){
             switch (mode){
-                case MORE_REALITY:return FINITE;
-                case VANILLA_LIKE:return CLASSIC;
+                case FINITE:return FINITE;
+                case CLASSIC:return CLASSIC;
                 case VANILLA:return VANILLA;
                 default:throw new IllegalArgumentException();
             }

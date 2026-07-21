@@ -36,6 +36,7 @@ import moe.qingu.geocraft.api.event.fluidphysics.FluidTaskRegistryEvent;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -53,7 +54,9 @@ public final class FluidTaskRegistry {
     private static boolean frozen = false;
 
     static {
+        register(EmptyFluidTask.ID,EmptyFluidTask.INSTANCE);
         IDLookup.defaultReturnValue(-1);
+        TaskLookup.defaultReturnValue(EmptyFluidTask.INSTANCE);
     }
 
     private FluidTaskRegistry(){}
@@ -113,12 +116,17 @@ public final class FluidTaskRegistry {
         return Tasks2ID.get(task);
     }
 
+    @Nonnull
     public static IFluidTask getTaskByID(final int id){
         if(ArrTaskLookup == null) return TaskLookup.get(id);
-        else if(id >= ArrTaskLookup.length || id < 0) return null;
-        else return ArrTaskLookup[id];
+        else if(id >= ArrTaskLookup.length || id < 0) return EmptyFluidTask.INSTANCE;
+        else{
+            final IFluidTask t = ArrTaskLookup[id];
+            return t == null?EmptyFluidTask.INSTANCE:t;
+        }
     }
 
+    @Nullable
     public static IFluidTask getTaskByName(final @Nonnull ResourceLocation location){
         return ID2Tasks.get(location);
     }

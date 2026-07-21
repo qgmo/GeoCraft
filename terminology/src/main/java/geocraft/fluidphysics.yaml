@@ -18,7 +18,7 @@
   定义: "天圆地方提供的多种流体物理系统，每种系统即一个模式。"
   出处:
     - "https://www.mcmod.cn/item/938274.html"
-    - 类: moe.qingu.geocraft.api.configs.value.geo.FluidPhysicsMode
+    - 类: moe.qingu.geocraft.api.fluidphysics.FluidPhysicsMode
 
 - 中文: "流体物理信息"
   英文: "Fluid Physics Info"
@@ -140,7 +140,7 @@
   出处: "https://github.com/QGMoe/GeoCraft/blob/b1bfa0906b967e0081364de36692866275bb944d/README.md"
 
 - 中文: "流体任务调度器"
-  英文: "Fluid Tasks Scheduler"
+  英文: "Fluid Task Scheduler"
   别称:
     - ["流体调度器"]
     - ["Fluid Scheduler"]
