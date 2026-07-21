@@ -32,8 +32,10 @@ import it.unimi.dsi.fastutil.ints.IntArrays;
 import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.shorts.ShortOpenHashSet;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.IntConsumer;
 
 /**
@@ -65,6 +67,17 @@ public class LinearFluidTaskQueue extends FluidTaskQueue{
         final int task = cy << 24 | taskID << 8 | cx << 4 | cz;
         presence.add((short) (cy <<8 | cx << 4 | cz));
         list.add(task);
+    }
+
+    @Nullable
+    @Override
+    public IFluidTask query(final int cx,final int cy,final int cz) {
+        if(!contains(cx, cy, cz)) return null;
+        for(int i=0;i<list.size();i++){
+            final int task = list.getInt(i);
+            if(task >>> 24 == cy && ((task >>> 4) & 0xF) == cx && (task & 0xF) == cz) return FluidTaskRegistry.getTaskByID((task>>>8)&0xFFFF);
+        }
+        return null;
     }
 
     @Override

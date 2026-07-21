@@ -25,37 +25,14 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.geography.fluidphysics.updater;
+package moe.qingu.geocraft.api.event.fluidphysics;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.function.IntConsumer;
+import net.minecraftforge.fml.common.eventhandler.Event;
 
 /**
  * @author QGMoe
  */
-public abstract class FluidTaskQueue {
+public class FluidTaskRegistryEvent extends Event {
 
-    public boolean isEmpty(){
-        return size() == 0;
-    }
-
-    public abstract int size();
-
-    public abstract void queue(final int cx,final int cy,final int cz,final int taskID);
-
-    public void queue(final int task){
-        queue((task>>>4)&0xF,task>>>24,task & 0xF, (short) ((task>>>8)&0xFFFF));
-    }
-
-    @Nullable
-    public abstract IFluidTask query(final int cx,final int cy,final int cz);
-
-    public abstract boolean contains(final int cx,final int cy,final int cz);
-
-    public abstract int forNext(final @Nonnull FluidTaskConsumer consumer);
-
-    public abstract void forEach(final @Nonnull IntConsumer consumer);
+    public static class Freeze extends FluidTaskRegistryEvent {}
 }

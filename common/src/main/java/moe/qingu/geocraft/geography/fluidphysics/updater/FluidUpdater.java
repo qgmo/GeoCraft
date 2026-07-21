@@ -70,22 +70,6 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
     protected Consumer consumer = new Consumer();
     protected volatile NBTTagCompound save = new NBTTagCompound();
 
-    public boolean isDirty() {
-        return dirty.get();
-    }
-
-    public boolean hasLeft(){
-        return queueHeavy != null && !queueHeavy.isEmpty() || queueLight != null && !queueLight.isEmpty();
-    }
-
-    public boolean markDirty(){
-        return dirty.compareAndSet(false,true);
-    }
-
-    public void clearDirty(){
-        dirty.set(false);
-    }
-
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public int update(final @Nonnull MBlockPos container, final @Nonnull Chunk chunk){
         lock.lock();
@@ -134,6 +118,22 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         }
     }
 
+    @Nullable
+    public IFluidTask queryHeavy(final int chunkX,final int chunkY,final int chunkZ){
+        if(this.queueHeavy == null) return null;
+        return this.queueHeavy.query(chunkX, chunkY, chunkZ);
+    }
+
+    @Nullable
+    public IFluidTask queryLight(final int chunkX,final int chunkY,final int chunkZ){
+        if(this.queueLight == null) return null;
+        return this.queueLight.query(chunkX, 255 - chunkY, chunkZ);
+    }
+
+    /* -------------------------------
+         Serialisation Area
+       ------------------------------- */
+
     @Override
     @Nonnull
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.FLUID_DAEMON})
@@ -175,6 +175,10 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         return new NBTTagIntArray(arr);
     }
 
+    /* -------------------------------
+               Capability Area
+       ------------------------------- */
+
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
         return capability == CapabilityHandler.FLUID_UPDATER;
@@ -186,10 +190,34 @@ public class FluidUpdater implements ICapabilitySerializable<NBTTagCompound> {
         return capability == CapabilityHandler.FLUID_UPDATER? CapabilityHandler.FLUID_UPDATER.cast(this):null;
     }
 
+    /* -------------------------------
+              Getter And Setter
+       ------------------------------- */
+
+    public boolean isDirty() {
+        return dirty.get();
+    }
+
+    public boolean hasLeft(){
+        return queueHeavy != null && !queueHeavy.isEmpty() || queueLight != null && !queueLight.isEmpty();
+    }
+
     @Nonnull
     public ReentrantLock getLock() {
         return lock;
     }
+
+    public boolean markDirty(){
+        return dirty.compareAndSet(false,true);
+    }
+
+    public void clearDirty(){
+        dirty.set(false);
+    }
+
+   /* -------------------------------
+                Static Area
+       ------------------------------- */
 
     @Nonnull
     protected static FluidTaskQueue switchQueue(final @Nonnull FluidTaskQueue current){

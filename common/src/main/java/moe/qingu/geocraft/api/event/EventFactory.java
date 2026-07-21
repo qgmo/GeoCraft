@@ -166,7 +166,7 @@ public final class EventFactory {
     public static Supplier<FluidUpdaterManager> onFluidUpdaterManagerCreate(@Nonnull final World world){
         FluidUpdaterManagerEvent.Create event = new FluidUpdaterManagerEvent.Create(world);
         EVENT_BUS.post(event);
-        return event.hasResult()?event.getCandidate():null;
+        return event.hasResult() && event.getResult() == Result.ALLOW?event.getCandidate():null;
     }
 
     public static int onHoeUse(final @Nonnull ItemStack stack,final @Nonnull EntityPlayer player,final @Nonnull World worldIn,

@@ -63,6 +63,10 @@ public abstract class FluidUpdaterManager implements ICapabilityProvider {
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public abstract void update();
 
+    @Nullable
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public abstract IFluidTask query(final @Nonnull BlockPos pos);
+
     /* ------------------
             Getter
        ------------------ */

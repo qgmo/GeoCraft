@@ -158,7 +158,7 @@ public final class GeoDataFile {
         return mapping;
     }
 
-    public void setFluidTasksMapping(final @Nonnull Int2ObjectOpenHashMap<ResourceLocation> mapping){
+    public void setFluidTasksMapping(final @Nonnull Int2ObjectMap<ResourceLocation> mapping){
         final NBTTagList list = new NBTTagList();
         for(final @Nonnull Int2ObjectMap.Entry<ResourceLocation> entry:mapping.int2ObjectEntrySet()){
             final NBTTagCompound compound = new NBTTagCompound();

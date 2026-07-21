@@ -122,6 +122,22 @@ public final class ChunkyFluidUpdaterManager extends FluidUpdaterManager impleme
     }
 
     @Nullable
+    @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public IFluidTask query(@Nonnull final BlockPos pos) {
+        if(pos.getY()>255 || pos.getY()<0) return null;
+        final int chunkX = pos.getX()>>4;
+        final int chunkZ = pos.getZ()>>4;
+        final FluidUpdater updater = getUpdater(chunkX,chunkZ);
+        if(updater == null) return null;
+        final int cx = pos.getX() & 0xF;
+        final int cz = pos.getZ() & 0xF;
+        IFluidTask task = updater.queryHeavy(cx,pos.getY(),cz);
+        if(task == null) task = updater.queryLight(cx,pos.getY(),cz);
+        return task;
+    }
+
+    @Nullable
     public FluidUpdater getUpdater(final int cx,final int cz){
         FluidUpdater res = updaters.get(ChunkPos.asLong(cx,cz));
         if(res != null) return res;

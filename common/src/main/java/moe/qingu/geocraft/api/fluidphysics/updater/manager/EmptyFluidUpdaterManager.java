@@ -33,6 +33,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author QGMoe
@@ -47,4 +48,10 @@ public final class EmptyFluidUpdaterManager extends FluidUpdaterManager{
 
     @Override
     public void update() {}
+
+    @Nullable
+    @Override
+    public IFluidTask query(@Nonnull final BlockPos pos) {
+        return null;
+    }
 }

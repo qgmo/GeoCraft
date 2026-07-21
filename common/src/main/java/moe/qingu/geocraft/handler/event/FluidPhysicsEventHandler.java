@@ -41,6 +41,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -55,9 +56,10 @@ public final class FluidPhysicsEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void createFluidUpdaterManager(final @Nonnull FluidUpdaterManagerEvent.Create event){
-        if(event.getCandidate() == null && !event.getWorld().isRemote){
+        if(event.getCandidate() == null && !event.getWorld().isRemote && event.getResult() != Event.Result.ALLOW){
             final World world = event.getWorld();
             event.setCandidate(() -> new ChunkyFluidUpdaterManager(world));
+            event.setResult(Event.Result.ALLOW);
         }
     }
 

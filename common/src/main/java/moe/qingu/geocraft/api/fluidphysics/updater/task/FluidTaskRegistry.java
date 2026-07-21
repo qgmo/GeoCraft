@@ -31,6 +31,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import moe.qingu.geocraft.api.event.EventFactory;
+import moe.qingu.geocraft.api.event.fluidphysics.FluidTaskRegistryEvent;
 import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
@@ -57,16 +59,18 @@ public final class FluidTaskRegistry {
     private FluidTaskRegistry(){}
 
     public static void freeze() {
+        final boolean hasFrozen = frozen;
         frozen = true;
+        if(!hasFrozen) EventFactory.EVENT_BUS.post(new FluidTaskRegistryEvent.Freeze());
     }
 
     public static void register(final @Nonnull ResourceLocation location, final @Nonnull IFluidTask task){
-        if(frozen) throw new IllegalStateException();
+        if(frozen) throw new IllegalStateException("Fluid Task Registry has been frozen!");
         ID2Tasks.put(location, Objects.requireNonNull(task));
         Tasks2ID.put(task,location);
     }
 
-    public static void reloadMapping(final @Nonnull Int2ObjectOpenHashMap<ResourceLocation> mapping){
+    public static void reloadMapping(final @Nonnull Int2ObjectMap<ResourceLocation> mapping){
         ArrTaskLookup = null;
         TaskLookup.clear();
         IDLookup.clear();
@@ -95,7 +99,7 @@ public final class FluidTaskRegistry {
     }
 
     @Nonnull
-    public static Int2ObjectOpenHashMap<ResourceLocation> getMapping(){
+    public static Int2ObjectMap<ResourceLocation> getMapping(){
         final Int2ObjectOpenHashMap<ResourceLocation> mapping = new Int2ObjectOpenHashMap<>();
         for(final @Nonnull Object2IntMap.Entry<IFluidTask> entry: IDLookup.object2IntEntrySet()) mapping.put(entry.getIntValue(),Tasks2ID.get(entry.getKey()));
         return mapping;
@@ -110,7 +114,9 @@ public final class FluidTaskRegistry {
     }
 
     public static IFluidTask getTaskByID(final int id){
-        return ArrTaskLookup == null?TaskLookup.get(id):ArrTaskLookup[id];
+        if(ArrTaskLookup == null) return TaskLookup.get(id);
+        else if(id >= ArrTaskLookup.length || id < 0) return null;
+        else return ArrTaskLookup[id];
     }
 
     public static IFluidTask getTaskByName(final @Nonnull ResourceLocation location){

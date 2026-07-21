@@ -29,8 +29,10 @@ package moe.qingu.geocraft.geography.fluidphysics.updater;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.IntConsumer;
 
 /**
@@ -57,6 +59,18 @@ public class ArrayFluidTaskQueue extends FluidTaskQueue{
         presence[(cy <<2)|(xz>>>6)] |= 1L<<(xz & 0_77);
         layers[cy].add(taskID<< 8 | cx << 4 | cz);
         count ++;
+    }
+
+    @Nullable
+    @Override
+    public IFluidTask query(final int cx,final int cy,final int cz) {
+        if(!contains(cx, cy, cz)) return null;
+        final IntArrayList tasks = layers[cy];
+        for(int i=0;i<tasks.size();i++){
+            final int task = tasks.getInt(i);
+            if(((task>>>4) & 0xF) == cx && (task & 0xF) == cz) return FluidTaskRegistry.getTaskByID((task>>>8)&0xFFFF);
+        }
+        return null;
     }
 
     @Override
