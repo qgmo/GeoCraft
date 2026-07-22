@@ -53,6 +53,12 @@ public class NickelRuntimeException extends CommandException implements INickelE
     }
 
     @Nonnull
+    public NickelRuntimeException withCause(final @Nonnull Throwable e){
+        this.initCause(e);
+        return this;
+    }
+
+    @Nonnull
     public ITextComponent getInformation() {
         return information;
     }

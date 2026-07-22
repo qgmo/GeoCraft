@@ -27,18 +27,35 @@
 
 package moe.qingu.geocraft.world.scheduler;
 
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
+import moe.qingu.nickel.nbt.NBTUtils;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagLongArray;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.lang.ref.SoftReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author QGMoe
  */
-public final class BlockTickDatum {
+public final class BlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
+    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"bt_datum");
+    private static final ThreadLocal<LongArrayList> TEMP = ThreadLocal.withInitial(LongArrayList::new);
     private final AtomicBoolean dirty = new AtomicBoolean(false);
+    private volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
     final ReentrantLock lock = new ReentrantLock();
     BlockTickQueue queue = null;
 
@@ -54,6 +71,67 @@ public final class BlockTickDatum {
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean isScheduled(final int cx,final int cy,final int cz,final int blockID){
         return queue != null && queue.contains(cx, cy, cz, blockID);
+    }
+
+    /* -------------------------------
+         Serialisation Area
+       ------------------------------- */
+
+    @Override
+    public NBTTagCompound serializeNBT() {
+        final @Nullable NBTTagCompound cache;
+        if(isDirty() || (cache = this.save.get()) == null){
+            lock.lock();
+            try {
+                final NBTTagCompound s = new NBTTagCompound();
+                s.setInteger("v",1);
+                if(queue != null) s.setTag("queue", serializeQueue());
+                this.save = new SoftReference<>(s);
+                return s;
+            }finally {
+                this.clearDirty();
+                lock.unlock();
+            }
+        }
+        return cache;
+    }
+
+    @Override
+    public void deserializeNBT(final @Nonnull NBTTagCompound nbt) {
+        if(nbt.getInteger("v")>1) throw new IllegalArgumentException();
+        if(nbt.hasKey("queue")){
+            final NBTBase tag = nbt.getTag("queue");
+            try {
+                final long[] dat = tag instanceof NBTTagLongArray? NBTUtils.getLongArray((NBTTagLongArray) tag): new long[0];
+                if(queue == null && dat.length != 0) queue = new HeapBlockTickQueue();
+                for(final long t:dat) queue.queue(t);
+            } catch (final @Nonnull NickelRuntimeException e) {
+                throw new RuntimeException(e.getCause());
+            }
+        }
+    }
+
+    private @Nonnull NBTTagLongArray serializeQueue(){
+        final LongArrayList list = TEMP.get();
+        list.clear();
+        queue.forEach(list::add);
+        final long[] arr = list.toLongArray();
+        return new NBTTagLongArray(arr);
+    }
+
+    /* -------------------------------
+               Capability Area
+       ------------------------------- */
+
+    @Override
+    public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
+        return capability == CapabilityHandler.BLOCK_TICK_DATUM;
+    }
+
+    @Nullable
+    @Override
+    public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
+        return capability == CapabilityHandler.BLOCK_TICK_DATUM ? CapabilityHandler.BLOCK_TICK_DATUM.cast(this) : null;
     }
 
     /* -------------------------------

@@ -33,11 +33,20 @@ import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.configs.GeneralConfig;
+import moe.qingu.geocraft.handler.CapabilityHandler;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.util.ReportedException;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -55,6 +64,29 @@ public final class BlockTickScheduler {
     public BlockTickScheduler(final @Nonnull World world) {
         this.world = world;
         this.maxUpdateNum = GeneralConfig.BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
+    }
+
+    @SuppressWarnings("OctalInteger")
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public boolean schedule(final @Nonnull BlockPos pos, final @Nonnull Block block,final int delay,final @Nonnull TickPriority priority){
+        if(pos.getY()>255 || pos.getY()<0) return false;
+        final int chunkX = pos.getX()>>4;
+        final int chunkZ = pos.getZ()>>4;
+        final BlockTickDatum datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return false;
+        final int blockID = Block.getIdFromBlock(block);
+        if(blockID < 0 || blockID > 0_7777) return false;
+        final int cx = pos.getX() & 0xF;
+        final int cz = pos.getZ() & 0xF;
+        if(datum.isScheduled(cx,pos.getY(),cz,blockID)) return false;
+        datum.schedule(world.getTotalWorldTime(), cx, pos.getY(), cz, blockID, delay, priority);
+        schedules.add(ChunkPos.asLong(chunkX,chunkZ));
+        if(!datum.isDirty() && datum.markDirty()){
+            final Chunk chunk = world.getChunk(chunkX,chunkZ);
+            chunk.markDirty();
+            dirties.add(datum);
+        }
+        return true;
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
@@ -98,6 +130,33 @@ public final class BlockTickScheduler {
         consumer.chunk = null;
     }
 
+
+    @Nullable
+    public BlockTickDatum getDatum(final int cx, final int cz){
+        BlockTickDatum res = data.get(ChunkPos.asLong(cx,cz));
+        if(res != null) return res;
+        final Chunk chunk = world.getChunk(cx,cz);
+        if(chunk.hasCapability(CapabilityHandler.BLOCK_TICK_DATUM,null)){
+            data.put(ChunkPos.asLong(cx,cz),res = chunk.getCapability(CapabilityHandler.BLOCK_TICK_DATUM,null));
+            return res;
+        }else return null;
+    }
+
+    @Nonnull
+    public Long2ObjectOpenHashMap<BlockTickDatum> getData() {
+        return data;
+    }
+
+    @Nonnull
+    public LongOpenHashSet getSchedules() {
+        return schedules;
+    }
+
+    @Nonnull
+    public ConcurrentLinkedQueue<BlockTickDatum> getDirties() {
+        return dirties;
+    }
+
     @Nonnull
     public World getWorld() {
         return world;
@@ -109,7 +168,21 @@ public final class BlockTickScheduler {
 
         @Override
         public void consume(final int x,final int y,final int z, @Nonnull final Block block) {
-
+            final @Nullable ExtendedBlockStorage storage = chunk.getBlockStorageArray()[y>>4];
+            if(storage != Chunk.NULL_BLOCK_STORAGE){
+                final IBlockState state = storage.get(x,y & 0xF,z);
+                if(state.getBlock() != block) return;
+                final World world = chunk.getWorld();
+                posContainer.setPos((chunk.x << 4) + x, y, (chunk.z << 4) + z);
+                try {
+                    block.updateTick(world,posContainer,state,world.rand);
+                } catch (final Throwable t) {
+                    final @Nonnull CrashReport report = CrashReport.makeCrashReport(t, "Exception while BlockTickScheduler ticking a block");
+                    final @Nonnull CrashReportCategory category = report.makeCategory("Block being ticked");
+                    CrashReportCategory.addBlockInfo(category, posContainer.toImmutable(), state);
+                    throw new ReportedException(report);
+                }
+            }
         }
     }
 }

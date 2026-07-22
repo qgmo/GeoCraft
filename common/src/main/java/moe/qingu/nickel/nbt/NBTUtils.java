@@ -127,7 +127,8 @@ public final class NBTUtils {
         try {
             return (long[]) longArrField.get(longs);
         } catch (final @Nonnull IllegalAccessException e) {
-            throw new NickelRuntimeException(translation(I18nKeys.NBT.R_CT_LONG_ARR,longs));
+            throw new NickelRuntimeException(translation(I18nKeys.NBT.R_CT_LONG_ARR,longs))
+                    .withCause(e);
         }
     }
 

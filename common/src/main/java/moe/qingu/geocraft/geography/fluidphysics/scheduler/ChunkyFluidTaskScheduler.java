@@ -168,8 +168,8 @@ public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implement
         ChunkyFluidTaskDatum res = data.get(ChunkPos.asLong(cx,cz));
         if(res != null) return res;
         final Chunk chunk = world.getChunk(cx,cz);
-        if(chunk.hasCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATA,null)){
-            data.put(ChunkPos.asLong(cx,cz),res = chunk.getCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATA,null));
+        if(chunk.hasCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATUM,null)){
+            data.put(ChunkPos.asLong(cx,cz),res = chunk.getCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATUM,null));
             return res;
         }else return null;
     }

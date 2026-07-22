@@ -66,7 +66,7 @@ public final class FluidPhysicsEventHandler {
     @SubscribeEvent
     public static void onChunkLoad(final @Nonnull ChunkEvent.Load event){
         final Chunk chunk = event.getChunk();
-        final ChunkyFluidTaskDatum datum = chunk.getCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATA,null);
+        final ChunkyFluidTaskDatum datum = chunk.getCapability(CapabilityHandler.CHUNKY_FLUID_TASK_DATUM,null);
         if(datum == null || !datum.hasLeft()) return;
         final ChunkyFluidTaskScheduler scheduler = ChunkyFluidTaskScheduler.getChunkyScheduler(event.getWorld());
         if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;

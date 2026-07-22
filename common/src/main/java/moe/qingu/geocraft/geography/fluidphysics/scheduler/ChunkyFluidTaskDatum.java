@@ -27,7 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.scheduler;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
@@ -54,7 +54,7 @@ public final class ChunkyFluidTaskDatum implements ICapabilitySerializable<NBTTa
     public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"ft_datum");
     public static final int SWITCH_ARRAY_THRESHOLD = 200;
     public static final int SWITCH_LINEAR_THRESHOLD = 60;
-    private static final ThreadLocal<IntOpenHashSet> TEMP = ThreadLocal.withInitial(IntOpenHashSet::new);
+    private static final ThreadLocal<IntArrayList> TEMP = ThreadLocal.withInitial(IntArrayList::new);
     private final AtomicBoolean dirty = new AtomicBoolean(false);
     private volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
     final ReentrantLock lock = new ReentrantLock();
@@ -144,10 +144,10 @@ public final class ChunkyFluidTaskDatum implements ICapabilitySerializable<NBTTa
     }
 
     private @Nonnull NBTTagIntArray serialize(final @Nonnull FluidTaskQueue queue){
-        final IntOpenHashSet set = TEMP.get();
-        set.clear();
-        queue.forEach(set::add);
-        final int[] arr = set.toIntArray();
+        final IntArrayList list = TEMP.get();
+        list.clear();
+        queue.forEach(list::add);
+        final int[] arr = list.toIntArray();
         return new NBTTagIntArray(arr);
     }
 
@@ -157,13 +157,13 @@ public final class ChunkyFluidTaskDatum implements ICapabilitySerializable<NBTTa
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATA;
+        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATUM;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATA ? CapabilityHandler.CHUNKY_FLUID_TASK_DATA.cast(this):null;
+        return capability == CapabilityHandler.CHUNKY_FLUID_TASK_DATUM ? CapabilityHandler.CHUNKY_FLUID_TASK_DATUM.cast(this):null;
     }
 
     /* -------------------------------
