@@ -37,16 +37,14 @@ import net.minecraft.util.ResourceLocation;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author QGMoe
  */
 public final class FluidTaskRegistry {
     private static final HashMap<ResourceLocation, IFluidTask> ID2Tasks = new HashMap<>();
+    private static final Map<ResourceLocation,IFluidTask> UNMODIFIABLE_ID2Tasks = Collections.unmodifiableMap(ID2Tasks);
     private static final IdentityHashMap<IFluidTask,ResourceLocation> Tasks2ID = new IdentityHashMap<>();
     private static final Int2ObjectOpenHashMap<IFluidTask> TaskLookup = new Int2ObjectOpenHashMap<>();
     private static IFluidTask[] ArrTaskLookup = null;
@@ -129,5 +127,10 @@ public final class FluidTaskRegistry {
     @Nullable
     public static IFluidTask getTaskByName(final @Nonnull ResourceLocation location){
         return ID2Tasks.get(location);
+    }
+
+    @Nonnull
+    public static Map<ResourceLocation,IFluidTask> getTasks(){
+        return UNMODIFIABLE_ID2Tasks;
     }
 }

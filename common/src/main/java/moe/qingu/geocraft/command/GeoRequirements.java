@@ -25,35 +25,26 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.fluidphysics.updater.scheduler;
+package moe.qingu.geocraft.command;
 
-import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
+import static moe.qingu.nickel.text.Texts.translation;
 
 /**
  * @author QGMoe
  */
-public final class EmptyFluidTaskScheduler extends FluidTaskScheduler {
-    public EmptyFluidTaskScheduler(@Nonnull final World world) {
-        super(world);
-    }
+public final class GeoRequirements {
+    private GeoRequirements(){}
 
-    @Override
-    public boolean schedule(@Nonnull final BlockPos pos, @Nonnull final IFluidTask task, @Nonnull final Fluid fluid) {
-        return false;
-    }
-
-    @Override
-    public void update() {}
-
-    @Nullable
-    @Override
-    public IFluidTask query(@Nonnull final BlockPos pos) {
-        return null;
+    public static void requireBlockPosLoaded(final @Nonnull World world, final @Nonnull BlockPos pos) throws NickelRuntimeException {
+        if(world.isBlockLoaded(pos)) return;
+        throw new NickelRuntimeException(translation("geocraft.command.pos.unloaded")
+                .arg(world.provider.getDimension())
+                .arg(pos.getX(),pos.getY(),pos.getZ()));
     }
 }

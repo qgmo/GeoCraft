@@ -36,7 +36,9 @@ import dev.xhyrom.brigo.shadow.brigadier.builder.ArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.LiteralArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.builder.RequiredArgumentBuilder;
 import dev.xhyrom.brigo.shadow.brigadier.tree.LiteralCommandNode;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import net.minecraft.command.ICommandManager;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.LoaderState;
 import moe.qingu.geocraft.GeoCraft;
@@ -127,6 +129,7 @@ public final class BrigoCompat {
                                         .executes(DO_NOTHING))))
                         .then(compatArgs(PROPERTY,"duration","file name","x","y","z")))
                 .then(literal("stop")
+                        .then(literal("~"))
                         .then(argument(WORLD, integer()))
                         .executes(DO_NOTHING)));
     }
@@ -134,6 +137,19 @@ public final class BrigoCompat {
     public static void registerFluidPhysics(){
         register(literal(FLUID_PHYSICS_COMMAND_NAME)
                 .then(literal("query").then(literal("mode")))
+                .then(literal("task")
+                        .then(literal("query")
+                                .then(pos(literal("~").executes(DO_NOTHING),Function.identity())
+                                        .executes(DO_NOTHING))
+                                .then(pos(argument(WORLD,integer()).executes(DO_NOTHING),Function.identity())
+                                        .executes(DO_NOTHING)))
+                        .then(literal("schedule", FluidTaskRegistry.getTasks().keySet().stream().map(Object::toString).collect(Collectors.toList()),
+                                task -> literals(task, FluidRegistry.getRegisteredFluids().keySet(),
+                                        fluid -> fluid
+                                                .then(pos(literal("~").executes(DO_NOTHING),Function.identity())
+                                                        .executes(DO_NOTHING))
+                                                .then(pos(argument(WORLD,integer()).executes(DO_NOTHING),Function.identity())
+                                                        .executes(DO_NOTHING))))))
                 .then(literal("operation")
                         .then(pos(literal("evaporate"),posThen ->
                                 posThen.then(literal("do"))

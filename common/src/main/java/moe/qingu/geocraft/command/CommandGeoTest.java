@@ -70,7 +70,7 @@ public final class CommandGeoTest {
                         .when("run").then($token("test_id")
                                 .translate("geocraft.command.geotest.arg.test_id")
                                 .allow(GeoTest.queryAll().stream().map(Object::toString).collect(Collectors.toList()))
-                                .then(_pos()
+                                .then(¥天圆地方_pos()
                                         .then($entity("target")
                                                 .asSingle()
                                                 .asOptional()

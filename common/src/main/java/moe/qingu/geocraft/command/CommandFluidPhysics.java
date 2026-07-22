@@ -28,17 +28,18 @@
 package moe.qingu.geocraft.command;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
+import moe.qingu.geocraft.api.command.node.FluidTaskNode;
 import moe.qingu.geocraft.api.fluidphysics.updater.scheduler.FluidTaskScheduler;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry;
 import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
 import moe.qingu.nickel.command.builder.execute.CommandExecutor;
+import moe.qingu.nickel.command.exception.NickelRuntimeException;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.TextFormatting;
@@ -64,6 +65,7 @@ import moe.qingu.geocraft.util.WaterUtil;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static moe.qingu.geocraft.api.command.GeoNodes.¥GeoCraft$fluidTask;
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
 import static net.minecraft.block.BlockLiquid.LEVEL;
@@ -101,35 +103,11 @@ public final class CommandFluidPhysics {
     public static INodeBuilder<? extends ISmartNode> buildTaskCommand(){ //unfinished
         return literal("task")
                 .then(literals()
-                        .when("query").then(
-                                _pos().then(
-                                        execute(ctx -> {
-                                            final FluidTaskScheduler scheduler = FluidTaskScheduler.getScheduler(ctx.getWorld());
-                                            if(scheduler == null){
-                                                plain("NULL MANAGER").sendTo(ctx.getSender());
-                                                return;
-                                            }
-                                            final BlockPos pos = ctx.getBlockPos(POS);
-                                            final IFluidTask task = scheduler.query(pos);
-                                            if(task == null) plain("NO").color(TextFormatting.RED).sendTo(ctx.getSender());
-                                            else plain("SCHEDULED "+FluidTaskRegistry.getName(task)).color(TextFormatting.GREEN).sendTo(ctx.getSender());
-                                        })))
+                        .when("query").then(¥天圆地方_world().then(¥天圆地方_pos().then(execute(CommandFluidPhysics::queryTask))))
                         .when("schedule").then(
-                                $token("taskID")
-                                        .then($fluid("fluidName").then(
-                                                _pos().then(
-                                                        execute(ctx -> {
-                                                            final IFluidTask task = FluidTaskRegistry.getTaskByName(new ResourceLocation(ctx.get("taskID", StringNode.class)));
-                                                            if(task == null){
-                                                                plain("invalid task").color(TextFormatting.RED).sendTo(ctx.getSender());
-                                                                return;
-                                                            }
-                                                            final FluidTaskScheduler scheduler = FluidTaskScheduler.getScheduler(ctx.getWorld());
-                                                            if(scheduler == null){
-                                                                plain("NULL MANAGER").sendTo(ctx.getSender());
-                                                                return;
-                                                            }scheduler.schedule(ctx.getBlockPos(POS),task,ctx.get("fluidName"));
-                                                        }))))));
+                                ¥GeoCraft$fluidTask("taskID")
+                                        .translate("geocraft.command.fluidphysics.arg.taskID")
+                                        .then(¥天圆地方$fluid().then(¥天圆地方_world().then(¥天圆地方_pos().then(execute(CommandFluidPhysics::scheduleTask)))))));
     }
 
     @Nonnull
@@ -137,7 +115,7 @@ public final class CommandFluidPhysics {
         return literal("query")
                 .then(literals()
                         .when("mode").then(execute(ctx -> {
-                            ctx.getSender().sendMessage(translation("geocraft.command.fluidphysics.query.mode").arg(FluidPhysicsMode.getCurrentMode()).done());
+                            translation("geocraft.command.fluidphysics.query.mode").arg(FluidPhysicsMode.getCurrentMode()).sendTo(ctx.getSender());
                             ctx.getSender().setCommandStat(CommandResultStats.Type.QUERY_RESULT,FluidPhysicsMode.getCurrentMode().ordinal());
                         })));
     }
@@ -146,9 +124,40 @@ public final class CommandFluidPhysics {
     public static INodeBuilder<? extends ISmartNode> buildUtilCommand(){
         return literal("operation")
                 .then(literals()
-                        .when("evaporate").then(_pos()
-                                .then(_doit()
-                                        .then(process(HANDLER::evaporate,true)))));
+                        .when("evaporate").then(¥天圆地方_pos().then(¥天圆地方_doit().then(process(HANDLER::evaporate,true)))));
+    }
+
+    static void queryTask(final @Nonnull ExecuteContext ctx) throws NickelRuntimeException {
+        final World world = ctx.get(WORLD);
+        final FluidTaskScheduler scheduler = getFluidTaskScheduler(world);
+        final BlockPos pos = ctx.getBlockPos(POS);
+        GeoRequirements.requireBlockPosLoaded(world,pos);
+        final IFluidTask task = scheduler.query(pos);
+        (task==null?translation("geocraft.command.fluidphysics.task.query.non").color(TextFormatting.RED):
+                translation("geocraft.command.fluidphysics.task.query.exist",FluidTaskRegistry.getName(task)).color(TextFormatting.GREEN))
+                .arg(pos.getX(),pos.getY(),pos.getZ())
+                .sendTo(ctx.getSender());
+    }
+
+    static void scheduleTask(final @Nonnull ExecuteContext ctx) throws NickelRuntimeException {
+        final IFluidTask task = ctx.get("taskID", FluidTaskNode.class);
+        final World world = ctx.get(WORLD);
+        final FluidTaskScheduler scheduler = getFluidTaskScheduler(world);
+        final BlockPos pos = ctx.getBlockPos(POS);
+        GeoRequirements.requireBlockPosLoaded(world,pos);
+        final Fluid fluid = ctx.get(FLUID);
+        final boolean success = scheduler.schedule(ctx.getBlockPos(POS),task,fluid);
+        (success?translation("geocraft.command.fluidphysics.task.schedule.success",FluidTaskRegistry.getName(task)).color(TextFormatting.GREEN):
+                translation("geocraft.command.fluidphysics.task.schedule.fail").color(TextFormatting.RED))
+                .arg(pos.getX(),pos.getY(),pos.getZ())
+                .sendTo(ctx.getSender());
+    }
+
+    @Nonnull
+    static FluidTaskScheduler getFluidTaskScheduler(final @Nonnull World world) throws NickelRuntimeException {
+        final FluidTaskScheduler scheduler = FluidTaskScheduler.getScheduler(world);
+        if(scheduler == null) throw new NickelRuntimeException(translation("geocraft.command.fluidphysics.task.scheduler_not_found",world.provider.getDimension()));
+        else return scheduler;
     }
 
     @Nonnull

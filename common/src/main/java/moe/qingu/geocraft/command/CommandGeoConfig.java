@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
 import static moe.qingu.nickel.command.Nodes.*;
 import static moe.qingu.nickel.text.Texts.*;
 import static moe.qingu.geocraft.command.GeoArguments.MULTIPLY;
-import static moe.qingu.geocraft.command.GeoArguments._multiply;
+import static moe.qingu.geocraft.command.GeoArguments.¥天圆地方_multiply;
 
 /**
  * @author QGMoe
@@ -156,7 +156,7 @@ public final class CommandGeoConfig {
         return new CommandBuilder(GEO_CONFIG_COMMAND_NAME)
                 .require(GEO_CONFIG_PERMISSION_NODE).allow(DefaultPermissionLevel.OP).register()
                 .require(2)
-                .then(ConfigItemNode.configItem("config_entry")
+                .then(ConfigItemNode.¥天圆地方$configItem("config_entry")
                         .translate("geocraft.command.geoconfig.arg.config_entry")
                         .smart()
                         .literal("set")
@@ -178,7 +178,7 @@ public final class CommandGeoConfig {
                                 .translate("geocraft.command.geoconfig.arg.request_id")
                                 .then(execute(CommandGeoConfig::resetToDefault)))
                         .done()
-                        .literal("query").then(_multiply()
+                        .literal("query").then(¥天圆地方_multiply()
                                 .then(execute(CommandGeoConfig::showInfo))).done()
                         .execute(CommandGeoConfig::showInfo)
                         .done())

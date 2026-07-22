@@ -134,8 +134,8 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildSetCommand(){
         return literal("set")
                 .require(ATM_PERMISSION_NODE +".set").allow(DefaultPermissionLevel.OP).register()
-                .then($property().suggest(Stream.concat(getPropertyList().stream(), AtmosphereSets.SetConsumer.keySet().stream()))
-                        .then($value().then(_pos().then(process(CommandAtmosphere::set)))
+                .then(¥天圆地方$property().suggest(Stream.concat(getPropertyList().stream(), AtmosphereSets.SetConsumer.keySet().stream()))
+                        .then(¥天圆地方$value().then(¥天圆地方_pos().then(process(CommandAtmosphere::set)))
         ));
     }
 
@@ -143,7 +143,7 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildStopCommand(){
         return literal("stop")
                 .require(ATM_PERMISSION_NODE +".stop").allow(DefaultPermissionLevel.OP).register()
-                .then(_world().then(execute(ctx -> {
+                .then(¥天圆地方_world().then(execute(ctx -> {
                             final World world = ctx.get(WORLD, DimensionNode.class);
                             final IAtmosphereSystem system = AtmosphereSystemManager.getAtmosphereSystem(world);
                             if(system == null) throw new CommandException("geocraft.command.atmosphere_system.null");
@@ -160,8 +160,8 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildResetCommand(){
         return literal("reset")
                 .require(ATM_PERMISSION_NODE +".reset").allow(DefaultPermissionLevel.OP).register()
-                .then($property().allow("temp").then(
-                        _pos().then(process( context -> {
+                .then(¥天圆地方$property().allow("temp").then(
+                        ¥天圆地方_pos().then(process(context -> {
                                     final World world = context.getWorld();
                                     final Atmosphere atmosphere = context.get(ATMOSPHERE);
                                     final BlockPos pos = context.getBlockPos(POS);
@@ -189,18 +189,18 @@ public final class CommandAtmosphere {
     public static INodeBuilder<? extends ISmartNode> buildAddCommand(){
         return literal("add")
                 .require(ATM_PERMISSION_NODE +".add").allow(DefaultPermissionLevel.OP).register()
-                .then($property().suggest(
+                .then(¥天圆地方$property().suggest(
                         Stream.concat(getPropertyList().stream(), AtmosphereAdds.AddConsumer.keySet().stream())
-                ).then($value().then(_pos().then(process(CommandAtmosphere::add)))));
+                ).then(¥天圆地方$value().then(¥天圆地方_pos().then(process(CommandAtmosphere::add)))));
     }
 
     @Nonnull
     public static INodeBuilder<? extends ISmartNode> buildQueryCommand(){
         return literal("query")
                 .require(ATM_PERMISSION_NODE +".query").allow(DefaultPermissionLevel.OP).register()
-                .then($property()
+                .then(¥天圆地方$property()
                         .suggest(Stream.concat(getPropertyList().stream(), AtmosphereQueries.QueryConsumer.keySet().stream()))
-                        .then(_pos().then(_multiply().then(process(CommandAtmosphere::query)))
+                        .then(¥天圆地方_pos().then(¥天圆地方_multiply().then(process(CommandAtmosphere::query)))
         ));
     }
 
@@ -220,7 +220,7 @@ public final class CommandAtmosphere {
                                 .translate("geocraft.command.atmosphere.arg.blockProp")
                                 .comment("geocraft.command.atmosphere.comment.blockProp")
                                 .defaultAs("*")
-                                .then(_multiply().then(execute(ctx ->{
+                                .then(¥天圆地方_multiply().then(execute(ctx ->{
                                     final IBlockState state = ctx.get("blockToQuery");
                                     final double multiply = ctx.get(MULTIPLY);
                                     final ConfigurableBlockState cState = new ConfigurableBlockState(state);
@@ -254,13 +254,13 @@ public final class CommandAtmosphere {
                                 .defaultAs(new NBTPath().append(new NBTPathCompound(NBTMatcher.toMatcher(new NBTTagCompound()))))
                                 .translate("geocraft.command.atmosphere.arg.nbt_path")
                                 .suggestRaw("{}")
-                                .then(_pos().then(_multiply().then(process(CommandAtmosphere::queryData)))))
+                                .then(¥天圆地方_pos().then(¥天圆地方_multiply().then(process(CommandAtmosphere::queryData)))))
                         .when("modify")
                         .then($NBTPath("nbt_path")
                                 .translate("geocraft.command.atmosphere.arg.nbt_path")
                                 .then($NBTTag("nbt_tag")
                                         .translate("geocraft.command.atmosphere.arg.nbt_tag")
-                                        .then(_pos().then(process(CommandAtmosphere::modifyData))))));
+                                        .then(¥天圆地方_pos().then(process(CommandAtmosphere::modifyData))))));
     }
 
     @Nonnull
@@ -269,7 +269,7 @@ public final class CommandAtmosphere {
                 .requirePlayer(true)
                 .require(4)
                 .require(ATM_PERMISSION_NODE +".track").allow(DefaultPermissionLevel.OP).register()
-                .then($property()
+                .then(¥天圆地方$property()
                         .suggest(
                                 Stream.concat(getPropertyList().stream(), Stream.of("temp","water","steam"))
                         ).then($int("time")
@@ -282,7 +282,7 @@ public final class CommandAtmosphere {
                                         .comment("geocraft.command.atmosphere.comment.file_name")
                                         .pattern("[^\\s\\\\/:\\*\\?\\\"<>\\|](\\x20|[^\\s\\\\/:\\*\\?\\\"<>\\|])*[^\\s\\\\/:\\*\\?\\\"<>\\|\\.]$") //过滤正确的文件名
                                         .suggest(() -> Collections.singletonList("track_"+new Date().getTime()+".csv"))
-                                        .then(_pos().then(process(CommandAtmosphere::track)))
+                                        .then(¥天圆地方_pos().then(process(CommandAtmosphere::track)))
                         )
                 )
         );

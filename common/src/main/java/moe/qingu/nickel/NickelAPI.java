@@ -43,8 +43,8 @@ import org.apache.logging.log4j.Logger;
 
 @Mod(modid = NickelAPI.MODID,name = NickelAPI.NAME,version = NickelAPI.VERSION_NAME,acceptableRemoteVersions = "*")
 public final class NickelAPI{
-    public final static long VERSION_ID = -1021;
-    public final static String VERSION_NAME = "0.0.4";
+    public final static long VERSION_ID = -1020;
+    public final static String VERSION_NAME = "0.0.5";
     public final static String MODID = "nickelapi";
     public final static String NAME = "NickelAPI";
     public final static Logger LOGGER = LogManager.getLogger(NAME);

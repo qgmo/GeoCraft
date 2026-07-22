@@ -75,10 +75,11 @@ public abstract class FluidTaskScheduler implements ICapabilityProvider {
      * @param pos 位置
      * @param task 流体任务，必须已经在 {@link moe.qingu.geocraft.api.fluidphysics.updater.task.FluidTaskRegistry} 中注册
      * @param fluid 流体，最好是 {@link net.minecraftforge.fluids.FluidRegistry} 中已经注册的实例
+     * @return 是否成功计划
      * @apiNote 任务需要根据位置去重
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public abstract void schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
+    public abstract boolean schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid);
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public abstract void update();

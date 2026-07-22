@@ -1,4 +1,5 @@
 nickel.command.parameter.geocraft.atmosphere_accessor=Atmosphere Accessor
+nickel.command.parameter.geocraft.fluid_task=Fluid Task
 nickel.command.parameter.geocraft.config_item=GeoCraft Config Item
 
 geocraft.storage.mismatch.fluidphysics=Warning: The current fluid physics mode is %s, but the save's fluid physics mode is %s. Are you sure you want to continue loading this save?
@@ -30,11 +31,14 @@ geocraft.config.comment.soil.enable_soil=Enable soil system. Note: Disabling soi
 
 geocraft.command.io_error=An IO exception occurred (%s), the command cannot continue
 geocraft.command.chunk_error.unloaded=Location (%s,%s) is not loaded
+geocraft.command.pos.unloaded=Position (%2$s,%3$s,%4$s) in dimension %1$s is not loaded
 geocraft.command.atmosphere_system.null=No atmosphere system exists in this world
+geocraft.command.fluid_task.not_found=Fluid Task %s does not exist
 geocraft.command.config_item_not_found=Config item %s does not exist
 
 geocraft.command.common.arg.pos=Position
 geocraft.command.common.arg.value=Value
+geocraft.command.common.arg.fluid=Fluid
 geocraft.command.common.arg.multiply=Multiplier
 geocraft.command.common.arg.property=Property
 geocraft.command.common.arg.world=Dimension
@@ -46,6 +50,7 @@ geocraft.command.atmosphere.arg.file_name=File Name
 geocraft.command.atmosphere.arg.blockProp=Block Physics Property
 geocraft.command.atmosphere.arg.nbt_path=NBT Path
 geocraft.command.atmosphere.arg.nbt_tag=NBT Value
+geocraft.command.fluidphysics.arg.taskID=Fluid Task ID
 geocraft.command.geotest.arg.test_id=Test ID
 geocraft.command.geotest.arg.target=Test Target
 geocraft.command.geoconfig.arg.config_entry=Config Item
@@ -123,6 +128,11 @@ geocraft.command.fluidphysics.inaccessibility_to_atmosphere=Position (%s,%s,%s) 
 geocraft.command.fluidphysics.unable_to_evaporate=Evaporation at position (%s,%s,%s) is disabled
 geocraft.command.fluidphysics.not_water=Block state at position (%s,%s,%s) is %s, not a water block
 geocraft.command.fluidphysics.query.mode=Current fluid physics mode: %s
+geocraft.command.fluidphysics.task.scheduler_not_found=No Fluid Task Scheduler found in the specified dimension %s
+geocraft.command.fluidphysics.task.query.non=No Fluid Task exists at (%s,%s,%s)
+geocraft.command.fluidphysics.task.query.exist=Fluid Task %s exists at (%s,%s,%s)
+geocraft.command.fluidphysics.task.schedule.success=Successfully scheduled Fluid Task %1$s at (%2$s,%3$s,%4$s)
+geocraft.command.fluidphysics.task.schedule.fail=Failed to schedule Fluid Task at (%s,%s,%s)
 geocraft.command.fluidphysics.evapration.reasons.upon_non_air=Block above is not air
 geocraft.command.fluidphysics.evapration.reasons.invalid_water=Invalid water block state (data value greater than 7)
 geocraft.command.fluidphysics.evapration.reasons.rawPossibility=Raw Probability

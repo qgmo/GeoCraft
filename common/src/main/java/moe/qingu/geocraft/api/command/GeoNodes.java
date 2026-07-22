@@ -27,7 +27,10 @@
 
 package moe.qingu.geocraft.api.command;
 
-import moe.qingu.geocraft.api.command.builder.parameter.AtmosphereAccessorBuilder;
+import moe.qingu.geocraft.api.command.builder.AtmosphereAccessorBuilder;
+import moe.qingu.geocraft.api.command.node.FluidTaskNode;
+import moe.qingu.geocraft.api.fluidphysics.updater.task.IFluidTask;
+import moe.qingu.nickel.command.builder.parameter.FastParameterNodeBuilder;
 
 import javax.annotation.Nonnull;
 
@@ -35,7 +38,12 @@ public final class GeoNodes {
     private GeoNodes(){}
 
     @Nonnull
-    public static AtmosphereAccessorBuilder atmosphere(final @Nonnull String name){
+    public static AtmosphereAccessorBuilder ¥GeoCraft$atmosphere(final @Nonnull String name){
         return new AtmosphereAccessorBuilder(name);
+    }
+
+    @Nonnull
+    public static FastParameterNodeBuilder<IFluidTask, FluidTaskNode> ¥GeoCraft$fluidTask(final @Nonnull String name){
+        return new FastParameterNodeBuilder<>(name,FluidTaskNode::new);
     }
 }

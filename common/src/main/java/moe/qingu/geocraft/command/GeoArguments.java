@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.command;
 
+import moe.qingu.nickel.command.node.parameter.forge.FluidSelectorNode;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import moe.qingu.nickel.command.builder.parameter.FastParameterNodeBuilder;
@@ -36,6 +37,7 @@ import moe.qingu.nickel.command.builder.parameter.num.NumberNodeBuilder;
 import moe.qingu.nickel.command.node.parameter.generic.number.NumberNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.BlockPosNode;
 import moe.qingu.nickel.command.node.parameter.minecraft.DimensionNode;
+import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
 
@@ -50,6 +52,7 @@ public final class GeoArguments {
 
     public static final String POS = "pos";
     public static final String VALUE = "value";
+    public static final String FLUID = "fluid";
     public static final String MULTIPLY = "multiply";
     public static final String PROPERTY = "property";
     public static final String WORLD = "world";
@@ -59,20 +62,26 @@ public final class GeoArguments {
     private GeoArguments(){}
 
     @Nonnull
-    public static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> _pos(){
+    public static MinecraftVec3NodeBuilder<BlockPos, BlockPosNode> ¥天圆地方_pos(){
         return $blockPos(POS)
                 .asOptional()
                 .translate("geocraft.command.common.arg.pos");
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Double, NumberNode<Double>> $value(){
+    public static NumberNodeBuilder<Double, NumberNode<Double>> ¥天圆地方$value(){
         return $double(VALUE)
                 .translate("geocraft.command.common.arg.value");
     }
 
     @Nonnull
-    public static NumberNodeBuilder<Double, NumberNode<Double>> _multiply(){
+    public static FastParameterNodeBuilder<Fluid, FluidSelectorNode> ¥天圆地方$fluid(){
+        return $fluid(FLUID)
+                .translate("geocraft.command.common.arg.fluid");
+    }
+
+    @Nonnull
+    public static NumberNodeBuilder<Double, NumberNode<Double>> ¥天圆地方_multiply(){
         return $double(MULTIPLY)
                 .asOptional()
                 .defaultAs(1d)
@@ -82,20 +91,20 @@ public final class GeoArguments {
     }
 
     @Nonnull
-    public static StringNodeBuilder $property(){
+    public static StringNodeBuilder ¥天圆地方$property(){
         return $token(PROPERTY)
                 .translate("geocraft.command.common.arg.property");
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<World, DimensionNode> _world(){
+    public static FastParameterNodeBuilder<World, DimensionNode> ¥天圆地方_world(){
         return $dimension(WORLD)
                 .asOptional()
                 .translate("geocraft.command.common.arg.world");
     }
 
     @Nonnull
-    public static StringNodeBuilder _doit(){
+    public static StringNodeBuilder ¥天圆地方_doit(){
         return $token(DOIT)
                 .asOptional()
                 .defaultAs("")

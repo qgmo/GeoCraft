@@ -69,17 +69,17 @@ public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implement
 
     @Override
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid){
-        if(pos.getY()>255 || pos.getY()<0) return;
+    public boolean schedule(final @Nonnull BlockPos pos, final @Nonnull IFluidTask task, final @Nonnull Fluid fluid){
+        if(pos.getY()>255 || pos.getY()<0) return false;
         final int chunkX = pos.getX()>>4;
         final int chunkZ = pos.getZ()>>4;
         final FluidUpdater updater = getUpdater(chunkX,chunkZ);
-        if(updater == null) return;
+        if(updater == null) return false;
         final int cx = pos.getX() & 0xF;
         final int cz = pos.getZ() & 0xF;
-        if(updater.isScheduled(cx,pos.getY(),cz)) return;
+        if(updater.isScheduled(cx,pos.getY(),cz)) return false;
         final int taskID = FluidTaskRegistry.getID(task);
-        if(taskID <0 || taskID > 65535) throw new IllegalArgumentException();
+        if(taskID <0 || taskID > 65535) return false;
         if(fluid.getDensity() > 0) updater.scheduleHeavy(cx, pos.getY(), cz, taskID);
         else updater.scheduleLight(cx,pos.getY(),cz,taskID);
         schedules.add(ChunkPos.asLong(chunkX,chunkZ));
@@ -88,6 +88,7 @@ public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implement
             chunk.markDirty();
             dirties.add(updater);
         }
+        return true;
     }
 
     @Override

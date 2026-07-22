@@ -28,6 +28,7 @@
 package moe.qingu.nickel.command.node.parameter.minecraft;
 
 import moe.qingu.nickel.command.node.parameter.TokenizeParameterNode;
+import moe.qingu.nickel.command.suggestor.DirectSuggestor;
 import moe.qingu.nickel.command.suggestor.SerialiseSuggestor;
 import moe.qingu.nickel.command.suggestor.Suggestor;
 import net.minecraft.command.CommandBase;
@@ -47,7 +48,7 @@ import static moe.qingu.nickel.text.Texts.translation;
  */
 public class DimensionNode extends TokenizeParameterNode.Single<World> {
     public static final DefaultParser<World> DEFAULT_PARSER = (node, context) -> context.getWorld();
-    public static final Suggestor<World> DEFAULT_SUGGESTOR = SerialiseSuggestor.of(DimensionManager.getWorlds());
+    public static final Suggestor<World> DEFAULT_SUGGESTOR = SerialiseSuggestor.<World>of(DimensionManager.getWorlds()).with(DirectSuggestor.of("~"));
 
     public DimensionNode(@Nonnull final String name) {
         super(name);
@@ -57,6 +58,7 @@ public class DimensionNode extends TokenizeParameterNode.Single<World> {
 
     @Override
     public World parse(@Nonnull final String token, @Nonnull final CommandContext context) throws CommandException {
+        if("~".equalsIgnoreCase(token)) return context.getWorld();
         final int dimension = CommandBase.parseInt(token);
         final World world = DimensionManager.getWorld(dimension);
         if(world == null) return context.input.panic(translation("nickel.command.parameter.dimension.not_found",dimension));

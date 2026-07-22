@@ -54,7 +54,7 @@ public final class ConfigItemNode extends TokenizeParameterNode.Single<ConfigIte
     }
 
     @Nonnull
-    public static FastParameterNodeBuilder<ConfigItem<?,?>,ConfigItemNode> configItem(final @Nonnull String name){
+    public static FastParameterNodeBuilder<ConfigItem<?,?>,ConfigItemNode> ¥天圆地方$configItem(final @Nonnull String name){
         return new FastParameterNodeBuilder<>(name,ConfigItemNode::new);
     }
 
