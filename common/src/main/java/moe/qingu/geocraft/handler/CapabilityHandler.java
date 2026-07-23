@@ -48,7 +48,7 @@ import java.util.concurrent.Callable;
  */
 public final class CapabilityHandler {
     public static @CapabilityInject(ChunkyFluidTaskDatum.class) Capability<ChunkyFluidTaskDatum> CHUNKY_FLUID_TASK_DATUM;
-    public static @CapabilityInject(ChunkyBlockTickDatum.class) Capability<ChunkyBlockTickDatum> BLOCK_TICK_DATUM;
+    public static @CapabilityInject(ChunkyBlockTickDatum.class) Capability<ChunkyBlockTickDatum> CHUNKY_BLOCK_TICK_DATUM;
 
     private CapabilityHandler(){}
 

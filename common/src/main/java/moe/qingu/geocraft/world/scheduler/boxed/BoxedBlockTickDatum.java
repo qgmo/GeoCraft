@@ -194,6 +194,11 @@ public final class BoxedBlockTickDatum extends ChunkyBlockTickDatum {
               Getter And Setter
        ------------------------------- */
 
+    @Override
+    public boolean isEmpty() {
+        return queue.isEmpty();
+    }
+
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean markDirty(){
         this.chunk.markDirty();

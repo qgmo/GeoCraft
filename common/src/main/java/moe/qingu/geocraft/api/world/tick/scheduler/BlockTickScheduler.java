@@ -80,7 +80,10 @@ public abstract class BlockTickScheduler implements ICapabilityProvider {
             Setter
        ------------------ */
 
-    public abstract void setValidator(final @Nonnull BlockTickValidator validator);
+    /**
+     * @throws UnsupportedOperationException 不支持
+     */
+    public abstract void setValidator(final @Nonnull BlockTickValidator validator) throws UnsupportedOperationException;
 
     /* ------------------
             Getter
@@ -91,7 +94,7 @@ public abstract class BlockTickScheduler implements ICapabilityProvider {
         return world;
     }
 
-    @Nonnull
+    @Nullable
     public abstract BlockTickValidator getValidator();
 
     /* ------------------
@@ -125,17 +128,17 @@ public abstract class BlockTickScheduler implements ICapabilityProvider {
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull Block block, final int delay){
+    public static boolean schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull Block block, final int delay){
         final BlockTickScheduler scheduler = getScheduler(world);
-        if(scheduler != null) scheduler.schedule(pos, block, delay, TickPriority.DEFAULT);
-        else world.scheduleUpdate(pos,block,delay);
+        if(scheduler != null) return scheduler.schedule(pos, block, delay, TickPriority.DEFAULT);
+        else return false;
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull Block block, final int delay, final @Nonnull TickPriority priority){
+    public static boolean schedule(final @Nonnull World world,final @Nonnull BlockPos pos, final @Nonnull Block block, final int delay, final @Nonnull TickPriority priority){
         final BlockTickScheduler scheduler = getScheduler(world);
-        if(scheduler != null) scheduler.schedule(pos, block, delay, priority);
-        else world.updateBlockTick(pos,block,delay,priority.vanillaPriority);
+        if(scheduler != null) return scheduler.schedule(pos, block, delay, priority);
+        else return false;
     }
 
     @Nullable

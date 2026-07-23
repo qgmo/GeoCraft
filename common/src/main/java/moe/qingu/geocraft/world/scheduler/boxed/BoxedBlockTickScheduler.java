@@ -154,7 +154,7 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
         final BlockPos position = tick.pos();
         final @Nonnull IBlockState state = getBlockState(chunk,ebs,position);
 
-        if(validator.accepts(position,tick.block(),state)) return;
+        if(!validator.accepts(position,tick.block(),state)) return;
         try {
             state.getBlock().updateTick(world,position,state,world.rand);
         } catch (final Throwable t) {
@@ -170,6 +170,12 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
             if(storage == Chunk.NULL_BLOCK_STORAGE) return Blocks.AIR.getDefaultState();
             else return storage.get(pos.getX() & 0xF,y &0xF,pos.getZ() &0xF);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Class<BoxedBlockTickDatum> getStorageType() {
+        return BoxedBlockTickDatum.class;
     }
 
     @Deprecated

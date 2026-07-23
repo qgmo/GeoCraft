@@ -29,6 +29,8 @@ package moe.qingu.geocraft.api.world.tick;
 
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.NextTickListEntry;
 
 import javax.annotation.Nonnull;
 
@@ -67,6 +69,11 @@ public interface IScheduledTick extends Comparable<IScheduledTick> {
         }return false;
     }
 
+    @Nonnull
+    static IScheduledTick of(final @Nonnull NextTickListEntry entry){
+        final int priority = MathHelper.clamp(entry.priority + TickPriority.DEFAULT.ordinal(),0,0b1111);
+        return CONSTRUCTOR.create(entry.getBlock(),entry.position,entry.scheduledTime,TickPriority.of(priority));
+    }
 
     @Nonnull
     static IScheduledTick of(final @Nonnull Block block,final @Nonnull BlockPos pos,final long triggeredTick){

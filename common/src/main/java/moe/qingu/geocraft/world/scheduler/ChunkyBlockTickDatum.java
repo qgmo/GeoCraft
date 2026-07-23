@@ -30,10 +30,16 @@ package moe.qingu.geocraft.world.scheduler;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickDatum;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
+import moe.qingu.geocraft.world.scheduler.packed.PackedBlockTickDatum;
+import moe.qingu.geocraft.world.scheduler.packed.PackedBlockTickScheduler;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
@@ -56,6 +62,12 @@ public abstract class ChunkyBlockTickDatum implements ICapabilitySerializable<NB
     public final ReentrantLock lock = new ReentrantLock();
     protected final AtomicBoolean dirty = new AtomicBoolean(false);
     protected volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
+
+    public static @Nullable ChunkyBlockTickDatum createByScheduler(final @Nullable BlockTickScheduler scheduler, final @Nonnull Chunk chunk){
+        if(scheduler instanceof BoxedBlockTickScheduler) return new BoxedBlockTickDatum(chunk);
+        else if(scheduler instanceof PackedBlockTickScheduler) return new PackedBlockTickDatum();
+        else return null;
+    }
 
     /* -------------------------------
          Serialisation Area
@@ -90,20 +102,22 @@ public abstract class ChunkyBlockTickDatum implements ICapabilitySerializable<NB
 
     @Override
     public final boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.BLOCK_TICK_DATUM;
+        return capability == CapabilityHandler.CHUNKY_BLOCK_TICK_DATUM;
     }
 
     @Nullable
     @Override
     public final <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
         if(hasCapability(capability,facing)){
-            return CapabilityHandler.BLOCK_TICK_DATUM.cast(this);
+            return CapabilityHandler.CHUNKY_BLOCK_TICK_DATUM.cast(this);
         }else return null;
     }
 
     /* -------------------------------
               Getter And Setter
        ------------------------------- */
+
+    public abstract boolean isEmpty();
 
     public final boolean isDirty() {
         return dirty.get();

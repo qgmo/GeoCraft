@@ -187,6 +187,11 @@ public final class PackedBlockTickDatum extends ChunkyBlockTickDatum {
               Getter And Setter
        ------------------------------- */
 
+    @Override
+    public boolean isEmpty() {
+        return queue == null || queue.isEmpty();
+    }
+
     public boolean markDirty(){
         return dirty.compareAndSet(false,true);
     }

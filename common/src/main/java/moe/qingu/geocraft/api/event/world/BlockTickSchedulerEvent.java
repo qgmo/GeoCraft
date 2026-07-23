@@ -25,10 +25,12 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.event.fluidphysics;
+package moe.qingu.geocraft.api.event.world;
 
-import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.eventhandler.Cancelable;
 import net.minecraftforge.fml.common.eventhandler.Event;
 
 import javax.annotation.Nonnull;
@@ -38,32 +40,58 @@ import java.util.function.Supplier;
 /**
  * @author QGMoe
  */
-public class FluidTaskSchedulerEvent extends Event {
+public class BlockTickSchedulerEvent extends Event {
     private final @Nonnull World world;
 
-    public FluidTaskSchedulerEvent(final @Nonnull World world) {
+    public BlockTickSchedulerEvent(final @Nonnull World world) {
         this.world = world;
     }
 
     @Nonnull
-    public final World getWorld() {
+    public World getWorld() {
         return world;
     }
 
     @HasResult
-    public static class Create extends FluidTaskSchedulerEvent {
-        private Supplier<FluidTaskScheduler> candidate;
+    @Cancelable
+    public static class Create extends BlockTickSchedulerEvent {
+        private Supplier<BlockTickScheduler> candidate;
 
         public Create(@Nonnull final World world) {
             super(world);
         }
 
-        public final void setCandidate(final Supplier<FluidTaskScheduler> candidate) {
+        public final void setCandidate(final Supplier<BlockTickScheduler> candidate) {
             this.candidate = candidate;
         }
 
         @Nullable
-        public Supplier<FluidTaskScheduler> getCandidate() {
+        public Supplier<BlockTickScheduler> getCandidate() {
+            return candidate;
+        }
+    }
+
+    @HasResult
+    public static class InitValidator extends BlockTickSchedulerEvent {
+        private final BlockTickScheduler scheduler;
+        private Supplier<BlockTickValidator> candidate;
+
+        public InitValidator(final @Nonnull BlockTickScheduler scheduler) {
+            super(scheduler.getWorld());
+            this.scheduler = scheduler;
+        }
+
+        public void setCandidate(final Supplier<BlockTickValidator> candidate) {
+            this.candidate = candidate;
+        }
+
+        @Nonnull
+        public BlockTickScheduler getScheduler() {
+            return scheduler;
+        }
+
+        @Nullable
+        public Supplier<BlockTickValidator> getCandidate() {
             return candidate;
         }
     }

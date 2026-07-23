@@ -28,7 +28,10 @@
 package moe.qingu.geocraft.api.event;
 
 import moe.qingu.geocraft.api.event.fluidphysics.FluidTaskSchedulerEvent;
+import moe.qingu.geocraft.api.event.world.BlockTickSchedulerEvent;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityAreaEffectCloud;
 import net.minecraft.entity.player.EntityPlayer;
@@ -163,8 +166,8 @@ public final class EventFactory {
        ----------------------- */
 
     @Nullable
-    public static Supplier<FluidTaskScheduler> onFluidUpdaterManagerCreate(@Nonnull final World world){
-        FluidTaskSchedulerEvent.Create event = new FluidTaskSchedulerEvent.Create(world);
+    public static Supplier<FluidTaskScheduler> onFluidTaskSchedulerCreate(@Nonnull final World world){
+        final @Nonnull FluidTaskSchedulerEvent.Create event = new FluidTaskSchedulerEvent.Create(world);
         EVENT_BUS.post(event);
         return event.hasResult() && event.getResult() == Result.ALLOW?event.getCandidate():null;
     }
@@ -211,6 +214,24 @@ public final class EventFactory {
             }
         }
         return null;
+    }
+
+    /* -----------------------
+          General Event
+       ----------------------- */
+
+    @Nullable
+    public static Supplier<BlockTickScheduler> onBlockTickSchedulerCreate(@Nonnull final World world){
+        final @Nonnull BlockTickSchedulerEvent.Create event = new BlockTickSchedulerEvent.Create(world);
+        if(EVENT_BUS.post(event)) return null;
+        return event.hasResult() && event.getResult() == Result.ALLOW?event.getCandidate():null;
+    }
+
+    @Nullable
+    public static Supplier<BlockTickValidator> onBlockTickValidatorInit(@Nonnull final BlockTickScheduler scheduler){
+        final @Nonnull BlockTickSchedulerEvent.InitValidator event = new BlockTickSchedulerEvent.InitValidator(scheduler);
+        EVENT_BUS.post(event);
+        return event.hasResult() && event.getResult() == Result.ALLOW?event.getCandidate():null;
     }
 
     @Nullable

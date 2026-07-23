@@ -122,11 +122,14 @@ public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> e
         T res = data.get(ChunkPos.asLong(cx,cz));
         if(res != null) return res;
         final Chunk chunk = world.getChunk(cx,cz);
-        if(chunk.hasCapability(CapabilityHandler.BLOCK_TICK_DATUM,null)){
-            data.put(ChunkPos.asLong(cx,cz),res = (T) chunk.getCapability(CapabilityHandler.BLOCK_TICK_DATUM,null));
+        if(chunk.hasCapability(CapabilityHandler.CHUNKY_BLOCK_TICK_DATUM,null)){
+            data.put(ChunkPos.asLong(cx,cz),res = (T) chunk.getCapability(CapabilityHandler.CHUNKY_BLOCK_TICK_DATUM,null));
             return res;
         }else return null;
     }
+
+    @Nonnull
+    public abstract Class<T> getStorageType();
 
     @Nonnull
     public final Long2ObjectOpenHashMap<T> getData() {
@@ -149,5 +152,12 @@ public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> e
         final @Nonnull CrashReportCategory category = report.makeCategory("Block being ticked");
         CrashReportCategory.addBlockInfo(category, pos.toImmutable(), state);
         return new ReportedException(report);
+    }
+
+    @Nullable
+    public static ChunkyBlockTickScheduler<?> getChunkyScheduler(final @Nonnull World world){
+        final BlockTickScheduler scheduler = getScheduler(world);
+        if(scheduler instanceof ChunkyBlockTickScheduler<?>) return (ChunkyBlockTickScheduler<?>) scheduler;
+        return null;
     }
 }

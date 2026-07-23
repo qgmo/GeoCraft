@@ -86,7 +86,7 @@ public final class FluidPhysicsEventHandler {
     }
 
     public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event,final @Nonnull World world){
-        final Supplier<FluidTaskScheduler> supplier = EventFactory.onFluidUpdaterManagerCreate(world);
+        final Supplier<FluidTaskScheduler> supplier = EventFactory.onFluidTaskSchedulerCreate(world);
         event.addCapability(FluidTaskScheduler.ID,supplier == null?new EmptyFluidTaskScheduler(world): supplier.get());
     }
 

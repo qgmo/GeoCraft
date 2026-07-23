@@ -27,26 +27,71 @@
 
 package moe.qingu.geocraft.handler.event;
 
+import moe.qingu.geocraft.api.GeoCraftAPI;
+import moe.qingu.geocraft.api.event.EventFactory;
+import moe.qingu.geocraft.api.event.world.BlockTickSchedulerEvent;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.MojangBlockTickScheduler;
+import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
+import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickDatum;
+import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickScheduler;
+import moe.qingu.geocraft.world.scheduler.packed.PackedBlockTickScheduler;
 import net.minecraft.block.Block;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.property.IGeographyProperty;
 import moe.qingu.geocraft.handler.RegistryHandler;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickDatum;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = GeoCraft.MODID)
 public final class CommonEventHandler {
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void createBlockTickScheduler(final @Nonnull BlockTickSchedulerEvent.Create event){
+        if(event.getCandidate() == null && !event.getWorld().isRemote && event.getResult() != Event.Result.ALLOW){
+            final World world = event.getWorld();
+            event.setCandidate(() -> new PackedBlockTickScheduler(world)); //todo
+            event.setResult(Event.Result.ALLOW);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    @SuppressWarnings("unchecked")
+    public static void onChunkLoad(final @Nonnull ChunkEvent.Load event){
+        final Chunk chunk = event.getChunk();
+        final ChunkyBlockTickDatum datum = chunk.getCapability(CapabilityHandler.CHUNKY_BLOCK_TICK_DATUM,null);
+        if(datum == null || datum.isEmpty()) return;
+        final ChunkyBlockTickScheduler<ChunkyBlockTickDatum> scheduler = (ChunkyBlockTickScheduler<ChunkyBlockTickDatum>) ChunkyBlockTickScheduler.getChunkyScheduler(event.getWorld());
+        if(scheduler == null || scheduler.getWorld() != event.getWorld() || scheduler.getStorageType() != datum.getClass()) return;
+        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
+        scheduler.getData().put(pos,datum);
+        scheduler.getSchedules().add(pos);
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOW)
+    public static void onChunkUnload(final @Nonnull ChunkEvent.Unload event){
+        final ChunkyBlockTickScheduler<?> scheduler = ChunkyBlockTickScheduler.getChunkyScheduler(event.getWorld());
+        if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;
+        final Chunk chunk = event.getChunk();
+        final long pos = ChunkPos.asLong(chunk.x,chunk.z);
+        scheduler.getSchedules().remove(pos);
+        scheduler.getData().remove(pos);
+    }
 
     @SubscribeEvent
     public static void onRegisterBlocks(final @Nonnull RegistryEvent.Register<Block> event){
@@ -61,8 +106,17 @@ public final class CommonEventHandler {
     @SubscribeEvent
     public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event){
         if(event.getObject().isRemote) return;
-        final BoxedBlockTickScheduler updater = new BoxedBlockTickScheduler(event.getObject());
-        event.addCapability(BoxedBlockTickScheduler.ID, updater);
+        final Supplier<BlockTickScheduler> supplier = EventFactory.onBlockTickSchedulerCreate(event.getObject());
+        final BlockTickScheduler scheduler = supplier == null?new MojangBlockTickScheduler(event.getObject()):supplier.get();
+        final Supplier<BlockTickValidator> validatorSupplier = EventFactory.onBlockTickValidatorInit(scheduler);
+        if(validatorSupplier != null){
+            try {
+                scheduler.setValidator(validatorSupplier.get());
+            } catch (final @Nonnull UnsupportedOperationException e) {
+                GeoCraftAPI.LOGGER.error(scheduler.getClass().getName() + " doesn't support validator set!",e);
+            }
+        }
+        event.addCapability(BlockTickScheduler.ID, scheduler);
         FluidPhysicsEventHandler.onWorldAttachCapabilities(event,event.getObject());
     }
 
@@ -71,7 +125,8 @@ public final class CommonEventHandler {
     public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event){
         final @Nullable World world = event.getObject().getWorld(); //??? 为什么在逻辑客户端这会是null
         if(world == null || world.isRemote) return;
-        event.addCapability(BoxedBlockTickDatum.ID, new BoxedBlockTickDatum(event.getObject()));
+        final @Nullable ChunkyBlockTickDatum datum = ChunkyBlockTickDatum.createByScheduler(BlockTickScheduler.getScheduler(world),event.getObject());
+        if(datum != null) event.addCapability(ChunkyBlockTickDatum.ID,datum);
         FluidPhysicsEventHandler.onChunkAttachCapabilities(event,world);
     }
 
@@ -80,5 +135,6 @@ public final class CommonEventHandler {
         final World world = event.getWorld();
         if(world.isRemote) return;
         FluidTaskScheduler.getSchedulers().remove(world.provider.getDimension());
+        BlockTickScheduler.getSchedulers().remove(world.provider.getDimension());
     }
 }

@@ -171,6 +171,12 @@ public final class PackedBlockTickScheduler extends ChunkyBlockTickScheduler<Pac
         consumer.ebs = null;
     }
 
+    @Nonnull
+    @Override
+    public Class<PackedBlockTickDatum> getStorageType() {
+        return PackedBlockTickDatum.class;
+    }
+
     private class Consumer extends PackedBlockTickConsumer {
         private final MBlockPos posContainer = new MBlockPos();
         private int baseX;
@@ -183,7 +189,7 @@ public final class PackedBlockTickScheduler extends ChunkyBlockTickScheduler<Pac
             if(storage != Chunk.NULL_BLOCK_STORAGE){
                 final IBlockState state = storage.get(x,y & 0xF,z);
                 posContainer.setPos(baseX + x, y, baseZ + z);
-                if(PackedBlockTickScheduler.this.validator.accepts(posContainer,block,state)) return;
+                if(!PackedBlockTickScheduler.this.validator.accepts(posContainer,block,state)) return;
                 final World world = PackedBlockTickScheduler.this.world;
                 try {
                     block.updateTick(world,posContainer,state,world.rand);
