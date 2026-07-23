@@ -132,12 +132,12 @@ public final class PackedBlockTickScheduler extends ChunkyBlockTickScheduler<Pac
         final long beginTime = System.currentTimeMillis(),maxTime = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
         final long totalWorldTime = world.getTotalWorldTime();
         final long[] tempArr = new long[100];
-        temp = schedules.toLongArray(temp);
+        prepareUpdate();
         final int size = schedules.size();
         long count = 0;
         int i = 0;
         while (count < maxUpdateNum && i < size){
-            final long pos = temp[i++];
+            final long pos = volume.temp[i++];
             final PackedBlockTickDatum datum = data.get(pos);
             if(datum == null) {
                 schedules.remove(pos);

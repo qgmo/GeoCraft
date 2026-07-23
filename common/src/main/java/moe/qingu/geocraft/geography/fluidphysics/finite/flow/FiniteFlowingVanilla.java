@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.geography.fluidphysics.finite.flow;
 
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -52,7 +53,6 @@ import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchMan
 import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 import moe.qingu.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -236,7 +236,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
         }else{
             final int remain = totalQuanta-8;
             this.placeDynamicBlock(world,currentPos,8-remain);
-            BoxedBlockTickScheduler.scheduleUpdate(world,currentPos,dynamic,tickRate);
+            BlockTickScheduler.schedule(world,currentPos,dynamic,tickRate);
             this.placeDynamicBlock(world,downPos$mutable,0);
         }
     }
@@ -441,7 +441,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
                 continue;
             }
             if(isAir){
-                final @Nonnull IBlockState stateBelow = worldIn.getBlockState(downPos$mutable.setPos((Vec3i) facingPos$迭代用$mut).offsetM(EnumFacing.DOWN,1));
+                final @Nonnull IBlockState stateBelow = worldIn.getBlockState(downPos$mutable.setPos(facingPos$迭代用$mut).offsetM(EnumFacing.DOWN,1));
                 if (canFlowDownTo(stateBelow)) {
                     return FluidUtil.getFlowDifficulty(distance*8,8+thisQuanta);
                 }else{

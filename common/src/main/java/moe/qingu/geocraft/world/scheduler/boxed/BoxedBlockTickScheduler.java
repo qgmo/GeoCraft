@@ -48,8 +48,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 /**
- * @since 0.1
- * @version 0.2.0-alpha.3
+ * @since 0.3.0-alpha.1
  * @author QiguaiAAAA
  */
 public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<BoxedBlockTickDatum> {
@@ -115,12 +114,12 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
         final long beginTime = System.currentTimeMillis(),maxTime = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
         final long totalWorldTime = world.getTotalWorldTime();
         final IScheduledTick[] tempArr = new IScheduledTick[100];
-        temp = schedules.toLongArray(temp);
+        prepareUpdate();
         final int size = schedules.size();
         long count = 0;
         int i = 0;
         while (count < maxUpdateNum && i < size){
-            final long pos = temp[i++];
+            final long pos = volume.temp[i++];
             final BoxedBlockTickDatum datum = data.get(pos);
             if(datum == null) {
                 schedules.remove(pos);
@@ -176,11 +175,5 @@ public final class BoxedBlockTickScheduler extends ChunkyBlockTickScheduler<Boxe
     @Override
     public Class<BoxedBlockTickDatum> getStorageType() {
         return BoxedBlockTickDatum.class;
-    }
-
-    @Deprecated
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void scheduleUpdate(@Nonnull final World world,@Nonnull final BlockPos pos,@Nonnull final Block block,final int delay){
-        schedule(world,pos,block,delay);
     }
 }

@@ -13,6 +13,7 @@ geocraft.config.type.long=長整數
 geocraft.config.type.double=雙精度浮點數
 geocraft.config.type.boolean=布林值
 geocraft.config.type.custom=自訂
+geocraft.config.type.enum=枚舉
 geocraft.config.type.collection.list=列表
 geocraft.config.type.collection.list.double=雙精度浮點數陣列
 geocraft.config.type.collection.list.int=整數陣列

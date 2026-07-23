@@ -29,6 +29,7 @@ package moe.qingu.geocraft.mixin.classic;
 
 import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.fluidphysics.task.IFluidTaskResponder;
@@ -60,7 +61,6 @@ import moe.qingu.geocraft.mixin.common.block.BlockFluidBaseAccessor;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.util.fluid.FluidSearchUtil;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -82,7 +82,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
         super(fluid, material);
     }
 
-    @Inject(method = "Lnet/minecraftforge/fluids/BlockFluidClassic;<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
+    @Inject(method = "<init>(Lnet/minecraftforge/fluids/Fluid;Lnet/minecraft/block/material/Material;Lnet/minecraft/block/material/MapColor;)V",
             at = @At("TAIL"))
     private void 天圆地方$FINITE$init(final @Nonnull Fluid fluid, final @Nonnull Material material, final @Nonnull MapColor color, final @Nonnull CallbackInfo ci) {
         DeferredActions.onInited(() -> this.天圆地方$CLASSIC$fluid = this.getFluid());
@@ -135,7 +135,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
                 FluidOperationUtil.moveFluidSource(world,sourcePosOption.get(),pos);
-                BoxedBlockTickScheduler.scheduleUpdate(world,pos,this,modifiedTickRate);
+                BlockTickScheduler.schedule(world,pos,this,modifiedTickRate);
                 return;
             }
         }
@@ -167,7 +167,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     world.setBlockToAir(pos);
                 } else {
                     world.setBlockState(pos, state.withProperty(LEVEL, quantaPerBlock - newQuanta), Constants.BlockFlags.SEND_TO_CLIENTS);
-                    BoxedBlockTickScheduler.scheduleUpdate(world,pos,this,modifiedTickRate);
+                    BlockTickScheduler.schedule(world,pos,this,modifiedTickRate);
                     world.notifyNeighborsOfStateChange(pos, this, false);
                 }
             }

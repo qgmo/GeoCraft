@@ -32,6 +32,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.ThreadLocalHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -266,7 +268,7 @@ public final class FluidPressureSearchManager implements Runnable{
             for(int i=0;i<MAX_UPDATE_BLOCKS;i++){
                 final Pair<BlockPos, Block> task = posesToLoad.poll();
                 if(task == null) break;
-                BoxedBlockTickScheduler.scheduleUpdate(world,task.getLeft(),task.getRight(),world.rand.nextInt(dispersion));
+                BlockTickScheduler.schedule(world,task.getLeft(),task.getRight(),world.rand.nextInt(dispersion), TickPriority.SLIGHTLY_HIGH);
             }
             posesToLoad.clear();
         }

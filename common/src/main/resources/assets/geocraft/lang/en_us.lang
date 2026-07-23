@@ -13,6 +13,7 @@ geocraft.config.type.long=Long
 geocraft.config.type.double=Double
 geocraft.config.type.boolean=Boolean
 geocraft.config.type.custom=Custom
+geocraft.config.type.enum=Enum
 geocraft.config.type.collection.list=List
 geocraft.config.type.collection.list.double=Double Array
 geocraft.config.type.collection.list.int=Integer Array

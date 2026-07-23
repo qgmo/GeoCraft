@@ -13,6 +13,7 @@ geocraft.config.type.long=长整型
 geocraft.config.type.double=双精度浮点数
 geocraft.config.type.boolean=布尔值
 geocraft.config.type.custom=自定义
+geocraft.config.type.enum=枚举
 geocraft.config.type.collection.list=列表
 geocraft.config.type.collection.list.double=双精度浮点数数组
 geocraft.config.type.collection.list.int=整型数组

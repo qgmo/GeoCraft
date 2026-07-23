@@ -40,6 +40,7 @@ import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.util.math.vec.MBlockPos;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.geocraft.world.scheduler.ChunkyScheduledData;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -61,11 +62,11 @@ import java.util.function.IntConsumer;
  */
 public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implements ICapabilityProvider {
     private final int maxUpdateNum;
-    private final Long2ObjectOpenHashMap<ChunkyFluidTaskDatum> data = new Long2ObjectOpenHashMap<>();
-    private final ConcurrentLinkedQueue<ChunkyFluidTaskDatum> dirties = new ConcurrentLinkedQueue<>();
-    private final LongOpenHashSet schedules = new LongOpenHashSet();
+    private final ChunkyScheduledData<ChunkyFluidTaskDatum> volume = new ChunkyScheduledData<>();
+    private final Long2ObjectOpenHashMap<ChunkyFluidTaskDatum> data = volume.data;
+    private final ConcurrentLinkedQueue<ChunkyFluidTaskDatum> dirties = volume.dirties;
+    private final LongOpenHashSet schedules = volume.schedules;
     private final Consumer consumer = new Consumer();
-    private long[] temp = new long[0];
 
     public ChunkyFluidTaskScheduler(final @Nonnull World world) {
         super(world);
@@ -100,12 +101,12 @@ public final class ChunkyFluidTaskScheduler extends FluidTaskScheduler implement
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public void update(){
         final long beginTime = System.nanoTime(),maxTime = FluidPhysicsConfig.FLUID_UPDATER_MAX_TIME_USAGE.getValue();
-        temp = schedules.toLongArray(temp);
+        volume.temp = schedules.toLongArray(volume.temp);
         final int size = schedules.size();
         long count = 0;
         int i = 0;
         while (count < maxUpdateNum && i < size){
-            final long pos = temp[i++];
+            final long pos = volume.temp[i++];
             final ChunkyFluidTaskDatum datum = data.get(pos);
             if(datum == null) {
                 schedules.remove(pos);

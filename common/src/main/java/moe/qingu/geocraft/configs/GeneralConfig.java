@@ -27,6 +27,8 @@
 
 package moe.qingu.geocraft.configs;
 
+import moe.qingu.geocraft.api.configs.item.base.ConfigEnum;
+import moe.qingu.geocraft.world.scheduler.GeoBlockTickType;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;
 import moe.qingu.geocraft.api.configs.ConfigCategory;
@@ -75,28 +77,39 @@ public final class GeneralConfig {
 
     public static final ConfigCategory CATEGORY_BLOCK_UPDATER = GENERAL.getChildCategory("block_updater");
 
-    @Config.Comment("开启BlockUpdater以在1游戏刻内提供额外的方块更新额度和更精细的更新管理\n" +
-            "Enable BlockUpdater to provide additional block update quotas and more refined update management within a single game tick.")
+    @Config.Comment("使用天圆地方自己的方块计划刻调度器以在1游戏刻内提供额外的方块更新额度、更精细的更新管理以及更好的调度性能，但可能会降低兼容性\n" +
+            "Enable GeoCraft's Block Tick Scheduler to provide additional block update quotas and more refined update management within a single game tick.")
     @Config.LangKey("geocraft.config.comment.general.enable_block_updater")
     @GeoConfig.Support(since = "0.1")
+    @Config.RequiresWorldRestart
     public static final ConfigBoolean ENABLE_BLOCK_UPDATER =
             new ConfigBoolean(CATEGORY_BLOCK_UPDATER, "enableBlockUpdater",true);
+
+    @Config.Comment({"设定启用天圆地方自己的方块计划刻调度器时，需要使用的调度器模式。",
+            "支持的模式有：BOXED | PACKED  装箱模式 | 打包模式",
+            "装箱模式兼容性更好，但内存占用和性能会变差；打包模式性能更好，但不兼容扩展方块 ID 的模组",
+            "从打包模式切换到装箱模式是无损切换，但从装箱模式切换到打包模式可能出现数据丢失"})
+    @GeoConfig.Support(since = "0.3.0-alpha.1")
+    @Config.RequiresWorldRestart
+    public static final ConfigEnum<GeoBlockTickType> BLOCK_TICK_SCHEDULER_TYPE =
+            new ConfigEnum<>(CATEGORY_BLOCK_UPDATER,"blockTickSchedulerMode",GeoBlockTickType.PACKED, GeoBlockTickType.class)
+                    .withAlias(GeoBlockTickType.BOXED,"装箱","装箱模式","裝箱","裝箱模式")
+                    .withAlias(GeoBlockTickType.PACKED,"打包","打包模式");
 
     @Config.RangeInt(min = 1)
     @Config.Comment("天圆地方内置的附加方块更新器在一游戏刻内最多更新的方块数量，多余的更新任务会被忽略。\n" +
             "The max number of blocks to update by Block Updater inside GeoCraft. The excess part will be ignored.")
     @GeoConfig.Support(since = "0.1")
-    @Config.RequiresMcRestart
+    @Config.RequiresWorldRestart
     public static final ConfigInteger BLOCK_UPDATER_MAX_UPDATES_BLOCK =
             new ConfigInteger(CATEGORY_BLOCK_UPDATER, "maxUpdateBlocksPerTick",65536*4);
 
     @Config.RangeInt(min = -1)
     @GeoConfig.Support(since = "0.1")
-    @Config.Comment("BlockUpdater在1游戏刻内的最大耗时，当用时超过该阈值时，将会推迟剩余任务更新到下一游戏刻。设为-1以禁用时间限制。\n" +
+    @Config.Comment("天圆地方自己的方块计划刻调度器在1游戏刻内的最大耗时，当用时超过该阈值时，将会推迟剩余任务更新到下一游戏刻。设为-1以禁用时间限制。\n" +
             "The maximum processing time allowed for BlockUpdater within a single game tick. When the processing time exceeds this threshold, non-compliant update tasks will be discarded. Set it to -1 to disable this function.")
     public static final ConfigInteger BLOCK_UPDATER_MAX_TIME_USAGE = new ConfigInteger(CATEGORY_BLOCK_UPDATER, "maxTimeUsage",200);
 
-    @Config.Ignore
     @Config.Comment("按距离最近玩家距离从进到远更新方块。\n" +
             "Update blocks in order of proximity to the nearest player.")
     @GeoConfig.Support(since = "0.1")

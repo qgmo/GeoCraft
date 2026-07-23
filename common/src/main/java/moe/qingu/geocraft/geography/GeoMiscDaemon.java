@@ -137,7 +137,7 @@ public final class GeoMiscDaemon implements Runnable {
         }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
             return;
         }
-        final ConcurrentLinkedQueue<ChunkyBlockTickDatum> dirties = (ConcurrentLinkedQueue<ChunkyBlockTickDatum>) scheduler.getDirties();
+        final ConcurrentLinkedQueue<ChunkyBlockTickDatum> dirties = (ConcurrentLinkedQueue<ChunkyBlockTickDatum>) scheduler.getVolume().dirties;
         final int size = dirties.size();
         int cot = 0;
         while (cot++ < size){

@@ -34,10 +34,11 @@ import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.api.world.tick.scheduler.MojangBlockTickScheduler;
 import moe.qingu.geocraft.api.world.tick.validator.BlockTickValidator;
+import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.handler.CapabilityHandler;
 import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickDatum;
 import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickScheduler;
-import moe.qingu.geocraft.world.scheduler.packed.PackedBlockTickScheduler;
+import moe.qingu.geocraft.world.scheduler.GeoBlockTickType;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -63,9 +64,11 @@ public final class CommonEventHandler {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void createBlockTickScheduler(final @Nonnull BlockTickSchedulerEvent.Create event){
+        if(!GeneralConfig.ENABLE_BLOCK_UPDATER.getValue()) return;
         if(event.getCandidate() == null && !event.getWorld().isRemote && event.getResult() != Event.Result.ALLOW){
             final World world = event.getWorld();
-            event.setCandidate(() -> new PackedBlockTickScheduler(world)); //todo
+            final GeoBlockTickType tickType = GeneralConfig.BLOCK_TICK_SCHEDULER_TYPE.getValue();
+            event.setCandidate(tickType.provider.apply(world));
             event.setResult(Event.Result.ALLOW);
         }
     }
@@ -79,8 +82,8 @@ public final class CommonEventHandler {
         final ChunkyBlockTickScheduler<ChunkyBlockTickDatum> scheduler = (ChunkyBlockTickScheduler<ChunkyBlockTickDatum>) ChunkyBlockTickScheduler.getChunkyScheduler(event.getWorld());
         if(scheduler == null || scheduler.getWorld() != event.getWorld() || scheduler.getStorageType() != datum.getClass()) return;
         final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        scheduler.getData().put(pos,datum);
-        scheduler.getSchedules().add(pos);
+        scheduler.getVolume().data.put(pos,datum);
+        scheduler.getVolume().schedules.add(pos);
     }
 
     @SubscribeEvent(priority = EventPriority.LOW)
@@ -89,8 +92,8 @@ public final class CommonEventHandler {
         if(scheduler == null || scheduler.getWorld() != event.getWorld()) return;
         final Chunk chunk = event.getChunk();
         final long pos = ChunkPos.asLong(chunk.x,chunk.z);
-        scheduler.getSchedules().remove(pos);
-        scheduler.getData().remove(pos);
+        scheduler.getVolume().data.remove(pos);
+        scheduler.getVolume().data.remove(pos);
     }
 
     @SubscribeEvent

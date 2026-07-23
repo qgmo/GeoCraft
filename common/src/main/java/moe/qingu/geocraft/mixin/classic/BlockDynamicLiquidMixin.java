@@ -30,6 +30,7 @@ package moe.qingu.geocraft.mixin.classic;
 import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskCollector;
 import moe.qingu.geocraft.api.fluidphysics.task.IFluidTaskResponder;
 import moe.qingu.geocraft.api.util.DeferredActions;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.task.IFluidTask;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
@@ -57,7 +58,6 @@ import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.api.util.FluidUtil;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.util.MiscUtil;
-import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.util.fluid.FluidSearchUtil;
 
@@ -186,7 +186,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
                 FluidOperationUtil.moveFluidSource(world,sourcePosOption.get(),pos);
-                BoxedBlockTickScheduler.scheduleUpdate(world,pos,BlockLiquid.getStaticBlock(material),updateRate);
+                BlockTickScheduler.schedule(world,pos,BlockLiquid.getStaticBlock(material),updateRate);
                 return;
             }
         }
@@ -241,7 +241,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
                 else {
                     state = state.withProperty(LEVEL, newLiquidMeta);
                     world.setBlockState(pos, state, 2);
-                    BoxedBlockTickScheduler.scheduleUpdate(world,pos, this, updateRate);
+                    BlockTickScheduler.schedule(world,pos, this, updateRate);
                     world.notifyNeighborsOfStateChange(pos, this, false);
                 }
             }

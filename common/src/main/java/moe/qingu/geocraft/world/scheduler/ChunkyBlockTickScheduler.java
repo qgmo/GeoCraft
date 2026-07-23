@@ -59,11 +59,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> extends BlockTickScheduler {
     protected final int maxUpdateNum;
-    protected final Long2ObjectOpenHashMap<T> data = new Long2ObjectOpenHashMap<>();
-    protected final ConcurrentLinkedQueue<T> dirties = new ConcurrentLinkedQueue<>();
-    protected final LongOpenHashSet schedules = new LongOpenHashSet();
+    protected final ChunkyScheduledData<T> volume = new ChunkyScheduledData<>();
+    protected final Long2ObjectOpenHashMap<T> data = volume.data;
+    protected final ConcurrentLinkedQueue<T> dirties = volume.dirties;
+    protected final LongOpenHashSet schedules = volume.schedules;
     protected BlockTickValidator validator = new IdentityBlockTickValidator(this);
-    protected long[] temp = new long[0];
 
     protected ChunkyBlockTickScheduler(@Nonnull final World world) {
         super(world);
@@ -132,18 +132,15 @@ public abstract class ChunkyBlockTickScheduler<T extends ChunkyBlockTickDatum> e
     public abstract Class<T> getStorageType();
 
     @Nonnull
-    public final Long2ObjectOpenHashMap<T> getData() {
-        return data;
+    public final ChunkyScheduledData<T> getVolume() {
+        return volume;
     }
 
-    @Nonnull
-    public final LongOpenHashSet getSchedules() {
-        return schedules;
-    }
-
-    @Nonnull
-    public final ConcurrentLinkedQueue<T> getDirties() {
-        return dirties;
+    protected final void prepareUpdate(){
+        volume.temp = schedules.toLongArray(volume.temp);
+        final int size = schedules.size();
+        if(size <=1) return;
+        if(GeneralConfig.SORT_UPDATE_TASKS_BY_DISTANCE_TO_PLAYERS.getValue()) volume.sortTempByPlayers(world,size);
     }
 
     @Nonnull
