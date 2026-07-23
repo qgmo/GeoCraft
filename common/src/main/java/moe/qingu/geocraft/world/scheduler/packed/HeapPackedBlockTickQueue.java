@@ -70,7 +70,7 @@ public final class HeapPackedBlockTickQueue extends PackedBlockTickQueue {
     @Override
     public void queue(final int cx,final int cy,final int cz,final int blockID,final long delay,final int priority) {
         if (size == heap.length) heap = LongArrays.grow(heap, size + 1);
-        heap[size++] = (delay << 32) | ((long) priority <<28) | ((long) cy << 20) | ((long) cx << 16) | ((long) cz << 12) | blockID;
+        heap[size++] = (delay << 32) | ((long) priority <<28) | ((long) cy << 20) | ((long) cz << 16) | ((long) cx << 12) | blockID;
         LongHeaps.upHeap(heap, size, size - 1, COMPARE_UNSIGNED_LOW_FIRST);
         set.add((cy<<20) | (blockID << 8) | (cx << 4) | cz);
     }
