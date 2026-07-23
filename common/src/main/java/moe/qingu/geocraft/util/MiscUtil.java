@@ -27,6 +27,7 @@
 
 package moe.qingu.geocraft.util;
 
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.Block;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +36,6 @@ import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import moe.qingu.geocraft.api.setting.GeoFluidSetting;
-import moe.qingu.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -65,7 +65,7 @@ public final class MiscUtil {
         final double gravity = GeoFluidSetting.getGravity(world);
         if(gravity == 0d) return;
         final int modifiedTickRate = Math.max((int) (tickRate*gravity),1);
-        BlockUpdater.scheduleUpdate(world,pos,block,modifiedTickRate);
+        BlockTickScheduler.schedule(world,pos,block,modifiedTickRate);
     }
 
     public static int modifyTickRateByGravity(final @Nonnull World world,final int tickRate){

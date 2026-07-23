@@ -25,11 +25,8 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.api.world.scheduler;
+package moe.qingu.geocraft.api.world.tick;
 
-import moe.qingu.geocraft.api.world.tick.IScheduledTick;
-import moe.qingu.geocraft.api.world.tick.ScheduledTickFactory;
-import moe.qingu.geocraft.api.world.tick.TickPriority;
 import net.minecraft.block.Block;
 import net.minecraft.util.math.BlockPos;
 

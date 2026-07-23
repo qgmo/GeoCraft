@@ -27,13 +27,13 @@
 
 package moe.qingu.geocraft.command;
 
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.command.ICommand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import moe.qingu.nickel.command.builder.CommandBuilder;
-import moe.qingu.geocraft.util.misc.ExtendedNextTickListEntry;
-import moe.qingu.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -60,9 +60,9 @@ public class CommandQueryBlockState{
                             final World world = ctx.get(WORLD);
                             final IBlockState state = world.getBlockState(pos);
                             ctx.notifyCommandListener(state.toString());
-                            final BlockUpdater updater = BlockUpdater.getBlockUpdater(world);
-                            final Set<ExtendedNextTickListEntry> entries = updater == null? Collections.emptySet():updater.queryEntries(pos,false);
-                            entries.forEach(e -> ctx.notifyCommandListener(e.toString()+" wait time "+(e.scheduledTime-world.getTotalWorldTime())));
+                            final BlockTickScheduler scheduler = BlockTickScheduler.getScheduler(world);
+                            final Set<IScheduledTick> entries = scheduler == null? Collections.emptySet():scheduler.query(pos);
+                            entries.forEach(e -> ctx.notifyCommandListener(e.toString()+" wait time "+(e.triggeredTick()-world.getTotalWorldTime())));
                         })))
                 )
                 .build();

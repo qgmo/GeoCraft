@@ -29,6 +29,7 @@ package moe.qingu.geocraft;
 
 import moe.qingu.geocraft.api.util.DeferredActions;
 import moe.qingu.geocraft.api.fluidphysics.task.FluidTaskRegistry;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.GeoMiscDaemon;
 import moe.qingu.geocraft.geography.fluidphysics.FluidTasks;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
@@ -48,7 +49,6 @@ import moe.qingu.geocraft.compat.GeoCompatLoader;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
-import moe.qingu.geocraft.world.BlockUpdater;
 import moe.qingu.geocraft.world.gen.GeoCraftPostPopulatingGenerator;
 import moe.qingu.geocraft.world.storage.GeoDataFile;
 
@@ -148,7 +148,7 @@ public class GeoCraft {
             FluidPressureSearchManager.syncStop();
         }
         FluidTaskScheduler.onServerStop();
-        BlockUpdater.onServerStop();
+        BlockTickScheduler.onServerStop();
         GeoCompatLoader.loadCompats(LoaderState.SERVER_STOPPING);
     }
 

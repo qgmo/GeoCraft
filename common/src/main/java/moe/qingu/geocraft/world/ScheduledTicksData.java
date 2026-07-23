@@ -25,81 +25,79 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.world.scheduler;
+package moe.qingu.geocraft.world;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.api.world.tick.IScheduledTick;
 import moe.qingu.geocraft.api.world.tick.TickPriority;
 import moe.qingu.geocraft.handler.CapabilityHandler;
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.nbt.NBTUtils;
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagLongArray;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.util.Constants;
+import moe.qingu.geocraft.GeoCraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.SoftReference;
+import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * @author QGMoe
+ * @since 0.2.0
+ * @author QiguaiAAAA
  */
-@SuppressWarnings("OctalInteger")
-public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
-    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"bt_datum");
-    private static final ThreadLocal<LongArrayList> TEMP = ThreadLocal.withInitial(LongArrayList::new);
+public final class ScheduledTicksData implements ICapabilitySerializable<NBTTagCompound> {
+    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"scheduled_ticks_data");
+    private final @Nonnull Chunk chunk;
     private final AtomicBoolean dirty = new AtomicBoolean(false);
     private volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
     final ReentrantLock lock = new ReentrantLock();
-    BlockTickQueue queue = null;
+    final PriorityQueue<IScheduledTick> queue = new PriorityQueue<>();
+    final ObjectOpenHashSet<IScheduledTick> set = new ObjectOpenHashSet<>();
+
+    public ScheduledTicksData(@Nonnull final Chunk chunk) {
+        this.chunk = chunk;
+    }
+
+    @Nonnull
+    public Chunk getChunk() {
+        return chunk;
+    }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void schedule(final long worldTotalTime,final int cx, final int cy, final int cz, final int blockID, final long delay, final @Nonnull TickPriority priority){
+    public void schedule(final @Nonnull IScheduledTick tick){
         lock.lock();
         try {
-            if(queue == null){
-                queue = new HeapBlockTickQueue();
-                queue.baseTime = worldTotalTime;
-            }else if(worldTotalTime - queue.baseTime > 2147483647L) queue.updateBaseTime(worldTotalTime);
-            queue.queue(cx,cy,cz,blockID,worldTotalTime+delay-queue.baseTime,priority.ordinal());
+            this.queue.add(tick);
         }finally {
             lock.unlock();
         }
     }
 
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public boolean isScheduled(final int cx,final int cy,final int cz,final int blockID){
-        return queue != null && queue.contains(cx, cy, cz, blockID);
+    public boolean isScheduled(final @Nonnull IScheduledTick tick){
+        return set.contains(tick);
     }
 
     @Nonnull
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public Set<IScheduledTick> query(final int cx,final int cy,final int cz) {
+    public Set<IScheduledTick> query(final @Nonnull BlockPos pos) {
         final ObjectOpenHashSet<IScheduledTick> ticks = new ObjectOpenHashSet<>();
-        queue.forEach(t -> {
-            final long x = (t >>> 4) & 0xFL;
-            final long y = (t >>> 20) & 0xFFL;
-            final long z = t & 0xFL;
-            if(x != cx || y != cy || z != cz) return;
-            final long scheduledTime = queue.baseTime + (t >>> 32);
-            final @Nonnull Block block = Block.getBlockById((int)((t >>> 8)&0_7777L));
-            final @Nonnull TickPriority priority = TickPriority.of((int)((t >>> 28)&0xFL));
-            ticks.add(IScheduledTick.of(block,new BlockPos(x,y,z),scheduledTime,priority));
-        });
+        for(final IScheduledTick tick:queue) if(tick.pos().equals(pos)) ticks.add(tick);
         return ticks;
     }
 
@@ -108,20 +106,29 @@ public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTa
        ------------------------------- */
 
     @Override
+    @Nonnull
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.GEO_MISC_DAEMON})
     public NBTTagCompound serializeNBT() {
         final @Nullable NBTTagCompound cache;
         if(isDirty() || (cache = this.save.get()) == null){
             lock.lock();
             try {
-                final NBTTagCompound s = new NBTTagCompound();
-                s.setInteger("v",1);
-                if(queue != null){
-                    s.setTag("queue", serializeQueue());
-                    s.setLong("baseTime",queue.baseTime);
+                final NBTTagCompound compound = new NBTTagCompound();
+                final NBTTagList updateLists = new NBTTagList();
+                final long totalTime = chunk.getWorld().getTotalWorldTime();
+                compound.setLong("totalWorldTime",totalTime);
+                for(@Nonnull IScheduledTick tick:queue){
+                    final @Nonnull NBTTagCompound c = new NBTTagCompound();
+                    c.setInteger("id",Block.REGISTRY.getIDForObject(tick.block()));
+                    c.setIntArray("pos",new int[]{tick.pos().getX(),tick.pos().getY(),tick.pos().getZ()});
+                    c.setInteger("time",(int)(tick.triggeredTick()-totalTime));
+                    c.setByte("pri",(byte) tick.priority().ordinal());
+                    updateLists.appendTag(c);
                 }
-                this.save = new SoftReference<>(s);
-                return s;
+                compound.setTag("block_updating_entries",updateLists);
+                compound.setInteger("version",1);
+                this.save = new SoftReference<>(compound);
+                return compound;
             }finally {
                 this.clearDirty();
                 lock.unlock();
@@ -132,26 +139,19 @@ public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTa
 
     @Override
     public void deserializeNBT(final @Nonnull NBTTagCompound nbt) {
-        if(nbt.getInteger("v")>1) throw new IllegalArgumentException();
-        if(nbt.hasKey("queue")){
-            final NBTBase tag = nbt.getTag("queue");
-            try {
-                final long[] dat = tag instanceof NBTTagLongArray? NBTUtils.getLongArray((NBTTagLongArray) tag): new long[0];
-                if(queue == null) queue = new HeapBlockTickQueue();
-                for(final long t:dat) queue.queue(t);
-            } catch (final @Nonnull NickelRuntimeException e) {
-                throw new RuntimeException(e.getCause());
-            }
-            queue.baseTime = nbt.getLong("baseTime");
+        final int v = nbt.getInteger("version");
+        if(v > 1) throw new IllegalArgumentException();
+        final NBTTagList updateLists = nbt.getTagList("block_updating_entries", Constants.NBT.TAG_COMPOUND);
+        final long savedTime = nbt.getLong("totalWorldTime");
+        for(@Nonnull NBTBase base:updateLists){
+            final @Nonnull NBTTagCompound compound = (NBTTagCompound) base;
+            final @Nonnull Block block = Block.REGISTRY.getObjectById(compound.getInteger("id"));
+            final int[] posArray = compound.getIntArray("pos");
+            final @Nonnull BlockPos pos = new BlockPos(posArray[0],posArray[1],posArray[2]);
+            final int time = compound.getInteger("time");
+            final int pri = MathHelper.clamp(compound.getByte("pri"),0,15);
+            queue.add(IScheduledTick.of(block,pos,savedTime+time, TickPriority.of(pri)));
         }
-    }
-
-    private @Nonnull NBTTagLongArray serializeQueue(){
-        final LongArrayList list = TEMP.get();
-        list.clear();
-        queue.forEach(list::add);
-        final long[] arr = list.toLongArray();
-        return new NBTTagLongArray(arr);
     }
 
     /* -------------------------------
@@ -160,13 +160,15 @@ public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTa
 
     @Override
     public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.BLOCK_TICK_DATUM;
+        return capability == CapabilityHandler.SCHEDULED_TICKS_DATA;
     }
 
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.BLOCK_TICK_DATUM ? CapabilityHandler.BLOCK_TICK_DATUM.cast(this) : null;
+        if(hasCapability(capability,facing)){
+            return CapabilityHandler.SCHEDULED_TICKS_DATA.cast(this);
+        }else return null;
     }
 
     /* -------------------------------
@@ -182,11 +184,14 @@ public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTa
         return lock;
     }
 
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
     public boolean markDirty(){
+        this.chunk.markDirty();
         return dirty.compareAndSet(false,true);
     }
 
     public void clearDirty(){
         dirty.set(false);
     }
+
 }

@@ -23,12 +23,12 @@
   出处:
     - "https://www.mcmod.cn/item/905244.html"
 
-- 中文: "方块更新器"
-  英文: "Block Updater"
+- 中文: "方块计划刻调度器"
+  英文: "Block Tick Scheduler"
   定义: "为管理流体方块计划刻引入的延时方块更新机制，在原版计划刻基础上针对流体更新拓展，可配置。"
   出处:
     - "https://www.mcmod.cn/item/904958.html"
-    - 类: moe.qingu.geocraft.world.BlockUpdater
+    - 类: moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler
 
 - 中文: "更新计划"
   英文: "Next Tick Entry"

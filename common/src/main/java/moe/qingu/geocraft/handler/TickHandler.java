@@ -28,6 +28,7 @@
 package moe.qingu.geocraft.handler;
 
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
@@ -36,7 +37,6 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchManager;
 import moe.qingu.geocraft.util.MiscUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
 
 import javax.annotation.Nonnull;
 
@@ -60,7 +60,7 @@ public final class TickHandler {
         WorldServer world = MiscUtil.getValidWorld(event.world);
         if(world == null) return;
         FluidPressureSearchManager.onWorldTick(world);
-        BlockUpdater.onWorldTick(world);
+        BlockTickScheduler.onWorldTick(world);
         FluidTaskScheduler.onWorldTick(world);
     }
 }

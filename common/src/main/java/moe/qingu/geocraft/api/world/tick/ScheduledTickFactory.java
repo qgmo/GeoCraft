@@ -48,7 +48,7 @@ public final class ScheduledTickFactory {
             PROVIDER = BasicScheduledTick.class;
         }else {
             try {
-                final Class<?> cls = Class.forName("moe.qingu.geocraft.api.world.scheduler.RecordScheduledTick");
+                final Class<?> cls = Class.forName("moe.qingu.geocraft.api.world.tick.RecordScheduledTick");
                 CONSTRUCTOR = (Constructor) cls.getMethod("getFactory").invoke(null);
                 PROVIDER = (Class<? extends IScheduledTick>) cls;
             } catch (final NoSuchMethodException | ClassNotFoundException | InvocationTargetException | IllegalAccessException e) {

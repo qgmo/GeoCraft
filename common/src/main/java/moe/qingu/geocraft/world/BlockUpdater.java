@@ -27,38 +27,35 @@
 
 package moe.qingu.geocraft.world;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.TickPriority;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
+import moe.qingu.geocraft.configs.GeneralConfig;
 import moe.qingu.geocraft.handler.CapabilityHandler;
+import moe.qingu.geocraft.util.math.MathUtil;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.ReportedException;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.NextTickListEntry;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import moe.qingu.geocraft.GeoCraft;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
 import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.configs.GeneralConfig;
-import moe.qingu.geocraft.util.math.MathUtil;
-import moe.qingu.geocraft.util.misc.ExtendedNextTickListEntry;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import static moe.qingu.geocraft.configs.GeneralConfig.BLOCK_UPDATER_MAX_UPDATES_BLOCK;
-import static moe.qingu.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @since 0.1
@@ -67,299 +64,188 @@ import static moe.qingu.geocraft.configs.GeneralConfig.ENABLE_BLOCK_UPDATER;
  */
 @ThreadSafe
 @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-public class BlockUpdater implements ICapabilityProvider {
-    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"block_updater");
-    private static final Function<World,BlockUpdater> putBlockUpdateToCache = w -> w.hasCapability(CapabilityHandler.BLOCK_UPDATER,null)?
-            w.getCapability(CapabilityHandler.BLOCK_UPDATER,null):null;
-    private static final Comparator<ExtendedNextTickListEntry> compareByDistanceToPlayer =
-            Comparator.comparingDouble(ExtendedNextTickListEntry::getDisSqToNearestPlayer);
-    static final int MAX_UPDATE_NUM = BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
-    static final Map<World,BlockUpdater> UPDATERS_CACHE = new ConcurrentHashMap<>();
+public class BlockUpdater extends BlockTickScheduler {
+    private final int maxUpdateNum;
+    private final Long2ObjectOpenHashMap<ScheduledTicksData> data = new Long2ObjectOpenHashMap<>();
+    private final ConcurrentLinkedQueue<ScheduledTicksData> dirties = new ConcurrentLinkedQueue<>();
+    private final LongOpenHashSet schedules = new LongOpenHashSet();
+    private long[] temp = new long[0];
 
-    final ReentrantLock scheduleLock = new ReentrantLock();
-    final Set<ExtendedNextTickListEntry> schedules = new LinkedHashSet<>();
-    final ReentrantLock readyTickLock = new ReentrantLock();
-    final LinkedList<ExtendedNextTickListEntry> readyTicks = new LinkedList<>();
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    final ExtendedNextTickListEntry[] ticksTempEntry = new ExtendedNextTickListEntry[100];
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    int tempLoc = 0;
-
-    World world;
-    Consumer<ExtendedNextTickListEntry> calcDistanceToClosestPlayer;
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void setWorld(@Nonnull World world) {
-        this.world = world;
-        calcDistanceToClosestPlayer = entry -> entry.calcDisSqToNearestPlayer(world);
+    public BlockUpdater(final @Nonnull World world){
+        super(world);
+        this.maxUpdateNum = GeneralConfig.BLOCK_UPDATER_MAX_UPDATES_BLOCK.getValue();
     }
 
-    public World getWorld() {
-        return world;
+    @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public boolean schedule(@Nonnull final BlockPos pos,
+                            @Nonnull final Block block,
+                            final int delay,
+                            @Nonnull final TickPriority priority) {
+        final int chunkX = pos.getX()>>4;
+        final int chunkZ = pos.getZ()>>4;
+        final ScheduledTicksData datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return false;
+        final IScheduledTick tick = IScheduledTick.of(block,pos,this.world.getTotalWorldTime()+delay,priority);
+        if(datum.isScheduled(tick)) return false;
+        datum.schedule(tick);
+        schedules.add(ChunkPos.asLong(chunkX,chunkZ));
+        if(!datum.isDirty() && datum.markDirty()) dirties.add(datum);
+        return true;
     }
 
     @Nonnull
+    @Override
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public Set<ExtendedNextTickListEntry> getPendingTicks() {
-        return schedules;
+    public Set<IScheduledTick> query(@Nonnull final BlockPos pos) {
+        final int chunkX = pos.getX()>>4;
+        final int chunkZ = pos.getZ()>>4;
+        final ScheduledTicksData datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return Collections.emptySet();
+        return datum.query(pos);
     }
 
-    /**
-     * @since 0.2.0
-     */
+    @Nonnull
+    @Override
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void schedule(@Nonnull BlockPos pos,@Nonnull Block block,int delay){
-        ExtendedNextTickListEntry entry = new ExtendedNextTickListEntry(world,pos,block,delay,0);
-        schedules.add(entry);
-    }
-
-    /**
-     * @since 0.2.0
-     */
-    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
-    public void scheduleAll(@Nonnull Collection<ExtendedNextTickListEntry> entries){
-        scheduleLock.lock();
-        try {
-            schedules.addAll(entries);
-        }finally {
-            scheduleLock.unlock();
+    public Set<IScheduledTick> query(final int x,final int y,final int z,final int dx,final int dy,final int dz) {
+        final int tx = x + dx;
+        final int ty = y + dy;
+        final int tz = z + dz;
+        final int minX = Math.min(x,tx);
+        final int minY = Math.min(y,ty);
+        final int minZ = Math.min(z,tz);
+        final int maxX = Math.max(x,tx);
+        final int maxY = Math.max(y,ty);
+        final int maxZ = Math.max(z,tz);
+        final int minChunkX = minX>>4;
+        final int minChunkZ = minZ>>4;
+        final int maxChunkX = maxX>>4;
+        final int maxChunkZ = maxZ>>4;
+        final ObjectOpenHashSet<IScheduledTick> collector = new ObjectOpenHashSet<>();
+        for(int chunkX = minChunkX;chunkX<=maxChunkX;chunkX++){
+            for(int chunkZ = minChunkZ;chunkZ<=maxChunkZ;chunkZ++){
+                if(MathUtil.inRangeOpen(chunkX,minChunkX,maxChunkX) && MathUtil.inRangeOpen(chunkZ,minChunkZ,maxChunkZ)) collect(chunkX,chunkZ,minY,maxY,collector);
+                else {
+                    final ScheduledTicksData datum = getDatum(chunkX,chunkZ);
+                    if(datum == null) continue;
+                    for(final IScheduledTick tick:datum.queue)
+                        if(MathUtil.inRangeClose(tick.pos().getX(),x,tx) && MathUtil.inRangeClose(tick.pos().getZ(),z,tz) && MathUtil.inRangeClose(tick.pos().getY(),y,ty))
+                            collector.add(tick);
+                }
+            }
         }
+        return collector;
     }
 
-    /**
-     * @since 0.2.0
-     */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void updateTick(){
-        final long beginTime = System.currentTimeMillis();
+    public void collect(final int chunkX,final int chunkZ,final int minY,final int maxY,final @Nonnull Set<IScheduledTick> collector){
+        final ScheduledTicksData datum = getDatum(chunkX,chunkZ);
+        if(datum == null) return;
+        for(final IScheduledTick tick:datum.queue) if(MathUtil.inRangeClose(tick.pos().getY(),minY,maxY)) collector.add(tick);
+    }
 
-        scheduleLock.lock();
-        try {
-            final Iterator<ExtendedNextTickListEntry> iterator = schedules.iterator();
-            readyTickLock.lock(); //只要其他方法没有出现获取 scheduleLock 还要获取 readyTickLock 的情况，这里就是安全的
+    @Override
+    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
+    public void update() {
+        final long beginTime = System.currentTimeMillis(),maxTime = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
+        final long totalWorldTime = world.getTotalWorldTime();
+        final IScheduledTick[] tempArr = new IScheduledTick[100];
+        temp = schedules.toLongArray(temp);
+        final int size = schedules.size();
+        long count = 0;
+        int i = 0;
+        while (count < maxUpdateNum && i < size){
+            final long pos = temp[i++];
+            final ScheduledTicksData datum = data.get(pos);
+            if(datum == null) {
+                schedules.remove(pos);
+                continue;
+            }
+            int cot = 0;
+            datum.lock.lock();
+            final Chunk chunk = datum.getChunk();
+            final ExtendedBlockStorage[] ebs= chunk.getBlockStorageArray();
             try {
-                while (iterator.hasNext()) {
-                    final ExtendedNextTickListEntry entry = iterator.next();
-                    if(world.getTotalWorldTime()<entry.scheduledTime){
-                        continue;
+                int n = 0;
+                do {
+                    while (!datum.queue.isEmpty() && n < tempArr.length && datum.queue.peek().triggeredTick() <= totalWorldTime) tempArr[n++] = datum.queue.poll();
+                    cot += n;
+                    count += n;
+                    int j = n;
+                    while (j>0){
+                        final IScheduledTick tick = tempArr[j--];
+                        final BlockPos position = tick.pos();
+                        final int y = position.getY();
+                        final @Nonnull IBlockState state;
+                        if(y<0 || y > 255) state = chunk.getBlockState(position);
+                        else {
+                            final ExtendedBlockStorage storage = ebs[tick.pos().getY()>>4];
+                            if(storage == Chunk.NULL_BLOCK_STORAGE) state = Blocks.AIR.getDefaultState();
+                            else state = storage.get(position.getX() & 0xF,y &0xF,position.getZ() &0xF);
+                        }
+                        final Block block = state.getBlock();
+                        if(isInvalidTickEntry(tick,state)) continue;
+                        try {
+                            block.updateTick(world,position,state,world.rand);
+                        } catch (final Throwable t) {
+                            final @Nonnull CrashReport report = CrashReport.makeCrashReport(t, "Exception while ??? ticking a block"); //todo
+                            final @Nonnull CrashReportCategory category = report.makeCategory("Block being ticked");
+                            CrashReportCategory.addBlockInfo(category, position.toImmutable(), state);
+                            throw new ReportedException(report);
+                        }
                     }
-                    iterator.remove();
-                    readyTicks.add(entry);
-                    if(readyTicks.size()>MAX_UPDATE_NUM) break;
-                }
+                } while (n>0 && count < maxUpdateNum);
             }finally {
-                readyTickLock.unlock();
+                datum.lock.unlock();
             }
-        }finally {
-            scheduleLock.unlock();
-        }
-
-        if(GeneralConfig.SORT_UPDATE_TASKS_BY_DISTANCE_TO_PLAYERS.getValue()){
-            readyTickLock.lock();
-            try {
-                readyTicks.forEach(calcDistanceToClosestPlayer);
-                readyTicks.sort(compareByDistanceToPlayer);
-            }finally {
-                readyTickLock.unlock();
-            }
-        }
-
-        final int maxTimeUsage = GeneralConfig.BLOCK_UPDATER_MAX_TIME_USAGE.getValue();
-        readyTickLock.lock();
-        try {
-            while (!readyTicks.isEmpty()){
-                tempLoc = -1;
-                for (int j=0;j<ticksTempEntry.length;j++){
-                    ticksTempEntry[++tempLoc] = readyTicks.poll();
-                    if(readyTicks.isEmpty()) break;
-                }
-                readyTickLock.unlock(); //释放锁，避免触发区块加载导致死锁
-                try {
-                    while (tempLoc>-1){
-                        final ExtendedNextTickListEntry entry = ticksTempEntry[tempLoc--];
-                        if(!world.isBlockLoaded(entry.position)) continue;
-                        final IBlockState state = world.getBlockState(entry.position);
-                        if(isInvalidTickEntry(entry,state)) continue;
-                        state.getBlock().updateTick(world,entry.position,state,world.rand);
-                    }
-                    if(maxTimeUsage <0) continue;
-                    if(System.currentTimeMillis()-beginTime>maxTimeUsage) break;
-                }finally {
-                    readyTickLock.lock();
-                }
-            }
-        }finally {
-            scheduleLock.lock();
-            try {
-                schedules.addAll(readyTicks);
-                readyTicks.clear();
-            }finally {
-                scheduleLock.unlock();
-            }
-            readyTickLock.unlock();
+            if(cot != 0 && datum.markDirty()) dirties.add(datum);
+            if(datum.queue.isEmpty()) schedules.remove(pos);
+            if(System.currentTimeMillis() - beginTime > maxTime) break;
         }
     }
 
     /**
      * 当前的 NTE 是否需要丢弃，否则就会被更新
-     * @param entry NTE 计划
+     * @param tick NTE 计划
      * @param curState 目前该位置的真正方块状态
      * @return 如果要被丢弃，返回 true
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    protected boolean isInvalidTickEntry(@Nonnull final NextTickListEntry entry,
+    protected boolean isInvalidTickEntry(@Nonnull final IScheduledTick tick,
                                          @Nonnull final IBlockState curState){
-        return curState.getBlock() != entry.getBlock();
-    }
-
-    /**
-     * @since 0.2.0
-     */
-    @Nonnull
-    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-    public Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final BlockPos pos,final boolean doRemove){
-        Set<ExtendedNextTickListEntry> set = null;
-        Collection<ExtendedNextTickListEntry> collectionToQuery;
-        ReentrantLock lock;
-        for(byte i =(byte) 0;i<2;i++){
-            final Iterator<ExtendedNextTickListEntry> iterator;
-            if (i == 0) {
-                collectionToQuery = schedules;
-                lock = scheduleLock;
-            } else {
-                collectionToQuery = readyTicks;
-                lock = readyTickLock;
-            }
-            lock.lock();
-            try {
-                iterator = collectionToQuery.iterator();
-                while (iterator.hasNext()){
-                    final ExtendedNextTickListEntry entry = iterator.next();
-                    if(entry.position.equals(pos)){
-                        if(doRemove) iterator.remove();
-                        if(set == null) set = new HashSet<>();
-                        set.add(entry);
-                    }
-                }
-            }finally {
-                lock.unlock();
-            }
-        }
-        return set == null?Collections.emptySet():set;
-    }
-
-    /**
-     * @since 0.2.0
-     */
-    @Nonnull
-    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-    public Set<ExtendedNextTickListEntry> queryEntries(@Nonnull final Chunk chunk,final boolean doRemove){
-        return queryEntries(chunk.x<<4,0,chunk.z<<4,16,256,16,doRemove);
-    }
-
-    /**
-     * @since 0.2.0
-     */
-    @Nonnull
-    @MultiThread({ThreadType.CHUNK_IO_THREADS,ThreadType.MINECRAFT_SERVER})
-    public Set<ExtendedNextTickListEntry> queryEntries(final int x,final int y,final int z,final int dx,final int dy,final int dz,final boolean doRemove){
-        final int toX = x + dx,toY = y+dy,toZ=z+dz;
-        Set<ExtendedNextTickListEntry> set = null;
-        Collection<ExtendedNextTickListEntry> collectionToQuery;
-        ReentrantLock lock;
-        for(byte i =(byte) 0;i<2;i++){
-            final Iterator<ExtendedNextTickListEntry> iterator;
-            if (i == 0) {
-                collectionToQuery = schedules;
-                lock = scheduleLock;
-            } else {
-                collectionToQuery = readyTicks;
-                lock = readyTickLock;
-            }
-            lock.lock();
-            try {
-                iterator = collectionToQuery.iterator();
-                while (iterator.hasNext()){
-                    final ExtendedNextTickListEntry entry = iterator.next();
-                    if(MathUtil.inRangeClose(entry.position.getX(),x,toX) && MathUtil.inRangeClose(entry.position.getY(),y,toY) && MathUtil.inRangeClose(entry.position.getZ(),z,toZ)){
-                        if(doRemove) iterator.remove();
-                        if(set == null) set = new HashSet<>();
-                        set.add(entry);
-                    }
-                }
-            }finally {
-                lock.unlock();
-            }
-        }
-        return set == null?Collections.emptySet():set;
+        return curState.getBlock() != tick.block();
     }
 
     @Nullable
-    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
-    public static BlockUpdater getBlockUpdater(@Nonnull World world){
-        return UPDATERS_CACHE.computeIfAbsent(world,putBlockUpdateToCache);
-    }
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void scheduleUpdate(@Nonnull World world,@Nonnull BlockPos pos,@Nonnull Block block, int delay){
-        if(!ENABLE_BLOCK_UPDATER.getValue()){
-            world.scheduleUpdate(pos,block,delay);
-            return;
-        }
-        final BlockUpdater updater = getBlockUpdater(world);
-        if(updater == null) return;
-        updater.schedule(pos,block,delay);
-    }
-
-    /**
-     * @since 0.2.0
-     */
-    @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS})
-    public static void scheduleUpdates(@Nonnull World world,@Nonnull Set<ExtendedNextTickListEntry> entries){
-        if(!ENABLE_BLOCK_UPDATER.getValue()){
-            FMLCommonHandler.instance().getMinecraftServerInstance().addScheduledTask(()->{
-                for(ExtendedNextTickListEntry entry:entries){
-                    world.scheduleBlockUpdate(entry.position,entry.getBlock(),(int) (entry.scheduledTime-world.getTotalWorldTime()),entry.priority);
-                }
-            });
-            return;
-        }
-        final BlockUpdater updater = getBlockUpdater(world);
-        if(updater == null) return;
-        updater.scheduleAll(entries);
+    public ScheduledTicksData getDatum(final int cx, final int cz){
+        ScheduledTicksData res = data.get(ChunkPos.asLong(cx,cz));
+        if(res != null) return res;
+        final Chunk chunk = world.getChunk(cx,cz);
+        if(chunk.hasCapability(CapabilityHandler.SCHEDULED_TICKS_DATA,null)){
+            data.put(ChunkPos.asLong(cx,cz),res = chunk.getCapability(CapabilityHandler.SCHEDULED_TICKS_DATA,null));
+            return res;
+        }else return null;
     }
 
     @Nonnull
+    public Long2ObjectOpenHashMap<ScheduledTicksData> getData() {
+        return data;
+    }
+
+    @Nonnull
+    public LongOpenHashSet getSchedules() {
+        return schedules;
+    }
+
+    @Nonnull
+    public ConcurrentLinkedQueue<ScheduledTicksData> getDirties() {
+        return dirties;
+    }
+
+    @Deprecated
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static Set<ExtendedNextTickListEntry> getEntries(@Nonnull final World world){
-        final BlockUpdater updater = getBlockUpdater(world);
-        if(updater == null) return Collections.emptySet();
-        return updater.getPendingTicks();
-    }
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void onWorldTick(@Nonnull WorldServer world){
-        if(!ENABLE_BLOCK_UPDATER.getValue()) return;
-        final BlockUpdater updater = UPDATERS_CACHE.computeIfAbsent(world,putBlockUpdateToCache);
-        if(updater == null) return;
-        updater.updateTick();
-    }
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public static void onServerStop(){
-        UPDATERS_CACHE.clear();
-    }
-
-    @Override
-    public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.BLOCK_UPDATER;
-    }
-
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        if(hasCapability(capability,facing)){
-            return CapabilityHandler.BLOCK_UPDATER.cast(this);
-        }return null;
+    public static void scheduleUpdate(@Nonnull final World world,@Nonnull final BlockPos pos,@Nonnull final Block block,final int delay){
+        schedule(world,pos,block,delay);
     }
 }

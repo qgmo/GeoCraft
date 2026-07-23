@@ -28,8 +28,9 @@
 package moe.qingu.geocraft.world;
 
 import git.jbredwards.fluidlogged_api.api.util.FluidState;
+import moe.qingu.geocraft.api.world.tick.IScheduledTick;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.world.NextTickListEntry;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
@@ -38,10 +39,14 @@ import javax.annotation.Nonnull;
  * @author QiguaiAAAA
  */
 public class FluidloggedBlockUpdater extends BlockUpdater{
+    public FluidloggedBlockUpdater(@Nonnull final World world) {
+        super(world);
+    }
+
     @Override
-    protected boolean isInvalidTickEntry(@Nonnull NextTickListEntry entry, @Nonnull IBlockState curState) {
-        if(super.isInvalidTickEntry(entry,curState)){ //当前方块不等于计划的方块，要丢弃
-            final FluidState fluidBlockState = FluidState.get(world,entry.position); //检查 FluidState 的方块
+    protected boolean isInvalidTickEntry(@Nonnull final IScheduledTick tick, @Nonnull final IBlockState curState) {
+        if(super.isInvalidTickEntry(tick,curState)){ //当前方块不等于计划的方块，要丢弃
+            final FluidState fluidBlockState = FluidState.get(world,tick.pos()); //检查 FluidState 的方块
             return fluidBlockState.getBlock() != curState.getBlock(); //如果 FluidState 的方块也不满足，就丢弃
         }else return false;
     }
