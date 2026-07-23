@@ -52,7 +52,7 @@ import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchMan
 import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 import moe.qingu.geocraft.geography.fluidphysics.vanilla.VanillaFlowingVanilla;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -236,7 +236,7 @@ public final class FiniteFlowingVanilla extends VanillaFlowingVanilla {
         }else{
             final int remain = totalQuanta-8;
             this.placeDynamicBlock(world,currentPos,8-remain);
-            BlockUpdater.scheduleUpdate(world,currentPos,dynamic,tickRate);
+            BoxedBlockTickScheduler.scheduleUpdate(world,currentPos,dynamic,tickRate);
             this.placeDynamicBlock(world,downPos$mutable,0);
         }
     }

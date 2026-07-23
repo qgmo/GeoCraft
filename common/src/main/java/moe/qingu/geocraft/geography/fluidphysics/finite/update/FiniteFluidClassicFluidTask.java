@@ -45,7 +45,7 @@ import moe.qingu.geocraft.geography.fluidphysics.pressure.FluidPressureSearchMan
 import moe.qingu.geocraft.geography.fluidphysics.finite.flow.FiniteFlowingClassic;
 import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
 import moe.qingu.geocraft.geography.fluidphysics.finite.pressure.FinitePressureTasks;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import moe.qingu.geocraft.util.BaseUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import net.minecraftforge.fluids.BlockFluidClassic;
@@ -180,7 +180,7 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
             else {
                 state = state.withProperty(LEVEL,meta);
                 world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-                BlockUpdater.scheduleUpdate(world,pos, block, tickRate);
+                BoxedBlockTickScheduler.scheduleUpdate(world,pos, block, tickRate);
                 world.notifyNeighborsOfStateChange(pos,block, false);
             }
             for(final @Nonnull OldFlowChoice choice:averageFlowChoices){ //向四周流动
@@ -207,7 +207,7 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
             //更新自己
             state = state.withProperty(LEVEL, newLiquidMeta);
             world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-            BlockUpdater.scheduleUpdate(world, pos, block, tickRate);
+            BoxedBlockTickScheduler.scheduleUpdate(world, pos, block, tickRate);
             world.notifyNeighborsOfStateChange(pos, block, false);
             //移动至新位置
             world.setBlockState(pos.offset(flowDir), state.withProperty(LEVEL, meta), Constants.BlockFlags.SEND_TO_CLIENTS);
@@ -229,7 +229,7 @@ public class FiniteFluidClassicFluidTask implements IFluidTask {
 
     protected boolean tryPressureFlow(final @Nonnull IBlockState state, final int tickRate){
         if(FluidPressureSearchManager.isTaskRunning(world,pos)){
-            BlockUpdater.scheduleUpdate(world,pos,block,tickRate);
+            BoxedBlockTickScheduler.scheduleUpdate(world,pos,block,tickRate);
             return false;
         }
         final @Nullable IFluidPressureSearchTaskResult res = FluidPressureSearchManager.getTaskResult(world,pos);

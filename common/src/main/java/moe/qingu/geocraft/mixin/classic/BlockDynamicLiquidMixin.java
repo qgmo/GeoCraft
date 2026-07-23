@@ -57,7 +57,7 @@ import moe.qingu.geocraft.api.setting.GeoFluidSetting;
 import moe.qingu.geocraft.api.util.FluidUtil;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.util.MiscUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.util.fluid.FluidSearchUtil;
 
@@ -186,7 +186,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
                 FluidOperationUtil.moveFluidSource(world,sourcePosOption.get(),pos);
-                BlockUpdater.scheduleUpdate(world,pos,BlockLiquid.getStaticBlock(material),updateRate);
+                BoxedBlockTickScheduler.scheduleUpdate(world,pos,BlockLiquid.getStaticBlock(material),updateRate);
                 return;
             }
         }
@@ -241,7 +241,7 @@ public class BlockDynamicLiquidMixin extends BlockLiquid implements IFluidTaskRe
                 else {
                     state = state.withProperty(LEVEL, newLiquidMeta);
                     world.setBlockState(pos, state, 2);
-                    BlockUpdater.scheduleUpdate(world,pos, this, updateRate);
+                    BoxedBlockTickScheduler.scheduleUpdate(world,pos, this, updateRate);
                     world.notifyNeighborsOfStateChange(pos, this, false);
                 }
             }

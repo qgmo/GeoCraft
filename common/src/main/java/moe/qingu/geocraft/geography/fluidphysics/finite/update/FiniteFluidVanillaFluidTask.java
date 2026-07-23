@@ -54,7 +54,7 @@ import moe.qingu.geocraft.geography.fluidphysics.finite.pressure.FinitePressureT
 import moe.qingu.geocraft.handler.ServerStatusMonitor;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import net.minecraftforge.fluids.Fluid;
 
 import javax.annotation.Nonnull;
@@ -123,7 +123,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
                 else {
                     state = state.withProperty(LEVEL,liquidMeta);
                     world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-                    BlockUpdater.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
+                    BoxedBlockTickScheduler.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
                     world.notifyNeighborsOfStateChange(pos,flowing.dynamic, false);
                 }
                 world.setBlockState(downPos, ForgeEventFactory.fireFluidPlaceBlockEvent(world, downPos, pos, Blocks.STONE.getDefaultState()));
@@ -138,7 +138,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
                 else {
                     state = state.withProperty(LEVEL,liquidMeta);
                     world.setBlockState(pos,state, Constants.BlockFlags.SEND_TO_CLIENTS);
-                    BlockUpdater.scheduleUpdate(world,pos,flowing.dynamic,updateRate);
+                    BoxedBlockTickScheduler.scheduleUpdate(world,pos,flowing.dynamic,updateRate);
                     world.notifyNeighborsOfStateChange(pos,flowing.dynamic,false);
                 }
             }else{
@@ -151,7 +151,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
         //  Pressure Flow
         // *******************
         if(checkPressureTask(world,pos,state)){
-            BlockUpdater.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
+            BoxedBlockTickScheduler.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
             return;
         }
 
@@ -235,7 +235,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
             else {
                 state = state.withProperty(LEVEL,liquidMeta);
                 world.setBlockState(pos, state, Constants.BlockFlags.SEND_TO_CLIENTS);
-                BlockUpdater.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
+                BoxedBlockTickScheduler.scheduleUpdate(world,pos,flowing.dynamic, updateRate);
                 if(FluidPhysicsConfig.PRESSURE_SYSTEM_FOR_REALITY.getValue() && !FluidPressureSearchManager.isTaskRunning(world,pos)){
                     // *******************
                     //  Pressure Flow [Average]
@@ -270,7 +270,7 @@ public final class FiniteFluidVanillaFluidTask implements IFluidTask {
             //更新自己
             state = state.withProperty(LEVEL, newLiquidMeta);
             world.setBlockState(pos, state, updateFlag);
-            BlockUpdater.scheduleUpdate(world,pos, flowing.dynamic, updateRate);
+            BoxedBlockTickScheduler.scheduleUpdate(world,pos, flowing.dynamic, updateRate);
             world.notifyNeighborsOfStateChange(pos, flowing.dynamic, false);
             //移动至新位置
             flowing.placeDynamicBlock(world, pos.offset(flowDir), liquidMeta);

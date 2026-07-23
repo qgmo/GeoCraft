@@ -60,7 +60,7 @@ import moe.qingu.geocraft.mixin.common.block.BlockFluidBaseAccessor;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
 import moe.qingu.geocraft.util.fluid.FluidSearchUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -135,7 +135,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     findSourceMaxSameLevelIterationsWhenHorizontalFlowing.getValue());
             if(sourcePosOption.isPresent()){
                 FluidOperationUtil.moveFluidSource(world,sourcePosOption.get(),pos);
-                BlockUpdater.scheduleUpdate(world,pos,this,modifiedTickRate);
+                BoxedBlockTickScheduler.scheduleUpdate(world,pos,this,modifiedTickRate);
                 return;
             }
         }
@@ -167,7 +167,7 @@ public abstract class BlockFluidClassicMixin extends BlockFluidBase implements I
                     world.setBlockToAir(pos);
                 } else {
                     world.setBlockState(pos, state.withProperty(LEVEL, quantaPerBlock - newQuanta), Constants.BlockFlags.SEND_TO_CLIENTS);
-                    BlockUpdater.scheduleUpdate(world,pos,this,modifiedTickRate);
+                    BoxedBlockTickScheduler.scheduleUpdate(world,pos,this,modifiedTickRate);
                     world.notifyNeighborsOfStateChange(pos, this, false);
                 }
             }

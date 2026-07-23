@@ -27,101 +27,53 @@
 
 package moe.qingu.geocraft.world.scheduler;
 
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.util.annotation.MultiThread;
-import moe.qingu.geocraft.api.util.annotation.ThreadOnly;
 import moe.qingu.geocraft.api.util.annotation.ThreadType;
-import moe.qingu.geocraft.api.world.tick.IScheduledTick;
-import moe.qingu.geocraft.api.world.tick.TickPriority;
 import moe.qingu.geocraft.handler.CapabilityHandler;
-import moe.qingu.nickel.command.exception.NickelRuntimeException;
-import moe.qingu.nickel.nbt.NBTUtils;
-import net.minecraft.block.Block;
-import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagLongArray;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.ref.SoftReference;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author QGMoe
  */
-@SuppressWarnings("OctalInteger")
-public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
-    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"bt_datum");
-    private static final ThreadLocal<LongArrayList> TEMP = ThreadLocal.withInitial(LongArrayList::new);
-    private final AtomicBoolean dirty = new AtomicBoolean(false);
-    private volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
-    final ReentrantLock lock = new ReentrantLock();
-    BlockTickQueue queue = null;
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public void schedule(final long worldTotalTime,final int cx, final int cy, final int cz, final int blockID, final long delay, final @Nonnull TickPriority priority){
-        lock.lock();
-        try {
-            if(queue == null){
-                queue = new HeapBlockTickQueue();
-                queue.baseTime = worldTotalTime;
-            }else if(worldTotalTime - queue.baseTime > 2147483647L) queue.updateBaseTime(worldTotalTime);
-            queue.queue(cx,cy,cz,blockID,worldTotalTime+delay-queue.baseTime,priority.ordinal());
-        }finally {
-            lock.unlock();
-        }
-    }
-
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public boolean isScheduled(final int cx,final int cy,final int cz,final int blockID){
-        return queue != null && queue.contains(cx, cy, cz, blockID);
-    }
-
-    @Nonnull
-    @ThreadOnly(ThreadType.MINECRAFT_SERVER)
-    public Set<IScheduledTick> query(final int cx,final int cy,final int cz) {
-        final ObjectOpenHashSet<IScheduledTick> ticks = new ObjectOpenHashSet<>();
-        queue.forEach(t -> {
-            final long x = (t >>> 4) & 0xFL;
-            final long y = (t >>> 20) & 0xFFL;
-            final long z = t & 0xFL;
-            if(x != cx || y != cy || z != cz) return;
-            final long scheduledTime = queue.baseTime + (t >>> 32);
-            final @Nonnull Block block = Block.getBlockById((int)((t >>> 8)&0_7777L));
-            final @Nonnull TickPriority priority = TickPriority.of((int)((t >>> 28)&0xFL));
-            ticks.add(IScheduledTick.of(block,new BlockPos(x,y,z),scheduledTime,priority));
-        });
-        return ticks;
-    }
+public abstract class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTagCompound> {
+    public static final ResourceLocation ID = new ResourceLocation(GeoCraft.MODID,"scheduled_ticks_data");
+    protected static final String KEY_VERSION = "version";
+    protected static final String KEY_TYPE = "type";
+    protected static final String KEY_BASE_TIME = "baseTime";
+    protected static final byte TYPE_BOXED = 0;
+    protected static final byte TYPE_PACKED = 1;
+    public final ReentrantLock lock = new ReentrantLock();
+    protected final AtomicBoolean dirty = new AtomicBoolean(false);
+    protected volatile SoftReference<NBTTagCompound> save = new SoftReference<>(new NBTTagCompound());
 
     /* -------------------------------
          Serialisation Area
        ------------------------------- */
 
     @Override
+    @Nonnull
     @MultiThread({ThreadType.MINECRAFT_SERVER,ThreadType.CHUNK_IO_THREADS,ThreadType.GEO_MISC_DAEMON})
-    public NBTTagCompound serializeNBT() {
+    public final NBTTagCompound serializeNBT() {
         final @Nullable NBTTagCompound cache;
         if(isDirty() || (cache = this.save.get()) == null){
             lock.lock();
             try {
-                final NBTTagCompound s = new NBTTagCompound();
-                s.setInteger("v",1);
-                if(queue != null){
-                    s.setTag("queue", serializeQueue());
-                    s.setLong("baseTime",queue.baseTime);
-                }
-                this.save = new SoftReference<>(s);
-                return s;
+                final NBTTagCompound compound = new NBTTagCompound();
+                compound.setInteger(KEY_VERSION,2);
+                this.serialiseNBT(compound);
+                this.save = new SoftReference<>(compound);
+                return compound;
             }finally {
                 this.clearDirty();
                 lock.unlock();
@@ -130,63 +82,34 @@ public final class ChunkyBlockTickDatum implements ICapabilitySerializable<NBTTa
         return cache;
     }
 
-    @Override
-    public void deserializeNBT(final @Nonnull NBTTagCompound nbt) {
-        if(nbt.getInteger("v")>1) throw new IllegalArgumentException();
-        if(nbt.hasKey("queue")){
-            final NBTBase tag = nbt.getTag("queue");
-            try {
-                final long[] dat = tag instanceof NBTTagLongArray? NBTUtils.getLongArray((NBTTagLongArray) tag): new long[0];
-                if(queue == null) queue = new HeapBlockTickQueue();
-                for(final long t:dat) queue.queue(t);
-            } catch (final @Nonnull NickelRuntimeException e) {
-                throw new RuntimeException(e.getCause());
-            }
-            queue.baseTime = nbt.getLong("baseTime");
-        }
-    }
-
-    private @Nonnull NBTTagLongArray serializeQueue(){
-        final LongArrayList list = TEMP.get();
-        list.clear();
-        queue.forEach(list::add);
-        final long[] arr = list.toLongArray();
-        return new NBTTagLongArray(arr);
-    }
+    protected abstract void serialiseNBT(final @Nonnull NBTTagCompound compound);
 
     /* -------------------------------
                Capability Area
        ------------------------------- */
 
     @Override
-    public boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
+    public final boolean hasCapability(@Nonnull final Capability<?> capability, @Nullable final EnumFacing facing) {
         return capability == CapabilityHandler.BLOCK_TICK_DATUM;
     }
 
     @Nullable
     @Override
-    public <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
-        return capability == CapabilityHandler.BLOCK_TICK_DATUM ? CapabilityHandler.BLOCK_TICK_DATUM.cast(this) : null;
+    public final <T> T getCapability(@Nonnull final Capability<T> capability, @Nullable final EnumFacing facing) {
+        if(hasCapability(capability,facing)){
+            return CapabilityHandler.BLOCK_TICK_DATUM.cast(this);
+        }else return null;
     }
 
     /* -------------------------------
               Getter And Setter
        ------------------------------- */
 
-    public boolean isDirty() {
+    public final boolean isDirty() {
         return dirty.get();
     }
 
-    @Nonnull
-    public ReentrantLock getLock() {
-        return lock;
-    }
-
-    public boolean markDirty(){
-        return dirty.compareAndSet(false,true);
-    }
-
-    public void clearDirty(){
+    public final void clearDirty(){
         dirty.set(false);
     }
 }

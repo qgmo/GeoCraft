@@ -45,7 +45,7 @@ import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.util.MiscUtil;
 import moe.qingu.geocraft.util.fluid.FluidMixinUtil;
 import moe.qingu.geocraft.util.fluid.FluidOperationUtil;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,7 +94,7 @@ public final class FiniteFlowingClassic {
         }else{
             final int remain = totalQuanta-quantaPerBlock;
             worldIn.setBlockState(currentPos,thisState.withProperty(LEVEL, quantaPerBlock - remain),Constants.BlockFlags.DEFAULT);
-            BlockUpdater.scheduleUpdate(worldIn,currentPos,block,this.tickRate(worldIn));
+            BoxedBlockTickScheduler.scheduleUpdate(worldIn,currentPos,block,this.tickRate(worldIn));
             worldIn.setBlockState(downPos,downState.withProperty(LEVEL,0), Constants.BlockFlags.DEFAULT);
         }
     }

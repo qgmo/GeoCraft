@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 QiguaiAAAA
+ * Copyright 2026 QGMoe
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * 版权所有 2025 QiguaiAAAA
+ * 版权所有 2026 QGMoe
  * 根据Apache许可证第2.0版（“本许可证”）许可；
  * 除非符合本许可证的规定，否则你不得使用此文件。
  * 你可以在此获取本许可证的副本：
@@ -25,29 +25,25 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.world;
+package moe.qingu.geocraft.api.world.tick.coordinator;
 
-import git.jbredwards.fluidlogged_api.api.util.FluidState;
-import moe.qingu.geocraft.api.world.tick.IScheduledTick;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.world.World;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 
 /**
- * 当加载 FluidloggedAPI 时使用的 BlockUpdater
- * @author QiguaiAAAA
+ * @author QGMoe
  */
-public class FluidloggedBlockUpdater extends BlockUpdater{
-    public FluidloggedBlockUpdater(@Nonnull final World world) {
-        super(world);
+public abstract class BlockTickCoordinator {
+    protected final BlockTickScheduler scheduler;
+
+    protected BlockTickCoordinator(final @Nonnull BlockTickScheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
-    @Override
-    protected boolean isInvalidTickEntry(@Nonnull final IScheduledTick tick, @Nonnull final IBlockState curState) {
-        if(super.isInvalidTickEntry(tick,curState)){ //当前方块不等于计划的方块，要丢弃
-            final FluidState fluidBlockState = FluidState.get(world,tick.pos()); //检查 FluidState 的方块
-            return fluidBlockState.getBlock() != curState.getBlock(); //如果 FluidState 的方块也不满足，就丢弃
-        }else return false;
-    }
+    public abstract boolean coordinate(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state);
+
 }

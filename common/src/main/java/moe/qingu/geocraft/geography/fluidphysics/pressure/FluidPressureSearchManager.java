@@ -50,7 +50,7 @@ import moe.qingu.geocraft.api.util.annotation.ThreadType;
 import moe.qingu.geocraft.configs.FluidPhysicsConfig;
 import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTask;
 import moe.qingu.geocraft.geography.fluidphysics.pressure.task.IFluidPressureSearchTaskResult;
-import moe.qingu.geocraft.world.BlockUpdater;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
 import moe.qingu.geocraft.util.misc.FixedCollection;
 
 import javax.annotation.Nonnull;
@@ -254,7 +254,7 @@ public final class FluidPressureSearchManager implements Runnable{
     }
 
     /**
-     * 该方法会将等待更新的方块加入{@link BlockUpdater}的更新队列
+     * 该方法会将等待更新的方块加入{@link BoxedBlockTickScheduler}的更新队列
      * @param world 需要tick的世界
      */
     @ThreadOnly(ThreadType.MINECRAFT_SERVER)
@@ -266,7 +266,7 @@ public final class FluidPressureSearchManager implements Runnable{
             for(int i=0;i<MAX_UPDATE_BLOCKS;i++){
                 final Pair<BlockPos, Block> task = posesToLoad.poll();
                 if(task == null) break;
-                BlockUpdater.scheduleUpdate(world,task.getLeft(),task.getRight(),world.rand.nextInt(dispersion));
+                BoxedBlockTickScheduler.scheduleUpdate(world,task.getLeft(),task.getRight(),world.rand.nextInt(dispersion));
             }
             posesToLoad.clear();
         }

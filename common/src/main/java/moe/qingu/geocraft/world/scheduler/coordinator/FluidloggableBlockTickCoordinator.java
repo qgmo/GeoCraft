@@ -25,15 +25,29 @@
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
 
-package moe.qingu.geocraft.world.scheduler;
+package moe.qingu.geocraft.world.scheduler.coordinator;
 
+import git.jbredwards.fluidlogged_api.api.util.FluidState;
+import moe.qingu.geocraft.api.world.tick.coordinator.BlockTickCoordinator;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author QGMoe
  */
-public abstract class BlockTickConsumer {
-    public abstract void consume(final int x,final int y,final int z,final @Nonnull Block block);
+public final class FluidloggableBlockTickCoordinator extends BlockTickCoordinator {
+    public FluidloggableBlockTickCoordinator(@Nonnull final BlockTickScheduler scheduler) {
+        super(scheduler);
+    }
+
+    @Override
+    public boolean coordinate(@Nonnull final BlockPos pos, @Nonnull final Block scheduledBlock, @Nonnull final IBlockState state) {
+        if(scheduledBlock == state.getBlock()) return true;
+        final FluidState fluidBlockState = FluidState.get(scheduler.getWorld(),pos); //检查 FluidState 的方块
+        return fluidBlockState.getBlock() != state.getBlock(); //如果 FluidState 的方块也不满足，就丢弃
+    }
 }

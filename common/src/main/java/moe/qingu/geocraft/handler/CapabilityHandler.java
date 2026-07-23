@@ -31,7 +31,6 @@ import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskDatum;
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
 import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickDatum;
-import moe.qingu.geocraft.world.ScheduledTicksData;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -49,7 +48,6 @@ import java.util.concurrent.Callable;
  */
 public final class CapabilityHandler {
     public static @CapabilityInject(ChunkyFluidTaskDatum.class) Capability<ChunkyFluidTaskDatum> CHUNKY_FLUID_TASK_DATUM;
-    public static @CapabilityInject(ScheduledTicksData.class) Capability<ScheduledTicksData> SCHEDULED_TICKS_DATA;
     public static @CapabilityInject(ChunkyBlockTickDatum.class) Capability<ChunkyBlockTickDatum> BLOCK_TICK_DATUM;
 
     private CapabilityHandler(){}
@@ -58,8 +56,7 @@ public final class CapabilityHandler {
         CapabilityManager.INSTANCE.register(FluidTaskScheduler.class,new UselessCapabilityStorage<>(),unsupported());
         CapabilityManager.INSTANCE.register(BlockTickScheduler.class,new UselessCapabilityStorage<>(),unsupported());
         CapabilityManager.INSTANCE.register(ChunkyFluidTaskDatum.class,new NBTCompoundCapabilityStorage<>(), ChunkyFluidTaskDatum::new);
-        CapabilityManager.INSTANCE.register(ScheduledTicksData.class, new NBTCompoundCapabilityStorage<>(),unsupported());
-        CapabilityManager.INSTANCE.register(ChunkyBlockTickDatum.class,new NBTCompoundCapabilityStorage<>(), ChunkyBlockTickDatum::new);
+        CapabilityManager.INSTANCE.register(ChunkyBlockTickDatum.class, new NBTCompoundCapabilityStorage<>(),unsupported());
     }
 
     @Nonnull

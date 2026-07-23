@@ -24,24 +24,8 @@
  * 请查阅本许可证了解有关本许可证下许可和限制的具体要求。
  * 中文译文来自开放原子开源基金会，非官方译文，如有疑议请以英文原文为准
  */
-/*
- * This file contains code derived from fastutil (https://fastutil.di.unimi.it/)
- * Original class: it.unimi.dsi.fastutil.longs.LongHeapPriorityQueue (partial)
- * Copyright (C) 2003-2024 Paolo Boldi and Sebastiano Vigna
- * Licensed under the Apache License, Version 2.0
- *
- * Modifications: Extracted heap operations and merged into this class
- * to enable direct array access for iteration and serialization.
- *
- * 本文件包含源自 fastutil (https://fastutil.di.unimi.it/) 的代码
- * 原始类：it.unimi.dsi.fastutil.longs.LongHeapPriorityQueue（部分）
- * 版权所有 (C) 2003-2024 Paolo Boldi 与 Sebastiano Vigna
- * 根据 Apache 许可证第 2.0 版许可
- *
- * 修改内容：提取了堆操作并整合至该类以支持直接数组访问来实现遍历与序列化。
- */
 
-package moe.qingu.geocraft.world.scheduler;
+package moe.qingu.geocraft.world.scheduler.packed;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongArrays;
@@ -57,7 +41,7 @@ import java.util.function.LongConsumer;
  * @author QGMoe
  */
 @SuppressWarnings("OctalInteger")
-public final class HeapBlockTickQueue extends BlockTickQueue{
+public final class HeapPackedBlockTickQueue extends PackedBlockTickQueue {
     private static final LongComparator COMPARE_UNSIGNED_LOW_FIRST = new LongComparator() {
         @Override
         public int compare(final long k1,final long k2) {
@@ -86,7 +70,7 @@ public final class HeapBlockTickQueue extends BlockTickQueue{
     @Override
     public void queue(final int cx,final int cy,final int cz,final int blockID,final long delay,final int priority) {
         if (size == heap.length) heap = LongArrays.grow(heap, size + 1);
-        heap[size++] = (delay << 32) | ((long) priority <<28) | ((long) cy << 20) | ((long) blockID << 8) | ((long) cx << 4) | cz;
+        heap[size++] = (delay << 32) | ((long) priority <<28) | ((long) cy << 20) | ((long) cx << 16) | ((long) cz << 12) | blockID;
         LongHeaps.upHeap(heap, size, size - 1, COMPARE_UNSIGNED_LOW_FIRST);
         set.add((cy<<20) | (blockID << 8) | (cx << 4) | cz);
     }
@@ -109,7 +93,7 @@ public final class HeapBlockTickQueue extends BlockTickQueue{
     }
 
     @Override
-    public int forNext(final long worldTotalTime, @Nonnull final BlockTickConsumer consumer,final @Nonnull long[] temp) {
+    public int forNext(final long worldTotalTime, @Nonnull final PackedBlockTickConsumer consumer, final @Nonnull long[] temp) {
         if(worldTotalTime<baseTime) return 0;
         final long maxDelay = Math.min(worldTotalTime - baseTime, 0xFFFF_FFFFL);
         final long maxValue = (maxDelay<<32) | 0xFFFF_FFFFL;
@@ -118,10 +102,10 @@ public final class HeapBlockTickQueue extends BlockTickQueue{
         if(maxDelay > 2147483647L) updateBaseTime(worldTotalTime);
         for(int i=0;i<count;i++){
             final long tick = temp[i];
-            final int x = (int) ((tick >>> 4) & 0xFL);
+            final int x = (int) ((tick >>> 16) & 0xFL);
             final int y = (int) ((tick >>> 20) & 0xFFL);
-            final int z = (int) (tick & 0xFL);
-            final int blockID = (int) ((tick >>> 8) & 0_7777L);
+            final int z = (int) ((tick >>> 12) & 0xFL);
+            final int blockID = (int) (tick & 0_7777L);
             final int key = (y<<20) | (blockID<<8) | (x << 4) | z;
             set.remove(key);
             final Block block = Block.getBlockById(blockID);

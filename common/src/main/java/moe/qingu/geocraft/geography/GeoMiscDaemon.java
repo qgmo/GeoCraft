@@ -28,8 +28,11 @@
 package moe.qingu.geocraft.geography;
 
 import moe.qingu.geocraft.api.fluidphysics.task.scheduler.FluidTaskScheduler;
+import moe.qingu.geocraft.api.world.tick.scheduler.BlockTickScheduler;
 import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskDatum;
 import moe.qingu.geocraft.geography.fluidphysics.scheduler.ChunkyFluidTaskScheduler;
+import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickDatum;
+import moe.qingu.geocraft.world.scheduler.ChunkyBlockTickScheduler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -93,29 +96,61 @@ public final class GeoMiscDaemon implements Runnable {
         final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         if(server == null) return;
         for(final WorldServer world : server.worlds){
-            final ChunkyFluidTaskScheduler scheduler;
-            try {
-                 final FluidTaskScheduler s = FluidTaskScheduler.getSchedulers().get(world.provider.getDimension());
-                 if(s instanceof ChunkyFluidTaskScheduler) scheduler = (ChunkyFluidTaskScheduler) s;
-                 else continue;
-            }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
-                continue;
-            }
-            final ConcurrentLinkedQueue<ChunkyFluidTaskDatum> dirties = scheduler.getDirties();
-            final int size = dirties.size();
-            int cot = 0;
-            while (cot++ < size){
-                if(dirties.isEmpty()) break;
-                final ChunkyFluidTaskDatum datum = dirties.poll();
-                if(!datum.isDirty()) continue;
-                if(datum.getLock().tryLock()){
-                    try {
-                        datum.serializeNBT();
-                    }finally {
-                        datum.getLock().unlock();
-                    }
-                }else dirties.add(datum);
-            }
+            cleanupFluidScheduler(world);
+            cleanupBlockScheduler(world);
+        }
+    }
+
+    private void cleanupFluidScheduler(final @Nonnull WorldServer world){
+        final ChunkyFluidTaskScheduler scheduler;
+        try {
+            final FluidTaskScheduler s = FluidTaskScheduler.getSchedulers().get(world.provider.getDimension());
+            if(s instanceof ChunkyFluidTaskScheduler) scheduler = (ChunkyFluidTaskScheduler) s;
+            else return;
+        }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
+            return;
+        }
+        final ConcurrentLinkedQueue<ChunkyFluidTaskDatum> dirties = scheduler.getDirties();
+        final int size = dirties.size();
+        int cot = 0;
+        while (cot++ < size){
+            if(dirties.isEmpty()) break;
+            final ChunkyFluidTaskDatum datum = dirties.poll();
+            if(!datum.isDirty()) continue;
+            if(datum.getLock().tryLock()){
+                try {
+                    datum.serializeNBT();
+                }finally {
+                    datum.getLock().unlock();
+                }
+            }else dirties.add(datum);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cleanupBlockScheduler(final @Nonnull WorldServer world){
+        final ChunkyBlockTickScheduler<?> scheduler;
+        try {
+            final BlockTickScheduler s = BlockTickScheduler.getSchedulers().get(world.provider.getDimension());
+            if(s instanceof ChunkyBlockTickScheduler<?>) scheduler = (ChunkyBlockTickScheduler<?>) s;
+            else return;
+        }catch (final IndexOutOfBoundsException e){  //Fastutil的多线程错误
+            return;
+        }
+        final ConcurrentLinkedQueue<ChunkyBlockTickDatum> dirties = (ConcurrentLinkedQueue<ChunkyBlockTickDatum>) scheduler.getDirties();
+        final int size = dirties.size();
+        int cot = 0;
+        while (cot++ < size){
+            if(dirties.isEmpty()) break;
+            final ChunkyBlockTickDatum datum = dirties.poll();
+            if(!datum.isDirty()) continue;
+            if(datum.lock.tryLock()){
+                try {
+                    datum.serializeNBT();
+                }finally {
+                    datum.lock.unlock();
+                }
+            }else dirties.add(datum);
         }
     }
 }

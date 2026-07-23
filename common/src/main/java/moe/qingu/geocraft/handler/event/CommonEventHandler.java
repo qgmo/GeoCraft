@@ -39,8 +39,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import moe.qingu.geocraft.GeoCraft;
 import moe.qingu.geocraft.api.property.IGeographyProperty;
 import moe.qingu.geocraft.handler.RegistryHandler;
-import moe.qingu.geocraft.world.BlockUpdater;
-import moe.qingu.geocraft.world.ScheduledTicksData;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickScheduler;
+import moe.qingu.geocraft.world.scheduler.boxed.BoxedBlockTickDatum;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,8 +61,8 @@ public final class CommonEventHandler {
     @SubscribeEvent
     public static void onWorldAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<World> event){
         if(event.getObject().isRemote) return;
-        final BlockUpdater updater = new BlockUpdater(event.getObject());
-        event.addCapability(BlockUpdater.ID, updater);
+        final BoxedBlockTickScheduler updater = new BoxedBlockTickScheduler(event.getObject());
+        event.addCapability(BoxedBlockTickScheduler.ID, updater);
         FluidPhysicsEventHandler.onWorldAttachCapabilities(event,event.getObject());
     }
 
@@ -71,7 +71,7 @@ public final class CommonEventHandler {
     public static void onChunkAttachCapabilities(final @Nonnull AttachCapabilitiesEvent<Chunk> event){
         final @Nullable World world = event.getObject().getWorld(); //??? 为什么在逻辑客户端这会是null
         if(world == null || world.isRemote) return;
-        event.addCapability(ScheduledTicksData.ID, new ScheduledTicksData(event.getObject()));
+        event.addCapability(BoxedBlockTickDatum.ID, new BoxedBlockTickDatum(event.getObject()));
         FluidPhysicsEventHandler.onChunkAttachCapabilities(event,world);
     }
 
